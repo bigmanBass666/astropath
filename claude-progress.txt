@@ -39,3 +39,38 @@ Notes:
 - Page displays provider table with status tags and action buttons (edit, delete, test)
 - Next: Continue with F003 multi-provider switching or F004 background assessment form.
 
+=== Session 4 — F003 Implementation ===
+Date: 2026-03-24
+Feature worked on: F003 (多provider切换功能)
+Status: completed
+Git commit: 11c8e07
+Remaining features: 30
+Notes:
+- Created src/utils/ai-api.js utility module supporting multiple AI providers
+  - getProviders(), getProviderById() to load configs from localStorage
+  - sendMessageToAI() with support for OpenAI and Anthropic API formats
+  - buildSystemPrompt() for different agent roles
+  - testProviderConnection() for connection verification
+  - Handles both normal and streaming responses
+- Updated AIChat.vue to use real API calls
+  - Integrated ai-api module imports
+  - Replaced simulated setTimeout with actual sendMessageToAI calls
+  - Built system prompts based on current agent (consultant, essay, selection, visa)
+  - Added proper error handling with user-friendly messages
+- Added provider selector to Materials.vue essay editor toolbar
+  - Auto-selects first provider on page load from localStorage
+  - Integrated provider dropdown in UI alongside existing formatting tools
+- Implemented AI generation functionality in Materials.vue
+  - Added ai-assistant section with textarea input and "AI生成" button
+  - Created generateWithAI() function calling sendMessageToAI
+  - Includes essay type detection for context-aware prompts
+  - Loading state management with isGenerating flag
+- Verified multi-provider configuration via Playwright MCP testing
+  - Successfully added two test providers: OpenAI Test and Anthropic Test
+  - Confirmed providers persist in localStorage
+  - Verified provider selector appears in both AIChat and Materials pages
+  - Confirmed first provider auto-selected on page load
+  - Validated provider data structure supports switching logic
+- All F003 steps verified: multiple providers can be configured and selected in AI-enabled pages
+- Next: Continue with F004 (用户背景信息基础表单) or remaining features.
+
