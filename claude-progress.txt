@@ -4,3 +4,19 @@ Status: Planning complete. No application code written.
 Features defined: 32
 Tech stack decided: Vue 3 + Vite frontend, Element-Plus UI, ECharts charts, AI via external LLM API
 Notes: All features marked passes:false. Coding agent will build incrementally. Feature list split into F001-F032 covering: navigation, AI config multi-provider, background assessment form (4 steps with validation),竞争力评估报告与雷达图, school recommendation engine with filtering/comparison, dynamic timeline with Kanban tasks, AI文书助手（生成、编辑、版本管理）, application materials checklist, university database search, multi-agent chat interface with streaming, full error handling, responsive UI across devices. Next steps: scaffold Vue project, implement AI config and background form first.
+
+=== Session 2 — F001 Implementation ===
+Date: 2026-03-23
+Feature worked on: F001 (应用首页加载与导航)
+Status: completed
+Git commit: (pending commit)
+Remaining features: 32
+Notes:
+- Implemented navigation menu with Vue Router and Element Plus.
+- Fixed el-menu router navigation issue by adding custom @select handler (handleMenuSelect) to invoke router.push.
+- Exposed $router to window for testing purposes in main.js.
+- Adjusted CSS to ensure all 8 menu items are visible (increased header-content max-width, reduced menu item padding, added overflow-x scrolling).
+- Menu now fully functional on desktop and responsive (mobile hamburger layout via flex column).
+- End-to-end test passes: page loads, logo and nav visible, all menu items present, clicking each navigates correctly, responsive behavior confirmed.
+- Next: Continue with F002 AI Configuration page or remaining features.
+
