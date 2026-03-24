@@ -1,3 +1,10 @@
+=== Session 10 — 2026-03-25 ===
+Feature worked on: F012 - 修复全站页面布局不对称问题
+Status: completed
+Git commit: 680105c
+Remaining features: 38 (passes:false)
+Notes: 发现全站 7 个页面 max-width 不一致（900-1400px），导致页面内容起始位置差异巨大（20px-190px）。通过 Playwright 精确测量定位所有不对称问题，将所有页面统一为 max-width:1200px（与首页 Features/CTA 区域一致）。同时发现 App.vue 的导航菜单点击无法切换页面，原因是 @select handler 与 Element Plus :router="true" 冲突，移除后导航恢复正常。修复后所有页面容器左边距=右边距=40px，完全对称。F011（页脚链接间距 31px >> 4px 最低要求）同步标记为 passes:true（Session 9 验证记录）。浏览器端到端验证通过，7 个页面导航全部正常，无控制台错误。
+
 === Session 9 — 2026-03-25 ===
 Feature worked on: F010 - 修复页脚内容布局不对称问题
 Status: completed
