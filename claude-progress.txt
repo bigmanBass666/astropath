@@ -1,3 +1,10 @@
+=== Session 27 — 2026-03-25 ===
+Feature worked on: F032 - 全站卡片样式不一致，需统一卡片设计规范
+Status: completed
+Git commit: 173a6218885bf628c78ed5953eb87776f386c789 (src) + b357cd83363858f3183486ed19bc95cec6210621 (feature_list.json)
+Remaining features: 20 (passes:false)
+Notes: 统一全站卡片圆角为 12px，hover 阴影改为品牌色。修复了 5 个文件：(1) src/styles/index.css 全局 .el-card border-radius:12px + 品牌色 hover 阴影；(2) Home.vue feature-card 20px→12px、feature-icon-wrapper 20px→12px；(3) Materials.vue template-card (2处) 8px→12px；(4) UniversityDatabase.vue school-card + major-card 添加 border-radius:12px + hover 品牌色阴影；(5) SchoolRecommendation.vue school-card 添加 border-radius:12px + hover 品牌色阴影。Playwright 多页验证：Home feature-card 12px、UnivDB search/school/major-card 12px、SR intro-card 12px、Materials essay/template-card 12px、Assessment step-card 12px、AIConfig config-card 12px，smoke test 通过。F032 passes:true。
+
 === Session 26 — 2026-03-25 ===
 Feature worked on: F031 - 全站按钮样式不一致，需统一按钮设计规范
 Status: completed
