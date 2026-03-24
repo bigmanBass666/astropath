@@ -5,17 +5,26 @@
     <!-- 搜索和筛选 -->
     <el-card class="search-card">
       <div class="search-row">
-        <el-input v-model="searchKeyword" placeholder="搜索学校名称" clearable style="width: 300px;">
+        <el-input v-model="searchKeyword" placeholder="搜索学校名称或专业" clearable style="width: 300px;">
           <template #prefix>
             <el-icon><Search /></el-icon>
           </template>
         </el-input>
-        <el-select v-model="filterCountry" placeholder="国家" clearable style="width: 150px;">
+        <el-select v-model="filterCountry" placeholder="国家" clearable style="width: 120px;">
           <el-option label="美国" value="美国" />
           <el-option label="英国" value="英国" />
           <el-option label="中国" value="中国" />
           <el-option label="澳洲" value="澳洲" />
           <el-option label="加拿大" value="加拿大" />
+        </el-select>
+        <el-select v-model="filterRankRange" placeholder="排名范围" clearable style="width: 120px;">
+          <el-option label="Top 10" value="top10" />
+          <el-option label="Top 20" value="top20" />
+          <el-option label="Top 50" value="top50" />
+          <el-option label="Top 100" value="top100" />
+        </el-select>
+        <el-select v-model="filterMajor" placeholder="专业领域" clearable style="width: 150px;">
+          <el-option v-for="major in uniqueMajors" :key="major" :label="major" :value="major" />
         </el-select>
         <el-button type="primary" @click="search">搜索</el-button>
         <el-button @click="resetFilters">重置</el-button>
@@ -117,6 +126,8 @@ import { Search } from '@element-plus/icons-vue'
 const router = useRouter()
 const searchKeyword = ref('')
 const filterCountry = ref('')
+const filterRankRange = ref('')
+const filterMajor = ref('')
 const currentPage = ref(1)
 const pageSize = ref(12)
 const detailVisible = ref(false)
@@ -135,6 +146,18 @@ const allSchools = ref([
   { id: 9, name: 'University of Melbourne', country: '澳洲', major: 'CS', ranking: 'QS #13', rankType: 'warning', tuition: 'AUD 42K', acceptanceRate: '70%', deadline: 'Jan 15', requirements: ['GPA 3.0+'], website: 'https://unimelb.edu.au' }
 ])
 
+// 提取所有唯一的专业用于下拉选项
+const uniqueMajors = computed(() => {
+  const majors = allSchools.value.map(s => s.major)
+  return [...new Set(majors)]
+})
+
+// 解析排名数字
+const getRankNumber = (ranking) => {
+  const match = ranking.match(/(\d+)/)
+  return match ? parseInt(match[1]) : 999
+}
+
 const filteredSchools = computed(() => {
   let result = allSchools.value
   if (searchKeyword.value) {
@@ -143,6 +166,21 @@ const filteredSchools = computed(() => {
   }
   if (filterCountry.value) {
     result = result.filter(s => s.country === filterCountry.value)
+  }
+  if (filterMajor.value) {
+    result = result.filter(s => s.major === filterMajor.value)
+  }
+  if (filterRankRange.value) {
+    result = result.filter(s => {
+      const rankNum = getRankNumber(s.ranking)
+      switch (filterRankRange.value) {
+        case 'top10': return rankNum <= 10
+        case 'top20': return rankNum <= 20
+        case 'top50': return rankNum <= 50
+        case 'top100': return rankNum <= 100
+        default: return true
+      }
+    })
   }
   return result
 })
@@ -154,6 +192,8 @@ const search = () => {
 const resetFilters = () => {
   searchKeyword.value = ''
   filterCountry.value = ''
+  filterRankRange.value = ''
+  filterMajor.value = ''
 }
 
 const showDetail = (school) => {
