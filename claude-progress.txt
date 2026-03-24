@@ -1,4 +1,11 @@
-=== Session 22 — 2026-03-25 ===
+=== Session 23 — 2026-03-25 ===
+Feature worked on: F039 - 修复院校库页面移动端筛选控件溢出问题
+Status: completed
+Git commit: b90a023f
+Remaining features: 23 (passes:false)
+Notes: 修复了院校库页面在移动端（375px）下筛选控件溢出的严重问题。根因为 Element Plus el-input 使用 `width: var(--el-input-width)` 其中 `--el-input-width` 默认 100%，与父容器 flex 布局形成循环依赖，导致输入框固定为 293px（超出容器）。修复方案：(1) 搜索输入框添加 `style="width:180px!important;flex:0 0 180px!important;"` 强制固定宽度 180px；(2) 移除了模板中的固定 inline style，改用 CSS 类 `.filter-search-input` / `.filter-select` 统一管理；(3) 为下拉框添加 `flex-shrink` 和 `min-width:0` 允许收缩；(4) 添加 480px 移动端媒体查询，使搜索框全宽、下拉框两行排列。Playwright 三视口验证：375px 无溢出、768px 无溢出、1280px 无回归，smoke test 通过。F039 passes:true。
+
+
 Feature worked on: F038 - 修复首页响应式布局与移动端导航适配
 Status: completed
 Git commit: 555a9d8
@@ -139,3 +146,10 @@ Status: Planning complete. No application code written.
 Features defined: 50
 Tech stack decided: Vue.js + Element-Plus + ECharts (延续第一轮)
 Notes: All features marked passes:false. Coding agent will build incrementally.
+
+=== Session 24 — 2026-03-25 ===
+Feature worked on: F043 - Element Plus组件主题色与应用主题不一致，需定制组件主题
+Status: completed
+Git commit: (pending)
+Remaining features: 22 (passes:false)
+Notes: 完成 Element Plus 全站主题色定制。在 src/styles/index.css 中将 :root CSS 变量从仅 4 个扩展至 150+ 行，覆盖全部 Element Plus v2 组件级变量。核心变量：--el-color-primary: #667eea（品牌紫）、--el-button-bg-color/border-color: #667eea、--el-input-focus-border-color: #667eea（输入焦点）、--el-input-hover-border-color: #a2b3f5（输入悬停）、--el-select-border-color-hover: #a2b3f5、--el-checkbox-input-border-color-hover: #667eea、--el-pagination-hover-color: #667eea。组件级选择器覆盖：表格表头 #f5f7fa、primary 标签 #ecf1ff、checked 复选框/单选框/开关 #667eea、active 分页 #667eea、active 标签页 #667eea、卡片悬停紫色阴影等。Playwright 多页验证：assessment 页按钮 rgb(102,126,234)、输入框焦点 box-shadow rgb(102,126,234)、school-recommendation 页表格+标签+标签页紫色、university-database 页表格+分页器紫色、ai-config 页开关+复选框+按钮全品牌色一致。F043 passes:true。
