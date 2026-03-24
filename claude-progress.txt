@@ -315,3 +315,25 @@ Notes:
   4. ✅ 点击链接成功跳转到对应功能页面
 - 功能卡片同时支持卡片整体点击和链接单独点击两种导航方式
 - Next: Continue with F032 (页面底部信息) or remaining features.
+
+=== Session 28 — F020 Verification ===
+Date: 2026-03-24
+Feature worked on: F020 (材料状态跟踪与导出)
+Status: completed
+Git commit: a38efa1
+Remaining features: 11
+Notes:
+- F020功能已在Session 17实现，本次进行完整的端到端验证
+- 验证进度条实时更新：勾选5项材料后进度显示36%
+- 验证CSV导出：点击"导出清单"成功下载包含材料名称、状态、备注的CSV文件
+- 验证检查报告生成：
+  * 显示汇总统计（已完成5项、未完成9项、完成率36%）
+  * 待完成列表展示9项材料，含分类、备注和"完成"按钮
+  * 已完成材料以标签云形式展示
+- 验证重置功能：
+  * 点击重置弹出确认对话框
+  * 取消操作保持原勾选状态（36%）
+  * 确认重置后所有勾选清空，进度归零，显示"清单已重置"提示
+- 所有F020测试步骤通过Playwright MCP验证
+- 剩余待实现功能：F021-F029、F032、F033（共11个）
+- Next: Continue with F021 (院校数据库搜索) or remaining features.
