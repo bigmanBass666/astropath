@@ -6,11 +6,12 @@
           <el-icon class="logo-icon"><Briefcase /></el-icon>
           <span class="logo-text">留学规划平台</span>
         </div>
+        <!-- 桌面端导航菜单 -->
         <el-menu
           :default-active="activeMenu"
           mode="horizontal"
           :router="true"
-          class="nav-menu"
+          class="nav-menu desktop-nav"
         >
           <el-menu-item index="/">首页</el-menu-item>
           <el-menu-item index="/ai-config">AI配置</el-menu-item>
@@ -21,6 +22,10 @@
           <el-menu-item index="/university-database">院校数据库</el-menu-item>
           <el-menu-item index="/ai-chat">AI对话</el-menu-item>
         </el-menu>
+        <!-- 移动端汉堡菜单按钮 -->
+        <button class="hamburger-btn" @click="mobileMenuVisible = true" aria-label="打开菜单">
+          <el-icon :size="24"><Expand /></el-icon>
+        </button>
       </div>
     </el-header>
     <el-main class="app-main">
@@ -42,6 +47,33 @@
         </div>
       </div>
     </el-footer>
+
+    <!-- 移动端导航抽屉 -->
+    <el-drawer
+      v-model="mobileMenuVisible"
+      direction="rtl"
+      size="280px"
+      :show-close="false"
+      class="mobile-menu-drawer"
+    >
+      <template #header>
+        <div class="drawer-header">
+          <span class="drawer-title">导航菜单</span>
+        </div>
+      </template>
+      <div class="mobile-menu-list">
+        <div
+          v-for="item in menuItems"
+          :key="item.path"
+          class="mobile-menu-item"
+          :class="{ 'is-active': activeMenu === item.path }"
+          @click="navigateTo(item.path)"
+        >
+          <el-icon><Menu /></el-icon>
+          <span>{{ item.name }}</span>
+        </div>
+      </div>
+    </el-drawer>
 
     <!-- 使用指南对话框 -->
     <el-dialog v-model="guideVisible" title="使用指南" width="60%">
@@ -76,12 +108,30 @@
 <script setup>
 import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { Briefcase } from '@element-plus/icons-vue'
+import { Briefcase, Expand, Menu } from '@element-plus/icons-vue'
 
 const route = useRoute()
 const router = useRouter()
 
 const activeMenu = computed(() => route.path)
+
+const mobileMenuVisible = ref(false)
+
+const menuItems = [
+  { path: '/', name: '首页' },
+  { path: '/ai-config', name: 'AI配置' },
+  { path: '/assessment', name: '背景评估' },
+  { path: '/school-recommendation', name: '选校推荐' },
+  { path: '/timeline', name: '时间规划' },
+  { path: '/materials', name: '材料中心' },
+  { path: '/university-database', name: '院校数据库' },
+  { path: '/ai-chat', name: 'AI对话' },
+]
+
+const navigateTo = (path) => {
+  router.push(path)
+  mobileMenuVisible.value = false
+}
 
 const guideVisible = ref(false)
 const aboutVisible = ref(false)
@@ -190,6 +240,74 @@ const showContact = () => {
   padding: 20px;
 }
 
+/* 汉堡菜单按钮 */
+.hamburger-btn {
+  display: none;
+  background: rgba(255, 255, 255, 0.15);
+  border: none;
+  border-radius: 8px;
+  padding: 8px;
+  cursor: pointer;
+  color: white;
+  transition: background 0.2s;
+}
+
+.hamburger-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* 移动端菜单抽屉 */
+.drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.drawer-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #303133;
+}
+
+.mobile-menu-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 0;
+}
+
+.mobile-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  color: #606266;
+  font-size: 16px;
+  transition: all 0.2s;
+}
+
+.mobile-menu-item:hover {
+  background: #f5f7fa;
+  color: #667eea;
+}
+
+.mobile-menu-item.is-active {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+  color: #667eea;
+  font-weight: 600;
+}
+
+.mobile-menu-item .el-icon {
+  font-size: 20px;
+}
+
+/* 桌面端导航 - 默认显示 */
+.desktop-nav {
+  display: flex;
+}
+
 .footer-content {
   max-width: 1400px;
   margin: 0 auto;
@@ -229,20 +347,20 @@ const showContact = () => {
 
 /* 响应式设计 */
 @media (max-width: 768px) {
+  /* 隐藏桌面端导航，显示汉堡按钮 */
+  .desktop-nav {
+    display: none;
+  }
+
+  .hamburger-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* 调整 header-content 布局 */
   .header-content {
-    flex-direction: column;
-    height: auto;
-    padding: 10px 0;
-  }
-
-  .nav-menu {
-    width: 100%;
-    margin-top: 10px;
-  }
-
-  .nav-menu :deep(.el-menu-item) {
-    font-size: 14px;
-    padding: 0 10px;
+    gap: 12px;
   }
 }
 </style>

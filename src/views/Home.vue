@@ -611,6 +611,7 @@ onUnmounted(() => {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 20px;
+  box-sizing: border-box;
 }
 
 /* 页脚使用全宽容器 */
@@ -911,7 +912,31 @@ onUnmounted(() => {
   }
 
   .features-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+
+  .feature-card {
+    padding: 24px 20px;
+  }
+
+  .feature-icon-wrapper {
+    width: 64px;
+    height: 64px;
+  }
+
+  .feature-icon {
+    font-size: 32px;
+  }
+
+  .feature-card h3 {
+    font-size: 18px;
+  }
+
+  .feature-card p {
+    font-size: 13px;
+    line-height: 1.5;
+    margin-bottom: 12px;
   }
 
   .features {
@@ -920,6 +945,24 @@ onUnmounted(() => {
 
   .highlights {
     padding: 60px 20px;
+  }
+
+  .highlights-content {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+  }
+
+  .highlight-icon-wrapper {
+    width: 72px;
+    height: 72px;
+  }
+
+  .highlight-item h4 {
+    font-size: 16px;
+  }
+
+  .highlight-item p {
+    font-size: 13px;
   }
 
   .cta-content h2 {
@@ -932,6 +975,33 @@ onUnmounted(() => {
 
   .cta-section {
     padding: 60px 20px;
+  }
+}
+
+/* ===== 移动端单列布局 ===== */
+@media (max-width: 576px) {
+  .features-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .feature-card {
+    padding: 20px 16px;
+  }
+
+  .highlights-content {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-stats {
+    gap: 16px;
+  }
+
+  .stat-number {
+    font-size: 20px;
+  }
+
+  .stat-divider {
+    height: 32px;
   }
 }
 
