@@ -613,6 +613,13 @@ onUnmounted(() => {
   padding: 0 20px;
 }
 
+/* 页脚使用全宽容器 */
+.site-footer .container {
+  max-width: 100%;
+  padding: 0;
+  box-sizing: border-box;
+}
+
 .section-title {
   text-align: center;
   font-size: 32px;
@@ -932,7 +939,7 @@ onUnmounted(() => {
 .site-footer {
   background: #1a1a2e;
   color: #fff;
-  padding: 60px 120px 0;
+  padding: 120px 120px 0;
 }
 
 .footer-content {
@@ -941,6 +948,11 @@ onUnmounted(() => {
   gap: 40px;
   padding-bottom: 40px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  max-width: 100%;
+  box-sizing: border-box;
+  /* 移除container的限制，直接使用footer的120px padding全宽 */
+  padding-left: 0;
+  padding-right: 0;
 }
 
 .footer-brand h3 {
