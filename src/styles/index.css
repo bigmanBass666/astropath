@@ -22,6 +22,18 @@ html, body {
   padding: 0;
 }
 
+/* 统一样式：表格内文字不换行 */
+.el-table .cell {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 确保表头文字不换行 */
+.el-table th.el-table__cell {
+  white-space: nowrap;
+}
+
 /* Element Plus主题覆盖 */
 :root {
   --el-color-primary: #667eea;

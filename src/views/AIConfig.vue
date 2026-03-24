@@ -7,27 +7,27 @@
         <el-button type="primary" size="small" @click="testAllConnections">测试全部连接</el-button>
       </template>
 
-      <el-table :data="providers" style="width: 100%">
-        <el-table-column prop="name" label="供应商名称" width="150" />
-        <el-table-column prop="type" label="类型" width="120">
+      <el-table :data="providers" style="width: 100%" class="providers-table">
+        <el-table-column prop="name" label="供应商名称" min-width="150" />
+        <el-table-column prop="type" label="类型" min-width="100">
           <template #default="{ row }">
             <el-tag>{{ row.type }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="baseUrl" label="Base URL" />
-        <el-table-column prop="apiKey" label="API Key">
+        <el-table-column prop="baseUrl" label="Base URL" min-width="320" show-overflow-tooltip />
+        <el-table-column prop="apiKey" label="API Key" min-width="140">
           <template #default="{ row }">
             {{ '*'.repeat(row.apiKey?.length || 0) }}
           </template>
         </el-table-column>
-        <el-table-column prop="status" label="状态" width="100">
+        <el-table-column prop="status" label="状态" min-width="90">
           <template #default="{ row }">
             <el-tag :type="row.status === 'connected' ? 'success' : 'info'">
               {{ row.status === 'connected' ? '已连接' : '未测试' }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="180">
+        <el-table-column label="操作" min-width="210">
           <template #default="{ row, $index }">
             <el-button size="small" @click="editProvider($index)">编辑</el-button>
             <el-button size="small" type="danger" @click="removeProvider($index)">删除</el-button>
@@ -200,5 +200,18 @@ const saveEdit = () => {
 .provider-form {
   max-width: 600px;
   margin-top: 20px;
+}
+
+/* 表格操作按钮：防止换行 */
+.providers-table :deep(.el-table__cell) {
+  overflow: visible;
+}
+
+.providers-table :deep(.el-table__body .cell) {
+  white-space: nowrap;
+}
+
+.providers-table :deep(.el-table__body .el-button) {
+  flex-shrink: 0;
 }
 </style>
