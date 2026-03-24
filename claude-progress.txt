@@ -1,3 +1,10 @@
+=== Session 15 — 2026-03-25 ===
+Feature worked on: F016 - 修复院校库页面筛选区域布局不对称问题
+Status: completed
+Git commit: 593b7cf
+Remaining features: 35 (passes:false)
+Notes: 通过 Playwright 精确测量发现筛选行左右边距严重不对称：院校搜索 tab 左边距 21px vs 右边距 321px（差距 300px），专业搜索 tab 同样左对齐问题。根因为 search-row 使用默认的 justify-content:flex-start，而筛选控件总宽度（868px）远小于容器宽度（1200px），所有空白堆积在右侧。修复方案：为 .search-row 添加 justify-content:center。修复后两边边距均为 139px，完全对称（asymmetry:0）。该修复同时作用于院校搜索和专业搜索两个 tab。Playwright 端到端验证通过，筛选器排列整齐，院校卡片网格和专业卡片网格均正常渲染，无控制台新增错误。
+
 === Session 14 — 2026-03-25 ===
 Feature worked on: F015 - 修复院校库页面卡片网格布局不对称问题
 Status: completed
