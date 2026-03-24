@@ -55,7 +55,7 @@
         </div>
         <div class="card-footer">
           <el-button type="primary" size="small" plain @click.stop="addToShortlist(school)">
-            加入选校清单
+            {{ shortlisted.includes(school.id) ? '已在清单中' : '加入选校清单' }}
           </el-button>
           <el-button size="small" @click.stop="showDetail(school)">查看详情</el-button>
         </div>
@@ -207,7 +207,7 @@ const addToShortlist = (school) => {
     return
   }
   shortlisted.value.push(school.id)
-  localStorage.setItem('shortlisted_schools', JSON.stringify(shortlisted.value))
+  localStorage.setItem('school_favorites', JSON.stringify(shortlisted.value))
   ElMessage.success(`已将 ${school.name} 加入选校清单`)
 }
 
@@ -232,7 +232,7 @@ const handleCurrentChange = (val) => {
 }
 
 onMounted(() => {
-  const saved = localStorage.getItem('shortlisted_schools')
+  const saved = localStorage.getItem('school_favorites')
   if (saved) {
     shortlisted.value = JSON.parse(saved)
   }

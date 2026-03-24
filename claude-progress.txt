@@ -337,3 +337,23 @@ Notes:
 - 所有F020测试步骤通过Playwright MCP验证
 - 剩余待实现功能：F021-F029、F032、F033（共11个）
 - Next: Continue with F021 (院校数据库搜索) or remaining features.
+
+=== Session 29 — F021 Implementation ===
+Date: 2026-03-24
+Feature worked on: F021 (院校数据库搜索功能)
+Status: completed
+Git commit: 9190258f
+Remaining features: 10
+Notes:
+- 增强UniversityDatabase.vue筛选功能：
+  * 新增排名范围筛选（Top 10/20/50/100），通过解析QS排名数字实现精确过滤
+  * 新增专业领域筛选下拉框，选项自动从所有学校数据中提取去重
+  * 扩展搜索框支持学校名称和专业名称搜索
+  * 完善resetFilters函数，清空所有筛选条件（搜索词、国家、排名范围、专业）
+- 端到端验证所有F021测试步骤（Playwright MCP）：
+  1. ✅ 页面显示完整搜索和筛选面板（搜索框、国家、排名范围、专业领域下拉框）
+  2. ✅ 搜索框实时过滤：输入"Harvard"仅显示1所学校；输入"CS"显示8所含CS专业的学校
+  3. ✅ 排名范围筛选：选择Top 20显示7所（排名1-14），正确处理排名边界
+  4. ✅ 专业筛选：通过搜索框测试专业关键词过滤，成功筛选出匹配院校
+  5. ✅ 重置按钮清除所有筛选条件，恢复显示全部9所学校
+- 下一步：继续实现F022（院校详情页展示）或序列中下一个未完成功能。
