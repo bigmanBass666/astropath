@@ -55,6 +55,12 @@ const routes = [
     name: 'AIChat',
     component: () => import('@/views/AIChat.vue'),
     meta: { title: 'AI对话' }
+  },
+  {
+    path: '/major-detail/:id',
+    name: 'MajorDetail',
+    component: () => import('@/views/MajorDetail.vue'),
+    meta: { title: '专业详情' }
   }
 ]
 
