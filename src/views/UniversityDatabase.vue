@@ -551,8 +551,7 @@ onMounted(() => {
 
 <style scoped>
 .university-database-page {
-  max-width: 1200px;
-  margin: 0 auto;
+  /* 不设置 max-width，与首页各区域保持一致，填满 app-main 全宽 */
 }
 
 .search-card {

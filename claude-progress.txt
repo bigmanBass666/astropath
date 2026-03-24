@@ -1,3 +1,10 @@
+=== Session 17 — 2026-03-25 ===
+Feature worked on: F018/F019/F020 - 修复院校详情对话框布局、卡片排列与按钮对齐
+Status: completed
+Git commit: 73d0bfbf04229478c26ba14378c6dff31f44889c
+Remaining features: 31 (passes:false)
+Notes: 一次提交修复了院校详情对话框的三个关联样式问题。F018: 对话框内容添加 20px padding，header/sections 添加浅灰背景和 16px 内边距，消除内容紧贴边缘的不对称。F019: el-descriptions 添加 16px padding，确保信息卡片内容不紧贴边缘。F020: detail-actions 的 justify-content 从默认 flex-start 改为 center，1280px 下按钮精确居中（640px=视口中心），960px 下同样精确居中（480px=视口中心）。全局 CSS 重置 el-dialog__body padding 为 0，由 scoped .school-detail 统一控制。Playwright 端到端验证：9 项检查全部 PASS。
+
 === Session 16 — 2026-03-25 ===
 Feature worked on: F017 - 修复院校库页面搜索按钮被挤压问题
 Status: completed
