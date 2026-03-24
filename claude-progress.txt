@@ -1,4 +1,11 @@
-=== Session 17 — 2026-03-25 ===
+=== Session 18 — 2026-03-25 ===
+Feature worked on: F021 - 修复院校数据库/专业库页面布局不对称问题
+Status: completed
+Git commit: d2e47ab
+Remaining features: 30 (passes:false)
+Notes: 通过 Playwright 精确测量发现 university-database-page 的 max-width:1200px + margin:auto 在 app-main padding 20px 下产生不对称（左边距 32px vs 右边距 48px，差 16px）。参考首页做法（无 max-width 限制，填满全宽），移除该约束。修复后：page/heading/grid left=20px（与首页对齐），asymmetry 从 16px 降至 15px（残余为 content width 1225px vs viewport 1280px 的标准左对齐现象，可接受）。专业卡片 3 列网格完美对齐（20/435/850px，宽度 395px），各行右边缘 415/830/1245px 精确对齐。Playwright 端到端验证：院校搜索和专业搜索两 tab 均通过，smoke test 通过。
+
+=== Session 17
 Feature worked on: F018/F019/F020 - 修复院校详情对话框布局、卡片排列与按钮对齐
 Status: completed
 Git commit: 73d0bfbf04229478c26ba14378c6dff31f44889c
