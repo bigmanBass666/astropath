@@ -185,3 +185,25 @@ Notes:
   4. 测试策略切换：冲刺院校（匹配度>=80）返回5所学校，保底院校（匹配度<=70）返回0所（mock数据中无<=70的）
 - 所有mock数据学校：Harvard(95)、Stanford(88)、MIT(92)、Oxford(85)、Cambridge(82)、Tsinghua(75)
 - Next: Continue with F010 (选校列表筛选与排序) or remaining features.
+
+=== Session 12 — F011 Implementation ===
+Date: 2026-03-24
+Feature worked on: F011 (学校收藏与对比功能)
+Status: completed
+Git commit: 7eba279
+Remaining features: 22
+Notes:
+- 在SchoolRecommendation.vue中实现了完整的收藏与对比功能：
+  * 添加"对比已收藏"按钮，动态显示收藏数量（禁用状态当收藏数为0）
+  * 实现compareMode区分"选中"和"收藏"两种对比模式
+  * 新增toggleCompareFavorites()函数，从favorites数组过滤学校数据
+  * 对比对话框增加操作列（仅在收藏模式下显示"取消收藏"按钮）
+  * 添加removeFavoriteAndClose()函数处理取消收藏逻辑
+  * 取消收藏时自动从对比列表移除对应学校，列表为空时自动关闭对话框
+- localStorage持久化：收藏数据实时保存，页面刷新后恢复
+- 端到端测试（Playwright MCP）验证所有步骤：
+  1. 点击3所学校收藏按钮，按钮状态变"已收藏"，显示成功提示
+  2. 点击"对比已收藏"按钮，弹出对话框显示收藏学校对比表格（名称、国家、排名、匹配度、学费、录取率）
+  3. 在对比对话框点击"取消收藏"，学校从列表中移除，提示"已取消收藏"
+  4. 刷新页面后验证"对比已收藏"按钮显示正确的数量（1），持久化成功
+- Next: Continue with F012 (动态时间线主视图) or remaining features.
