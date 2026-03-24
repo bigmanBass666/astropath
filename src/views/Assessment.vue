@@ -1070,15 +1070,18 @@ onUnmounted(() => {
   margin-bottom: 20px;
 }
 
+/* 使用 flexbox 确保按钮在容器内水平居中 */
+.step-actions {
+  margin-top: 30px;
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+
 .gpa-display {
   margin-left: 10px;
   color: #667eea;
   font-weight: bold;
-}
-
-.step-actions {
-  margin-top: 30px;
-  text-align: center;
 }
 
 .empty-tip {
