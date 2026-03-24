@@ -628,9 +628,8 @@ onMounted(() => {
 
 <style scoped>
 .timeline-page {
-  max-width: 1400px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 20px;
 }
 
 .view-toggle {

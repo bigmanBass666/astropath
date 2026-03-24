@@ -1057,8 +1057,9 @@ onUnmounted(() => {
 
 <style scoped>
 .assessment-page {
-  max-width: 900px;
+  max-width: 1200px;
   margin: 0 auto;
+  padding: 0 20px;
 }
 
 .steps-indicator {

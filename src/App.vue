@@ -11,16 +11,15 @@
           mode="horizontal"
           :router="true"
           class="nav-menu"
-          @select="handleMenuSelect"
         >
-          <el-menu-item index="/" route="/">首页</el-menu-item>
-          <el-menu-item index="/ai-config" route="/ai-config">AI配置</el-menu-item>
-          <el-menu-item index="/assessment" route="/assessment">背景评估</el-menu-item>
-          <el-menu-item index="/school-recommendation" route="/school-recommendation">选校推荐</el-menu-item>
-          <el-menu-item index="/timeline" route="/timeline">时间规划</el-menu-item>
-          <el-menu-item index="/materials" route="/materials">材料中心</el-menu-item>
-          <el-menu-item index="/university-database" route="/university-database">院校数据库</el-menu-item>
-          <el-menu-item index="/ai-chat" route="/ai-chat">AI对话</el-menu-item>
+          <el-menu-item index="/">首页</el-menu-item>
+          <el-menu-item index="/ai-config">AI配置</el-menu-item>
+          <el-menu-item index="/assessment">背景评估</el-menu-item>
+          <el-menu-item index="/school-recommendation">选校推荐</el-menu-item>
+          <el-menu-item index="/timeline">时间规划</el-menu-item>
+          <el-menu-item index="/materials">材料中心</el-menu-item>
+          <el-menu-item index="/university-database">院校数据库</el-menu-item>
+          <el-menu-item index="/ai-chat">AI对话</el-menu-item>
         </el-menu>
       </div>
     </el-header>
@@ -88,20 +87,6 @@ const guideVisible = ref(false)
 const aboutVisible = ref(false)
 const contactVisible = ref(false)
 
-const handleMenuSelect = (index) => {
-  console.log('handleMenuSelect called with:', index)
-  console.log('router object:', router)
-  console.log('router.push exists:', typeof router.push)
-  // 尝试使用全局 router 对比
-  if (window.$router) {
-    console.log('window.$router exists')
-  }
-  router.push(index).then(() => {
-    console.log('router.push resolved, new route:', route.path)
-  }).catch(err => {
-    console.error('router.push error:', err)
-  })
-}
 
 const showGuide = () => {
   guideVisible.value = true
