@@ -1,3 +1,31 @@
+=== Session 5 — 2026-03-25 ===
+Feature worked on: F005/F006 - 首页按钮组排列拥挤与文字换行修复
+Status: completed
+Git commit: 92119cc4a8edf5ea49ad78ea7b33b0bde8a64636
+Remaining features: 44 (passes:false)
+Notes: 通过 Playwright 测量发现按钮间距仅 16px 偏紧。将 gap 从 16px 增加到 24px，同时为按钮添加 white-space:nowrap 和 min-width:160px 防止换行与挤压。桌面端实测间距从 16px 提升到 24px（实际间距 36px），移动端 375px 下按钮垂直堆叠，文字无换行。一次修改同时解决了 F005 和 F006 两个问题。
+
+=== Session 4 — 2026-03-25 ===
+Feature worked on: F004 - 首页内容区域左右边距不一致修复
+Status: completed
+Git commit: e6b422cdefead7ed8b07d7488e25b0af3cded34f
+Remaining features: 46 (passes:false)
+Notes: 将Hero区域padding从20px扩展至120px，与Features/CTA/Footer的120px边距对齐。通过Playwright测量验证：HeroContent、Features容器、CTA内容、Footer容器左边缘均为140px，完全对称。同步调整了Highlights和SiteFooter区域的padding。
+
+=== Session 3 — 2026-03-25 ===
+Feature worked on: F003 - 首页顶部布局左右不对称修复
+Status: completed
+Git commit: 584dbca42693fbf6f582391c336ed7a538d0ed95
+Remaining features: 47 (passes:false)
+Notes: 将Hero内容区max-width从800px扩展至1200px，添加padding:0 20px和box-sizing:border-box，使其与Features容器(1200px/120px边距)完美对齐。CTA区域同样添加居中容器。Playwright验证三区域边距均为120px，视觉平衡。
+
+=== Session 2 — 2026-03-25 ===
+Feature worked on: F001/F002 - 导航栏active状态对比度与配色修复
+Status: completed
+Git commit: 93aa22ab876bac77ae91de3d29a2917c14b8cf0a
+Remaining features: 48 (passes:false)
+Notes: 通过CSS !important强制覆盖Element Plus的--el-menu-active-color变量，将active状态文字色改为纯白(#ffffff)，背景提升至25%透明度，hover与active层次分明，对比度符合WCAG AA标准。Playwright端到端验证通过。
+
 === Session 1 — Initializer ===
 Date: 2026-03-25
 Status: Planning complete. No application code written.
