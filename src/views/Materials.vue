@@ -5,9 +5,85 @@
     <!-- 选项卡 -->
     <el-tabs v-model="activeTab" type="card">
       <el-tab-pane label="文书助手" name="essay">
-        <div class="essay-editor">
+        <!-- 文书类型选择界面 -->
+        <div v-if="!selectedEssayType" class="essay-type-selection">
+          <h3 class="section-title">选择文书类型</h3>
+          <div class="essay-types-grid">
+            <div
+              v-for="type in essayTypes"
+              :key="type.value"
+              class="essay-type-card"
+              @click="selectEssayType(type.value)"
+            >
+              <div class="card-icon">{{ type.icon }}</div>
+              <h4>{{ type.label }}</h4>
+              <p>{{ type.description }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 模板选择界面 -->
+        <div v-else-if="!selectedTemplate" class="template-selection">
+          <div class="template-header">
+            <el-button @click="selectedEssayType = null" type="text" size="small">
+              ← 返回文书类型选择
+            </el-button>
+            <h3>{{ getEssayTypeLabel(selectedEssayType) }} - 选择模板</h3>
+          </div>
+
+          <!-- 核心要点提示 -->
+          <el-alert
+            v-if="essayKeyPoints[selectedEssayType]"
+            :title="'核心要点提示'"
+            :type="'info'"
+            :closable="false"
+            show-icon
+            class="key-points-alert"
+          >
+            <template #default>
+              <ul class="key-points-list">
+                <li v-for="(point, index) in essayKeyPoints[selectedEssayType]" :key="index">
+                  {{ point }}
+                </li>
+              </ul>
+            </template>
+          </el-alert>
+
+          <div class="templates-grid">
+            <div
+              v-for="template in getTemplatesForType(selectedEssayType)"
+              :key="template.id"
+              class="template-card"
+              @click="selectTemplate(template)"
+            >
+              <div class="template-name">{{ template.name }}</div>
+              <div class="template-desc">{{ template.description }}</div>
+              <div class="template-actions">
+                <el-button type="primary" size="small">使用此模板</el-button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 文书编辑器 -->
+        <div v-else class="essay-editor">
+          <div class="editor-header">
+            <el-button @click="backToTemplates" type="text" size="small">
+              ← 返回模板选择
+            </el-button>
+            <span class="current-essay-info">
+              {{ getEssayTypeLabel(selectedEssayType) }} - {{ selectedTemplate.name }}
+            </span>
+          </div>
+
           <div class="editor-toolbar">
-            <el-select v-model="currentEssayType" placeholder="选择文书类型" style="width: 200px;">
+            <el-button-group>
+              <el-button size="small" @click="backToTemplates">← 返回</el-button>
+            </el-button-group>
+            <span class="essay-type-badge">
+              {{ getEssayTypeLabel(selectedEssayType) }} | {{ selectedTemplate?.name }}
+            </span>
+            <el-select v-model="currentEssayType" placeholder="选择文书类型" style="width: 150px;">
               <el-option label="个人陈述" value="ps" />
               <el-option label="简历" value="cv" />
               <el-option label="推荐信" value="reference" />
@@ -151,6 +227,258 @@ const selectedProvider = ref(null)
 const aiPrompt = ref('')
 const isGenerating = ref(false)
 
+// 新增：文书类型选择状态
+const selectedEssayType = ref(null)
+const selectedTemplate = ref(null)
+
+// 文书类型定义
+const essayTypes = [
+  {
+    value: 'ps',
+    label: '个人陈述',
+    description: '阐述你的学术背景、研究兴趣和职业目标',
+    icon: '📝'
+  },
+  {
+    value: 'cv',
+    label: '简历',
+    description: '展示你的教育背景、工作经历和技能成就',
+    icon: '📄'
+  },
+  {
+    value: 'reference',
+    label: '推荐信',
+    description: '由推荐人撰写，评价你的能力和潜力',
+    icon: '✉️'
+  },
+  {
+    value: 'research',
+    label: '研究计划',
+    description: '描述你的研究方向和计划 (适用于研究型学位)',
+    icon: '🔬'
+  }
+]
+
+// 模板数据
+const essayTemplates = {
+  ps: [
+    {
+      id: 'ps-basic',
+      name: '标准个人陈述模板',
+      description: '包含引言、学术背景、研究经历、职业目标、结语',
+      content: `个人陈述
+
+引言：
+（在此处简要介绍自己，说明申请的专业和学校）
+
+学术背景：
+（描述你的本科/研究生学习经历，重点课程和成绩）
+
+研究经历：
+（列举参与的研究项目，你的角色和贡献）
+
+职业目标：
+（说明短期和长期职业规划）
+
+为什么选择该项目：
+（阐述你对学校/项目的了解和选择理由）
+
+结语：
+（总结并表达热情）
+`
+    },
+    {
+      id: 'ps-scholarship',
+      name: '奖学金申请专用',
+      description: '强调学术成就和领导力，适合申请全额奖学金',
+      content: `个人陈述 - 奖学金申请
+
+尊敬的评审委员会：
+
+作为一名追求卓越的学生，我怀着对[专业领域]的深厚热情申请[学校]的[专业]项目，并恳请获得奖学金支持。
+
+学术成就：
+（详细列出GPA、排名、重要奖项等）
+
+领导力与社会服务：
+（描述学生工作、志愿者经历、社会影响）
+
+研究潜力：
+（展示已发表论文、研究项目、创新能力）
+
+未来贡献：
+（说明你将如何回馈学术社区）
+
+结语：
+`
+    }
+  ],
+  cv: [
+    {
+      id: 'cv-basic',
+      name: '标准简历模板',
+      description: '清晰的一页简历格式，适合大部分申请',
+      content: `简历
+
+个人信息
+姓名：[你的姓名]
+邮箱：[你的邮箱]
+电话：[你的电话]
+地址：[你的地址]
+
+教育背景
+[学校名称] | [学位] | [时间范围]
+- 专业：[专业名称]
+- GPA：[GPA] / 排名：[排名]
+- 相关课程：[课程1], [课程2], [课程3]
+
+工作/实习经历
+[公司/机构] | [职位] | [时间范围]
+- 职责和成就描述
+- 使用STAR原则展现能力
+
+项目经历
+[项目名称] | [时间范围]
+- 项目描述
+- 你的角色
+- 技术栈/方法
+- 成果
+
+技能
+- 语言：[英语等]
+- 技术：[编程语言、软件等]
+- 证书：[相关证书]
+
+荣誉奖项
+- [奖项名称] | [颁发机构] | [时间]
+`
+    }
+  ],
+  reference: [
+    {
+      id: 'ref-academic',
+      name: '学术推荐信模板',
+      description: '由教授撰写，侧重学术能力和研究潜力',
+      content: `推荐信
+
+尊敬的招生委员会：
+
+作为[学校名称]的[教授职位]，我荣幸地推荐我的学生[学生姓名]申请贵校[专业名称]项目。
+
+我与该生的认识时间：________
+我指导该生的课程/项目：________
+
+学术表现：
+- 课程表现：________
+- 研究能力：________
+- 创新思维：________
+
+个人品质：
+- 学习态度：________
+- 团队合作：________
+- 领导力：________
+
+推荐程度：
+我毫无保留地推荐该生加入贵校项目，相信他能做出重要贡献。
+
+如有任何疑问，请随时与我联系。
+
+此致
+敬礼
+
+[推荐人姓名]
+[职位]
+[学校]
+[联系方式]
+`
+    }
+  ],
+  research: [
+    {
+      id: 'rp-basic',
+      name: '标准研究计划模板',
+      description: '适合PhD申请的研究计划框架',
+      content: `研究计划
+
+标题：[研究课题名称]
+
+摘要（约300字）：
+- 研究问题
+- 研究方法
+- 预期成果
+
+1. 研究背景与问题
+- 领域现状
+- 待解决的关键问题
+- 研究意义
+
+2. 文献综述
+- 关键文献梳理
+- 研究空白
+- 本研究定位
+
+3. 研究目标与问题
+- 主要研究问题
+- 子问题
+- 研究假设
+
+4. 研究方法
+- 研究设计
+- 数据收集
+- 分析方法
+
+5. 预期成果
+- 学术贡献
+- 实践价值
+- 可能的创新点
+
+6. 时间规划
+- 第一年：________
+- 第二年：________
+- 第三年：________
+
+参考文献：
+`
+    }
+  ]
+}
+
+// 核心要点提示（基于申请专业）
+const essayKeyPoints = {
+  ps: [
+    '突出你的独特性和与专业的匹配度',
+    '用具体事例支撑你的能力阐述',
+    '展现你对专业的热情和理解',
+    '说明为什么选择这所学校/这个项目',
+    '保持真诚，避免过度包装',
+    '字数控制在500-800词（英国）或650词以内（美国）'
+  ],
+  cv: [
+    '保持在一页以内（除非经历丰富）',
+    '使用清晰的排版和一致的格式',
+    '按时间倒序排列经历',
+    '使用动词开头描述职责',
+    '量化成果（如"提高20%"）',
+    '针对不同项目定制简历内容'
+  ],
+  reference: [
+    '推荐人应熟悉你的学术或工作表现',
+    '选择能评价你核心能力的推荐人',
+    '提供推荐人所需材料（简历、PS等）',
+    '提前2-3个月礼貌请求',
+    '提醒推荐人截止日期',
+    '推荐信内容应与PS相互呼应'
+  ],
+  research: [
+    '选择你真正感兴趣且有基础的领域',
+    '研究问题应明确、可行',
+    '充分展示对相关文献的了解',
+    '方法论描述应具体可行',
+    '与目标导师研究方向匹配',
+    '体现你对该领域的深入思考'
+  ]
+}
+
 const newItem = reactive({
   name: '',
   note: '',
@@ -173,6 +501,43 @@ onMounted(() => {
     }
   }
 })
+
+// 获取文书类型标签
+const getEssayTypeLabel = (type) => {
+  const found = essayTypes.find(t => t.value === type)
+  return found ? found.label : '文书'
+}
+
+// 获取指定类型的模板
+const getTemplatesForType = (type) => {
+  return essayTemplates[type] || []
+}
+
+// 选择文书类型
+const selectEssayType = (type) => {
+  selectedEssayType.value = type
+  // 重置模板选择
+  selectedTemplate.value = null
+}
+
+// 选择模板
+const selectTemplate = (template) => {
+  selectedTemplate.value = template
+  // 加载模板内容到编辑器
+  essayContent.value = template.content
+}
+
+// 返回模板选择
+const backToTemplates = () => {
+  selectedTemplate.value = null
+}
+
+// 完成后返回模板选择
+const finishWithEssay = () => {
+  // 保存当前文书到历史版本
+  saveVersion()
+  selectedTemplate.value = null
+}
 
 const categories = ref([
   { id: 'required', name: '必需材料' },
@@ -463,5 +828,333 @@ onMounted(() => {
 
 .ai-input-row .el-input {
   flex: 1;
+}
+
+/* 文书类型选择样式 */
+.essay-type-selection {
+  padding: 20px 0;
+}
+
+.section-title {
+  text-align: center;
+  margin-bottom: 30px;
+  color: #303133;
+}
+
+.essay-types-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+  padding: 20px 0;
+}
+
+.essay-type-card {
+  background: white;
+  border: 1px solid #e4e7ed;
+  border-radius: 12px;
+  padding: 30px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.essay-type-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  border-color: #409eff;
+}
+
+.essay-type-card .card-icon {
+  font-size: 48px;
+  margin-bottom: 15px;
+}
+
+.essay-type-card h4 {
+  font-size: 18px;
+  margin: 0 0 10px 0;
+  color: #303133;
+}
+
+.essay-type-card p {
+  font-size: 14px;
+  color: #606266;
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* 模板选择样式 */
+.template-selection {
+  padding: 20px 0;
+}
+
+.template-header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.template-header h3 {
+  margin: 0;
+  color: #303133;
+}
+
+.current-essay-info {
+  margin-left: auto;
+  color: #409eff;
+  font-weight: 500;
+}
+
+.key-points-alert {
+  margin-bottom: 25px;
+}
+
+.key-points-list {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.key-points-list li {
+  margin-bottom: 8px;
+  color: #606266;
+  font-size: 14px;
+}
+
+.key-points-list li:last-child {
+  margin-bottom: 0;
+}
+
+.templates-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.template-card {
+  background: white;
+  border: 1px solid #e4e7ed;
+  border-radius: 8px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.template-card:hover {
+  border-color: #409eff;
+  box-shadow: 0 4px 12px rgba(64, 158, 255, 0.15);
+}
+
+.template-name {
+  font-size: 16px;
+  font-weight: 500;
+  color: #303133;
+  margin-bottom: 10px;
+}
+
+.template-desc {
+  font-size: 13px;
+  color: #909399;
+  margin-bottom: 15px;
+  line-height: 1.5;
+}
+
+.template-actions {
+  text-align: right;
+}
+
+/* 编辑器头部样式 */
+.editor-header {
+  display: flex;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid #e4e7ed;
+  margin-bottom: 15px;
+}
+
+.editor-header .current-essay-info {
+  margin-left: 20px;
+  font-weight: 500;
+  color: #303133;
+}
+
+.essay-type-badge {
+  margin-left: auto;
+  margin-right: 20px;
+  padding: 4px 12px;
+  background: #ecf5ff;
+  color: #409eff;
+  border-radius: 4px;
+  font-size: 13px;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .essay-types-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .templates-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 文书类型选择样式 */
+.essay-type-selection {
+  padding: 20px 0;
+}
+
+.section-title {
+  text-align: center;
+  margin-bottom: 30px;
+  color: #303133;
+}
+
+.essay-types-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+  padding: 20px 0;
+}
+
+.essay-type-card {
+  background: white;
+  border: 1px solid #e4e7ed;
+  border-radius: 12px;
+  padding: 30px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.essay-type-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  border-color: #409eff;
+}
+
+.essay-type-card .card-icon {
+  font-size: 48px;
+  margin-bottom: 15px;
+}
+
+.essay-type-card h4 {
+  font-size: 18px;
+  margin: 0 0 10px 0;
+  color: #303133;
+}
+
+.essay-type-card p {
+  font-size: 14px;
+  color: #606266;
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* 模板选择样式 */
+.template-selection {
+  padding: 20px 0;
+}
+
+.template-header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.template-header h3 {
+  margin: 0;
+  color: #303133;
+}
+
+.current-essay-info {
+  margin-left: auto;
+  color: #409eff;
+  font-weight: 500;
+}
+
+.key-points-alert {
+  margin-bottom: 25px;
+}
+
+.key-points-list {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.key-points-list li {
+  margin-bottom: 8px;
+  color: #606266;
+  font-size: 14px;
+}
+
+.key-points-list li:last-child {
+  margin-bottom: 0;
+}
+
+.templates-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.template-card {
+  background: white;
+  border: 1px solid #e4e7ed;
+  border-radius: 8px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.template-card:hover {
+  border-color: #409eff;
+  box-shadow: 0 4px 12px rgba(64, 158, 255, 0.15);
+}
+
+.template-name {
+  font-size: 16px;
+  font-weight: 500;
+  color: #303133;
+  margin-bottom: 10px;
+}
+
+.template-desc {
+  font-size: 13px;
+  color: #909399;
+  margin-bottom: 15px;
+  line-height: 1.5;
+}
+
+.template-actions {
+  text-align: right;
+}
+
+/* 编辑器头部样式 */
+.editor-header {
+  display: flex;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid #e4e7ed;
+  margin-bottom: 15px;
+}
+
+.editor-header .current-essay-info {
+  margin-left: 20px;
+  font-weight: 500;
+  color: #303133;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .essay-types-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .templates-grid {
+    grid-template-columns: 1fr;
+  }
 }
 </style>
