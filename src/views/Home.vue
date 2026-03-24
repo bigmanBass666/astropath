@@ -65,7 +65,7 @@
             </div>
             <h3>{{ feature.title }}</h3>
             <p>{{ feature.desc }}</p>
-            <el-link type="primary" :underline="false" class="feature-link">
+            <el-link type="primary" :underline="false" class="feature-link" :href="feature.path">
               了解更多
               <el-icon class="link-arrow"><ArrowRight /></el-icon>
             </el-link>
