@@ -361,14 +361,15 @@ html, body {
   color: #667eea;
 }
 
-/* 卡片悬浮效果 */
+/* 卡片悬浮效果 — 统一 border-radius + 品牌色阴影 */
 .el-card {
   border-color: #ebeef5;
+  border-radius: 12px;
 }
 
 .el-card:hover {
   border-color: #d4daed;
-  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.12);
+  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.15);
 }
 
 /* 抽屉样式 */

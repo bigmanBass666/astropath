@@ -400,10 +400,12 @@ onMounted(() => {
 .school-card {
   cursor: pointer;
   transition: all 0.3s;
+  border-radius: 12px;
 }
 
 .school-card:hover {
   transform: translateY(-4px);
+  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.15);
 }
 
 .school-card.is-selected {
