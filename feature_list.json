@@ -511,7 +511,7 @@
       "验证Element-Plus输入框focus边框色与应用主题色一致",
       "验证Element-Plus下拉框、日期选择器等组件主题色与应用协调"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "F044",
