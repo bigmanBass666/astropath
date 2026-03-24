@@ -291,3 +291,27 @@ Notes:
   5. ✅ 底部「立即开始」按钮 → 跳转/assessment成功
 - 所有F030测试步骤通过
 - Next: Continue with F031 (核心功能展示卡片) or F032 (页面底部信息)
+
+=== Session 19 — F031 Implementation ===
+Date: 2026-03-24
+Feature worked on: F031 (核心功能展示卡片)
+Status: completed
+Git commit: b99aa7c
+Remaining features: 12
+Notes:
+- 完善 Home.vue 中的功能卡片"了解更多"链接
+- 为 el-link 组件添加 :href="feature.path" 属性，确保原生链接可点击
+- 每个卡片链接正确指向对应页面：
+  * 背景评估 → /assessment
+  * AI智能选校 → /school-recommendation
+  * 时间规划 → /timeline
+  * 材料中心 → /materials
+  * 院校数据库 → /university-database
+  * AI智能对话 → /ai-chat
+- 通过 Playwright MCP 端到端验证所有F031测试步骤：
+  1. ✅ 6个功能卡片以网格布局正确显示
+  2. ✅ 每个卡片包含图标、标题、描述和"了解更多"链接
+  3. ✅ 悬停效果验证：卡片cursor=pointer，链接可点击
+  4. ✅ 点击链接成功跳转到对应功能页面
+- 功能卡片同时支持卡片整体点击和链接单独点击两种导航方式
+- Next: Continue with F032 (页面底部信息) or remaining features.
