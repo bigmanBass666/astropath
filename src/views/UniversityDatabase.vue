@@ -710,11 +710,99 @@ onMounted(() => {
 }
 
 .major-card {
-  padding: 16px;
+  /* 使用 flex 布局强制统一卡片高度 */
+  display: flex !important;
+  flex-direction: column !important;
+  height: 360px !important;
+  overflow: hidden !important;
 }
 
 .major-card :deep(.el-card__body) {
-  padding: 16px;
+  padding: 16px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 !important;
+  height: 100% !important;
+  overflow: hidden !important;
+}
+
+/* 限制各内容区块高度，确保所有卡片高度一致 */
+.major-header {
+  flex-shrink: 0;
+}
+
+.major-degree {
+  flex-shrink: 0;
+  margin: 4px 0;
+  font-size: 13px;
+  color: #606266;
+}
+
+.major-description {
+  flex-shrink: 0;
+  margin: 0 0 8px;
+  font-size: 13px;
+  color: #606266;
+  line-height: 1.5;
+  max-height: 3em;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.major-courses {
+  flex-shrink: 0;
+  margin-bottom: 8px;
+}
+
+.major-courses h4 {
+  margin: 0 0 4px;
+  font-size: 13px;
+  color: #303133;
+}
+
+.major-courses ul {
+  margin: 0;
+  padding-left: 16px;
+  max-height: 3.6em;
+  overflow: hidden;
+}
+
+.major-courses li {
+  font-size: 12px;
+  color: #606266;
+  line-height: 1.6;
+}
+
+.major-career {
+  flex-shrink: 0;
+  margin-bottom: 8px;
+}
+
+.major-career h4 {
+  margin: 0 0 4px;
+  font-size: 13px;
+  color: #303133;
+}
+
+.major-career p {
+  margin: 0;
+  font-size: 12px;
+  color: #606266;
+  line-height: 1.4;
+  max-height: 2.8em;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.major-salary {
+  flex-shrink: 0;
+  margin-top: auto;
+  padding-top: 8px;
+  border-top: 1px solid #ebeef5;
 }
 
 /* 专业卡片网格布局 */
