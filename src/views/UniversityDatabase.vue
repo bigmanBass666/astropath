@@ -7,32 +7,36 @@
       <el-tab-pane label="院校搜索" name="schools">
         <!-- 搜索和筛选 -->
         <el-card class="search-card">
-          <div class="search-row">
-        <el-input v-model="searchKeyword" placeholder="搜索学校名称或专业" clearable style="width: 300px;">
-          <template #prefix>
-            <el-icon><Search /></el-icon>
-          </template>
-        </el-input>
-        <el-select v-model="filterCountry" placeholder="国家" clearable style="width: 120px;">
-          <el-option label="美国" value="美国" />
-          <el-option label="英国" value="英国" />
-          <el-option label="中国" value="中国" />
-          <el-option label="澳洲" value="澳洲" />
-          <el-option label="加拿大" value="加拿大" />
-        </el-select>
-        <el-select v-model="filterRankRange" placeholder="排名范围" clearable style="width: 120px;">
-          <el-option label="Top 10" value="top10" />
-          <el-option label="Top 20" value="top20" />
-          <el-option label="Top 50" value="top50" />
-          <el-option label="Top 100" value="top100" />
-        </el-select>
-        <el-select v-model="filterMajor" placeholder="专业领域" clearable style="width: 150px;">
-          <el-option v-for="major in uniqueMajors" :key="major" :label="major" :value="major" />
-        </el-select>
-        <el-button type="primary" @click="search">搜索</el-button>
-        <el-button @click="resetFilters">重置</el-button>
-      </div>
-    </el-card>
+          <div class="search-controls">
+            <div class="search-row search-row--filters">
+              <el-input v-model="searchKeyword" placeholder="搜索学校名称或专业" clearable style="width: 300px;">
+                <template #prefix>
+                  <el-icon><Search /></el-icon>
+                </template>
+              </el-input>
+              <el-select v-model="filterCountry" placeholder="国家" clearable style="width: 120px;">
+                <el-option label="美国" value="美国" />
+                <el-option label="英国" value="英国" />
+                <el-option label="中国" value="中国" />
+                <el-option label="澳洲" value="澳洲" />
+                <el-option label="加拿大" value="加拿大" />
+              </el-select>
+              <el-select v-model="filterRankRange" placeholder="排名范围" clearable style="width: 120px;">
+                <el-option label="Top 10" value="top10" />
+                <el-option label="Top 20" value="top20" />
+                <el-option label="Top 50" value="top50" />
+                <el-option label="Top 100" value="top100" />
+              </el-select>
+              <el-select v-model="filterMajor" placeholder="专业领域" clearable style="width: 150px;">
+                <el-option v-for="major in uniqueMajors" :key="major" :label="major" :value="major" />
+              </el-select>
+            </div>
+            <div class="search-row search-row--actions">
+              <el-button type="primary" class="search-btn" @click="search">搜索</el-button>
+              <el-button class="reset-btn" @click="resetFilters">重置</el-button>
+            </div>
+          </div>
+        </el-card>
 
     <!-- 院校网格 -->
     <div v-if="filteredSchools.length > 0" class="schools-grid">
@@ -80,22 +84,26 @@
       <el-tab-pane label="专业搜索" name="majors">
         <!-- 专业搜索和筛选 -->
         <el-card class="search-card">
-          <div class="search-row">
-            <el-input v-model="majorSearchKeyword" placeholder="搜索专业名称或类别" clearable style="width: 300px;">
-              <template #prefix>
-                <el-icon><Search /></el-icon>
-              </template>
-            </el-input>
-            <el-select v-model="filterDegreeType" placeholder="学位类型" clearable style="width: 120px;">
-              <el-option label="本科" value="本科" />
-              <el-option label="硕士" value="硕士" />
-              <el-option label="博士" value="博士" />
-            </el-select>
-            <el-select v-model="filterCategory" placeholder="专业类别" clearable style="width: 150px;">
-              <el-option v-for="cat in uniqueCategories" :key="cat" :label="cat" :value="cat" />
-            </el-select>
-            <el-button type="primary" @click="searchMajors">搜索</el-button>
-            <el-button @click="resetMajorFilters">重置</el-button>
+          <div class="search-controls">
+            <div class="search-row search-row--filters">
+              <el-input v-model="majorSearchKeyword" placeholder="搜索专业名称或类别" clearable style="width: 300px;">
+                <template #prefix>
+                  <el-icon><Search /></el-icon>
+                </template>
+              </el-input>
+              <el-select v-model="filterDegreeType" placeholder="学位类型" clearable style="width: 120px;">
+                <el-option label="本科" value="本科" />
+                <el-option label="硕士" value="硕士" />
+                <el-option label="博士" value="博士" />
+              </el-select>
+              <el-select v-model="filterCategory" placeholder="专业类别" clearable style="width: 150px;">
+                <el-option v-for="cat in uniqueCategories" :key="cat" :label="cat" :value="cat" />
+              </el-select>
+            </div>
+            <div class="search-row search-row--actions">
+              <el-button type="primary" class="search-btn" @click="searchMajors">搜索</el-button>
+              <el-button class="reset-btn" @click="resetMajorFilters">重置</el-button>
+            </div>
           </div>
         </el-card>
 
@@ -555,12 +563,34 @@ onMounted(() => {
   padding: 16px 20px;
 }
 
+/* 两行式搜索布局 */
+.search-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
 .search-row {
   display: flex;
   gap: 12px;
   align-items: center;
   flex-wrap: wrap;
+}
+
+.search-row--filters {
   justify-content: center;
+}
+
+.search-row--actions {
+  justify-content: center;
+  gap: 16px;
+}
+
+/* 搜索/重置按钮样式 */
+.search-btn,
+.reset-btn {
+  min-width: 80px;
+  white-space: nowrap;
 }
 
 .schools-grid {
