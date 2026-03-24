@@ -186,22 +186,25 @@ Notes:
 - 所有mock数据学校：Harvard(95)、Stanford(88)、MIT(92)、Oxford(85)、Cambridge(82)、Tsinghua(75)
 - Next: Continue with F010 (选校列表筛选与排序) or remaining features.
 
-=== Session 13 — F012 & F013 Implementation ===
+=== Session 14 — F014 Implementation ===
 Date: 2026-03-24
-Feature worked on: F012 (动态时间线主视图) + F013 (任务看板功能)
+Feature worked on: F014 (任务提醒与到期预警)
 Status: completed
-Git commit: d6db52d (F012) + 9eb1812 (F013)
-Remaining features: 20 (from 22 after F011)
+Git commit: 041fe6a
+Remaining features: 19
 Notes:
-- Fixed init.sh smoke test by removing blocking wait statement
-- Timeline.vue 完整实现已验证：
-  * 7个里程碑正确显示（背景提升、选校定位、文书准备、网申提交、面试准备、录取决策、签证办理）
-  * 点击里程碑显示详情面板，包含任务清单和截止日期
-  * 模式切换（紧凑/常规/宽松）有效调整所有日期
-  * 任务看板视图：三列布局，任务添加，拖拽移动，状态切换
-- 通过 Playwright MCP 完成全流程端到端测试
-- 组件支持响应式，移动端适配（详情面板抽屉）
-- F013 看板功能已完整实现并通过验证
-- Remaining: F014-F032
-
-
+- 在Timeline.vue中实现了完整的任务提醒与到期预警功能：
+  * 添加3天内到期任务的黄色高亮样式（.is-soon类）
+  * 增强逾期任务的红色高亮显示（.is-overdue类），边框和文字颜色变化
+  * 实现任务提醒功能：支持启用提醒、提前1/3/7天设置，数据保存到任务对象
+  * 集成浏览器Notification API，自动请求通知权限并发送提醒
+  * 添加「查看即将到期(7天)」按钮，一键筛选7天内到期的任务
+  * 任务卡片显示多种状态标签：已逾期、即将到期、紧急、提醒已开
+  * 更新任务表单（添加/编辑对话框）包含reminderEnabled和reminderDays字段
+- 端到端测试验证（通过Playwright MCP）：
+  1. 验证看板视图正常显示三列布局（待处理、进行中、已完成）
+  2. 「查看即将到期」按钮显示并能正常切换筛选状态
+  3. 任务提醒设置UI正常：复选框启用后显示「提前提醒」选择框
+  4. 任务卡片标签系统工作正常（提醒已开等标签显示）
+  5. 通过手动添加类验证了高亮样式逻辑正确
+- Next: Continue with F015 (文书助手主界面) or remaining features.
