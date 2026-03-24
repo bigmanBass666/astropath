@@ -9,25 +9,26 @@
         <el-card class="search-card">
           <div class="search-controls">
             <div class="search-row search-row--filters">
-              <el-input v-model="searchKeyword" placeholder="搜索学校名称或专业" clearable style="width: 300px;">
+              <el-input v-model="searchKeyword" placeholder="搜索学校名称或专业" clearable class="filter-search-input"
+                style="width: 180px !important; flex: 0 0 180px !important;">
                 <template #prefix>
                   <el-icon><Search /></el-icon>
                 </template>
               </el-input>
-              <el-select v-model="filterCountry" placeholder="国家" clearable style="width: 120px;">
+              <el-select v-model="filterCountry" placeholder="国家" clearable class="filter-select filter-select--country">
                 <el-option label="美国" value="美国" />
                 <el-option label="英国" value="英国" />
                 <el-option label="中国" value="中国" />
                 <el-option label="澳洲" value="澳洲" />
                 <el-option label="加拿大" value="加拿大" />
               </el-select>
-              <el-select v-model="filterRankRange" placeholder="排名范围" clearable style="width: 120px;">
+              <el-select v-model="filterRankRange" placeholder="排名范围" clearable class="filter-select filter-select--rank">
                 <el-option label="Top 10" value="top10" />
                 <el-option label="Top 20" value="top20" />
                 <el-option label="Top 50" value="top50" />
                 <el-option label="Top 100" value="top100" />
               </el-select>
-              <el-select v-model="filterMajor" placeholder="专业领域" clearable style="width: 150px;">
+              <el-select v-model="filterMajor" placeholder="专业领域" clearable class="filter-select filter-select--major">
                 <el-option v-for="major in uniqueMajors" :key="major" :label="major" :value="major" />
               </el-select>
             </div>
@@ -86,17 +87,18 @@
         <el-card class="search-card">
           <div class="search-controls">
             <div class="search-row search-row--filters">
-              <el-input v-model="majorSearchKeyword" placeholder="搜索专业名称或类别" clearable style="width: 300px;">
+              <el-input v-model="majorSearchKeyword" placeholder="搜索专业名称或类别" clearable class="filter-search-input"
+                style="width: 180px !important; flex: 0 0 180px !important;">
                 <template #prefix>
                   <el-icon><Search /></el-icon>
                 </template>
               </el-input>
-              <el-select v-model="filterDegreeType" placeholder="学位类型" clearable style="width: 120px;">
+              <el-select v-model="filterDegreeType" placeholder="学位类型" clearable class="filter-select filter-select--degree">
                 <el-option label="本科" value="本科" />
                 <el-option label="硕士" value="硕士" />
                 <el-option label="博士" value="博士" />
               </el-select>
-              <el-select v-model="filterCategory" placeholder="专业类别" clearable style="width: 150px;">
+              <el-select v-model="filterCategory" placeholder="专业类别" clearable class="filter-select filter-select--category">
                 <el-option v-for="cat in uniqueCategories" :key="cat" :label="cat" :value="cat" />
               </el-select>
             </div>
@@ -471,6 +473,83 @@ onMounted(() => {
 
 .search-card :deep(.el-card__body) {
   padding: 16px 20px;
+}
+
+/* 响应式筛选控件 */
+.filter-search-input {
+  flex: 1 1 200px;
+  min-width: 0;
+  max-width: 300px;
+}
+
+.filter-search-input :deep(.el-input__wrapper) {
+  min-width: 0 !important;
+}
+
+.filter-search-input :deep(.el-input__inner) {
+  min-width: 0 !important;
+}
+
+.filter-select {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* 覆盖 Element Plus el-select */
+.filter-select :deep(.el-select__wrapper) {
+  min-width: 0 !important;
+}
+
+.filter-select--major,
+.filter-select--category {
+  flex: 1 1 150px;
+  min-width: 0;
+}
+
+/* 平板端 (768px): 微调 major/category 宽度以消除溢出 */
+@media (max-width: 900px) {
+  .filter-select--major,
+  .filter-select--category {
+    flex: 1 1 120px;
+    min-width: 0;
+  }
+}
+
+/* 移动端 (480px): 搜索框全宽，下拉框两行排列 */
+@media (max-width: 480px) {
+  .search-row--filters {
+    gap: 10px;
+  }
+
+  .filter-search-input {
+    flex: 1 1 100% !important;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .filter-select {
+    flex: 1 1 calc(50% - 5px);
+    min-width: 0;
+  }
+
+  .filter-select--country,
+  .filter-select--degree {
+    flex: 1 1 calc(50% - 5px);
+  }
+
+  .filter-select--rank {
+    flex: 1 1 calc(50% - 5px);
+  }
+
+  .filter-select--major,
+  .filter-select--category {
+    flex: 1 1 calc(50% - 5px);
+  }
+
+  /* 移动端操作按钮 */
+  .search-row--actions {
+    gap: 12px;
+  }
 }
 
 /* 两行式搜索布局 */
