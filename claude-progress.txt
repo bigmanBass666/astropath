@@ -1,8 +1,14 @@
-=== Session 15 — 2026-03-25 ===
+=== Session 16 — 2026-03-25 ===
+Feature worked on: F017 - 修复院校库页面搜索按钮被挤压问题
+Status: completed
+Git commit: b040824faaf6f8544da5dcaf69b14b7ebd9775f9
+Remaining features: 34 (passes:false)
+Notes: 通过 Playwright 精确测量发现搜索行内搜索/重置按钮仅 60px 宽且紧邻筛选下拉框，在中等视口（960px）下重置按钮单独换行到第二行并靠左偏移，视觉不协调。根因为 search-row 使用单一 flex 行混合所有筛选控件和按钮，当空间不足时按钮被挤到新行但单独居中。修复方案：将搜索区域改为两行式布局（search-controls > filter-row + action-row），筛选控件独占第一行，两个按钮独占第二行，宽度固定为 80px 并添加 nowrap。修复后：1280px 下两按钮水平居中于 action-row，间距 16px；960px 下两按钮仍在同一行（因为 action-row 仅需容纳两个 80px 按钮），无换行问题；所有视口下按钮文字完整显示，无挤压。院校搜索和专业搜索两个 tab 均同步应用该修复。Playwright 端到端验证通过，两 tab 按钮均 80px 宽、高 32px、间距 16px，无新增控制台错误。
+
 Feature worked on: F016 - 修复院校库页面筛选区域布局不对称问题
 Status: completed
 Git commit: 593b7cf
-Remaining features: 35 (passes:false)
+Remaining features: 34 (passes:false)
 Notes: 通过 Playwright 精确测量发现筛选行左右边距严重不对称：院校搜索 tab 左边距 21px vs 右边距 321px（差距 300px），专业搜索 tab 同样左对齐问题。根因为 search-row 使用默认的 justify-content:flex-start，而筛选控件总宽度（868px）远小于容器宽度（1200px），所有空白堆积在右侧。修复方案：为 .search-row 添加 justify-content:center。修复后两边边距均为 139px，完全对称（asymmetry:0）。该修复同时作用于院校搜索和专业搜索两个 tab。Playwright 端到端验证通过，筛选器排列整齐，院校卡片网格和专业卡片网格均正常渲染，无控制台新增错误。
 
 === Session 14 — 2026-03-25 ===
