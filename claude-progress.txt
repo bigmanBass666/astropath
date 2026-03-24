@@ -1,3 +1,17 @@
+=== Session 22 — 2026-03-25 ===
+Feature worked on: F038 - 修复首页响应式布局与移动端导航适配
+Status: completed
+Git commit: 555a9d8
+Remaining features: 24 (passes:false)
+Notes: 修复了首页在移动端（375px/768px）的多重布局问题。(1) App.vue 新增汉堡菜单按钮（<=768px显示，>768px隐藏）和 Element Plus Drawer 导航抽屉，包含全部 8 个菜单项，点击自动关闭并跳转路由；(2) Home.vue Features/Highlights 网格 576px 以下改为单列（解决 2 列溢出问题），768px 保留 2 列并优化间距，Hero/Features/CTA/Highlights/页脚均正确响应；(3) F042（页脚移动端）同步验证通过（375px下单列堆叠，无溢出）。Playwright 三视口验证：375px 汉堡菜单+抽屉导航+单列内容，768px 汉堡+2列，1280px 桌面导航+2列，smoke test 通过。feature_list.json 标记 F038/F042 passes:true。
+
+=== Session 21 — 2026-03-25 ===
+Feature worked on: F049 - 修复全站表格布局不对称问题
+Status: completed
+Git commit: 71e3d21
+Remaining features: 26 (passes:false)
+Notes: 修复了 4 个页面中所有 Element Plus el-table 组件的列宽不一致问题。核心修复：(1) AIConfig.vue baseUrl 列 354px / apiKey 154px 比例 2.3:1（之前 1:1），操作列 232px（之前 180px）；(2) SchoolRecommendation.vue 学校对比表格所有列添加 min-width；(3) UniversityDatabase.vue 专业对比表格添加 min-width=180；(4) Materials.vue 三个表格统一列宽；(5) 全局 CSS 添加 .el-table .cell nowrap+ellipsis 防止内容换行。Playwright 三视口验证通过：baseUrl/apiKey 比例 2.30、action 232px、移动端无溢出。F049 passes:true。
+
 === Session 20 — 2026-03-25 ===
 Feature worked on: F023 - 创建专业详情页面并修复院校数据库专业卡片导航
 Status: completed
