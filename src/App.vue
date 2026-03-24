@@ -31,7 +31,7 @@
         </transition>
       </router-view>
     </el-main>
-    <el-footer class="app-footer">
+    <el-footer class="app-footer" v-if="!route.meta?.hasFooter">
       <div class="footer-content">
         <div class="footer-links">
           <a href="#" @click.prevent="showGuide">使用指南</a>
@@ -200,8 +200,8 @@ const showContact = () => {
 }
 
 .app-footer {
-  background: #2c3e50;
-  color: #ecf0f1;
+  background: #1a1a2e;
+  color: rgba(255, 255, 255, 0.75);
   padding: 20px;
 }
 
@@ -216,19 +216,19 @@ const showContact = () => {
 }
 
 .footer-links a {
-  color: #bdc3c7;
+  color: rgba(255, 255, 255, 0.7);
   margin: 0 15px;
   text-decoration: none;
   transition: color 0.3s;
 }
 
 .footer-links a:hover {
-  color: white;
+  color: #667eea;
 }
 
 .footer-copyright {
   font-size: 14px;
-  color: #95a5a6;
+  color: rgba(255, 255, 255, 0.45);
 }
 
 /* 页面切换动画 */

@@ -1,4 +1,11 @@
-=== Session 5 — 2026-03-25 ===
+=== Session 6 — 2026-03-25 ===
+Feature worked on: F007 - 首页卡片组件间距不均匀修复
+Status: completed
+Git commit: 1c19f1993fe69a8974e6a1ce8231560675e768b8
+Remaining features: 43 (passes:false)
+Notes: 通过Playwright精确测量发现Features区域间距30px，Highlights区域间距50px，两个区域间距不一致。将Features网格gap从30px增加到40px，Highlights网格gap从50px减少到40px，同时固定grid-template-columns为repeat(2, 1fr)替代auto-fit。修复后两区域水平间距和垂直间距均为40px，卡片边缘对齐整齐，布局均匀美观。
+
+
 Feature worked on: F005/F006 - 首页按钮组排列拥挤与文字换行修复
 Status: completed
 Git commit: 92119cc4a8edf5ea49ad78ea7b33b0bde8a64636

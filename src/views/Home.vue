@@ -675,7 +675,7 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto 24px;
+  margin: 0 auto 12px;
   transition: all 0.3s ease;
 }
 
@@ -692,14 +692,14 @@ onUnmounted(() => {
 .feature-card h3 {
   font-size: 20px;
   color: #2c3e50;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
   font-weight: 600;
 }
 
 .feature-card p {
   color: #606266;
   line-height: 1.7;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
   font-size: 14px;
 }
 
@@ -758,7 +758,7 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto 20px;
+  margin: 0 auto 12px;
   transition: all 0.4s ease;
 }
 
@@ -768,7 +768,7 @@ onUnmounted(() => {
 }
 
 .highlight-item h4 {
-  margin: 0 0 10px;
+  margin: 0 0 8px;
   color: #2c3e50;
   font-size: 18px;
   font-weight: 600;

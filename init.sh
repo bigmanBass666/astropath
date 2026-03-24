@@ -15,7 +15,7 @@ DEV_PID=$!
 # 4. Wait until server is ready (retry for up to 60 seconds)
 echo "Waiting for server..."
 for i in $(seq 1 30); do
-  curl -sf http://localhost:5173/ && { echo "Server ready."; break; }
+  curl -sf http://localhost:3000/ && { echo "Server ready."; break; }
   [ $i -eq 30 ] && { echo "SMOKE TEST FAILED: server never started"; kill $DEV_PID 2>/dev/null; exit 1; }
   sleep 2
 done
