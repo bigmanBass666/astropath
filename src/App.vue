@@ -163,6 +163,10 @@ const showContact = () => {
   background: transparent;
   flex: 1;
   overflow-x: auto;
+  /* Element Plus菜单变量覆盖 */
+  --el-menu-active-color: #ffffff;
+  --el-menu-hover-color: #ffffff;
+  --el-menu-text-color: rgba(255, 255, 255, 0.9);
   /* 隐藏滚动条但保持滚动功能 */
   scrollbar-width: none; /* Firefox */
 }
@@ -176,11 +180,17 @@ const showContact = () => {
   padding: 0 12px;  /* 减少水平内边距以容纳更多菜单项 */
 }
 
-.nav-menu :deep(.el-menu-item:hover),
-.nav-menu :deep(.el-menu-item.is-active) {
-  background: rgba(255, 255, 255, 0.15);
+.nav-menu :deep(.el-menu-item:hover) {
+  background: rgba(255, 255, 255, 0.1);
   color: white;
-  border-bottom-color: white;
+  border-bottom-color: rgba(255, 255, 255, 0.5);
+}
+
+.nav-menu :deep(.el-menu-item.is-active) {
+  background: rgba(255, 255, 255, 0.25) !important;
+  color: #ffffff !important;
+  border-bottom: 3px solid #ffffff;
+  font-weight: 600;
 }
 
 .app-main {

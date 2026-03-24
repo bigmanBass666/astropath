@@ -8,7 +8,7 @@
       "验证active状态的菜单项文字颜色与背景色有足够对比度（WCAG AA标准）",
       "点击其他导航菜单项，验证切换后新的active状态同样具有清晰可读的颜色对比"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "F002",
@@ -19,7 +19,7 @@
       "验证hover状态和active状态的背景色、文字色有明显区分",
       "验证active状态的背景色不会导致文字难以辨认"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "F003",
