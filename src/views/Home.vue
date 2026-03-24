@@ -467,21 +467,24 @@ onUnmounted(() => {
 
 .hero-actions {
   display: flex;
-  gap: 16px;
+  gap: 24px;
   justify-content: center;
   margin-bottom: 50px;
+  flex-wrap: wrap;
 }
 
 .cta-button {
   background: white;
   color: #667eea;
   font-size: 18px;
-  padding: 16px 48px;
+  padding: 16px 52px;
   border-radius: 30px;
   font-weight: 600;
   border: none;
+  white-space: nowrap;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  min-width: 160px;
 }
 
 .cta-button:hover {
@@ -493,12 +496,14 @@ onUnmounted(() => {
   background: rgba(255, 255, 255, 0.15);
   color: white;
   font-size: 18px;
-  padding: 16px 48px;
+  padding: 16px 52px;
   border-radius: 30px;
   font-weight: 600;
   border: 2px solid rgba(255, 255, 255, 0.4);
   backdrop-filter: blur(10px);
+  white-space: nowrap;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  min-width: 160px;
 }
 
 .secondary-button:hover {
