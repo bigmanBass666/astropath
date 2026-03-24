@@ -56,6 +56,9 @@
           <el-button @click="toggleCompare" :disabled="selectedSchools.length === 0">
             对比选中 ({{ selectedSchools.length }})
           </el-button>
+          <el-button @click="toggleCompareFavorites" :disabled="favorites.length === 0" type="success" plain>
+            对比已收藏 ({{ favorites.length }})
+          </el-button>
         </div>
         <!-- 进度条 -->
         <el-progress v-if="recommending" :percentage="progress" :status="progressStatus" style="margin-top: 15px;" />
@@ -114,6 +117,11 @@
 
     <!-- 对比对话框 -->
     <el-dialog v-model="compareVisible" title="学校对比" width="80%">
+      <div class="compare-header" v-if="compareMode === 'favorites'">
+        <el-alert type="info" :closable="false" show-icon>
+          正在对比您收藏的学校，可点击右侧操作取消收藏
+        </el-alert>
+      </div>
       <el-table :data="compareSchools" style="width: 100%">
         <el-table-column prop="name" label="学校" width="200" />
         <el-table-column prop="country" label="国家" />
@@ -125,6 +133,13 @@
         </el-table-column>
         <el-table-column prop="tuition" label="学费" />
         <el-table-column prop="acceptanceRate" label="录取率" />
+        <el-table-column label="操作" width="100" v-if="compareMode === 'favorites'">
+          <template #default="{ row }">
+            <el-button size="small" type="danger" plain @click="removeFavoriteAndClose(row.id)">
+              取消收藏
+            </el-button>
+          </template>
+        </el-table-column>
       </el-table>
     </el-dialog>
   </div>
@@ -151,6 +166,7 @@ const compareVisible = ref(false)
 const currentSchool = ref(null)
 const selectedCountry = ref('')
 const sortBy = ref('default')
+const compareMode = ref('selected') // 'selected' or 'favorites'
 
 // 模拟院校数据
 const mockSchools = [
@@ -270,8 +286,32 @@ const showDetail = (school) => {
 }
 
 const toggleCompare = () => {
+  compareMode.value = 'selected'
   compareSchools.value = mockSchools.filter(s => selectedSchools.value.includes(s.id))
   compareVisible.value = true
+}
+
+const toggleCompareFavorites = () => {
+  compareMode.value = 'favorites'
+  compareSchools.value = mockSchools.filter(s => favorites.value.includes(s.id))
+  compareVisible.value = true
+}
+
+const removeFavoriteAndClose = (schoolId) => {
+  const idx = favorites.value.indexOf(schoolId)
+  if (idx > -1) {
+    favorites.value.splice(idx, 1)
+    localStorage.setItem('school_favorites', JSON.stringify(favorites.value))
+    ElMessage.success('已取消收藏')
+
+    // 从对比列表中移除该学校
+    compareSchools.value = compareSchools.value.filter(s => s.id !== schoolId)
+
+    // 如果对比列表为空，关闭对话框并返回
+    if (compareSchools.value.length === 0) {
+      compareVisible.value = false
+    }
+  }
 }
 
 const compareSchools = ref([])
@@ -299,8 +339,15 @@ onMounted(() => {
     set sortBy(val) { sortBy.value = val },
     get schools() { return schools.value },
     get filteredAndSortedSchools() { return filteredAndSortedSchools.value },
+    get favorites() { return favorites.value },
+    get selectedSchools() { return selectedSchools.value },
     startRecommendation,
-    get mockSchools() { return mockSchools }
+    get mockSchools() { return mockSchools },
+    get compareVisible() { return compareVisible.value },
+    get compareMode() { return compareMode.value },
+    toggleCompare,
+    toggleCompareFavorites,
+    removeFavoriteAndClose
   }
 })
 </script>
@@ -391,6 +438,10 @@ onMounted(() => {
   margin-top: 15px;
   display: flex;
   gap: 8px;
+}
+
+.compare-header {
+  margin-bottom: 15px;
 }
 
 .school-detail .requirement-section {
