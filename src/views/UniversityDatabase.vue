@@ -740,11 +740,17 @@ onMounted(() => {
   }
 }
 
+.school-detail {
+  /* 为对话框内容添加统一内边距，确保内容不紧贴边缘 */
+  padding: 20px;
+}
+
 .school-detail .detail-header {
-  display: flex;
-  gap: 20px;
-  margin-bottom: 30px;
-  align-items: center;
+  /* header 内容区添加内边距，使图片和标题不紧贴边缘 */
+  padding: 16px;
+  background: #f8f9fc;
+  border-radius: 8px;
+  margin-bottom: 20px;
 }
 
 .school-image {
@@ -752,6 +758,11 @@ onMounted(() => {
   height: 100px;
   object-fit: cover;
   border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.detail-title {
+  margin-left: 16px;
 }
 
 .detail-title h2 {
@@ -763,11 +774,22 @@ onMounted(() => {
   margin: 0;
 }
 
-.description-section, .requirements-section {
-  margin-top: 20px;
+/* descriptions 卡片添加内边距 */
+.school-detail .el-descriptions {
+  padding: 16px;
 }
 
-.description-section h4, .requirements-section h4 {
+/* 描述和需求区域添加内边距和底部分隔 */
+.description-section,
+.requirements-section {
+  padding: 16px;
+  margin-top: 16px;
+  background: #f8f9fc;
+  border-radius: 8px;
+}
+
+.description-section h4,
+.requirements-section h4 {
   margin-bottom: 10px;
   color: #303133;
 }
@@ -782,10 +804,13 @@ onMounted(() => {
   color: #606266;
 }
 
+/* 按钮组居中对齐 */
 .detail-actions {
-  margin-top: 30px;
+  margin-top: 20px;
+  padding: 16px;
   display: flex;
-  gap: 12px;
+  justify-content: center;
+  gap: 16px;
 }
 
 .low-rate {
