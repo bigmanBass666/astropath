@@ -1075,7 +1075,48 @@ onUnmounted(() => {
   margin-top: 30px;
   display: flex;
   justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+/* 统一样式：防止文字换行 + 最小宽度 + 统一高度 */
+.step-actions .el-button {
+  white-space: nowrap;
+  min-width: 100px;
+  height: 36px;
+  padding: 0 24px;
+}
+
+/* 对话框底部按钮：右对齐，间距适当（使用 deep 选择器穿透 teleport） */
+:deep(.el-dialog__footer) {
+  display: flex !important;
+  justify-content: flex-end;
   gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* 对话框按钮统一样式 */
+:deep(.el-dialog__footer .el-button) {
+  white-space: nowrap;
+  min-width: 80px;
+  height: 36px;
+  padding: 0 20px;
+}
+
+/* 列表项操作按钮区域 */
+.item-actions {
+  display: flex;
+  gap: 12px;
+  flex-shrink: 0;
+  flex-wrap: nowrap;
+}
+
+/* 列表项操作按钮样式 */
+.item-actions .el-button {
+  white-space: nowrap;
+  min-width: 60px;
+  height: 32px;
+  padding: 0 12px;
 }
 
 .gpa-display {
@@ -1245,12 +1286,6 @@ onUnmounted(() => {
   min-width: 200px;
   color: #909399;
   line-height: 1.5;
-}
-
-.item-actions {
-  display: flex;
-  gap: 8px;
-  flex-shrink: 0;
 }
 
 .el-tag {
