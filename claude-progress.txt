@@ -494,3 +494,27 @@ Notes:
   5. ✅ 清空对话后，导出按钮正确禁用
 - Next: Continue with F029 (AI请求错误处理) or F032 (页面底部信息)
 
+=== Session 38 — 2026-03-24 22:20 ===
+Feature worked on: F029 (AI请求错误处理)
+Status: completed
+Git commit: 05aa031dc35a2136ff414affa76edcdc5999415f
+Remaining features: 2 (F032, F033)
+Notes:
+- 实现全面的AI请求错误处理机制：
+  * 添加AIError自定义错误类，支持5种错误类型：network（网络）、auth（认证）、config（配置）、unsupported（不支持的provider）、api（服务端错误）
+  * 增强ai-api.js：30秒请求超时控制、更好的网络异常捕获、根据HTTP状态码分类（401/403认证失败，5xx服务端错误）
+  * 提供友好错误提示：每类错误有对应的用户友好的中文提示和操作建议
+- 增强AIChat.vue错误UI：
+  * 添加错误横幅（error-banner），显示错误标题和详细描述
+  * 提供「重试」按钮：恢复原消息到输入框并重新发送
+  * 提供「忽略」按钮：清除错误状态继续操作
+  * 错误状态与当前对话解耦，避免影响正常流程
+- 端到端测试验证（Playwright MCP）：
+  1. ✅ 网络连接错误：显示"网络连接失败，请检查您的网络设置"，重试功能正常
+  2. ✅ 认证错误（无效API Key）：显示"API认证失败，请检查您的API Key是否正确"
+  3. ✅ 不支持的provider：显示"暂不支持该AI服务商类型，请选择其他提供商或配置为'其他'类型"
+  4. ✅ 重试按钮：点击后恢复原消息并重新发起请求
+  5. ✅ 忽略按钮：清除错误横幅，不影响后续操作
+- 所有F029测试步骤全部通过
+- Next: Continue with F032 (页面底部信息) or F033 (项目总结)
+

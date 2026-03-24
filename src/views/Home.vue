@@ -101,6 +101,93 @@
         </el-button>
       </div>
     </section>
+
+    <!-- 页脚区域 -->
+    <footer class="site-footer" ref="footerRef">
+      <div class="container">
+        <div class="footer-content">
+          <div class="footer-brand">
+            <h3>一站式智能留学规划</h3>
+            <p>通过AI分析您的背景，生成动态、可执行的个性化留学路径图</p>
+          </div>
+          <div class="footer-links">
+            <h4>快速链接</h4>
+            <ul>
+              <li><a href="/assessment">背景评估</a></li>
+              <li><a href="/school-recommendation">AI选校</a></li>
+              <li><a href="/timeline">时间规划</a></li>
+              <li><a href="/materials">材料中心</a></li>
+              <li><a href="/university-database">院校数据库</a></li>
+              <li><a href="/ai-chat">AI对话</a></li>
+            </ul>
+          </div>
+          <div class="footer-help">
+            <h4>帮助支持</h4>
+            <ul>
+              <li><a href="#" @click.prevent="showGuide = true">使用指南</a></li>
+              <li><a href="#">常见问题</a></li>
+              <li><a href="#">联系我们</a></li>
+            </ul>
+          </div>
+          <div class="footer-contact">
+            <h4>联系方式</h4>
+            <p><el-icon><Message /></el-icon> support@liuxue-platform.com</p>
+            <p><el-icon><Phone /></el-icon> 400-123-4567</p>
+            <div class="social-links">
+              <a href="#" class="social-link" title="微信"><el-icon><ChatDotRound /></el-icon></a>
+              <a href="#" class="social-link" title="微博"><el-icon><Platform /></el-icon></a>
+            </div>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <p>&copy; 2026 一站式智能留学规划平台. All rights reserved.</p>
+        </div>
+      </div>
+    </footer>
+
+    <!-- 使用指南模态框 -->
+    <el-dialog
+      v-model="showGuide"
+      title="使用指南"
+      width="800px"
+      :close-on-click-modal="true"
+      class="guide-dialog"
+    >
+      <div class="guide-content">
+        <div class="guide-section">
+          <h4><el-icon><Document /></el-icon> 快速开始</h4>
+          <ol>
+            <li><strong>填写背景评估</strong>：在"背景评估"页面完成您的个人信息、学术背景和实践经历的填写</li>
+            <li><strong>获取评估报告</strong>：系统会自动生成您的竞争力雷达图和详细评语</li>
+            <li><strong>AI智能选校</strong>：基于您的评估结果，系统推荐匹配的院校清单</li>
+            <li><strong>时间规划</strong>：查看动态生成的时间线，管理申请任务</li>
+            <li><strong>材料准备</strong>：使用文书助手和材料清单，赋能申请全流程</li>
+          </ol>
+        </div>
+        <div class="guide-section">
+          <h4><el-icon><Cpu /></el-icon> AI功能使用</h4>
+          <p>本平台支持多个AI供应商（OpenAI、Anthropic等），请先在"AI配置"页面完成API配置：</p>
+          <ul>
+            <li>配置Base URL、API Key和模型名称</li>
+            <li>使用"测试连接"验证配置有效性</li>
+            <li>在AI对话和文书生成功能中选择已配置的provider</li>
+          </ul>
+        </div>
+        <div class="guide-section">
+          <h4><el-icon><DataLine /></el-icon> 数据持久化</h4>
+          <p>您的所有数据（评估结果、选校清单、对话历史等）均保存在浏览器本地存储中：</p>
+          <ul>
+            <li>数据不会上传到服务器，保护您的隐私</li>
+            <li>清除浏览器数据会导致信息丢失，请及时导出重要内容</li>
+            <li>支持导出对话历史、材料清单等</li>
+          </ul>
+        </div>
+      </div>
+      <template #footer>
+        <el-button @click="showGuide = false">关闭</el-button>
+      </template>
+    </el-dialog>
+
     <!-- 返回顶部按钮 -->
     <button class="back-to-top" :class="{ visible: showBackToTop }" @click="scrollToTop" title="返回顶部">
       <el-icon><Top /></el-icon>
@@ -112,7 +199,8 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import {
   Document, Cpu, Calendar, Files, School, ChatDotRound,
-  MagicStick, Timer, DataLine, User, ArrowRight, Top
+  MagicStick, Timer, DataLine, User, ArrowRight, Top,
+  Message, Phone, Platform
 } from '@element-plus/icons-vue'
 
 const homePageRef = ref(null)
@@ -120,12 +208,14 @@ const heroRef = ref(null)
 const featuresRef = ref(null)
 const highlightsRef = ref(null)
 const ctaRef = ref(null)
+const footerRef = ref(null)
 
 const heroVisible = ref(false)
 const featuresVisible = ref(false)
 const highlightsVisible = ref(false)
 const ctaVisible = ref(false)
 const showBackToTop = ref(false)
+const showGuide = ref(false)
 
 // 打字机效果的标题和副标题
 const fullTitle = '一站式智能留学规划'
@@ -818,6 +908,216 @@ onUnmounted(() => {
 
   .scroll-indicator {
     display: none;
+  }
+}
+
+/* ===== 页脚样式 ===== */
+.site-footer {
+  background: #1a1a2e;
+  color: #fff;
+  padding: 60px 0 0;
+}
+
+.footer-content {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr 1fr;
+  gap: 40px;
+  padding-bottom: 40px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.footer-brand h3 {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.footer-brand p {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.footer-links h4,
+.footer-help h4,
+.footer-contact h4 {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 20px;
+  color: #fff;
+}
+
+.footer-links ul,
+.footer-help ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.footer-links li,
+.footer-help li {
+  margin-bottom: 12px;
+}
+
+.footer-links a,
+.footer-help a {
+  color: rgba(255, 255, 255, 0.7);
+  text-decoration: none;
+  font-size: 14px;
+  transition: color 0.3s ease;
+}
+
+.footer-links a:hover,
+.footer-help a:hover {
+  color: #667eea;
+}
+
+.footer-contact p {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+
+.footer-contact .el-icon {
+  font-size: 16px;
+  color: #667eea;
+}
+
+.social-links {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.social-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.7);
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.social-link:hover {
+  background: #667eea;
+  color: white;
+  transform: translateY(-2px);
+}
+
+.footer-bottom {
+  padding: 20px 0;
+  text-align: center;
+}
+
+.footer-bottom p {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 13px;
+  margin: 0;
+}
+
+/* ===== 使用指南模态框样式 ===== */
+.guide-dialog .el-dialog__body {
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.guide-content {
+  padding: 10px 0;
+}
+
+.guide-section {
+  margin-bottom: 24px;
+  padding: 16px;
+  background: #f5f7fa;
+  border-radius: 8px;
+}
+
+.guide-section:last-child {
+  margin-bottom: 0;
+}
+
+.guide-section h4 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 12px;
+}
+
+.guide-section .el-icon {
+  color: #667eea;
+  font-size: 18px;
+}
+
+.guide-section p,
+.guide-section ul,
+.guide-section ol {
+  margin: 0;
+  padding-left: 20px;
+  color: #606266;
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+.guide-section li {
+  margin-bottom: 8px;
+}
+
+/* ===== 页脚响应式设计 ===== */
+@media (max-width: 992px) {
+  .footer-content {
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+  }
+}
+
+@media (max-width: 576px) {
+  .site-footer {
+    padding: 40px 0 0;
+  }
+
+  .footer-content {
+    grid-template-columns: 1fr;
+    gap: 30px;
+    text-align: center;
+  }
+
+  .footer-links ul,
+  .footer-help ul {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px 16px;
+  }
+
+  .footer-links li,
+  .footer-help li {
+    margin: 0;
+  }
+
+  .footer-contact {
+    text-align: center;
+  }
+
+  .footer-contact p {
+    justify-content: center;
+  }
+
+  .social-links {
+    justify-content: center;
   }
 }
 </style>
