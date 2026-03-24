@@ -1,3 +1,10 @@
+=== Session 28 — 2026-03-25 ===
+Feature worked on: F050 - 分页组件布局异常，需修复分页器样式
+Status: completed
+Git commit: 88e1aac26472d31f738fccaee9d33ff6604986e0
+Remaining features: 19 (passes:false)
+Notes: 为院校数据库页面（院校搜索和专业搜索两个 tab）添加完整的 el-pagination 分页功能。发现该页面虽然定义了分页变量（currentPage/pageSize）但从未在模板中使用 el-pagination 组件，导致页面无法分页。修复方案：(1) 分立两个 tab 的分页状态（currentSchoolPage/schoolPageSize 和 currentMajorPage/majorPageSize）；(2) 创建 totalSchools/totalMajors computed 用于搜索结果总数统计；(3) filteredSchools/filteredMajors 改为分页 slice 版本；(4) 两个 tab 各添加 el-pagination（layout=total,sizes,prev,pager,next,jumper，background 模式）；(5) page size 切换时自动重置到第1页；(6) tab 切换时重置分页；(7) 移动端 480px 下隐藏 total 和 jumper。Playwright 验证：院校搜索 Total 9/page-size=12/第1页，切换 8/page 触发多页（8+1），翻页状态正确，品牌紫 active 页码，smoke test 通过。F050 passes:true。
+
 === Session 27 — 2026-03-25 ===
 Feature worked on: F032 - 全站卡片样式不一致，需统一卡片设计规范
 Status: completed
