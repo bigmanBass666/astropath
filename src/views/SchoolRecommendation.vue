@@ -1,5 +1,5 @@
 <template>
-  <div class="school-recommendation-page">
+  <div class="school-recommendation-page" ref="pageRoot">
     <h2 class="page-title">AI智能选校推荐</h2>
 
     <el-card class="intro-card" v-if="!hasAssessment">
@@ -24,6 +24,24 @@
         </div>
       </el-card>
 
+      <!-- 筛选与排序控制 -->
+      <el-card class="filter-card">
+        <div class="filter-row">
+          <el-select v-model="selectedCountry" ref="countryFilter" placeholder="筛选国家" clearable style="width: 150px;">
+            <el-option label="全部" value="" />
+            <el-option v-for="country in availableCountries" :key="country" :label="country" :value="country" />
+          </el-select>
+          <el-select v-model="sortBy" ref="sortSelect" placeholder="排序方式" style="width: 150px;">
+            <el-option label="默认顺序" value="default" />
+            <el-option label="匹配度 (高→低)" value="match-desc" />
+            <el-option label="匹配度 (低→高)" value="match-asc" />
+            <el-option label="截止日期 (近→远)" value="deadline-asc" />
+            <el-option label="截止日期 (远→近)" value="deadline-desc" />
+          </el-select>
+          <span class="result-count">共 {{ filteredAndSortedSchools.length }} 所学校</span>
+        </div>
+      </el-card>
+
       <!-- 推荐控制 -->
       <el-card class="control-card">
         <div class="control-row">
@@ -45,7 +63,7 @@
 
       <!-- 推荐列表 -->
       <div class="schools-list">
-        <el-card v-for="school in schools" :key="school.id" class="school-card"
+        <el-card v-for="school in filteredAndSortedSchools" :key="school.id" class="school-card"
           :class="{ 'is-selected': selectedSchools.includes(school.id) }">
           <div class="school-header" @click="toggleSelect(school.id)">
             <el-checkbox :model-value="selectedSchools.includes(school.id)" @click.stop />
@@ -131,6 +149,8 @@ const selectedSchools = ref([])
 const detailVisible = ref(false)
 const compareVisible = ref(false)
 const currentSchool = ref(null)
+const selectedCountry = ref('')
+const sortBy = ref('default')
 
 // 模拟院校数据
 const mockSchools = [
@@ -141,6 +161,44 @@ const mockSchools = [
   { id: 5, name: 'Cambridge University', country: '英国', major: 'CS', ranking: 'QS #5', match: 82, deadline: '2025-01-20', tuition: '£34,000', acceptanceRate: '19%', requirements: ['2:1 Degree minimum'], website: 'https://cam.ac.uk' },
   { id: 6, name: 'Tsinghua University', country: '中国', major: 'CS', ranking: 'QS #25', match: 75, deadline: '2025-03-01', tuition: '¥30,000', acceptanceRate: '15%', requirements: ['GPA 3.5+'], website: 'https://tsinghua.edu.cn' }
 ]
+
+// 计算属性：可用的国家列表
+const availableCountries = computed(() => {
+  const countries = new Set()
+  mockSchools.forEach(s => countries.add(s.country))
+  return Array.from(countries).sort()
+})
+
+// 计算属性：过滤和排序后的学校列表
+const filteredAndSortedSchools = computed(() => {
+  let result = [...schools.value]
+
+  // 国家筛选
+  if (selectedCountry.value) {
+    result = result.filter(s => s.country === selectedCountry.value)
+  }
+
+  // 排序
+  switch (sortBy.value) {
+    case 'match-desc':
+      result.sort((a, b) => b.match - a.match)
+      break
+    case 'match-asc':
+      result.sort((a, b) => a.match - b.match)
+      break
+    case 'deadline-asc':
+      result.sort((a, b) => new Date(a.deadline) - new Date(b.deadline))
+      break
+    case 'deadline-desc':
+      result.sort((a, b) => new Date(b.deadline) - new Date(a.deadline))
+      break
+    default:
+      // 默认按匹配度降序
+      result.sort((a, b) => b.match - a.match)
+  }
+
+  return result
+})
 
 const getScoreTagType = (score) => {
   if (score >= 80) return 'success'
@@ -230,6 +288,20 @@ onMounted(() => {
   if (savedFavs) {
     favorites.value = JSON.parse(savedFavs)
   }
+
+  // 暴露组件实例到window用于测试
+  window.schoolRecommendationComponent = {
+    get strategy() { return strategy.value },
+    set strategy(val) { strategy.value = val },
+    get selectedCountry() { return selectedCountry.value },
+    set selectedCountry(val) { selectedCountry.value = val },
+    get sortBy() { return sortBy.value },
+    set sortBy(val) { sortBy.value = val },
+    get schools() { return schools.value },
+    get filteredAndSortedSchools() { return filteredAndSortedSchools.value },
+    startRecommendation,
+    get mockSchools() { return mockSchools }
+  }
 })
 </script>
 
@@ -247,6 +319,23 @@ onMounted(() => {
   display: flex;
   gap: 12px;
   flex-wrap: wrap;
+}
+
+.filter-card, .control-card {
+  margin-bottom: 20px;
+}
+
+.filter-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.result-count {
+  margin-left: auto;
+  color: #909399;
+  font-size: 14px;
 }
 
 .control-row {

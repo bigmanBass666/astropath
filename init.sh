@@ -37,8 +37,8 @@ npm run dev 2>&1 | tee /tmp/vite.log &
 DEV_PID=$!
 sleep 3
 
-# 从 Vite 输出中提取实际使用的端口（去除 ANSI 转义码）
-ACTUAL_PORT=$(sed -r 's/\x1b\[[0-9;]*m//g' /tmp/vite.log 2>/dev/null | grep -oE 'Local:.*http://localhost:[0-9]+' | tail -1 | grep -oE '[0-9]+' | head -1)
+# 从 Vite 输出中提取实际使用的端口（去除 ANSI 转义码并匹配 Local 行）
+ACTUAL_PORT=$(sed -r 's/\x1b\[[0-9;]*m//g' /tmp/vite.log 2>/dev/null | grep 'Local:' | grep -oE 'localhost:[0-9]+' | tail -1 | grep -oE '[0-9]+' | head -1)
 
 if [ -z "$ACTUAL_PORT" ]; then
   echo "❌ 无法检测 Vite 端口"
