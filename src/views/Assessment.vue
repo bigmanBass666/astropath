@@ -1175,7 +1175,7 @@ onUnmounted(() => {
 
 .analysis-card h4 {
   margin: 0 0 15px 0;
-  color: #409eff;
+  color: #667eea;
   font-size: 16px;
   display: flex;
   align-items: center;
@@ -1207,13 +1207,13 @@ onUnmounted(() => {
 }
 
 .grade-excellent { background: #f0f9eb; color: #67c23a; }
-.grade-good { background: #ecf5ff; color: #409eff; }
+.grade-good { background: #ecf5ff; color: #667eea; }
 .grade-medium { background: #fdf6ec; color: #e6a23c; }
 .grade-pass { background: #fef0f0; color: #f56c6c; }
 .grade-low { background: #fef0f0; color: #f56c6c; }
 
 .score-excellent { background: #f0f9eb; color: #67c23a; }
-.score-good { background: #ecf5ff; color: #409eff; }
+.score-good { background: #ecf5ff; color: #667eea; }
 .score-low { background: #fef0f0; color: #f56c6c; }
 
 .analysis-detail {
@@ -1252,7 +1252,7 @@ onUnmounted(() => {
   background: #f5f7fa;
   margin: 10px 0;
   border-radius: 8px;
-  border-left: 4px solid #409eff;
+  border-left: 4px solid #667eea;
   transition: all 0.3s ease;
 }
 

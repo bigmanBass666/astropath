@@ -1324,7 +1324,7 @@ onMounted(() => {
   font-weight: bold;
   margin: 12px 0 8px 0;
   color: #303133;
-  border-bottom: 2px solid #409eff;
+  border-bottom: 2px solid #667eea;
   padding-bottom: 6px;
 }
 
@@ -1358,7 +1358,7 @@ onMounted(() => {
 
 .rich-editor strong {
   font-weight: bold;
-  color: #409eff;
+  color: #667eea;
 }
 
 .rich-editor em {
@@ -1579,7 +1579,7 @@ onMounted(() => {
 .essay-type-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-  border-color: #409eff;
+  border-color: #667eea;
 }
 
 .essay-type-card .card-icon {
@@ -1619,7 +1619,7 @@ onMounted(() => {
 
 .current-essay-info {
   margin-left: auto;
-  color: #409eff;
+  color: #667eea;
   font-weight: 500;
 }
 
@@ -1658,8 +1658,8 @@ onMounted(() => {
 }
 
 .template-card:hover {
-  border-color: #409eff;
-  box-shadow: 0 4px 12px rgba(64, 158, 255, 0.15);
+  border-color: #667eea;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
 }
 
 .template-name {
@@ -1700,7 +1700,7 @@ onMounted(() => {
   margin-right: 20px;
   padding: 4px 12px;
   background: #ecf5ff;
-  color: #409eff;
+  color: #667eea;
   border-radius: 4px;
   font-size: 13px;
 }
@@ -1748,7 +1748,7 @@ onMounted(() => {
 .essay-type-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-  border-color: #409eff;
+  border-color: #667eea;
 }
 
 .essay-type-card .card-icon {
@@ -1788,7 +1788,7 @@ onMounted(() => {
 
 .current-essay-info {
   margin-left: auto;
-  color: #409eff;
+  color: #667eea;
   font-weight: 500;
 }
 
@@ -1827,8 +1827,8 @@ onMounted(() => {
 }
 
 .template-card:hover {
-  border-color: #409eff;
-  box-shadow: 0 4px 12px rgba(64, 158, 255, 0.15);
+  border-color: #667eea;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
 }
 
 .template-name {

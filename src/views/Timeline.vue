@@ -675,8 +675,8 @@ onMounted(() => {
 }
 
 .milestone-item.is-selected .milestone-content {
-  border: 2px solid #409eff;
-  box-shadow: 0 4px 16px rgba(64, 158, 255, 0.2);
+  border: 2px solid #667eea;
+  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.2);
 }
 
 .milestone-item.is-overdue .milestone-date {
@@ -726,7 +726,7 @@ onMounted(() => {
 }
 
 .milestone-date {
-  color: #409eff;
+  color: #667eea;
   font-weight: 600;
   margin-bottom: 8px;
   font-size: 14px;
@@ -760,7 +760,7 @@ onMounted(() => {
 }
 
 .detail-date {
-  color: #409eff;
+  color: #667eea;
   font-weight: 600;
   margin-bottom: 12px;
   font-size: 14px;
@@ -883,7 +883,7 @@ onMounted(() => {
 }
 
 .task-count {
-  background: #409eff;
+  background: #667eea;
   color: white;
   padding: 2px 8px;
   border-radius: 10px;
@@ -994,7 +994,7 @@ onMounted(() => {
 
 .add-task-btn:hover {
   background: #f5f7fa;
-  color: #409eff;
+  color: #667eea;
 }
 
 /* 响应式看板 */

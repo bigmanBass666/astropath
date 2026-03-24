@@ -367,7 +367,7 @@
       "验证次按钮（次要操作）样式统一",
       "验证按钮hover和active状态样式统一"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "F032",
