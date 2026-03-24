@@ -1,3 +1,10 @@
+=== Session 12 — 2026-03-25 ===
+Feature worked on: Smoke test fix - init.sh 动态端口检测
+Status: fix-only
+Git commit: 39789d7
+Remaining features: 38 (passes:false)
+Notes: 第一次运行 smoke test 失败，原因是 init.sh 等待端口 3000 但 smoke test 检查 5173，当 3000 被占用时 Vite 实际在 3015 启动。修复方案：循环检测 3000-3020 范围内可用端口，动态获取实际端口后再执行 smoke test。修复后 smoke test 通过。根因为 init.sh 中硬编码端口而非动态检测。
+
 === Session 10 — 2026-03-25 ===
 Feature worked on: F012 - 修复全站页面布局不对称问题
 Status: completed
