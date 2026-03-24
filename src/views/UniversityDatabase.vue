@@ -551,6 +551,10 @@ onMounted(() => {
   margin-bottom: 20px;
 }
 
+.search-card :deep(.el-card__body) {
+  padding: 16px 20px;
+}
+
 .search-row {
   display: flex;
   gap: 12px;
@@ -590,6 +594,10 @@ onMounted(() => {
   overflow: hidden;
   cursor: pointer;
   transition: all 0.3s;
+}
+
+.school-card :deep(.el-card__body) {
+  padding: 16px;
 }
 
 .school-card:hover {
@@ -671,7 +679,36 @@ onMounted(() => {
   justify-content: center;
 }
 
-/* 详情页 */
+.major-card {
+  padding: 16px;
+}
+
+.major-card :deep(.el-card__body) {
+  padding: 16px;
+}
+
+/* 专业卡片网格布局 */
+.majors-grid {
+  display: grid;
+  gap: 20px;
+  /* 默认移动端优先：1列 */
+  grid-template-columns: 1fr;
+}
+
+/* 平板及以上：2列 */
+@media (min-width: 600px) {
+  .majors-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* 桌面端及以上：3列 */
+@media (min-width: 1024px) {
+  .majors-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
 .school-detail .detail-header {
   display: flex;
   gap: 20px;
