@@ -25,8 +25,15 @@
       <!-- 对话区域 -->
       <div class="chat-area">
         <div class="chat-messages" ref="messagesContainer">
-          <div v-if="messages.length === 0" class="empty-chat">
-            <el-empty description="开始与AI智能体对话吧" />
+          <div v-if="messages.length === 0 && currentAgent" class="empty-chat">
+            <div class="welcome-message">
+              <div class="welcome-avatar">
+                <el-icon :size="48"><ChatLineRound /></el-icon>
+              </div>
+              <h3>{{ currentAgent.name }}</h3>
+              <p class="welcome-role">{{ currentAgent.role }}</p>
+              <div class="welcome-text">{{ currentAgent.welcome }}</div>
+            </div>
           </div>
           <div v-for="msg in messages" :key="msg.id" class="message"
             :class="{ 'is-user': msg.role === 'user', 'is-assistant': msg.role === 'assistant' }">
@@ -106,10 +113,10 @@ const router = useRouter()
 
 // 智能体定义
 const agents = ref([
-  { id: 'consultant', name: '留学顾问', role: '整体规划咨询' },
-  { id: 'essay', name: '文书导师', role: '文书写作指导' },
-  { id: 'selection', name: '选校专家', role: '院校选择建议' },
-  { id: 'visa', name: '签证助手', role: '签证申请指导' }
+  { id: 'consultant', name: '留学顾问', role: '整体规划咨询', welcome: '您好！我是您的留学顾问。我可以帮您制定整体的留学规划，包括背景提升、时间安排、申请策略等。请告诉我您的留学目标或任何困惑，我会为您提供专业建议。' },
+  { id: 'essay', name: '文书导师', role: '文书写作指导', welcome: '您好！我是您的文书导师。我专注于帮助您撰写高质量的申请文书，包括个人陈述、简历、推荐信等。请告诉我您需要什么样的文书帮助，我会为您提供指导和建议。' },
+  { id: 'selection', name: '选校专家', role: '院校选择建议', welcome: '您好！我是您的选校专家。我拥有丰富的院校数据库，可以根据您的背景和需求，为您推荐合适的学校和专业。请告诉我您的GPA、语言成绩和意向方向，我会为您制定选校策略。' },
+  { id: 'visa', name: '签证助手', role: '签证申请指导', welcome: '您好！我是您的签证助手。我熟悉各国签证申请流程，可以为您解答关于签证材料、面签准备、签证政策等方面的问题。请告诉我您的签证需求，我会为您提供详细指导。' }
 ])
 
 const currentAgentId = ref('consultant')
@@ -371,8 +378,50 @@ onMounted(() => {
 .empty-chat {
   height: 100%;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  padding: 40px;
+}
+
+.welcome-message {
+  text-align: center;
+  max-width: 500px;
+}
+
+.welcome-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.welcome-message h3 {
+  font-size: 24px;
+  margin: 0 0 8px 0;
+  color: #303133;
+}
+
+.welcome-role {
+  font-size: 14px;
+  color: #909399;
+  margin: 0 0 24px 0;
+}
+
+.welcome-text {
+  font-size: 14px;
+  line-height: 1.8;
+  color: #606266;
+  background: #f5f7fa;
+  padding: 20px;
+  border-radius: 12px;
+  text-align: left;
 }
 
 .message {
