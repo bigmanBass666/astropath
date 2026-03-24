@@ -1,3 +1,10 @@
+=== Session 8 — 2026-03-25 ===
+Feature worked on: F009 - 修复页脚版权文字对比度不足问题
+Status: completed
+Git commit: f305ea4 (src fix) + d83e727 (progress update)
+Remaining features: 41 (passes:false)
+Notes: 发现页脚版权文字不透明度仅 0.45/0.5，对比度 2.3:1 不满足 WCAG AA 标准。调整 Home.vue site-footer 版权文字从 rgba(255,255,255,0.5) 到 rgba(255,255,255,0.65)，App.vue app-footer 版权文字从 rgba(255,255,255,0.45) 到 rgba(255,255,255,0.65)。修复后对比度 7.73:1，满足 AA 标准（>=4.5:1）。Playwright 浏览器验证通过，页脚所有文字清晰可读，控制台无新增错误。
+
 === Session 7 — 2026-03-25 ===
 Feature worked on: F008 - 首页卡片内容排版间距不均匀修复
 Status: completed
