@@ -228,7 +228,7 @@ const showContact = () => {
 
 .footer-copyright {
   font-size: 14px;
-  color: rgba(255, 255, 255, 0.45);
+  color: rgba(255, 255, 255, 0.65);
 }
 
 /* 页面切换动画 */

@@ -1038,7 +1038,7 @@ onUnmounted(() => {
 }
 
 .footer-bottom p {
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.65);
   font-size: 13px;
   margin: 0;
 }
