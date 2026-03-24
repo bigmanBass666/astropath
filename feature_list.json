@@ -393,7 +393,7 @@
         "steps数量：features数组长度为33",
         "所有steps均符合要求：无占位符、具体明确、可执行测试"
       ],
-      "passes": false
+      "passes": true
     }
   ]
 }
