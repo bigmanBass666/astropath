@@ -87,8 +87,7 @@
         <el-card class="search-card">
           <div class="search-controls">
             <div class="search-row search-row--filters">
-              <el-input v-model="majorSearchKeyword" placeholder="搜索专业名称或类别" clearable class="filter-search-input"
-                style="width: 180px !important; flex: 0 0 180px !important;">
+              <el-input v-model="majorSearchKeyword" placeholder="搜索专业名称或类别" clearable class="filter-search-input filter-search-input--major">
                 <template #prefix>
                   <el-icon><Search /></el-icon>
                 </template>
@@ -482,6 +481,13 @@ onMounted(() => {
   max-width: 300px;
 }
 
+.filter-search-input--major {
+  /* 与院校搜索的 filter-search-input 保持一致，不设置固定宽度 */
+  flex: 1 1 200px;
+  min-width: 0;
+  max-width: 300px;
+}
+
 .filter-search-input :deep(.el-input__wrapper) {
   min-width: 0 !important;
 }
@@ -506,44 +512,114 @@ onMounted(() => {
   min-width: 0;
 }
 
-/* 平板端 (768px): 微调 major/category 宽度以消除溢出 */
+/* 平板端 (900px): 学位类型和类别下拉框宽度微调 */
 @media (max-width: 900px) {
   .filter-select--major,
-  .filter-select--category {
+  .filter-select--category,
+  .filter-select--degree {
     flex: 1 1 120px;
     min-width: 0;
+    width: auto !important;
   }
 }
 
 /* 移动端 (480px): 搜索框全宽，下拉框两行排列 */
 @media (max-width: 480px) {
+  /* 让 search-controls 扩展到全宽，解除宽度限制 */
+  .search-controls {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
   .search-row--filters {
     gap: 10px;
+    min-width: 0;
+    width: 100%;
+    flex: 1 1 100%;
   }
 
   .filter-search-input {
     flex: 1 1 100% !important;
     max-width: 100%;
     min-width: 0;
+    width: 100% !important;
+  }
+
+  .filter-search-input :deep(.el-input__wrapper) {
+    min-width: 0 !important;
+    width: 100% !important;
+    flex: 1 !important;
+  }
+
+  /* 专业搜索tab的搜索输入框同样全宽 */
+  .filter-search-input--major {
+    flex: 1 1 100% !important;
+    max-width: 100%;
+    min-width: 0;
+    width: 100% !important;
+  }
+
+  .filter-search-input--major :deep(.el-input__wrapper) {
+    min-width: 0 !important;
+    width: 100% !important;
+    flex: 1 !important;
   }
 
   .filter-select {
+    display: flex !important;
     flex: 1 1 calc(50% - 5px);
     min-width: 0;
+    width: calc(50% - 5px) !important;
+  }
+
+  /* 穿透 Element Plus select wrapper 的 min-width 限制 */
+  .filter-select :deep(.el-select__wrapper) {
+    min-width: 0 !important;
+    width: 100% !important;
+    flex: 1 !important;
   }
 
   .filter-select--country,
   .filter-select--degree {
+    display: flex !important;
     flex: 1 1 calc(50% - 5px);
+    min-width: 0;
+    width: calc(50% - 5px) !important;
+  }
+
+  .filter-select--country :deep(.el-select__wrapper),
+  .filter-select--degree :deep(.el-select__wrapper) {
+    min-width: 0 !important;
+    width: 100% !important;
+    flex: 1 !important;
   }
 
   .filter-select--rank {
+    display: flex !important;
     flex: 1 1 calc(50% - 5px);
+    min-width: 0;
+    width: calc(50% - 5px) !important;
+  }
+
+  .filter-select--rank :deep(.el-select__wrapper) {
+    min-width: 0 !important;
+    width: 100% !important;
+    flex: 1 !important;
   }
 
   .filter-select--major,
   .filter-select--category {
+    display: flex !important;
     flex: 1 1 calc(50% - 5px);
+    min-width: 0;
+    width: calc(50% - 5px) !important;
+  }
+
+  .filter-select--major :deep(.el-select__wrapper),
+  .filter-select--category :deep(.el-select__wrapper) {
+    min-width: 0 !important;
+    width: 100% !important;
+    flex: 1 !important;
   }
 
   /* 移动端操作按钮 */
@@ -557,6 +633,8 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  /* 默认不限制宽度，让内容决定宽度 */
+  width: auto;
 }
 
 .search-row {
@@ -614,6 +692,7 @@ onMounted(() => {
   overflow: hidden;
   cursor: pointer;
   transition: all 0.3s;
+  border-radius: 12px;
 }
 
 .school-card :deep(.el-card__body) {
@@ -622,7 +701,7 @@ onMounted(() => {
 
 .school-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.2);
 }
 
 /* 快速查看按钮 - 悬停显示 */
@@ -705,6 +784,7 @@ onMounted(() => {
   flex-direction: column !important;
   height: 360px !important;
   overflow: hidden !important;
+  border-radius: 12px;
 }
 
 .major-card :deep(.el-card__body) {

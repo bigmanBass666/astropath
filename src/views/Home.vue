@@ -648,7 +648,7 @@ onUnmounted(() => {
 
 .feature-card {
   background: white;
-  border-radius: 20px;
+  border-radius: 12px;
   padding: 36px 32px;
   text-align: center;
   cursor: pointer;
@@ -678,7 +678,7 @@ onUnmounted(() => {
 .feature-icon-wrapper {
   width: 80px;
   height: 80px;
-  border-radius: 20px;
+  border-radius: 12px;
   background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
   display: flex;
   align-items: center;

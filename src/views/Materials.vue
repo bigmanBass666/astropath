@@ -1651,7 +1651,7 @@ onMounted(() => {
 .template-card {
   background: white;
   border: 1px solid #e4e7ed;
-  border-radius: 8px;
+  border-radius: 12px;
   padding: 20px;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -1820,7 +1820,7 @@ onMounted(() => {
 .template-card {
   background: white;
   border: 1px solid #e4e7ed;
-  border-radius: 8px;
+  border-radius: 12px;
   padding: 20px;
   cursor: pointer;
   transition: all 0.3s ease;
