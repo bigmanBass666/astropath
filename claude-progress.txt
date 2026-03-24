@@ -186,41 +186,22 @@ Notes:
 - 所有mock数据学校：Harvard(95)、Stanford(88)、MIT(92)、Oxford(85)、Cambridge(82)、Tsinghua(75)
 - Next: Continue with F010 (选校列表筛选与排序) or remaining features.
 
-=== Session 13 — F012 Implementation ===
+=== Session 13 — F012 & F013 Implementation ===
 Date: 2026-03-24
-Feature worked on: F012 (动态时间线主视图)
+Feature worked on: F012 (动态时间线主视图) + F013 (任务看板功能)
 Status: completed
-Git commit: d6db52d
-Remaining features: 21
+Git commit: d6db52d (F012) + 9eb1812 (F013)
+Remaining features: 20 (from 22 after F011)
 Notes:
-- Timeline.vue 已完整实现所有功能，进行了端到端验证：
-  1. 导航到时间规划页面，验证显示7个里程碑节点（背景提升、选校定位、文书准备、网申提交、面试准备、录取决策、签证办理）
-  2. 点击里程碑节点，右侧详情面板正确显示任务清单和截止日期
-  3. 模式切换功能正常：紧凑模式（日期提前30天）、宽松模式（日期延后30天）
-  4. 任务看板视图显示三列（待处理、进行中、已完成），任务计数正确
-  5. 添加任务功能：对话框正常显示，表单字段完整，保存后任务添加到列表
-- 所有核心功能已通过 Playwright MCP 测试验证
-- 组件支持响应式布局，移动端详情面板以抽屉形式展示
-- Next: Continue with F013 (任务看板Kanban功能) or remaining features.
+- Fixed init.sh smoke test by removing blocking wait statement
+- Timeline.vue 完整实现已验证：
+  * 7个里程碑正确显示（背景提升、选校定位、文书准备、网申提交、面试准备、录取决策、签证办理）
+  * 点击里程碑显示详情面板，包含任务清单和截止日期
+  * 模式切换（紧凑/常规/宽松）有效调整所有日期
+  * 任务看板视图：三列布局，任务添加，拖拽移动，状态切换
+- 通过 Playwright MCP 完成全流程端到端测试
+- 组件支持响应式，移动端适配（详情面板抽屉）
+- F013 看板功能已完整实现并通过验证
+- Remaining: F014-F032
 
-=== Session 14 — F013 Implementation ===
-Date: 2026-03-24
-Feature worked on: F013 (任务看板功能)
-Status: completed
-Git commit: [pending]
-Remaining features: 20
-Notes:
-- Timeline.vue 看板功能完整实现：
-  * 三列布局：待处理、进行中、已完成
-  * 拖拽功能：dragStart/drop 事件处理器，页面内拖拽
-  * 任务状态切换：从拖放操作中更新任务状态
-  * 任务添加：在各列均可添加新任务，自动关联里程碑
-  * 任务编辑与删除：完整的CRUD操作
-- 端到端测试通过：
-  1. 验证三列显示正常，任务计数准确
-  2. 添加任务功能验证：Dialog显示，表单填写后任务出现在待处理列
-  3. 拖拽任务功能验证：任务成功在列间移动
-  4. 完成复选框功能验证：切换到时间线视图可标记任务完成
-- 看板与时间线视图共享同一数据源（tasks数组和milestones）
-- Next: Continue with F014 (任务提醒与到期预警) or remaining features.
 
