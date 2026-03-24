@@ -1,3 +1,10 @@
+=== Session 9 — 2026-03-25 ===
+Feature worked on: F010 - 修复页脚内容布局不对称问题
+Status: completed
+Git commit: b9ec2ac
+Remaining features: 40 (passes:false)
+Notes: 通过 Playwright 精确测量发现页脚内容网格左边距 160px，而网站其他区域（Hero/Features/CTA）内容左边距为 140px，存在 20px 不对称问题。根因是 site-footer 的 120px padding 与 container 的 1200px max-width 在 1280px 视口下产生冲突，导致 footer-content 网格宽度被限制为 960px 而非应有的 1000px。修复方案：(1) 将 site-footer 顶部 padding 从 60px 增加到 120px（与 CTA 区域间距一致）；(2) 为 .site-footer .container 设置 max-width:100% 覆盖共享 container 类的 1200px 限制；(3) 为 .footer-content 设置 max-width:100% 确保使用全宽。修复后页脚内容网格与 CTA 内容完美对齐（x=140, width=1000px），左右边距各 140px，完全对称。F011（页脚链接间距 31px，远超 4px 最低要求）同步通过验证。Playwright 浏览器验证通过。
+
 === Session 8 — 2026-03-25 ===
 Feature worked on: F009 - 修复页脚版权文字对比度不足问题
 Status: completed
