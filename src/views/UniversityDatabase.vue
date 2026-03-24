@@ -560,6 +560,7 @@ onMounted(() => {
   gap: 12px;
   align-items: center;
   flex-wrap: wrap;
+  justify-content: center;
 }
 
 .schools-grid {

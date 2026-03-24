@@ -1,3 +1,15 @@
+=== Session 14 — 2026-03-25 ===
+Feature worked on: F015 - 修复院校库页面卡片网格布局不对称问题
+Status: completed
+Git commit: 61f7e716
+Remaining features: 36 (passes:false)
+Notes: 通过 Playwright 精确测量发现以下问题并修复：(1) 院校卡片无显式 padding，依赖全局 .card 样式但被 Element Plus card 组件隔离；(2) 专业卡片既无 padding 也无 grid 布局，单列堆叠；(3) 搜索卡片筛选行左右边距不对称（差1px）。修复方案：(1) school-card 添加 :deep(.el-card__body) { padding: 16px }；(2) major-card 添加 padding: 16px 和 :deep() 覆盖；(3) majors-grid 添加响应式 grid 布局（gap:20px, 1列→2列→3列）；(4) search-card 添加 :deep(.el-card__body) { padding: 16px 20px }。验证结果：院校卡片4列对齐（285px宽/194px高/20px间距），专业卡片3列对齐（387px宽/416px高/20px间距），详情对话框正常，无新增控制台错误。
+Feature worked on: F014 - 修复留学规划页面按钮排列挤压问题
+Status: completed
+Git commit: e57fa306
+Remaining features: 37 (passes:false)
+Notes: 修复 Assessment.vue 中所有按钮区域的布局问题。(1) step-actions 按钮间距从 12px 增至 20px，添加 min-width:100px/nowrap/flex-wrap，统一高度至 36px；(2) 对话框 footer 使用 :deep() 穿透 Element Plus teleport 样式隔离，实现 flex 布局右对齐，gap:12px，按钮 36px/80px/nowrap；(3) item-actions 间距从 8px 增至 12px，添加 flex-shrink:0/nowrap 防止挤压。Playwright 端到端验证了步骤1/2/3/结果页及所有对话框（实习/科研/竞赛/志愿服务），所有按钮间距、宽度、高度、nowrap 均符合预期，无控制台新增错误。
+
 === Session 12 — 2026-03-25 ===
 Feature worked on: Smoke test fix - init.sh 动态端口检测
 Status: fix-only
