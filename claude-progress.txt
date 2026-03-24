@@ -1,3 +1,9 @@
+=== Session 26 — 2026-03-25 ===
+Feature worked on: F031 - 全站按钮样式不一致，需统一按钮设计规范
+Status: completed
+Git commit: 5481a359
+Remaining features: 21 (passes:false)
+Notes: 全站统一将 Element Plus 默认蓝 #409eff 替换为品牌紫 #667eea。共修复 3 个文件 16 处：(1) Timeline.vue 5处：milestone-item.is-selected 边框、box-shadow、milestone-date 颜色、detail-date 颜色、task-count badge 背景、add-task-btn hover 颜色；(2) Assessment.vue 4处：analysis-card h4 颜色、grade-good/score-good 标签色、list-item.enhanced 左边框；(3) Materials.vue 7处：rich-editor h1 边框、rich-editor strong 颜色、essay-type-card hover 边框（4处）、template-header h3 颜色。同步替换 rgba(64,158,255,...) 为 rgba(102,126,234,...)。Playwright 多页验证：Timeline 时间线视图 milestone 边框 rgb(102,126,234)、milestone-date rgb(102,126,234)、detail-date rgb(102,126,234)；看板视图 task-count badge rgb(102,126,234)、add-task-btn hover rgb(102,126,234)；Materials essay-type-card hover border rgb(102,126,234)、rich-editor h1 border #667eea。smoke test 通过。F031 passes:true。
 === Session 23 — 2026-03-25 ===
 Feature worked on: F039 - 修复院校库页面移动端筛选控件溢出问题
 Status: completed
