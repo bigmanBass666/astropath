@@ -179,15 +179,15 @@
             <el-collapse v-model="activeCategory">
               <el-collapse-item v-for="category in categories" :key="category.id"
                 :name="category.id" :title="category.name">
-                <el-table :data="getCategoryItems(category.id)" style="width: 100%">
-                  <el-table-column width="60">
+                <el-table :data="getCategoryItems(category.id)" style="width: 100%" class="materials-checklist-table">
+                  <el-table-column width="50">
                     <template #default="{ row }">
                       <el-checkbox v-model="row.completed" @change="updateProgress" />
                     </template>
                   </el-table-column>
-                  <el-table-column prop="name" label="材料名称" />
-                  <el-table-column prop="note" label="备注" />
-                  <el-table-column label="操作" width="100">
+                  <el-table-column prop="name" label="材料名称" min-width="200" show-overflow-tooltip />
+                  <el-table-column prop="note" label="备注" min-width="160" show-overflow-tooltip />
+                  <el-table-column label="操作" width="110">
                     <template #default="{ row, $index }">
                       <el-button size="small" type="text" @click="editItem(category.id, $index)">编辑</el-button>
                       <el-button size="small" type="text" @click="removeItem(category.id, $index)">删除</el-button>
@@ -245,10 +245,10 @@
 
         <div v-if="pendingItems.length > 0" class="pending-section">
           <h4 class="pending-title">⚠️ 待完成材料 ({{ pendingItems.length }}项)</h4>
-          <el-table :data="pendingItems" size="small" border>
-            <el-table-column prop="name" label="材料名称" />
+          <el-table :data="pendingItems" size="small" border class="pending-items-table">
+            <el-table-column prop="name" label="材料名称" min-width="200" show-overflow-tooltip />
             <el-table-column prop="categoryName" label="分类" width="100" />
-            <el-table-column prop="note" label="备注" />
+            <el-table-column prop="note" label="备注" min-width="160" show-overflow-tooltip />
             <el-table-column label="操作" width="80">
               <template #default="{ row }">
                 <el-button size="small" type="success" text @click="markCompleted(row)">完成</el-button>
@@ -294,10 +294,10 @@
 
     <!-- 历史版本对话框 -->
     <el-dialog v-model="versionsVisible" title="文书历史版本" width="600px">
-      <el-table :data="versions" style="width: 100%">
+      <el-table :data="versions" style="width: 100%" class="versions-table">
         <el-table-column prop="date" label="保存时间" width="180" />
-        <el-table-column prop="note" label="版本备注" />
-        <el-table-column label="操作" width="150">
+        <el-table-column prop="note" label="版本备注" min-width="200" show-overflow-tooltip />
+        <el-table-column label="操作" width="140">
           <template #default="{ row }">
             <el-button size="small" type="primary" text @click="previewVersion(row)">预览</el-button>
             <el-button size="small" type="success" text @click="restoreVersion(row)">恢复</el-button>
@@ -1873,5 +1873,20 @@ onMounted(() => {
   .templates-grid {
     grid-template-columns: 1fr;
   }
+}
+
+/* 表格样式：操作按钮不换行，保持单行 */
+.materials-checklist-table :deep(.el-table__body .cell),
+.pending-items-table :deep(.el-table__body .cell),
+.versions-table :deep(.el-table__body .cell) {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.materials-checklist-table :deep(.el-table__body .el-button),
+.pending-items-table :deep(.el-table__body .el-button),
+.versions-table :deep(.el-table__body .el-button) {
+  flex-shrink: 0;
 }
 </style>

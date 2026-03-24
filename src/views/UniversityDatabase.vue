@@ -164,13 +164,13 @@
         <!-- 专业对比对话框 -->
         <el-dialog v-model="compareVisible" title="专业对比" width="80%" top="5vh">
           <div v-if="majorsToCompare.length > 0" class="compare-container">
-            <el-table :data="compareTableData" border style="width: 100%">
-              <el-table-column prop="field" label="对比项" width="180" fixed>
+            <el-table :data="compareTableData" border style="width: 100%" class="major-compare-table">
+              <el-table-column prop="field" label="对比项" min-width="140" fixed>
                 <template #default="scope">
                   <strong>{{ scope.row.field }}</strong>
                 </template>
               </el-table-column>
-              <el-table-column v-for="major in majorsToCompare" :key="major.id" :label="major.name" :prop="'major_' + major.id">
+              <el-table-column v-for="major in majorsToCompare" :key="major.id" :label="major.name" :prop="'major_' + major.id" min-width="180" show-overflow-tooltip>
                 <template #default="scope">
                   {{ scope.row['major_' + major.id] || '-' }}
                 </template>
@@ -821,5 +821,16 @@ onMounted(() => {
 
 .low-rate {
   color: #f56c6c;
+}
+
+/* 专业对比表格：内容不换行，保持单行 */
+.major-compare-table :deep(.el-table__cell) {
+  overflow: hidden;
+}
+
+.major-compare-table :deep(.el-table__body .cell) {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 </style>

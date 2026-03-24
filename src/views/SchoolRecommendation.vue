@@ -122,18 +122,18 @@
           正在对比您收藏的学校，可点击右侧操作取消收藏
         </el-alert>
       </div>
-      <el-table :data="compareSchools" style="width: 100%">
-        <el-table-column prop="name" label="学校" width="200" />
-        <el-table-column prop="country" label="国家" />
-        <el-table-column prop="ranking" label="排名" />
-        <el-table-column prop="match" label="匹配度">
+      <el-table :data="compareSchools" style="width: 100%" class="compare-table">
+        <el-table-column prop="name" label="学校" min-width="140" show-overflow-tooltip />
+        <el-table-column prop="country" label="国家" min-width="80" />
+        <el-table-column prop="ranking" label="排名" min-width="80" />
+        <el-table-column prop="match" label="匹配度" min-width="160">
           <template #default="{ row }">
             <el-progress :percentage="row.match" :color="getScoreColor(row.match)" />
           </template>
         </el-table-column>
-        <el-table-column prop="tuition" label="学费" />
-        <el-table-column prop="acceptanceRate" label="录取率" />
-        <el-table-column label="操作" width="100" v-if="compareMode === 'favorites'">
+        <el-table-column prop="tuition" label="学费" min-width="100" />
+        <el-table-column prop="acceptanceRate" label="录取率" min-width="90" />
+        <el-table-column label="操作" min-width="110" v-if="compareMode === 'favorites'">
           <template #default="{ row }">
             <el-button size="small" type="danger" plain @click="removeFavoriteAndClose(row.id)">
               取消收藏
@@ -450,5 +450,11 @@ onMounted(() => {
 
 .official-link {
   margin-top: 15px;
+}
+
+/* 对比表格：操作按钮不换行 */
+.compare-table :deep(.el-table__body .el-button) {
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 </style>
