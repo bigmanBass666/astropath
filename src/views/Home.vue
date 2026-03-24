@@ -350,7 +350,7 @@ onUnmounted(() => {
   position: relative;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
-  padding: 100px 20px 120px;
+  padding: 100px 20px 100px;
   text-align: center;
   overflow: hidden;
   opacity: var(--hero-opacity, 1);
@@ -423,8 +423,10 @@ onUnmounted(() => {
 .hero-content {
   position: relative;
   z-index: 2;
-  max-width: 800px;
+  max-width: 1200px;
   margin: 0 auto;
+  padding: 0 20px;
+  box-sizing: border-box;
   opacity: 0;
   transform: translateY(30px);
   transition: opacity 0.8s ease, transform 0.8s ease;
@@ -787,6 +789,13 @@ onUnmounted(() => {
 .cta-section.is-visible {
   opacity: 1;
   transform: translateY(0);
+}
+
+.cta-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+  box-sizing: border-box;
 }
 
 .cta-content h2 {
