@@ -1,4 +1,16 @@
-=== Session 18 — 2026-03-25 ===
+=== Session 20 — 2026-03-25 ===
+Feature worked on: F023 - 创建专业详情页面并修复院校数据库专业卡片导航
+Status: completed
+Git commit: 6cd9a0e50bc82e4f5f73801a4da03b602a7c534b
+Remaining features: 27 (passes:false)
+Notes: 实现专业详情页面（F023）。新建共享数据 src/data/majors.js，新建 src/views/MajorDetail.vue 专业详情页面组件（渐变标题栏+两列信息网格+全宽课程/就业卡片+三按钮操作区），添加 /major-detail/:id 路由，修改 UniversityDatabase.vue 添加专业卡片点击导航。Playwright 三视口验证：1280px 下 page=1200px/两列590px完全对称，375px 下所有卡片312px单列堆叠对齐，专业101/102/103数据正确加载，无效ID(999)显示空状态，无控制台新增错误。
+
+=== Session 19 — 2026-03-25 ===
+Feature worked on: F022 - 修复专业库页面卡片排列不对称问题
+Status: completed
+Git commit: f3369d29
+Remaining features: 29 (passes:false)
+Notes: 通过 Playwright 精确测量发现专业卡片（专业搜索tab）存在高度不一致问题：原 Row 1-2 卡片高度 416px vs Row 3 卡片高度 438px（差22px），X轴对齐虽完美但行间高度差异视觉不协调。根因为卡片内容（description、courses等）没有高度限制，不同数据量的卡片内容导致不同行卡片高度不一致。修复方案：(1) 为 .major-card 添加 display:flex/flex-direction:column/height:360px !important/overflow:hidden !important，强制统一所有卡片高度；(2) 为 .major-card :deep(.el-card__body) 添加 flex:1 !important/height:100% !important 配合父容器固定高度；(3) 为各内容区块（major-description/major-courses/major-career）添加 flex-shrink:0/max-height 约束，确保内容被合理截断而不撑开卡片。修复后：三视口验证全部通过——Desktop(1280px) 3列宽400px高360px，Tablet(768px) 2列宽354px高360px，Mobile(375px) 1列宽335px高360px，所有卡片高度差异=0，宽度差异=0，X/Y轴对齐完美，smoke test通过。
 Feature worked on: F021 - 修复院校数据库/专业库页面布局不对称问题
 Status: completed
 Git commit: d2e47ab
