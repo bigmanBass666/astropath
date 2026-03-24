@@ -1,4 +1,9 @@
 #!/usr/bin/env bash
+
+# api key: 015518e0bc86498dafdc42bf88b1572a.dioiOVESgV9mUg5i
+# base url: https://open.bigmodel.cn/api/paas/v4/chat/completions
+# model: glm-4.7-flash
+
 set -euo pipefail
 
 echo "=== 一站式智能留学规划平台 - 环境初始化 ==="

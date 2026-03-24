@@ -62,6 +62,19 @@
 
         <!-- 输入区域 -->
         <div class="chat-input-area">
+          <div v-if="lastError" class="error-banner">
+            <div class="error-content">
+              <el-icon class="error-icon"><WarningFilled /></el-icon>
+              <div class="error-message">
+                <span class="error-title">{{ getErrorTitle(lastError.type) }}</span>
+                <span class="error-text">{{ lastError.message }}</span>
+              </div>
+            </div>
+            <div class="error-actions">
+              <el-button size="small" type="primary" @click="retryLastMessage">重试</el-button>
+              <el-button size="small" @click="clearError">忽略</el-button>
+            </div>
+          </div>
           <el-input
             v-model="inputMessage"
             type="textarea"
@@ -113,9 +126,9 @@
 import { ref, reactive, computed, onMounted, nextTick, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { ChatLineRound, User } from '@element-plus/icons-vue'
+import { ChatLineRound, User, WarningFilled } from '@element-plus/icons-vue'
 import { marked } from 'marked'
-import { sendMessageToAI, buildSystemPrompt } from '@/utils/ai-api'
+import { sendMessageToAI, buildSystemPrompt, AIError } from '@/utils/ai-api'
 
 const router = useRouter()
 
@@ -138,6 +151,8 @@ const messages = ref([])
 const historyVisible = ref(false)
 const conversations = ref([])
 const currentConversationId = ref(null) // 当前会话ID
+const lastError = ref(null) // 最后错误状态
+const retryMessage = ref(null) // 待重试的消息
 
 // 按日期分组的历史会话
 const groupedConversations = computed(() => {
@@ -198,10 +213,12 @@ const sendMessage = async () => {
     timestamp: new Date().getTime()
   }
   messages.value.push(userMsg)
+  const currentMessage = inputMessage.value
   inputMessage.value = ''
 
   isGenerating.value = true
   streamingContent.value = ''
+  clearError() // 清除之前的错误
   await nextTick(() => scrollToBottom())
 
   try {
@@ -242,12 +259,36 @@ const sendMessage = async () => {
 
     streamingContent.value = ''
   } catch (error) {
-    ElMessage.error(`请求失败: ${error.message}`)
-    // 添加错误消息
+    // 设置错误状态
+    if (error instanceof AIError) {
+      lastError.value = {
+        type: error.type,
+        message: error.message,
+        canRetry: true
+      }
+      retryMessage.value = currentMessage
+
+      // 显示错误消息
+      ElMessage.error({
+        message: getErrorTitle(error.type),
+        description: error.message,
+        duration: 5000
+      })
+    } else {
+      lastError.value = {
+        type: 'unknown',
+        message: error.message,
+        canRetry: true
+      }
+      retryMessage.value = currentMessage
+      ElMessage.error(`请求失败: ${error.message}`)
+    }
+
+    // 添加错误消息到对话
     const errorMsg = {
       id: Date.now() + 1,
       role: 'assistant',
-      content: `抱歉，请求失败：${error.message}。请检查您的API配置。`,
+      content: `抱歉，请求失败：${getErrorTitle(lastError.value.type)} - ${lastError.value.message}。您可以点击下方「重试」按钮重新发送，或检查配置后重试。`,
       timestamp: new Date().getTime()
     }
     messages.value.push(errorMsg)
@@ -278,10 +319,41 @@ const scrollToBottom = () => {
   }
 }
 
+// 错误处理相关
+const getErrorTitle = (errorType) => {
+  const titles = {
+    network: '网络连接失败',
+    auth: '认证失败',
+    config: '配置问题',
+    unsupported: '不支持的提供商',
+    api: '服务请求失败'
+  }
+  return titles[errorType] || '发生错误'
+}
+
+const clearError = () => {
+  lastError.value = null
+  retryMessage.value = null
+}
+
+const retryLastMessage = async () => {
+  if (retryMessage.value) {
+    const message = retryMessage.value
+    clearError()
+    await sendMessageWithRetry(message)
+  }
+}
+
+const sendMessageWithRetry = async (messageContent) => {
+  inputMessage.value = messageContent
+  await sendMessage()
+}
+
 const clearChat = () => {
   if (confirm('确定清空当前对话？')) {
     messages.value = []
     streamingContent.value = ''
+    clearError()
   }
 }
 
@@ -670,8 +742,57 @@ onMounted(() => {
 
 .chat-input-area {
   display: flex;
+  flex-direction: column;
   gap: 10px;
-  align-items: flex-end;
+}
+
+/* 错误提示banner */
+.error-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: #fef0f0;
+  border: 1px solid #fde2e2;
+  border-radius: 8px;
+  gap: 15px;
+}
+
+.error-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  flex: 1;
+}
+
+.error-icon {
+  color: #f56c6c;
+  font-size: 18px;
+  margin-top: 2px;
+}
+
+.error-message {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.error-title {
+  font-weight: bold;
+  color: #f56c6c;
+  font-size: 14px;
+}
+
+.error-text {
+  color: #606266;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.error-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
 .chat-input-area .el-input {

@@ -3,6 +3,16 @@
  * 支持多provider切换：OpenAI、Anthropic、国内供应商、其他
  */
 
+// 自定义错误类
+export class AIError extends Error {
+  constructor(type, message, details = null) {
+    super(message)
+    this.name = 'AIError'
+    this.type = type // 'network' | 'auth' | 'config' | 'unsupported' | 'api'
+    this.details = details
+  }
+}
+
 // 获取所有已配置的provider
 export function getProviders() {
   const saved = localStorage.getItem('ai_providers')
@@ -20,36 +30,69 @@ export async function sendMessageToAI(providerId, messages, options = {}) {
   const provider = getProviderById(providerId)
 
   if (!provider) {
-    throw new Error('Provider未找到')
+    throw new AIError('config', 'AI服务提供商未找到，请检查配置')
   }
 
   if (!provider.apiKey || !provider.baseUrl) {
-    throw new Error('Provider配置不完整')
+    throw new AIError('config', 'AI服务配置不完整，请完善API Key和Base URL')
+  }
+
+  // 检查provider类型支持
+  const supportedTypes = ['openai', 'anthropic', 'domestic', 'other']
+  if (!supportedTypes.includes(provider.type)) {
+    throw new AIError('unsupported', `暂不支持该AI服务商类型: ${provider.type}，请选择其他提供商或配置为"其他"类型`)
   }
 
   // 构建请求体（根据provider类型）
   const requestBody = buildRequestBody(provider, messages, options)
 
-  // 发送请求
-  const response = await fetch(`${provider.baseUrl}/chat/completions`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${provider.apiKey}`
-    },
-    body: JSON.stringify(requestBody)
-  })
+  try {
+    // 发送请求
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 30000) // 30秒超时
 
-  if (!response.ok) {
-    const errorText = await response.text()
-    throw new Error(`API请求失败: ${response.status} - ${errorText}`)
-  }
+    const response = await fetch(`${provider.baseUrl}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${provider.apiKey}`
+      },
+      body: JSON.stringify(requestBody),
+      signal: controller.signal
+    })
 
-  // 处理流式或非流式响应
-  if (options.stream) {
-    return handleStreamResponse(response)
-  } else {
-    return handleNormalResponse(response)
+    clearTimeout(timeoutId)
+
+    if (!response.ok) {
+      const errorText = await response.text()
+
+      // 根据状态码区分错误类型
+      if (response.status === 401 || response.status === 403) {
+        throw new AIError('auth', `API认证失败 (${response.status})，请检查您的API Key是否正确`, errorText)
+      } else if (response.status >= 500) {
+        throw new AIError('api', `AI服务端错误 (${response.status})，请稍后重试或更换服务商`, errorText)
+      } else {
+        throw new AIError('api', `请求失败: ${response.status} - ${errorText}`)
+      }
+    }
+
+    // 处理流式或非流式响应
+    if (options.stream) {
+      return handleStreamResponse(response)
+    } else {
+      return handleNormalResponse(response)
+    }
+  } catch (error) {
+    // 网络错误或请求失败
+    if (error.name === 'AbortError') {
+      throw new AIError('network', '请求超时，请检查网络连接或稍后重试')
+    } else if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+      throw new AIError('network', '网络连接失败，请检查您的网络设置')
+    } else if (error instanceof AIError) {
+      throw error // 重新抛出已分类的AI错误
+    } else {
+      throw new AIError('api', `请求异常: ${error.message}`)
+    }
   }
 }
 
@@ -131,11 +174,11 @@ export async function testProviderConnection(providerId) {
   const provider = getProviderById(providerId)
 
   if (!provider) {
-    return { success: false, error: 'Provider未找到' }
+    return { success: false, error: 'Provider未找到', errorType: 'config' }
   }
 
   if (!provider.apiKey || !provider.baseUrl) {
-    return { success: false, error: '配置不完整' }
+    return { success: false, error: '配置不完整', errorType: 'config' }
   }
 
   try {
@@ -149,7 +192,11 @@ export async function testProviderConnection(providerId) {
 
     return { success: true, response }
   } catch (error) {
-    return { success: false, error: error.message }
+    return {
+      success: false,
+      error: error.message,
+      errorType: error instanceof AIError ? error.type : 'unknown'
+    }
   }
 }
 
