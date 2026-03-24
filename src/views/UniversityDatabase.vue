@@ -77,6 +77,20 @@
       </el-card>
     </div>
 
+    <!-- 院校分页 -->
+    <div v-if="totalSchools.length > 0" class="pagination">
+      <el-pagination
+        v-model:current-page="currentSchoolPage"
+        v-model:page-size="schoolPageSize"
+        :page-sizes="[8, 12, 24, 48]"
+        :total="totalSchools.length"
+        layout="total, sizes, prev, pager, next, jumper"
+        background
+        @size-change="handleSchoolSizeChange"
+        @current-change="handleSchoolPageChange"
+      />
+    </div>
+
     <el-empty v-else description="暂无匹配的院校数据" />
 
       </el-tab-pane>
@@ -149,6 +163,20 @@
               </el-button>
             </div>
           </el-card>
+        </div>
+
+        <!-- 专业分页 -->
+        <div v-if="totalMajors.length > 0" class="pagination">
+          <el-pagination
+            v-model:current-page="currentMajorPage"
+            v-model:page-size="majorPageSize"
+            :page-sizes="[8, 12, 24, 48]"
+            :total="totalMajors.length"
+            layout="total, sizes, prev, pager, next, jumper"
+            background
+            @size-change="handleMajorSizeChange"
+            @current-change="handleMajorPageChange"
+          />
         </div>
 
         <el-empty v-else description="暂无匹配的专业数据" />
@@ -231,7 +259,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { Search } from '@element-plus/icons-vue'
@@ -243,8 +271,10 @@ const searchKeyword = ref('')
 const filterCountry = ref('')
 const filterRankRange = ref('')
 const filterMajor = ref('')
-const currentPage = ref(1)
-const pageSize = ref(12)
+const currentSchoolPage = ref(1)
+const schoolPageSize = ref(12)
+const currentMajorPage = ref(1)
+const majorPageSize = ref(12)
 const detailVisible = ref(false)
 const currentSchool = ref(null)
 const shortlisted = ref([])
@@ -285,8 +315,8 @@ const uniqueCategories = computed(() => {
   return [...new Set(categories)]
 })
 
-// 过滤后的专业列表
-const filteredMajors = computed(() => {
+// 专业过滤结果（不分页，用于总数统计和搜索消息）
+const totalMajors = computed(() => {
   let result = allMajors.value
   if (majorSearchKeyword.value) {
     const kw = majorSearchKeyword.value.toLowerCase()
@@ -303,6 +333,13 @@ const filteredMajors = computed(() => {
     result = result.filter(m => m.category === filterCategory.value)
   }
   return result
+})
+
+// 专业分页结果
+const filteredMajors = computed(() => {
+  const start = (currentMajorPage.value - 1) * majorPageSize.value
+  const end = start + majorPageSize.value
+  return totalMajors.value.slice(start, end)
 })
 
 // 获取类别标签类型
@@ -323,7 +360,8 @@ const getRankNumber = (ranking) => {
   return match ? parseInt(match[1]) : 999
 }
 
-const filteredSchools = computed(() => {
+// 院校过滤结果（不分页，用于总数统计和搜索消息）
+const totalSchools = computed(() => {
   let result = allSchools.value
   if (searchKeyword.value) {
     const kw = searchKeyword.value.toLowerCase()
@@ -350,8 +388,16 @@ const filteredSchools = computed(() => {
   return result
 })
 
+// 院校分页结果
+const filteredSchools = computed(() => {
+  const start = (currentSchoolPage.value - 1) * schoolPageSize.value
+  const end = start + schoolPageSize.value
+  return totalSchools.value.slice(start, end)
+})
+
 const search = () => {
-  ElMessage.success(`找到 ${filteredSchools.value.length} 所学校`)
+  currentSchoolPage.value = 1
+  ElMessage.success(`找到 ${totalSchools.value.length} 所学校`)
 }
 
 const resetFilters = () => {
@@ -359,17 +405,20 @@ const resetFilters = () => {
   filterCountry.value = ''
   filterRankRange.value = ''
   filterMajor.value = ''
+  currentSchoolPage.value = 1
 }
 
 // 专业搜索相关方法
 const searchMajors = () => {
-  ElMessage.success(`找到 ${filteredMajors.value.length} 个专业`)
+  currentMajorPage.value = 1
+  ElMessage.success(`找到 ${totalMajors.value.length} 个专业`)
 }
 
 const resetMajorFilters = () => {
   majorSearchKeyword.value = ''
   filterDegreeType.value = ''
   filterCategory.value = ''
+  currentMajorPage.value = 1
 }
 
 // 专业对比相关方法
@@ -442,13 +491,32 @@ const visitWebsite = (url) => {
   }
 }
 
-const handleSizeChange = (val) => {
-  pageSize.value = val
+const handleSchoolSizeChange = (val) => {
+  schoolPageSize.value = val
+  currentSchoolPage.value = 1
 }
 
-const handleCurrentChange = (val) => {
-  currentPage.value = val
+const handleSchoolPageChange = (val) => {
+  currentSchoolPage.value = val
 }
+
+const handleMajorSizeChange = (val) => {
+  majorPageSize.value = val
+  currentMajorPage.value = 1
+}
+
+const handleMajorPageChange = (val) => {
+  currentMajorPage.value = val
+}
+
+// 切换 tab 时重置分页
+watch(activeTab, (newTab) => {
+  if (newTab === 'schools') {
+    currentSchoolPage.value = 1
+  } else {
+    currentMajorPage.value = 1
+  }
+})
 
 onMounted(() => {
   const saved = localStorage.getItem('school_favorites')
@@ -776,6 +844,17 @@ onMounted(() => {
   margin-top: 30px;
   display: flex;
   justify-content: center;
+  padding: 16px 0;
+}
+
+/* 移动端分页器响应式 */
+@media (max-width: 480px) {
+  .pagination :deep(.el-pagination__total) {
+    display: none;
+  }
+  .pagination :deep(.el-pagination__jump) {
+    display: none;
+  }
 }
 
 .major-card {
