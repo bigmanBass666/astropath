@@ -634,8 +634,8 @@ onUnmounted(() => {
 
 .features-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 30px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 40px;
 }
 
 .feature-card {
@@ -741,8 +741,8 @@ onUnmounted(() => {
 
 .highlights-content {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 50px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 40px;
 }
 
 .highlight-item {
