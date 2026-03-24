@@ -1,4 +1,11 @@
-=== Session 6 — 2026-03-25 ===
+=== Session 7 — 2026-03-25 ===
+Feature worked on: F008 - 首页卡片内容排版间距不均匀修复
+Status: completed
+Git commit: a3c13e1
+Remaining features: 42 (passes:false)
+Notes: 通过Playwright精确测量发现Feature卡片内间距不均：icon→title 24px过大，title→desc 12px和desc→link 20px相对合理，link底部padding约36px过大。统一调整为icon→title 12px、title→desc 10px、desc→link 16px，Highlights区域同步调整为icon→title 12px、title→desc 8px。修复后所有6个Feature卡片cardHeight统一为261px，icon与title在每个卡片内完全居中对齐(offset:0)，左右卡片对应元素横坐标一致，布局整齐对称。
+
+
 Feature worked on: F007 - 首页卡片组件间距不均匀修复
 Status: completed
 Git commit: 1c19f1993fe69a8974e6a1ce8231560675e768b8
