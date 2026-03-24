@@ -350,7 +350,7 @@ onUnmounted(() => {
   position: relative;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
-  padding: 100px 20px 100px;
+  padding: 100px 120px 100px;
   text-align: center;
   overflow: hidden;
   opacity: var(--hero-opacity, 1);
@@ -425,7 +425,6 @@ onUnmounted(() => {
   z-index: 2;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 20px;
   box-sizing: border-box;
   opacity: 0;
   transform: translateY(30px);
@@ -591,7 +590,7 @@ onUnmounted(() => {
 
 /* ===== Features区域 ===== */
 .features {
-  padding: 100px 0;
+  padding: 100px 120px;
   background: #f5f7fa;
   opacity: 0;
   transform: translateY(40px);
@@ -723,7 +722,7 @@ onUnmounted(() => {
 
 /* ===== Highlights区域 ===== */
 .highlights {
-  padding: 100px 0;
+  padding: 100px 120px;
   background: white;
   opacity: 0;
   transform: translateY(40px);
@@ -779,7 +778,7 @@ onUnmounted(() => {
 /* ===== CTA区域 ===== */
 .cta-section {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 80px 20px;
+  padding: 80px 120px;
   text-align: center;
   opacity: 0;
   transform: translateY(30px);
@@ -904,11 +903,11 @@ onUnmounted(() => {
   }
 
   .features {
-    padding: 60px 0;
+    padding: 60px 20px;
   }
 
   .highlights {
-    padding: 60px 0;
+    padding: 60px 20px;
   }
 
   .cta-content h2 {
@@ -918,13 +917,17 @@ onUnmounted(() => {
   .scroll-indicator {
     display: none;
   }
+
+  .cta-section {
+    padding: 60px 20px;
+  }
 }
 
 /* ===== 页脚样式 ===== */
 .site-footer {
   background: #1a1a2e;
   color: #fff;
-  padding: 60px 0 0;
+  padding: 60px 120px 0;
 }
 
 .footer-content {
