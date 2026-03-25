@@ -88,3 +88,10 @@ Status: completed
 Git commit: 13e3d0c
 Remaining features: 76
 Notes: 通过Python Playwright端到端验证全部11项测试通过。确认：完成3步表单填写后点击「生成评估报告」，3秒加载动画后显示评估结果卡片；雷达图容器存在，ECharts canvas渲染成功（尺寸1118x400）；图表标题「竞争力雷达图」正确显示；5个维度（学术能力、语言能力、科研经历、实践背景、综合实力）全部在详细分析中呈现。F014代码已存在于Assessment.vue中（renderRadarChart函数 + radarRef div + echarts.init调用），无需额外编写。更新 F014 passes: true。
+
+=== Session 20 — 2026-03-25 ===
+Feature worked on: F015 - 背景评估数据保存在浏览器localStorage中，刷新页面后数据不丢失
+Status: completed
+Git commit: 3e10e27
+Remaining features: 75
+Notes: 通过Python Playwright端到端验证全部5项测试通过。确认：填写部分表单数据后刷新页面，姓名/语言成绩等数据完整保留；完成全部3步表单后点击生成评估报告，结果页面数据正确；新标签页访问/assessment时，数据从localStorage完整恢复（姓名李明、语言雅思7.0、GPA 3.0均正确显示）；点击「重新填写」确认后，localStorage清空且表单回到第1步。核心修复：将isResetting从普通变量改为Vue ref，确保watch在reset期间正确跳过保存；使用setTimeout延迟isResetting.value=false以解决Vue异步watch调度问题。F015代码已存在于Assessment.vue中（loadFromStorage + watch + resetForm），无需额外编写。更新 F015 passes: true。
