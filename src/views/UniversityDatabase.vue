@@ -74,11 +74,16 @@
           <h3>{{ school.name }}</h3>
           <el-tag :type="school.rankType" size="small">{{ school.ranking }}</el-tag>
         </div>
-        <p class="country">{{ school.country }}</p>
+        <div class="country-row">
+          <el-tag :type="getCountryTagType(school.country)" size="small" class="country-tag">
+            {{ getCountryAbbr(school.country) }}
+          </el-tag>
+          <span class="country-name">{{ school.country }}</span>
+        </div>
         <p class="major">{{ school.major }}</p>
         <div class="card-stats">
           <div class="stat-item">
-            <span class="stat-label">学费</span>
+            <span class="stat-label">费用范围</span>
             <span class="stat-value">{{ school.tuition }}</span>
           </div>
           <div class="stat-item">
@@ -87,6 +92,11 @@
               {{ school.acceptanceRate }}
             </span>
           </div>
+        </div>
+        <div class="deadline-row">
+          <el-icon class="deadline-icon"><Calendar /></el-icon>
+          <span class="deadline-label">申请截止：</span>
+          <span class="deadline-value">{{ school.deadline || '待公布' }}</span>
         </div>
         <div class="card-footer">
           <el-button type="primary" size="small" plain @click.stop="addToShortlist(school)">
@@ -108,7 +118,16 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column prop="country" label="国家/地区" width="100" />
+        <el-table-column prop="country" label="国家/地区" width="120">
+          <template #default="scope">
+            <div class="list-country">
+              <el-tag :type="getCountryTagType(scope.row.country)" size="small" class="country-tag">
+                {{ getCountryAbbr(scope.row.country) }}
+              </el-tag>
+              <span>{{ scope.row.country }}</span>
+            </div>
+          </template>
+        </el-table-column>
         <el-table-column prop="major" label="热门专业" width="140" />
         <el-table-column prop="tuition" label="学费" width="100" />
         <el-table-column prop="acceptanceRate" label="录取率" width="90">
@@ -316,7 +335,7 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { Search, List, Grid } from '@element-plus/icons-vue'
+import { Search, List, Grid, Calendar } from '@element-plus/icons-vue'
 import { majorsData } from '@/data/majors'
 
 const router = useRouter()
@@ -408,6 +427,46 @@ const getCategoryTagType = (category) => {
     '文科': 'danger'
   }
   return types[category] || 'info'
+}
+
+// 获取国家/地区缩写
+const getCountryAbbr = (country) => {
+  const abbrs = {
+    '美国': 'US',
+    '英国': 'UK',
+    '中国': 'CN',
+    '澳洲': 'AU',
+    '澳大利亚': 'AU',
+    '加拿大': 'CA',
+    '日本': 'JP',
+    '韩国': 'KR',
+    '新加坡': 'SG',
+    '德国': 'DE',
+    '法国': 'FR',
+    '香港': 'HK',
+    '欧洲': 'EU'
+  }
+  return abbrs[country] || country.substring(0, 2).toUpperCase()
+}
+
+// 获取国家/地区标签类型（用于颜色区分）
+const getCountryTagType = (country) => {
+  const types = {
+    '美国': 'danger',
+    '英国': 'warning',
+    '中国': 'success',
+    '澳洲': '',
+    '澳大利亚': '',
+    '加拿大': 'primary',
+    '日本': 'info',
+    '韩国': 'info',
+    '新加坡': 'warning',
+    '德国': 'primary',
+    '法国': 'primary',
+    '香港': 'warning',
+    '欧洲': 'primary'
+  }
+  return types[country] || 'info'
 }
 
 // 解析排名数字
@@ -940,6 +999,26 @@ onMounted(() => {
   margin-bottom: 5px;
 }
 
+.country-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 5px;
+}
+
+.country-tag {
+  font-weight: 600;
+  font-size: 11px;
+  padding: 0 6px;
+  height: 20px;
+  line-height: 18px;
+}
+
+.country-name {
+  color: #909399;
+  font-size: 14px;
+}
+
 .major {
   color: #667eea;
   font-weight: 500;
@@ -968,10 +1047,41 @@ onMounted(() => {
   font-weight: 500;
 }
 
+.deadline-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 12px;
+  padding: 8px 10px;
+  background: #fef0f0;
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+.deadline-icon {
+  color: #f56c6c;
+  font-size: 14px;
+}
+
+.deadline-label {
+  color: #909399;
+}
+
+.deadline-value {
+  color: #f56c6c;
+  font-weight: 500;
+}
+
 .card-footer {
   display: flex;
   gap: 8px;
   justify-content: flex-end;
+}
+
+.list-country {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .pagination {
