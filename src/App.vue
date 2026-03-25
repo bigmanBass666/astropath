@@ -200,21 +200,14 @@ const showContact = () => {
   margin: 0 auto;
   display: flex;
   align-items: center;
-  justify-content: flex-start;
-  height: 100%;
-}
-
-.logo {
-  flex-shrink: 0;
-}
-
-.nav-menu {
-  flex: 1;
-  display: flex;
   justify-content: center;
+  height: 100%;
+  position: relative;
 }
 
 .logo {
+  position: absolute;
+  left: 0;
   display: flex;
   align-items: center;
   cursor: pointer;
@@ -243,6 +236,9 @@ const showContact = () => {
   --el-menu-text-color: rgba(255, 255, 255, 0.9);
   /* 隐藏滚动条但保持滚动功能 */
   scrollbar-width: none; /* Firefox */
+  /* 菜单项水平居中 */
+  display: flex;
+  justify-content: center;
 }
 .nav-menu::-webkit-scrollbar {
   display: none; /* Chrome/Safari */
