@@ -94,7 +94,6 @@
           <el-button type="primary" size="small" plain @click.stop="addToShortlist(school)">
             {{ shortlisted.includes(school.id) ? '已在清单中' : '加入选校清单' }}
           </el-button>
-          <el-button size="small" @click.stop="showDetail(school)">查看详情</el-button>
         </div>
       </el-card>
     </div>
