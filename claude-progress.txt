@@ -60,3 +60,10 @@ Status: completed
 Git commit: ea056f4
 Remaining features: 81
 Notes: 发现架构问题：Home.vue有hasFooter:true因此在首页隐藏App.vue footer；首页Home.vue footer's "使用指南"用本地showGuide ref无法触发App.vue对话框。解决方案：App.vue使用provide('guideVisible/aboutVisible/contactVisible')共享状态，Home.vue用inject接收；移除Home.vue重复的指南对话框，更新App.vue指南内容为高质量三章节版本（含图标+ol/ul格式）：快速开始（6个步骤）、AI功能使用、数据持久化；「关于我们」和「联系方式」在非首页通过App.vue footer触发。通过Playwright端到端验证全部4步通过。更新 F009 passes: true。
+
+=== Session 14 — 2026-03-25 ===
+Feature worked on: F010 - 背景评估页面分为3个步骤：基础信息、学术背景、实践经历，步骤指示器实时显示当前进度
+Status: completed
+Git commit: 9faffe4
+Remaining features: 80
+Notes: 通过Playwright MCP端到端验证全部5个步骤通过。确认：页面标题「背景评估」、el-steps显示3步指示器（基础信息→学术背景→实践经历）、第1步激活状态正确；不填字段点击下一步显示验证错误（「请输入姓名」「请选择院校」）；填写姓名+选择985院校后点击下一步，步骤指示器变为第2步「学术背景」，card内容切换；第2步点击上一步返回第1步，姓名「李四」和院校「985院校」数据保持不变。Assessment.vue代码已完整实现，无需额外编写。更新 F010 passes: true。
