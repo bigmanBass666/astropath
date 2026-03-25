@@ -5,6 +5,7 @@
     <!-- 视图切换 -->
     <div class="view-toggle">
       <el-radio-group v-model="currentView" size="large">
+        <el-radio-button label="chart">图表视图</el-radio-button>
         <el-radio-button label="timeline">时间线</el-radio-button>
         <el-radio-button label="kanban">任务看板</el-radio-button>
       </el-radio-group>
@@ -13,6 +14,13 @@
         <el-option label="常规" value="normal" />
         <el-option label="宽松" value="relaxed" />
       </el-select>
+    </div>
+
+    <!-- ECharts图表视图 -->
+    <div v-if="currentView === 'chart'" class="chart-view">
+      <el-card class="chart-card">
+        <div ref="chartRef" class="timeline-chart"></div>
+      </el-card>
     </div>
 
     <!-- 时间线视图 -->
@@ -74,7 +82,7 @@
     </div>
 
     <!-- 看板视图 -->
-    <div v-else class="kanban-view">
+    <div v-if="currentView === 'kanban'" class="kanban-view">
       <div class="kanban-toolbar">
         <el-button
           type="warning"
@@ -180,17 +188,20 @@
 </template>
 
 <script setup>
-import { ref, computed, reactive, onMounted, onUnmounted } from 'vue'
+import { ref, computed, reactive, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { CircleCheck, Calendar, Plus, Bell, Back } from '@element-plus/icons-vue'
+import * as echarts from 'echarts'
 
-const currentView = ref('timeline')
+const currentView = ref('chart')
 const mode = ref('normal')
 const taskDialogVisible = ref(false)
 const editingTask = ref(null)
 const selectedMilestone = ref(null)
 const showOnlyUpcoming = ref(false)
 const notificationPermission = ref('default')
+const chartRef = ref(null)
+let chartInstance = null
 const taskForm = reactive({
   title: '',
   milestoneId: 1,
@@ -617,12 +628,202 @@ const deleteTask = (id) => {
     }).catch(() => {})
 }
 
+// ECharts图表相关
+const initChart = () => {
+  if (!chartRef.value) return
+
+  chartInstance = echarts.init(chartRef.value)
+  updateChart()
+  window.addEventListener('resize', () => {
+    chartInstance?.resize()
+  })
+}
+
+const updateChart = () => {
+  if (!chartInstance) return
+
+  // 构建数据：将里程碑和任务转换为时间线数据
+  const categories = milestones.value.map(m => m.title)
+
+  // 准备每个里程碑的数据点
+  const seriesData = milestones.value.map((milestone, index) => {
+    const totalTasks = milestone.tasks.length
+    const completedTasks = milestone.tasks.filter(t => t.completed).length
+    const progress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0
+
+    return {
+      name: milestone.title,
+      value: [
+        index + 1,
+        milestone.status === 'completed' ? 100 :
+        milestone.status === 'in-progress' ? 50 : 0,
+        progress,
+        milestone.status
+      ]
+    }
+  })
+
+  const option = {
+    title: {
+      text: '时间规划图表',
+      left: 'center',
+      textStyle: {
+        fontSize: 18,
+        color: '#303133'
+      }
+    },
+    tooltip: {
+      trigger: 'axis',
+      formatter: (params) => {
+        const data = params[0]
+        const milestone = milestones.value[data.dataIndex]
+        const total = milestone.tasks.length
+        const completed = milestone.tasks.filter(t => t.completed).length
+        return `
+          <strong>${milestone.title}</strong><br/>
+          截止日期：${formatDate(milestone.deadline)}<br/>
+          任务进度：${completed}/${total} (${total > 0 ? Math.round(completed/total*100) : 0}%)<br/>
+          状态：${getStatusLabel(milestone.status)}
+        `
+      }
+    },
+    grid: {
+      left: '5%',
+      right: '15%',
+      bottom: '10%',
+      top: '15%',
+      containLabel: true
+    },
+    xAxis: {
+      type: 'category',
+      data: categories,
+      axisLabel: {
+        color: '#606266',
+        fontSize: 12,
+        interval: 0,
+        rotate: 0
+      },
+      axisLine: {
+        lineStyle: {
+          color: '#dcdfe6'
+        }
+      }
+    },
+    yAxis: {
+      type: 'value',
+      name: '完成度 %',
+      min: 0,
+      max: 100,
+      axisLabel: {
+        formatter: '{value}%',
+        color: '#606266'
+      },
+      axisLine: {
+        lineStyle: {
+          color: '#dcdfe6'
+        }
+      },
+      splitLine: {
+        lineStyle: {
+          color: '#ebeef5'
+        }
+      }
+    },
+    series: [
+      {
+        name: '完成度',
+        type: 'bar',
+        data: seriesData.map(d => d.value[2]),
+        itemStyle: {
+          color: (params) => {
+            const status = milestones.value[params.dataIndex].status
+            const colors = {
+              completed: '#67c23a',
+              'in-progress': '#e6a23c',
+              pending: '#909399'
+            }
+            return colors[status] || '#909399'
+          },
+          borderRadius: [4, 4, 0, 0]
+        },
+        label: {
+          show: true,
+          position: 'top',
+          formatter: (params) => {
+            const m = milestones.value[params.dataIndex]
+            return `${m.tasks.filter(t => t.completed).length}/${m.tasks.length}`
+          },
+          fontSize: 12,
+          color: '#606266'
+        }
+      },
+      {
+        name: '状态线',
+        type: 'line',
+        data: seriesData.map(d => d.value[1]),
+        smooth: true,
+        symbol: 'circle',
+        symbolSize: 12,
+        lineStyle: {
+          width: 3,
+          color: '#667eea'
+        },
+        itemStyle: {
+          color: '#667eea',
+          borderWidth: 2,
+          borderColor: '#fff'
+        }
+      }
+    ],
+    legend: {
+      data: ['完成度', '状态线'],
+      bottom: 0
+    }
+  }
+
+  chartInstance.setOption(option)
+}
+
+// 监听视图切换
+watch(currentView, (newVal) => {
+  if (newVal === 'chart') {
+    nextTick(() => {
+      initChart()
+    })
+  }
+})
+
+// 监听数据变化更新图表
+watch([milestones, tasks], () => {
+  if (currentView.value === 'chart' && chartInstance) {
+    updateChart()
+  }
+}, { deep: true })
+
 onMounted(() => {
   console.log('Timeline loaded in mode:', mode.value)
   // 默认选中第一个里程碑
   if (milestones.value.length > 0) {
     selectedMilestone.value = milestones.value[0]
   }
+  // 请求通知权限
+  requestNotificationPermission()
+  // 每小时检查一次提醒
+  setInterval(checkTaskReminders, 60 * 60 * 1000)
+  // 立即检查一次
+  checkTaskReminders()
+
+  // 初始化图表（如果当前是图表视图）
+  if (currentView.value === 'chart') {
+    initChart()
+  }
+})
+
+onUnmounted(() => {
+  chartInstance?.dispose()
+  window.removeEventListener('resize', () => {
+    chartInstance?.resize()
+  })
 })
 </script>
 
@@ -637,6 +838,20 @@ onMounted(() => {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 24px;
+}
+
+/* 图表视图 */
+.chart-view {
+  margin-bottom: 24px;
+}
+
+.chart-card {
+  padding: 20px;
+}
+
+.timeline-chart {
+  width: 100%;
+  height: 400px;
 }
 
 .timeline-layout {
