@@ -4,3 +4,10 @@ Status: Planning complete. No application code written.
 Features defined: 90
 Tech stack: Vue 3 + Vite + Element-Plus + ECharts frontend
 Notes: All features marked passes:false. Coding agent will build incrementally.
+
+=== Session 4 — 2026-03-25 16:46 ===
+Feature worked on: F001 - 首页Hero区域展示
+Status: completed
+Git commit: ccac583
+Remaining features: 89
+Notes: 验证了Hero区域所有元素：主标题「一站式智能留学规划」带shimmer扫光动画、副标题打字机效果、3个统计数据、6个动态粒子、径向渐变叠加层动画。更新 F001 passes: true。
