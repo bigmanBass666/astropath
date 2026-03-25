@@ -236,7 +236,7 @@ onMounted(() => {
 
 .info-card-header h3 {
   margin: 0;
-  font-size: 17px;
+  font-size: 16px;
   font-weight: 600;
   color: #303133;
 }

@@ -1319,8 +1319,8 @@ onMounted(() => {
   pointer-events: none;
 }
 
-.rich-editor h1 {
-  font-size: 20px;
+.rich-editor :deep(h1) {
+  font-size: 22px;
   font-weight: bold;
   margin: 12px 0 8px 0;
   color: #303133;
@@ -1328,15 +1328,15 @@ onMounted(() => {
   padding-bottom: 6px;
 }
 
-.rich-editor h2 {
-  font-size: 17px;
+.rich-editor :deep(h2) {
+  font-size: 18px;
   font-weight: bold;
   margin: 10px 0 6px 0;
   color: #303133;
 }
 
-.rich-editor h3 {
-  font-size: 15px;
+.rich-editor :deep(h3) {
+  font-size: 16px;
   font-weight: bold;
   margin: 8px 0 4px 0;
   color: #606266;
@@ -1588,7 +1588,7 @@ onMounted(() => {
 }
 
 .essay-type-card h4 {
-  font-size: 18px;
+  font-size: 16px;
   margin: 0 0 10px 0;
   color: #303133;
 }
@@ -1757,7 +1757,7 @@ onMounted(() => {
 }
 
 .essay-type-card h4 {
-  font-size: 18px;
+  font-size: 16px;
   margin: 0 0 10px 0;
   color: #303133;
 }
