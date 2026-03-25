@@ -25,3 +25,10 @@ Status: completed
 Git commit: 108a2b86
 Remaining features: 87
 Notes: 通过Playwright MCP端到端验证。确认：核心功能标题「核心功能」+紫色渐变装饰线、6个功能卡片（背景评估/AI智能选校/时间规划/材料中心/院校数据库/AI智能对话）全部存在且布局为2列grid、每卡片含图标+标题+描述+链接、悬停时box-shadow和border-color变化（rgba(102,126,234)）、点击第1卡→/assessment、第2卡→/school-recommendation、第3卡→/timeline全部验证通过。更新 F003 passes: true。
+
+=== Session 8 — 2026-03-25 ===
+Feature worked on: F004 - 首页平台特色区（4个特色亮点：AI驱动/动态规划/数据可视化/智能体对话）
+Status: completed
+Git commit: fc2f843
+Remaining features: 86
+Notes: 修复图标渲染bug：el-icon使用:is=componentObject导致图标为空，改为el-icon>component :is=正确嵌套后SVG图标正确渲染。同时修复了功能卡片的图标（影响F003的可视化显示）。通过Playwright端到端验证：标题存在、4项+SVG图标正确、淡入动画正常(scale=1.1悬停效果)。更新 F004 passes: true。
