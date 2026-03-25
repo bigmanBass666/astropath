@@ -219,7 +219,7 @@
       "验证表格中该行的模型列更新为「deepseek-coder」，对话框关闭",
       "点击「删除」按钮删除该供应商，验证表格中该行被移除，ElMessage提示「已删除」"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "F018",

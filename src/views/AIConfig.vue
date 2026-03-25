@@ -20,6 +20,7 @@
             {{ '*'.repeat(row.apiKey?.length || 0) }}
           </template>
         </el-table-column>
+        <el-table-column prop="model" label="模型名称" min-width="140" show-overflow-tooltip />
         <el-table-column prop="status" label="状态" min-width="90">
           <template #default="{ row }">
             <el-tag :type="row.status === 'connected' ? 'success' : 'info'">
