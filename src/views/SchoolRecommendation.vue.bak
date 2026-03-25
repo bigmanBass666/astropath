@@ -48,12 +48,6 @@
           <el-button type="primary" @click="startRecommendation" :loading="recommending">
             {{ recommending ? '计算中...' : '开始推荐' }}
           </el-button>
-          <el-select v-model="strategy" placeholder="推荐策略" style="width: 180px;">
-            <el-option label="全部展示" value="all" />
-            <el-option label="冲刺院校" value="reach" />
-            <el-option label="匹配院校" value="match" />
-            <el-option label="保底院校" value="safe" />
-          </el-select>
           <el-button @click="toggleCompare" :disabled="selectedSchools.length === 0">
             对比选中 ({{ selectedSchools.length }})
           </el-button>
@@ -256,15 +250,12 @@ const mockSchools = [
   { id: 3, name: 'MIT', country: '美国', major: 'CS', ranking: 'QS #3', match: 92, deadline: '2025-01-03', tuition: '$53,000', acceptanceRate: '3.9%', requirements: ['GPA 3.95+', 'Olympiad medals preferred'], website: 'https://mit.edu' },
   { id: 4, name: 'Oxford University', country: '英国', major: 'CS', ranking: 'QS #4', match: 85, deadline: '2025-01-15', tuition: '£35,000', acceptanceRate: '18%', requirements: ['First Class Degree', 'Strong references'], website: 'https://ox.ac.uk' },
   { id: 5, name: 'Cambridge University', country: '英国', major: 'CS', ranking: 'QS #5', match: 82, deadline: '2025-01-20', tuition: '£34,000', acceptanceRate: '19%', requirements: ['2:1 Degree minimum'], website: 'https://cam.ac.uk' },
-  { id: 6, name: 'Tsinghua University', country: '中国', major: 'CS', ranking: 'QS #25', match: 75, deadline: '2025-03-01', tuition: '¥30,000', acceptanceRate: '15%', requirements: ['GPA 3.5+'], website: 'https://tsinghua.edu.cn' },
-  { id: 7, name: 'University of Queensland', country: '澳大利亚', major: 'CS', ranking: 'QS #50', match: 65, deadline: '2025-02-15', tuition: 'AUD 40,000', acceptanceRate: '30%', requirements: ['GPA 3.0+'], website: 'https://uq.edu.au' }
+  { id: 6, name: 'Tsinghua University', country: '中国', major: 'CS', ranking: 'QS #25', match: 75, deadline: '2025-03-01', tuition: '¥30,000', acceptanceRate: '15%', requirements: ['GPA 3.5+'], website: 'https://tsinghua.edu.cn' }
 ]
 
 // 计算属性：可用的国家列表
 const availableCountries = computed(() => {
-  const countries = new Set()
-  mockSchools.forEach(s => countries.add(s.country))
-  return Array.from(countries).sort()
+  return filteredAndSortedSchools.value.filter(s => s.match <= 70)
 })
 
 // 计算属性：过滤和排序后的学校列表
@@ -296,17 +287,7 @@ const filteredAndSortedSchools = computed(() => {
   }
 
   return result
-})
-
-// 计算属性：三类学校分类
-const reachSchools = computed(() => {
-  return filteredAndSortedSchools.value.filter(s => s.match >= 85)
-})
-const matchSchools = computed(() => {
-  return filteredAndSortedSchools.value.filter(s => s.match >= 70 && s.match < 85)
-})
-const safeSchools = computed(() => {
-  return filteredAndSortedSchools.value.filter(s => s.match < 70)
+// 计算属性：三类学校分类const reachSchools = computed(() => {  return filteredAndSortedSchools.value.filter(s => s.match >= 80)})const matchSchools = computed(() => {  return filteredAndSortedSchools.value.filter(s => s.match >= 70 && s.match < 85)})const safeSchools = computed(() => {  return filteredAndSortedSchools.value.filter(s => s.match <= 70)})
 })
 
 const getScoreTagType = (score) => {
@@ -341,10 +322,9 @@ const startRecommendation = () => {
 
     const filterByStrategy = (list) => {
       switch (strategy.value) {
-        case 'reach': return list.filter(s => s.match >= 85)
-        case 'safe': return list.filter(s => s.match < 70)
-        case 'match': return list.filter(s => s.match >= 70 && s.match < 85)
-        default: return list // 'all' returns all schools
+        case 'reach': return list.filter(s => s.match >= 80)
+        case 'safe': return list.filter(s => s.match <= 70)
+        default: return list.filter(s => s.match >= 70 && s.match < 85)
       }
     }
     schools.value = filterByStrategy(mockSchools)
