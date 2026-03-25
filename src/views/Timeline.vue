@@ -24,7 +24,7 @@
     </div>
 
     <!-- 时间线视图 -->
-    <div v-if="currentView === 'timeline'" class="timeline-view">
+    <div v-else-if="currentView === 'timeline'" class="timeline-view">
       <el-card class="timeline-card">
         <div class="timeline-layout">
           <!-- 左侧时间线 -->
@@ -82,7 +82,7 @@
     </div>
 
     <!-- 看板视图 -->
-    <div v-if="currentView === 'kanban'" class="kanban-view">
+    <div v-else class="kanban-view">
       <div class="kanban-toolbar">
         <el-button
           type="warning"
