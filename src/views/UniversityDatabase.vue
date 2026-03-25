@@ -70,13 +70,6 @@
       <div v-if="filteredSchools.length > 0 && viewMode === 'card'" key="card" class="schools-grid">
       <el-card v-for="school in filteredSchools" :key="school.id" class="school-card"
         shadow="hover" @click="showDetail(school)">
-        <!-- 快速查看按钮（悬停显示） -->
-        <div class="quick-view-btn">
-          <el-button type="primary" size="small" round @click.stop="showDetail(school)">
-            快速查看
-          </el-button>
-        </div>
-
         <div class="card-header">
           <h3>{{ school.name }}</h3>
           <el-tag :type="school.rankType" size="small">{{ school.ranking }}</el-tag>
@@ -914,22 +907,6 @@ onMounted(() => {
 .school-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 8px 24px rgba(102, 126, 234, 0.2);
-}
-
-/* 快速查看按钮 - 悬停显示 */
-.quick-view-btn {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  opacity: 0;
-  transform: translateY(-10px);
-  transition: all 0.3s ease;
-  z-index: 10;
-}
-
-.school-card:hover .quick-view-btn {
-  opacity: 1;
-  transform: translateY(0);
 }
 
 .card-header {
