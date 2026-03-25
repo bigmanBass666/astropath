@@ -1,4 +1,11 @@
-=== Session 30 — 2026-03-25 ===
+=== Session 31 — 2026-03-25 ===
+Feature worked on: F040 - 响应式布局下专业库页面布局错乱，需修复移动端适配
+Status: completed
+Git commit: 533d3edd5027b53fb100ef9fb117bcdd4300b6d4 (feat) + d6544171457889bd04f55e1404ed369acd2e0bae (passes:true)
+Remaining features: 17 (passes:false)
+Notes: 通过 Playwright 多视口测试发现专业库页面（专业搜索 tab）在移动端的核心问题：专业卡片固定 360px 高度 + overflow:hidden 导致移动端内容被截断（课程列表和就业方向被隐藏）。修复方案：(1) 添加 @media(max-width:480px) 移动端媒体查询，取消 major-card 的固定高度约束，改为 height:auto/min-height:0/overflow:visible；(2) 取消 major-description/major-career/major-courses 的 max-height 截断限制；(3) 添加 compare-bar 对比操作栏样式（移动端垂直堆叠、按钮全宽）；(4) 为专业对比对话框添加 major-compare-dialog class，768px 下宽度 90%、480px 下宽度 96%；(5) 对比表格内容在移动端允许换行。Playwright 三视口验证：375px 专业卡片单列，内容完整（description/courses/career 全显示），对比栏正常，分页器精简，768px 专业卡片 2 列，1280px 专业卡片 3 列，无横向溢出，smoke test 通过。F040 passes:true。
+
+
 Feature worked on: AIChat 页面移动端响应式布局修复
 Status: completed
 Git commit: 6188ea6c3e2e204eba858ae53b3b096d84b94ac7
