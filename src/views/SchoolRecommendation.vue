@@ -31,6 +31,13 @@
             <el-option label="全部" value="" />
             <el-option v-for="country in availableCountries" :key="country" :label="country" :value="country" />
           </el-select>
+          <el-select v-model="selectedMajor" placeholder="筛选专业" clearable style="width: 150px;">
+            <el-option label="全部" value="" />
+            <el-option v-for="major in availableMajors" :key="major" :label="major" :value="major" />
+          </el-select>
+          <el-select v-model="rankingRange" placeholder="排名范围" clearable style="width: 150px;">
+            <el-option v-for="range in rankingRanges" :key="range.value" :label="range.label" :value="range.value" />
+          </el-select>
           <el-select v-model="filterFavorites" placeholder="显示收藏" style="width: 120px;">
             <el-option label="全部" :value="false" />
             <el-option label="仅收藏" :value="true" />
@@ -42,6 +49,9 @@
             <el-option label="截止日期 (近→远)" value="deadline-asc" />
             <el-option label="截止日期 (远→近)" value="deadline-desc" />
           </el-select>
+          <el-button v-if="hasActiveFilters" type="primary" link @click="clearAllFilters" class="clear-filters-btn">
+            清除筛选
+          </el-button>
           <span class="result-count">共 {{ filteredAndSortedSchools.length }} 所学校</span>
         </div>
       </el-card>
@@ -249,6 +259,8 @@ const detailVisible = ref(false)
 const compareVisible = ref(false)
 const currentSchool = ref(null)
 const selectedCountry = ref('')
+const selectedMajor = ref('')
+const rankingRange = ref('')
 const sortBy = ref('default')
 const filterFavorites = ref(false)
 const compareMode = ref('selected') // 'selected' or 'favorites'
@@ -272,6 +284,43 @@ const availableCountries = computed(() => {
   return Array.from(countries).sort()
 })
 
+// 计算属性：可用的专业方向列表
+const availableMajors = computed(() => {
+  const majors = new Set()
+  mockSchools.forEach(s => majors.add(s.major))
+  return Array.from(majors).sort()
+})
+
+// 计算属性：可用的排名范围选项
+const rankingRanges = [
+  { label: '全部', value: '' },
+  { label: 'Top 10', value: 'top10' },
+  { label: 'Top 20', value: 'top20' },
+  { label: 'Top 50', value: 'top50' },
+  { label: 'Top 100', value: 'top100' }
+]
+
+// 将排名字符串转换为数字用于比较
+const getRankingNumber = (ranking) => {
+  const match = ranking.match(/QS #(\d+)/)
+  return match ? parseInt(match[1]) : 999
+}
+
+// 计算属性：是否有激活的筛选条件
+const hasActiveFilters = computed(() => {
+  return !!(selectedCountry.value || selectedMajor.value || rankingRange.value || filterFavorites.value)
+})
+
+// 清除所有筛选条件
+const clearAllFilters = () => {
+  selectedCountry.value = ''
+  selectedMajor.value = ''
+  rankingRange.value = ''
+  filterFavorites.value = false
+  sortBy.value = 'default'
+  ElMessage.info('已清除所有筛选条件')
+}
+
 // 计算属性：过滤和排序后的学校列表
 const filteredAndSortedSchools = computed(() => {
   let result = [...schools.value]
@@ -284,6 +333,25 @@ const filteredAndSortedSchools = computed(() => {
   // 国家筛选
   if (selectedCountry.value) {
     result = result.filter(s => s.country === selectedCountry.value)
+  }
+
+  // 专业方向筛选
+  if (selectedMajor.value) {
+    result = result.filter(s => s.major === selectedMajor.value)
+  }
+
+  // 排名范围筛选
+  if (rankingRange.value) {
+    result = result.filter(s => {
+      const rank = getRankingNumber(s.ranking)
+      switch (rankingRange.value) {
+        case 'top10': return rank <= 10
+        case 'top20': return rank <= 20
+        case 'top50': return rank <= 50
+        case 'top100': return rank <= 100
+        default: return true
+      }
+    })
   }
 
   // 排序
@@ -439,6 +507,10 @@ onMounted(() => {
     set strategy(val) { strategy.value = val },
     get selectedCountry() { return selectedCountry.value },
     set selectedCountry(val) { selectedCountry.value = val },
+    get selectedMajor() { return selectedMajor.value },
+    set selectedMajor(val) { selectedMajor.value = val },
+    get rankingRange() { return rankingRange.value },
+    set rankingRange(val) { rankingRange.value = val },
     get filterFavorites() { return filterFavorites.value },
     set filterFavorites(val) { filterFavorites.value = val },
     get sortBy() { return sortBy.value },
@@ -453,7 +525,11 @@ onMounted(() => {
     get compareMode() { return compareMode.value },
     toggleCompare,
     toggleCompareFavorites,
-    removeFavoriteAndClose
+    removeFavoriteAndClose,
+    clearAllFilters,
+    get hasActiveFilters() { return hasActiveFilters.value },
+    get availableMajors() { return availableMajors.value },
+    get rankingRanges() { return rankingRanges.value }
   }
 })
 </script>
@@ -482,6 +558,7 @@ onMounted(() => {
   display: flex;
   gap: 12px;
   align-items: center;
+.clear-filters-btn {  margin-left: 8px;}
   flex-wrap: wrap;
 }
 
