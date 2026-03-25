@@ -10,17 +10,15 @@
         <el-menu
           :default-active="activeMenu"
           mode="horizontal"
-          :router="true"
           class="nav-menu desktop-nav"
         >
-          <el-menu-item index="/">首页</el-menu-item>
-          <el-menu-item index="/ai-config">AI配置</el-menu-item>
-          <el-menu-item index="/assessment">背景评估</el-menu-item>
-          <el-menu-item index="/school-recommendation">选校推荐</el-menu-item>
-          <el-menu-item index="/timeline">时间规划</el-menu-item>
-          <el-menu-item index="/materials">材料中心</el-menu-item>
-          <el-menu-item index="/university-database">院校数据库</el-menu-item>
-          <el-menu-item index="/ai-chat">AI对话</el-menu-item>
+          <el-menu-item
+            v-for="item in menuItems"
+            :key="item.path"
+            :index="item.path"
+            @click="$router.push(item.path)"
+            :class="{ 'is-active': activeMenu === item.path }"
+          >{{ item.name }}</el-menu-item>
         </el-menu>
         <!-- 移动端汉堡菜单按钮 -->
         <button class="hamburger-btn" @click="mobileMenuVisible = true" aria-label="打开菜单">
