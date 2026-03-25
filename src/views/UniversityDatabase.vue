@@ -44,8 +44,23 @@
           </div>
         </el-card>
 
-    <!-- 院校网格 -->
-    <div v-if="filteredSchools.length > 0" class="schools-grid">
+        <!-- 视图切换控件 -->
+        <div class="view-toggle">
+          <el-radio-group v-model="viewMode" size="small">
+            <el-radio-button value="card">
+              <el-icon><Grid /></el-icon>
+              卡片视图
+            </el-radio-button>
+            <el-radio-button value="list">
+              <el-icon><List /></el-icon>
+              列表视图
+            </el-radio-button>
+          </el-radio-group>
+        </div>
+
+    <!-- 院校网格 - 卡片视图 -->
+    <transition name="fade" mode="out-in">
+      <div v-if="filteredSchools.length > 0 && viewMode === 'card'" key="card" class="schools-grid">
       <el-card v-for="school in filteredSchools" :key="school.id" class="school-card"
         shadow="hover" @click="showDetail(school)">
         <!-- 快速查看按钮（悬停显示） -->
@@ -81,6 +96,40 @@
         </div>
       </el-card>
     </div>
+
+    <!-- 院校列表 - 列表视图 -->
+    <div v-else-if="filteredSchools.length > 0 && viewMode === 'list'" key="list" class="schools-list">
+      <el-table :data="filteredSchools" stripe style="width: 100%" @row-click="showDetail">
+        <el-table-column prop="name" label="院校名称" min-width="180">
+          <template #default="scope">
+            <div class="list-school-name">
+              <span class="name-text">{{ scope.row.name }}</span>
+              <el-tag :type="scope.row.rankType" size="small" class="rank-tag">{{ scope.row.ranking }}</el-tag>
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column prop="country" label="国家/地区" width="100" />
+        <el-table-column prop="major" label="热门专业" width="140" />
+        <el-table-column prop="tuition" label="学费" width="100" />
+        <el-table-column prop="acceptanceRate" label="录取率" width="90">
+          <template #default="scope">
+            <span :class="{ 'low-rate': parseFloat(scope.row.acceptanceRate) < 20 }">
+              {{ scope.row.acceptanceRate }}
+            </span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="deadline" label="申请截止" width="100" />
+        <el-table-column label="操作" width="160" fixed="right">
+          <template #default="scope">
+            <el-button type="primary" size="small" plain @click.stop="addToShortlist(scope.row)">
+              {{ shortlisted.includes(scope.row.id) ? '已加入' : '加入清单' }}
+            </el-button>
+            <el-button size="small" @click.stop="showDetail(scope.row)">详情</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+    </div>
+    </transition>
 
     <!-- 院校分页 -->
     <div v-if="totalSchools.length > 0" class="pagination">
@@ -267,7 +316,7 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { Search } from '@element-plus/icons-vue'
+import { Search, List, Grid } from '@element-plus/icons-vue'
 import { majorsData } from '@/data/majors'
 
 const router = useRouter()
@@ -277,6 +326,7 @@ const filterCountry = ref('')
 const filterRankRange = ref('')
 const filterMajor = ref('')
 const sortBy = ref('')
+const viewMode = ref('card')
 const currentSchoolPage = ref(1)
 const schoolPageSize = ref(12)
 const currentMajorPage = ref(1)
@@ -553,6 +603,69 @@ onMounted(() => {
 <style scoped>
 .university-database-page {
   /* 不设置 max-width，与首页各区域保持一致，填满 app-main 全宽 */
+}
+
+/* 视图切换控件 */
+.view-toggle {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 16px;
+}
+
+.view-toggle :deep(.el-radio-button__inner) {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* 过渡动画 */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+/* 列表视图样式 */
+.schools-list {
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.schools-list :deep(.el-table) {
+  border-radius: 8px;
+}
+
+.schools-list :deep(.el-table__row) {
+  cursor: pointer;
+}
+
+.schools-list :deep(.el-table__row:hover) {
+  background-color: #f5f7fa;
+}
+
+.list-school-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.list-school-name .name-text {
+  font-weight: 500;
+  color: #303133;
+}
+
+.list-school-name .rank-tag {
+  flex-shrink: 0;
+}
+
+.low-rate {
+  color: #f56c6c;
+  font-weight: 500;
 }
 
 .search-card {
