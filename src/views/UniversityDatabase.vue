@@ -17,8 +17,7 @@
         <el-card class="search-card">
           <div class="search-controls">
             <div class="search-row search-row--filters">
-              <el-input v-model="searchKeyword" placeholder="搜索学校名称或专业" clearable class="filter-search-input"
-                style="width: 280px !important; flex: 0 0 280px !important;">
+              <el-input v-model="searchKeyword" placeholder="搜索学校名称或专业" clearable class="filter-search-input">
                 <template #prefix>
                   <el-icon><Search /></el-icon>
                 </template>
@@ -164,8 +163,7 @@
         <el-card class="search-card">
           <div class="search-controls">
             <div class="search-row search-row--filters">
-              <el-input v-model="majorSearchKeyword" placeholder="搜索专业名称或类别" clearable class="filter-search-input filter-search-input--major"
-                style="width: 280px !important; flex: 0 0 280px !important;">
+              <el-input v-model="majorSearchKeyword" placeholder="搜索专业名称或类别" clearable class="filter-search-input filter-search-input--major">
                 <template #prefix>
                   <el-icon><Search /></el-icon>
                 </template>
@@ -691,16 +689,15 @@ onMounted(() => {
 
 /* 响应式筛选控件 */
 .filter-search-input {
-  flex: 1 1 200px;
+  flex: 1 1 100%;
   min-width: 0;
-  max-width: 300px;
+  width: 100%;
 }
 
 .filter-search-input--major {
-  /* 与院校搜索的 filter-search-input 保持一致，不设置固定宽度 */
-  flex: 1 1 200px;
+  flex: 1 1 100%;
   min-width: 0;
-  max-width: 300px;
+  width: 100%;
 }
 
 .filter-search-input :deep(.el-input__wrapper) {
