@@ -61,7 +61,7 @@
             :style="{ animationDelay: `${index * 0.1}s` }"
             @click="navigateTo(feature.path)">
             <div class="feature-icon-wrapper">
-              <el-icon class="feature-icon" :is="feature.icon" />
+              <el-icon class="feature-icon"><component :is="feature.icon" /></el-icon>
             </div>
             <h3>{{ feature.title }}</h3>
             <p>{{ feature.desc }}</p>
@@ -82,7 +82,7 @@
           <div class="highlight-item" v-for="(item, index) in highlights" :key="index"
             :style="{ animationDelay: `${index * 0.15}s` }">
             <div class="highlight-icon-wrapper">
-              <el-icon :size="48" color="#667eea" :is="item.icon" />
+              <el-icon :size="48" color="#667eea"><component :is="item.icon" /></el-icon>
             </div>
             <h4>{{ item.title }}</h4>
             <p>{{ item.desc }}</p>
