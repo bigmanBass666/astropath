@@ -31,6 +31,11 @@
               <el-select v-model="filterMajor" placeholder="专业领域" clearable class="filter-select filter-select--major">
                 <el-option v-for="major in uniqueMajors" :key="major" :label="major" :value="major" />
               </el-select>
+              <el-select v-model="sortBy" placeholder="排序" clearable class="filter-select filter-select--sort">
+                <el-option label="QS排名" value="qs_rank" />
+                <el-option label="录取率" value="acceptance_rate" />
+                <el-option label="学费" value="tuition" />
+              </el-select>
             </div>
             <div class="search-row search-row--actions">
               <el-button type="primary" class="search-btn" @click="search">搜索</el-button>
@@ -271,6 +276,7 @@ const searchKeyword = ref('')
 const filterCountry = ref('')
 const filterRankRange = ref('')
 const filterMajor = ref('')
+const sortBy = ref('')
 const currentSchoolPage = ref(1)
 const schoolPageSize = ref(12)
 const currentMajorPage = ref(1)
@@ -385,6 +391,20 @@ const totalSchools = computed(() => {
       }
     })
   }
+  if (sortBy.value) {
+    result = [...result].sort((a, b) => {
+      switch (sortBy.value) {
+        case 'qs_rank':
+          return getRankNumber(a.ranking) - getRankNumber(b.ranking)
+        case 'acceptance_rate':
+          return parseFloat(a.acceptanceRate) - parseFloat(b.acceptanceRate)
+        case 'tuition':
+          return a.tuition.localeCompare(b.tuition)
+        default:
+          return 0
+      }
+    })
+  }
   return result
 })
 
@@ -405,6 +425,7 @@ const resetFilters = () => {
   filterCountry.value = ''
   filterRankRange.value = ''
   filterMajor.value = ''
+  sortBy.value = ''
   currentSchoolPage.value = 1
 }
 
