@@ -18,7 +18,7 @@
           <div class="search-controls">
             <div class="search-row search-row--filters">
               <el-input v-model="searchKeyword" placeholder="搜索学校名称或专业" clearable class="filter-search-input"
-                style="width: 180px !important; flex: 0 0 180px !important;">
+                style="width: 280px !important; flex: 0 0 280px !important;">
                 <template #prefix>
                   <el-icon><Search /></el-icon>
                 </template>
@@ -164,7 +164,8 @@
         <el-card class="search-card">
           <div class="search-controls">
             <div class="search-row search-row--filters">
-              <el-input v-model="majorSearchKeyword" placeholder="搜索专业名称或类别" clearable class="filter-search-input filter-search-input--major">
+              <el-input v-model="majorSearchKeyword" placeholder="搜索专业名称或类别" clearable class="filter-search-input filter-search-input--major"
+                style="width: 280px !important; flex: 0 0 280px !important;">
                 <template #prefix>
                   <el-icon><Search /></el-icon>
                 </template>
