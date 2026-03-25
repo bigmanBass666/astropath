@@ -1,45 +1,40 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# 1. Install dependencies
-npm install
+# 1. 安装依赖（仅在 node_modules 不存在时执行）
+if [ ! -d "node_modules" ]; then
+  echo "Installing dependencies..."
+  npm install
+fi
 
-# 2. Kill any leftover dev server from a previous session
+# 2. 终止之前会话遗留的任何开发服务器
 pkill -f "node.*vite" 2>/dev/null || true
+pkill -f "vite.*server" 2>/dev/null || true
 sleep 1
 
-# 3. Start dev server in background, capturing output
-npm run dev > /tmp/vite-dev.log 2>&1 &
+# 3. 在后台启动开发服务器
+echo "Starting Vite dev server..."
+npm run dev &
 DEV_PID=$!
 
-# 4. Wait until server is ready, detecting the actual port dynamically
+# 4. 等待服务器就绪（最多重试 60 秒）
 echo "Waiting for server..."
-DETECTED_PORT=""
 for i in $(seq 1 30); do
-  # Try common Vite ports in range 3000-3020
-  for port in 3000 3001 3002 3003 3004 3005 3006 3007 3008 3009 3010 3011 3012 3013 3014 3015 3016 3017 3018 3019 3020; do
-    if curl -sf "http://localhost:$port/" > /dev/null 2>&1; then
-      DETECTED_PORT=$port
-      break 2
-    fi
-  done
+  curl -sf http://localhost:5173/ && { echo "Server ready."; break; }
   [ $i -eq 30 ] && { echo "SMOKE TEST FAILED: server never started"; kill $DEV_PID 2>/dev/null; exit 1; }
   sleep 2
 done
 
-echo "Server ready on port $DETECTED_PORT."
-
-# 5. Basic smoke test — verify the app returns a 200 and key content
-BODY=$(curl -sf "http://localhost:$DETECTED_PORT/")
-echo "$BODY" | grep -q "留学" \
+# 5. 基本冒烟测试 — 验证应用返回 200 和关键内容
+BODY=$(curl -sf http://localhost:5173/)
+echo "$BODY" | grep -q "留学规划平台" \
   && echo "SMOKE TEST PASSED" \
   || { echo "SMOKE TEST FAILED: expected content not found"; kill $DEV_PID 2>/dev/null; exit 1; }
 
-# ⚠️  CRITICAL: DO NOT add `wait $DEV_PID` here.
+# ⚠️ 关键：不要在此处添加 `wait $DEV_PID`。
 #
-# The dev server must keep running in the background after init.sh exits so the
-# coding agent can use it for browser testing.  `wait $DEV_PID` would block
-# forever because the dev server never exits on its own — this hangs the entire
-# claude session and forces a timeout.
+# 开发服务器必须在 init.sh 退出后继续在后台运行，以便编码代理可以
+# 将其用于浏览器测试。`wait $DEV_PID` 会永久阻塞 — 这是因为开发服务器
+# 从不自行退出 — 这会挂起整个 Claude 会话并强制超时。
 #
-# The harness manages session lifetime; init.sh only starts the server.
+# 装备 (harness) 管理会话生命周期；init.sh 只启动服务器。
