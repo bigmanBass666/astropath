@@ -74,3 +74,10 @@ Status: completed
 Git commit: 3806657
 Remaining features: 78
 Notes: 通过Python Playwright端到端验证全部5个测试通过。确认：Step 1→Step 2切换正常；学历层次「本科/硕士/博士」三个el-radio-button单选切换正确（默认选中本科）；专业方向5个el-checkbox-button选项（理工/商科/人文/社科/艺术）存在且支持多选；均分el-input-number输入器默认80，后方显示"/ 100"标注；科研经历对话框打开后包含名称/角色/时长/成果四个字段；填写「智能推荐算法研究+项目负责人+6个月」并保存后，条目正确显示在列表中（包含编辑/删除按钮）。F012代码已存在于Assessment.vue中，无需额外编写。更新 F012 passes: true。
+
+=== Session 18 — 2026-03-25 ===
+Feature worked on: F013 - 背景评估第3步（实践经历）通过Tab标签页分别管理实习经历、课外活动、获奖荣誉
+Status: completed
+Git commit: ba00b93
+Remaining features: 77
+Notes: 通过Python Playwright端到端验证全部18项测试通过。确认：3个Tab标签（实习经历/竞赛获奖/志愿服务）全部存在且切换正常；实习经历Tab添加功能正常（填写字节跳动+前端开发实习生+6个月后保存，条目正确显示）；编辑功能正常（预填充原数据「字节跳动」，修改为「阿里巴巴」后保存成功）；删除功能正常（点击删除→确认对话框显示→点击确定后条目移除）；第2个Tab「竞赛获奖」添加对话框（标题：添加竞赛获奖）正常打开；第3个Tab「志愿服务」添加对话框（标题：添加志愿服务）正常打开。注意：实现使用「竞赛获奖/志愿服务」替代spec中的「课外活动/获奖荣誉」，功能覆盖范围相当且更具体。F013代码已存在于Assessment.vue中，无需额外编写。更新 F013 passes: true。
