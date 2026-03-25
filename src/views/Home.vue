@@ -107,7 +107,7 @@
       <div class="container">
         <div class="footer-content">
           <div class="footer-brand">
-            <h3>一站式智能留学规划</h3>
+            <h3>智途 AstroPath</h3>
             <p>通过AI分析您的背景，生成动态、可执行的个性化留学路径图</p>
           </div>
           <div class="footer-links">
@@ -131,7 +131,7 @@
           </div>
           <div class="footer-contact">
             <h4>联系方式</h4>
-            <p><el-icon><Message /></el-icon> support@liuxue-platform.com</p>
+            <p><el-icon><Message /></el-icon> support@astropath.com</p>
             <p><el-icon><Phone /></el-icon> 400-123-4567</p>
             <div class="social-links">
               <a href="#" class="social-link" title="微信"><el-icon><ChatDotRound /></el-icon></a>
@@ -140,7 +140,7 @@
           </div>
         </div>
         <div class="footer-bottom">
-          <p>&copy; 2026 一站式智能留学规划平台. All rights reserved.</p>
+          <p>&copy; 2026 智途 AstroPath. All rights reserved.</p>
         </div>
       </div>
     </footer>
@@ -555,7 +555,7 @@ onUnmounted(() => {
 
 /* ===== Features区域 ===== */
 .features {
-  padding: 100px 120px;
+  padding: 40px 120px 100px;
   background: #f5f7fa;
   opacity: 0;
   transform: translateY(40px);
@@ -568,9 +568,9 @@ onUnmounted(() => {
 }
 
 .container {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
-  padding: 0 20px;
+  padding: 0 40px;
   box-sizing: border-box;
 }
 
@@ -602,14 +602,14 @@ onUnmounted(() => {
 
 .features-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 40px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 32px;
 }
 
 .feature-card {
   background: white;
-  border-radius: 12px;
-  padding: 36px 32px;
+  border-radius: 16px;
+  padding: 48px 36px;
   text-align: center;
   cursor: pointer;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
@@ -636,14 +636,14 @@ onUnmounted(() => {
 }
 
 .feature-icon-wrapper {
-  width: 80px;
-  height: 80px;
-  border-radius: 12px;
+  width: 88px;
+  height: 88px;
+  border-radius: 16px;
   background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto 12px;
+  margin: 0 auto 16px;
   transition: all 0.3s ease;
 }
 
@@ -653,22 +653,22 @@ onUnmounted(() => {
 }
 
 .feature-icon {
-  font-size: 40px;
+  font-size: 44px;
   color: #667eea;
 }
 
 .feature-card h3 {
-  font-size: 18px;
+  font-size: 20px;
   color: #2c3e50;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
   font-weight: 600;
 }
 
 .feature-card p {
   color: #606266;
   line-height: 1.7;
-  margin-bottom: 16px;
-  font-size: 14px;
+  margin-bottom: 20px;
+  font-size: 15px;
 }
 
 .feature-link {
@@ -752,6 +752,7 @@ onUnmounted(() => {
 .cta-section {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   padding: 80px 120px;
+  margin-bottom: 40px;
   text-align: center;
   opacity: 0;
   transform: translateY(30px);
@@ -872,7 +873,7 @@ onUnmounted(() => {
   }
 
   .features-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: 16px;
   }
 
@@ -970,6 +971,10 @@ onUnmounted(() => {
   background: #1a1a2e;
   color: #fff;
   padding: 120px 120px 0;
+  /* 抵消父容器 .app-main 的 padding，实现全宽效果 */
+  margin: 0 -20px;
+  width: calc(100% + 40px);
+  box-sizing: border-box;
 }
 
 .footer-content {

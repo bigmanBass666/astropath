@@ -885,6 +885,46 @@ onUnmounted(() => {
   margin-bottom: 24px;
 }
 
+/* 视图切换按钮默认状态 - 未选中时为白色背景 */
+.view-toggle :deep(.el-radio-button__inner) {
+  background-color: #fff;
+  color: #606266;
+  border-color: #dcdfe6;
+  transition: all 0.3s ease;
+}
+
+/* 视图切换按钮 hover 状态 */
+.view-toggle :deep(.el-radio-button:hover .el-radio-button__inner) {
+  color: #667eea;
+}
+
+/* 视图切换按钮 active 状态 - 选中时为紫色 */
+.view-toggle :deep(.el-radio-button__original-radio:checked + .el-radio-button__inner) {
+  background-color: #667eea;
+  border-color: #667eea;
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+}
+
+/* 修复对话框中优先级 radio button 的样式 */
+:deep(.el-radio-button.is-active .el-radio-button__inner) {
+  background-color: #667eea !important;
+  border-color: #667eea !important;
+  color: #fff !important;
+  box-shadow: -1px 0 0 0 #667eea !important;
+}
+
+/* 未选中的 radio button 样式 - 白色背景 */
+:deep(.el-radio-button:not(.is-active) .el-radio-button__inner) {
+  background-color: #fff !important;
+  color: #606266 !important;
+}
+
+/* 未选中的 radio button hover 状态 */
+:deep(.el-radio-button:not(.is-active) .el-radio-button__inner:hover) {
+  color: #667eea !important;
+}
+
 /* 图表视图 */
 .chart-view {
   margin-bottom: 24px;

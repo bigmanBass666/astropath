@@ -77,49 +77,42 @@
           </div>
 
           <div class="editor-toolbar">
-            <el-button-group>
-              <el-button size="small" @click="backToTemplates">← 返回</el-button>
-            </el-button-group>
-            <span class="essay-type-badge">
-              {{ getEssayTypeLabel(selectedEssayType) }} | {{ selectedTemplate?.name }}
-            </span>
-            <el-select v-model="currentEssayType" placeholder="选择文书类型" style="width: 150px;">
-              <el-option label="个人陈述" value="ps" />
-              <el-option label="简历" value="cv" />
-              <el-option label="推荐信" value="reference" />
-              <el-option label="研究计划" value="research" />
-            </el-select>
-            <el-select v-model="selectedProvider" placeholder="选择AI提供商" style="width: 150px;">
-              <el-option v-for="p in providers" :key="p.id" :label="p.name" :value="p.id" />
-            </el-select>
-            <el-button-group class="format-group">
-              <el-button size="small" @click="formatDoc('bold')" title="加粗">
-                <strong>B</strong>
-              </el-button>
-              <el-button size="small" @click="formatDoc('italic')" title="斜体">
-                <em>I</em>
-              </el-button>
-              <el-button size="small" @click="formatDoc('underline')" title="下划线">
-                <u>U</u>
-              </el-button>
-            </el-button-group>
-            <el-button-group class="format-group">
-              <el-button size="small" @click="formatDoc('h1')" title="一级标题">H1</el-button>
-              <el-button size="small" @click="formatDoc('h2')" title="二级标题">H2</el-button>
-              <el-button size="small" @click="formatDoc('h3')" title="三级标题">H3</el-button>
-            </el-button-group>
-            <el-button-group class="format-group">
-              <el-button size="small" @click="formatDoc('ul')" title="无序列表">☰</el-button>
-              <el-button size="small" @click="formatDoc('ol')" title="有序列表">1.</el-button>
-            </el-button-group>
-            <el-button-group class="format-group">
-              <el-button size="small" @click="formatDoc('undo')" title="撤销">↶</el-button>
-              <el-button size="small" @click="formatDoc('redo')" title="重做">↷</el-button>
-            </el-button-group>
-            <el-button size="small" @click="showWordCountDialog">字数统计</el-button>
-            <el-button size="small" type="primary" @click="showVersionNoteDialog">保存版本</el-button>
-            <el-button size="small" @click="showVersions">历史版本</el-button>
-            <el-button size="small" type="success" @click="previewAndExportPDF">导出PDF</el-button>
+            <div class="toolbar-main">
+              <el-select v-model="currentEssayType" placeholder="选择文书类型" size="small" style="width: 110px;">
+                <el-option label="个人陈述" value="ps" />
+                <el-option label="简历" value="cv" />
+                <el-option label="推荐信" value="reference" />
+                <el-option label="研究计划" value="research" />
+              </el-select>
+              <el-select v-model="selectedProvider" placeholder="选择AI提供商" size="small" style="width: 130px;">
+                <el-option v-for="p in providers" :key="p.id" :label="p.name" :value="p.id" />
+              </el-select>
+              <el-divider direction="vertical" />
+              <el-button-group class="format-group">
+                <el-button size="small" @click="formatDoc('bold')" title="加粗">B</el-button>
+                <el-button size="small" @click="formatDoc('italic')" title="斜体">I</el-button>
+                <el-button size="small" @click="formatDoc('underline')" title="下划线">U</el-button>
+              </el-button-group>
+              <el-button-group class="format-group">
+                <el-button size="small" @click="formatDoc('h1')" title="一级标题">H1</el-button>
+                <el-button size="small" @click="formatDoc('h2')" title="二级标题">H2</el-button>
+                <el-button size="small" @click="formatDoc('h3')" title="三级标题">H3</el-button>
+              </el-button-group>
+              <el-button-group class="format-group">
+                <el-button size="small" @click="formatDoc('ul')" title="无序列表">☰</el-button>
+                <el-button size="small" @click="formatDoc('ol')" title="有序列表">1.</el-button>
+              </el-button-group>
+              <el-button-group class="format-group">
+                <el-button size="small" @click="formatDoc('undo')" title="撤销">↶</el-button>
+                <el-button size="small" @click="formatDoc('redo')" title="重做">↷</el-button>
+              </el-button-group>
+            </div>
+            <div class="toolbar-actions">
+              <el-button size="small" @click="showWordCountDialog">字数统计</el-button>
+              <el-button size="small" type="primary" @click="showVersionNoteDialog">保存版本</el-button>
+              <el-button size="small" @click="showVersions">历史版本</el-button>
+              <el-button size="small" type="success" @click="previewAndExportPDF">导出PDF</el-button>
+            </div>
           </div>
 
           <!-- AI辅助区域 -->
@@ -128,15 +121,15 @@
               <el-input
                 v-model="aiPrompt"
                 type="textarea"
-                :rows="2"
+                :rows="1"
                 placeholder="输入AI指令，如：帮我扩写第一段，突出科研经历"
                 :disabled="isGenerating"
               />
               <el-button
                 type="primary"
+                size="small"
                 @click="generateWithAI"
                 :loading="isGenerating"
-                style="margin-left: 10px;"
               >
                 {{ isGenerating ? '生成中...' : 'AI生成' }}
               </el-button>
@@ -1584,10 +1577,28 @@ onMounted(() => {
 
 .editor-toolbar {
   display: flex;
-  gap: 8px;
-  margin-bottom: 15px;
-  flex-wrap: wrap;
+  justify-content: space-between;
   align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+  padding: 6px 10px;
+  background: #f5f7fa;
+  border-radius: 6px;
+  border: 1px solid #e4e7ed;
+}
+
+.toolbar-main {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
 }
 
 .format-group {
@@ -1846,20 +1857,21 @@ onMounted(() => {
 
 /* AI助手样式 */
 .ai-assistant {
-  margin-bottom: 15px;
-  padding: 15px;
-  background: #f5f7fa;
-  border-radius: 8px;
+  margin-bottom: 10px;
 }
 
 .ai-input-row {
   display: flex;
   gap: 10px;
-  align-items: flex-start;
+  align-items: center;
 }
 
 .ai-input-row .el-input {
   flex: 1;
+}
+
+.ai-input-row .el-textarea__inner {
+  padding: 8px 12px;
 }
 
 /* 文书类型选择样式 */
@@ -2011,13 +2023,12 @@ onMounted(() => {
 }
 
 .essay-type-badge {
-  margin-left: auto;
-  margin-right: 20px;
   padding: 4px 12px;
   background: #ecf5ff;
   color: #667eea;
   border-radius: 4px;
   font-size: 13px;
+  white-space: nowrap;
 }
 
 /* 响应式调整 */

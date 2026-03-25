@@ -4,7 +4,7 @@
     <el-card class="config-card">
       <template #header>
         <span>AI供应商配置</span>
-        <el-button type="primary" size="small" @click="testAllConnections">测试全部连接</el-button>
+        <el-button type="primary" size="small" style="margin-left: 12px;" @click="testAllConnections">测试全部连接</el-button>
       </template>
 
       <el-table :data="providers" style="width: 100%" class="providers-table">

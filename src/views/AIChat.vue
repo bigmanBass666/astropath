@@ -1,19 +1,21 @@
 <template>
   <div class="ai-chat-page">
-    <h2 class="page-title">AI智能对话</h2>
-
-    <div class="chat-container">
-      <!-- 智能体列表 -->
+    <!-- 左侧边栏：智能体选择 -->
+    <div class="sidebar">
+      <div class="sidebar-header">
+        <h2 class="sidebar-title">AI 助手</h2>
+        <p class="sidebar-subtitle">选择专业智能体</p>
+      </div>
       <div class="agent-list">
-        <div class="agent-header">
-          <h3>智能体</h3>
-        </div>
-        <div v-for="agent in agents" :key="agent.id"
+        <div
+          v-for="agent in agents"
+          :key="agent.id"
           class="agent-item"
           :class="{ 'is-active': currentAgentId === agent.id }"
-          @click="selectAgent(agent.id)">
-          <div class="agent-avatar">
-            <el-icon :size="24"><ChatLineRound /></el-icon>
+          @click="selectAgent(agent.id)"
+        >
+          <div class="agent-icon" :style="{ background: agent.gradient }">
+            <el-icon :size="20"><component :is="agent.icon" /></el-icon>
           </div>
           <div class="agent-info">
             <span class="agent-name">{{ agent.name }}</span>
@@ -21,114 +23,205 @@
           </div>
         </div>
       </div>
+    </div>
 
-      <!-- 对话区域 -->
-      <div class="chat-area">
-        <!-- 移动端智能体选择器 -->
-        <div class="mobile-agent-selector">
-          <el-select v-model="currentAgentId" placeholder="选择智能体" size="default">
-            <el-option v-for="agent in agents" :key="agent.id" :label="agent.name" :value="agent.id">
-              <div class="agent-option">
-                <el-icon><ChatLineRound /></el-icon>
-                <span>{{ agent.name }}</span>
-                <span class="agent-option-role">{{ agent.role }}</span>
-              </div>
-            </el-option>
-          </el-select>
+    <!-- 主对话区域 -->
+    <div class="main-chat">
+      <!-- 顶部标题栏 -->
+      <div class="chat-header">
+        <div class="header-agent-info">
+          <div class="header-icon" :style="{ background: currentAgent?.gradient }">
+            <el-icon :size="18"><component :is="currentAgent?.icon" /></el-icon>
+          </div>
+          <div class="header-text">
+            <span class="header-name">{{ currentAgent?.name }}</span>
+            <span class="header-role">{{ currentAgent?.role }}</span>
+          </div>
         </div>
-        <div class="chat-messages" ref="messagesContainer">
-          <div v-if="messages.length === 0 && currentAgent" class="empty-chat">
-            <div class="welcome-message">
-              <div class="welcome-avatar">
-                <el-icon :size="48"><ChatLineRound /></el-icon>
-              </div>
-              <h3>{{ currentAgent.name }}</h3>
-              <p class="welcome-role">{{ currentAgent.role }}</p>
-              <div class="welcome-text">{{ currentAgent.welcome }}</div>
+        <div class="header-actions">
+          <el-button size="small" text :icon="Clock" @click="openHistory">历史记录</el-button>
+          <el-button size="small" text :icon="Delete" @click="clearChat" :disabled="messages.length === 0">清空对话</el-button>
+        </div>
+      </div>
+
+      <!-- 消息列表 -->
+      <div class="chat-messages" ref="messagesContainer">
+        <!-- 欢迎状态 -->
+        <div v-if="messages.length === 0 && currentAgent" class="welcome-fullscreen">
+          <div class="welcome-content">
+            <div class="welcome-icon-large" :style="{ background: currentAgent.gradient }">
+              <el-icon :size="48"><component :is="currentAgent.icon" /></el-icon>
             </div>
-          </div>
-          <div v-for="msg in messages" :key="msg.id" class="message"
-            :class="{ 'is-user': msg.role === 'user', 'is-assistant': msg.role === 'assistant' }">
-            <div class="message-avatar">
-              <el-icon v-if="msg.role === 'user'"><User /></el-icon>
-              <el-icon v-else><ChatLineRound /></el-icon>
+            <h2 class="welcome-title-large">{{ currentAgent.name }}</h2>
+            <p class="welcome-role-large">{{ currentAgent.role }}</p>
+            <div class="welcome-desc">
+              <p>{{ currentAgent.welcome }}</p>
             </div>
-            <div class="message-content">
-              <div class="message-header">
-                <span class="sender-name">{{ getSenderName(msg) }}</span>
-                <span class="message-time">{{ formatTime(msg.timestamp) }}</span>
-              </div>
-              <div class="message-text" v-html="renderMessage(msg.content)"></div>
-            </div>
-          </div>
-          <div v-if="isGenerating && messages[messages.length - 1]?.role === 'assistant'" class="message is-assistant">
-            <div class="message-avatar">
-              <el-icon><ChatLineRound /></el-icon>
-            </div>
-            <div class="message-content">
-              <div class="message-text" v-html="renderMessage(streamingContent || '')"></div>
-              <span class="cursor-blink">|</span>
+            <div class="quick-actions-large">
+              <el-button
+                v-for="(prompt, idx) in currentAgent.quickPrompts"
+                :key="idx"
+                type="primary"
+                plain
+                class="quick-prompt-large"
+                @click="useQuickPrompt(prompt)"
+              >
+                {{ prompt }}
+              </el-button>
             </div>
           </div>
         </div>
 
-        <!-- 输入区域 -->
-        <div class="chat-input-area">
-          <div v-if="lastError" class="error-banner">
-            <div class="error-content">
-              <el-icon class="error-icon"><WarningFilled /></el-icon>
-              <div class="error-message">
-                <span class="error-title">{{ getErrorTitle(lastError.type) }}</span>
-                <span class="error-text">{{ lastError.message }}</span>
+        <!-- 消息气泡 -->
+        <template v-else>
+          <div
+            v-for="msg in messages"
+            :key="msg.id"
+            class="message-wrapper"
+            :class="{ 'is-user': msg.role === 'user' }"
+          >
+            <div class="message">
+              <div class="message-avatar" :style="{ background: msg.role === 'user' ? '#667eea' : currentAgent?.gradient }">
+                <el-icon :size="16">
+                  <User v-if="msg.role === 'user'" />
+                  <component :is="currentAgent?.icon" v-else />
+                </el-icon>
+              </div>
+              <div class="message-content">
+                <div class="message-header">
+                  <span class="sender-name">{{ getSenderName(msg) }}</span>
+                  <span class="message-time">{{ formatTime(msg.timestamp) }}</span>
+                </div>
+                <div class="message-text" v-html="renderMessage(msg.content)"></div>
               </div>
             </div>
-            <div class="error-actions">
-              <el-button size="small" type="primary" @click="retryLastMessage">重试</el-button>
-              <el-button size="small" @click="clearError">忽略</el-button>
+          </div>
+
+          <!-- 流式生成中 -->
+          <div v-if="isGenerating" class="message-wrapper">
+            <div class="message">
+              <div class="message-avatar" :style="{ background: currentAgent?.gradient }">
+                <el-icon :size="16"><component :is="currentAgent?.icon" /></el-icon>
+              </div>
+              <div class="message-content">
+                <div class="message-header">
+                  <span class="sender-name">{{ currentAgent?.name }}</span>
+                  <span class="message-time">{{ formatTime(Date.now()) }}</span>
+                </div>
+                <div class="message-text">
+                  <span v-html="renderMessage(streamingContent || '')"></span>
+                  <span class="typing-cursor"></span>
+                </div>
+              </div>
             </div>
           </div>
+        </template>
+
+        <!-- 错误提示 -->
+        <div v-if="lastError" class="error-banner">
+          <div class="error-content">
+            <el-icon class="error-icon" :size="18"><WarningFilled /></el-icon>
+            <div class="error-info">
+              <span class="error-title">{{ getErrorTitle(lastError.type) }}</span>
+              <span class="error-desc">{{ lastError.message }}</span>
+            </div>
+          </div>
+          <div class="error-actions">
+            <el-button type="primary" size="small" @click="retryLastMessage">重试</el-button>
+            <el-button size="small" text @click="clearError">忽略</el-button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 输入区域 -->
+      <div class="input-section">
+        <div class="input-box">
           <el-input
             v-model="inputMessage"
             type="textarea"
-            :rows="3"
-            placeholder="输入您的问题..."
+            :rows="2"
+            placeholder="输入您的问题，按 Enter 发送..."
             @keydown.enter.exact.prevent="sendMessage"
             :disabled="isGenerating"
+            resize="none"
+            class="message-input"
           />
           <div class="input-actions">
-            <el-select v-model="selectedProvider" placeholder="选择AI提供商" style="width: 150px;">
-              <el-option v-for="p in providers" :key="p.id" :label="p.name" :value="p.id" />
+            <el-select
+              v-model="selectedProvider"
+              placeholder="选择模型"
+              size="small"
+              class="model-select-inline"
+            >
+              <el-option
+                v-for="p in providers"
+                :key="p.id"
+                :label="p.name"
+                :value="p.id"
+              />
             </el-select>
-            <el-button type="primary" @click="sendMessage" :loading="isGenerating" v-if="!isGenerating">
-              发送
+            <el-button
+              v-if="!isGenerating"
+              type="primary"
+              class="send-btn"
+              @click="sendMessage"
+              :disabled="!inputMessage.trim()"
+            >
+              <el-icon :size="18"><Promotion /></el-icon>
             </el-button>
-            <el-button type="danger" @click="stopGeneration" v-else>
-              停止生成
+            <el-button
+              v-else
+              type="danger"
+              class="send-btn"
+              @click="stopGeneration"
+            >
+              <el-icon :size="18"><VideoPause /></el-icon>
             </el-button>
-            <el-button @click="clearChat" :disabled="isGenerating">清空对话</el-button>
-            <el-button @click="openHistory" :disabled="isGenerating">查看历史</el-button>
-            <el-button @click="exportConversation" :disabled="messages.length === 0">导出对话</el-button>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- 历史对话侧边栏 -->
-    <el-drawer v-model="historyVisible" title="历史对话" size="400px">
+    <!-- 历史记录抽屉 -->
+    <el-drawer v-model="historyVisible" title="历史对话" size="380px" class="history-drawer">
       <div class="history-list">
-        <div v-for="(group, date) in groupedConversations" :key="date" class="history-group">
-          <div class="history-date">{{ date }}</div>
-          <div v-for="(conv, idx) in group" :key="conv.createdAt"
-            class="history-item"
-            @click="loadConversation(conv)">
-            <div class="history-title">{{ conv.title || '新对话' }}</div>
-            <div class="history-time">{{ formatTime(conv.createdAt) }}</div>
-            <el-button size="small" type="danger" text @click.stop="deleteConversation(conv.createdAt)">删除</el-button>
-          </div>
-        </div>
         <div v-if="conversations.length === 0" class="empty-history">
-          暂无历史对话记录
+          <el-icon :size="48" class="empty-icon"><ChatDotRound /></el-icon>
+          <p>暂无历史对话</p>
         </div>
+        <template v-else>
+          <div
+            v-for="(group, date) in groupedConversations"
+            :key="date"
+            class="history-group"
+          >
+            <div class="history-date">{{ date }}</div>
+            <div
+              v-for="conv in group"
+              :key="conv.createdAt"
+              class="history-item"
+              @click="loadConversation(conv)"
+            >
+              <div class="history-icon">
+                <el-icon><ChatLineRound /></el-icon>
+              </div>
+              <div class="history-info">
+                <div class="history-title">{{ conv.title || '新对话' }}</div>
+                <div class="history-meta">
+                  <span>{{ getAgentName(conv.agentId) }}</span>
+                  <span>{{ formatTime(conv.createdAt) }}</span>
+                </div>
+              </div>
+              <el-button
+                size="small"
+                type="danger"
+                text
+                :icon="Delete"
+                @click.stop="deleteConversation(conv.createdAt)"
+              />
+            </div>
+          </div>
+        </template>
       </div>
     </el-drawer>
   </div>
@@ -138,7 +231,11 @@
 import { ref, reactive, computed, onMounted, nextTick, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { ChatLineRound, User, WarningFilled } from '@element-plus/icons-vue'
+import {
+  ChatLineRound, User, WarningFilled, Delete, Clock,
+  Download, Promotion, VideoPause, ChatDotRound,
+  School, Document, Files, Ticket
+} from '@element-plus/icons-vue'
 import { marked } from 'marked'
 import { sendMessageToAI, buildSystemPrompt, AIError } from '@/utils/ai-api'
 
@@ -146,10 +243,42 @@ const router = useRouter()
 
 // 智能体定义
 const agents = ref([
-  { id: 'consultant', name: '留学顾问', role: '整体规划咨询', welcome: '您好！我是您的留学顾问。我可以帮您制定整体的留学规划，包括背景提升、时间安排、申请策略等。请告诉我您的留学目标或任何困惑，我会为您提供专业建议。' },
-  { id: 'essay', name: '文书导师', role: '文书写作指导', welcome: '您好！我是您的文书导师。我专注于帮助您撰写高质量的申请文书，包括个人陈述、简历、推荐信等。请告诉我您需要什么样的文书帮助，我会为您提供指导和建议。' },
-  { id: 'selection', name: '选校专家', role: '院校选择建议', welcome: '您好！我是您的选校专家。我拥有丰富的院校数据库，可以根据您的背景和需求，为您推荐合适的学校和专业。请告诉我您的GPA、语言成绩和意向方向，我会为您制定选校策略。' },
-  { id: 'visa', name: '签证助手', role: '签证申请指导', welcome: '您好！我是您的签证助手。我熟悉各国签证申请流程，可以为您解答关于签证材料、面签准备、签证政策等方面的问题。请告诉我您的签证需求，我会为您提供详细指导。' }
+  {
+    id: 'consultant',
+    name: '留学顾问',
+    role: '整体规划咨询',
+    icon: School,
+    gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    welcome: '您好！我是您的留学顾问。我可以帮您制定整体的留学规划，包括背景提升、时间安排、申请策略等。请告诉我您的留学目标或任何困惑，我会为您提供专业建议。',
+    quickPrompts: ['帮我制定留学时间规划', '我的背景能申请什么学校？', '需要准备哪些申请材料？']
+  },
+  {
+    id: 'essay',
+    name: '文书导师',
+    role: '文书写作指导',
+    icon: Document,
+    gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+    welcome: '您好！我是您的文书导师。我专注于帮助您撰写高质量的申请文书，包括个人陈述、简历、推荐信等。请告诉我您需要什么样的文书帮助，我会为您提供指导和建议。',
+    quickPrompts: ['如何写好个人陈述？', '推荐信应该包含什么？', '帮我修改这段文书']
+  },
+  {
+    id: 'selection',
+    name: '选校专家',
+    role: '院校选择建议',
+    icon: Files,
+    gradient: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+    welcome: '您好！我是您的选校专家。我拥有丰富的院校数据库，可以根据您的背景和需求，为您推荐合适的学校和专业。请告诉我您的GPA、语言成绩和意向方向，我会为您制定选校策略。',
+    quickPrompts: ['根据我的背景推荐学校', '这所学校录取难度如何？', '比较这几所学校的优劣']
+  },
+  {
+    id: 'visa',
+    name: '签证助手',
+    role: '签证申请指导',
+    icon: Ticket,
+    gradient: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+    welcome: '您好！我是您的签证助手。我熟悉各国签证申请流程，可以为您解答关于签证材料、面签准备、签证政策等方面的问题。请告诉我您的签证需求，我会为您提供详细指导。',
+    quickPrompts: ['签证需要准备哪些材料？', '面签常见问题有哪些？', '签证被拒怎么办？']
+  }
 ])
 
 const currentAgentId = ref('consultant')
@@ -157,14 +286,14 @@ const currentAgent = computed(() => agents.value.find(a => a.id === currentAgent
 const selectedProvider = ref(null)
 const inputMessage = ref('')
 const isGenerating = ref(false)
-const streamingContent = ref('') // 流式响应内容
+const streamingContent = ref('')
 const messagesContainer = ref(null)
 const messages = ref([])
 const historyVisible = ref(false)
 const conversations = ref([])
-const currentConversationId = ref(null) // 当前会话ID
-const lastError = ref(null) // 最后错误状态
-const retryMessage = ref(null) // 待重试的消息
+const currentConversationId = ref(null)
+const lastError = ref(null)
+const retryMessage = ref(null)
 
 // 按日期分组的历史会话
 const groupedConversations = computed(() => {
@@ -189,6 +318,11 @@ const providers = computed(() => {
   return saved ? JSON.parse(saved) : []
 })
 
+const getAgentName = (agentId) => {
+  const agent = agents.value.find(a => a.id === agentId)
+  return agent ? agent.name : 'AI助手'
+}
+
 const loadProviders = () => {
   const saved = localStorage.getItem('ai_providers')
   if (saved) {
@@ -201,9 +335,14 @@ const loadProviders = () => {
 
 const selectAgent = (agentId) => {
   currentAgentId.value = agentId
-  // 清空当前会话消息，显示对应欢迎语
   messages.value = []
+  currentConversationId.value = null
   ElMessage.success(`已切换到 ${currentAgent.value.name}`)
+}
+
+const useQuickPrompt = (prompt) => {
+  inputMessage.value = prompt
+  sendMessage()
 }
 
 const sendMessage = async () => {
@@ -230,11 +369,10 @@ const sendMessage = async () => {
 
   isGenerating.value = true
   streamingContent.value = ''
-  clearError() // 清除之前的错误
+  clearError()
   await nextTick(() => scrollToBottom())
 
   try {
-    // 构建消息历史（包括系统提示）
     const systemPrompt = buildSystemPrompt(currentAgentId.value)
     const apiMessages = [
       { role: 'system', content: systemPrompt },
@@ -242,7 +380,6 @@ const sendMessage = async () => {
         .map(m => ({ role: m.role, content: m.content }))
     ]
 
-    // 创建临时的AI消息用于流式更新
     const aiMsgId = Date.now() + 1
     const aiMsg = {
       id: aiMsgId,
@@ -252,16 +389,14 @@ const sendMessage = async () => {
     }
     messages.value.push(aiMsg)
 
-    // 使用流式响应
     const stream = await sendMessageToAI(selectedProvider.value, apiMessages, {
       temperature: 0.7,
       maxTokens: 1000,
       stream: true
     })
 
-    // 逐字接收流式内容
     for await (const chunk of stream) {
-      if (!isGenerating.value) break // 用户点击停止
+      if (!isGenerating.value) break
       if (chunk.type === 'content') {
         streamingContent.value += chunk.content
         aiMsg.content = streamingContent.value
@@ -271,7 +406,6 @@ const sendMessage = async () => {
 
     streamingContent.value = ''
   } catch (error) {
-    // 设置错误状态
     if (error instanceof AIError) {
       lastError.value = {
         type: error.type,
@@ -280,10 +414,8 @@ const sendMessage = async () => {
       }
       retryMessage.value = currentMessage
 
-      // 显示错误消息
       ElMessage.error({
         message: getErrorTitle(error.type),
-        description: error.message,
         duration: 5000
       })
     } else {
@@ -296,7 +428,6 @@ const sendMessage = async () => {
       ElMessage.error(`请求失败: ${error.message}`)
     }
 
-    // 添加错误消息到对话
     const errorMsg = {
       id: Date.now() + 1,
       role: 'assistant',
@@ -331,7 +462,6 @@ const scrollToBottom = () => {
   }
 }
 
-// 错误处理相关
 const getErrorTitle = (errorType) => {
   const titles = {
     network: '网络连接失败',
@@ -352,13 +482,9 @@ const retryLastMessage = async () => {
   if (retryMessage.value) {
     const message = retryMessage.value
     clearError()
-    await sendMessageWithRetry(message)
+    inputMessage.value = message
+    await sendMessage()
   }
-}
-
-const sendMessageWithRetry = async (messageContent) => {
-  inputMessage.value = messageContent
-  await sendMessage()
 }
 
 const clearChat = () => {
@@ -366,6 +492,7 @@ const clearChat = () => {
     messages.value = []
     streamingContent.value = ''
     clearError()
+    currentConversationId.value = null
   }
 }
 
@@ -373,14 +500,12 @@ const openHistory = () => {
   historyVisible.value = true
 }
 
-// 导出对话功能
 const exportConversation = () => {
   if (messages.value.length === 0) {
     ElMessage.warning('当前对话为空，无法导出')
     return
   }
 
-  // 生成文本内容
   const agentName = currentAgent.value?.name || 'AI对话'
   const dateStr = new Date().toLocaleString('zh-CN')
   let textContent = `=== ${agentName} 对话记录 ===\n`
@@ -394,7 +519,6 @@ const exportConversation = () => {
     textContent += `[${time}] ${role}:\n${msg.content}\n\n`
   })
 
-  // 创建文本文件下载
   const blob = new Blob(['\ufeff' + textContent], { type: 'text/plain;charset=utf-8' })
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
@@ -405,10 +529,9 @@ const exportConversation = () => {
   document.body.removeChild(a)
   URL.revokeObjectURL(url)
 
-  ElMessage.success('对话记录已导出为文本文件')
+  ElMessage.success('对话记录已导出')
 }
 
-// 停止生成
 const stopGeneration = () => {
   isGenerating.value = false
   streamingContent.value = ''
@@ -416,17 +539,15 @@ const stopGeneration = () => {
 
 const saveConversation = () => {
   if (messages.value.length > 0) {
-    // 检查是否已有相同会话（基于最新的消息ID）
     const lastMsg = messages.value[messages.value.length - 1]
     if (lastMsg) {
-      // 更新现有会话或创建新会话
       const existingIdx = conversations.value.findIndex(c => c.id === currentConversationId.value)
       const conv = {
         id: currentConversationId.value || Date.now(),
         title: messages.value[0].content.substring(0, 30) + '...',
         createdAt: currentConversationId.value ? getConversationById(currentConversationId.value)?.createdAt || Date.now() : Date.now(),
         agentId: currentAgentId.value,
-        messages: JSON.parse(JSON.stringify(messages.value)) // 深拷贝
+        messages: JSON.parse(JSON.stringify(messages.value))
       }
 
       if (existingIdx >= 0) {
@@ -455,7 +576,6 @@ const deleteConversation = (convId) => {
   if (confirm('删除此对话记录？')) {
     conversations.value = conversations.value.filter(c => c.id !== convId)
     localStorage.setItem('conversations', JSON.stringify(conversations.value))
-    // 如果删除的是当前会话，清空当前对话
     if (currentConversationId.value === convId) {
       messages.value = []
       currentConversationId.value = null
@@ -463,7 +583,6 @@ const deleteConversation = (convId) => {
   }
 }
 
-// 自动保存对话（防抖）
 let saveTimeout = null
 const autoSaveConversation = () => {
   if (saveTimeout) clearTimeout(saveTimeout)
@@ -471,7 +590,7 @@ const autoSaveConversation = () => {
     if (messages.value.length > 0) {
       saveConversation()
     }
-  }, 2000) // 2秒后自动保存
+  }, 2000)
 }
 
 onMounted(() => {
@@ -479,7 +598,6 @@ onMounted(() => {
   const saved = localStorage.getItem('conversations')
   if (saved) {
     conversations.value = JSON.parse(saved)
-    // 恢复时给每个会话添加id（兼容旧数据）
     conversations.value.forEach((conv, idx) => {
       if (!conv.id) {
         conv.id = Date.now() + idx
@@ -487,7 +605,6 @@ onMounted(() => {
     })
   }
 
-  // 监听消息变化，自动保存会话
   watch(messages, () => {
     if (messages.value.length > 0) {
       autoSaveConversation()
@@ -498,224 +615,361 @@ onMounted(() => {
 
 <style scoped>
 .ai-chat-page {
-  height: calc(100vh - 140px);
   display: flex;
-  flex-direction: column;
-}
-
-.chat-container {
-  flex: 1;
-  display: flex;
-  gap: 15px;
-  background: white;
-  border-radius: 12px;
-  padding: 15px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  height: calc(100vh - 60px);
+  background: #ffffff;
   overflow: hidden;
 }
 
-.agent-list {
-  width: 200px;
-  background: #f5f7fa;
-  border-radius: 8px;
-  padding: 10px;
+/* 左侧边栏 */
+.sidebar {
+  width: 260px;
+  background: #f8fafc;
+  border-right: 1px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
   flex-shrink: 0;
 }
 
-.agent-header {
-  padding: 10px;
-  border-bottom: 1px solid #ebeef5;
-  margin-bottom: 10px;
+.sidebar-header {
+  padding: 24px 20px 16px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.sidebar-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0 0 4px 0;
+}
+
+.sidebar-subtitle {
+  font-size: 13px;
+  color: #64748b;
+  margin: 0;
+}
+
+.agent-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
 }
 
 .agent-item {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   padding: 12px;
-  border-radius: 8px;
+  border-radius: 12px;
   cursor: pointer;
-  margin-bottom: 5px;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
+  margin-bottom: 4px;
 }
 
 .agent-item:hover {
-  background: #e4e7ed;
+  background: #f1f5f9;
 }
 
 .agent-item.is-active {
-  background: #667eea;
-  color: white;
+  background: #ede9fe;
+  border: 1px solid #c4b5fd;
 }
 
-.agent-avatar {
+.agent-item .agent-icon {
   width: 40px;
   height: 40px;
-  border-radius: 50%;
-  background: #dcdfe6;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-}
-
-.agent-item.is-active .agent-avatar {
-  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  flex-shrink: 0;
 }
 
 .agent-info {
   display: flex;
   flex-direction: column;
-}
-
-.agent-name {
-  font-weight: bold;
-  font-size: 14px;
-}
-
-.agent-role {
-  font-size: 11px;
-  opacity: 0.8;
-}
-
-.chat-area {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
   min-width: 0;
 }
 
+.agent-item .agent-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.agent-item .agent-role {
+  font-size: 12px;
+  color: #64748b;
+}
+
+/* 主对话区域 */
+.main-chat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* 顶部标题栏 */
+.chat-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  border-bottom: 1px solid #e2e8f0;
+  background: #ffffff;
+}
+
+.header-agent-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.header-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.header-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.header-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.header-role {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.header-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* 消息区域 */
 .chat-messages {
   flex: 1;
   overflow-y: auto;
-  padding: 15px;
-  background: #f9f9f9;
-  border-radius: 8px;
-  margin-bottom: 15px;
+  padding: 40px 80px;
+  background: #ffffff;
 }
 
-.empty-chat {
+/* 全屏欢迎区域 */
+.welcome-fullscreen {
   height: 100%;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
   padding: 40px;
 }
 
-.welcome-message {
+.welcome-content {
   text-align: center;
-  max-width: 500px;
+  max-width: 700px;
 }
 
-.welcome-avatar {
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+.welcome-icon-large {
+  width: 120px;
+  height: 120px;
+  border-radius: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto 20px;
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  color: white;
+  margin: 0 auto 32px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
 }
 
-.welcome-message h3 {
-  font-size: 20px;
+.welcome-title-large {
+  font-size: 42px;
+  font-weight: 700;
+  color: #1e293b;
   margin: 0 0 8px 0;
-  color: #303133;
+  letter-spacing: -1px;
 }
 
-.welcome-role {
-  font-size: 14px;
-  color: #909399;
-  margin: 0 0 24px 0;
+.welcome-role-large {
+  font-size: 18px;
+  color: #6366f1;
+  font-weight: 500;
+  margin: 0 0 40px 0;
 }
 
-.welcome-text {
-  font-size: 14px;
-  line-height: 1.8;
-  color: #606266;
-  background: #f5f7fa;
-  padding: 20px;
-  border-radius: 12px;
-  text-align: left;
+.welcome-desc {
+  background: #f8fafc;
+  border-radius: 20px;
+  padding: 32px 40px;
+  margin-bottom: 40px;
+  border: 1px solid #e2e8f0;
+}
+
+.welcome-desc p {
+  margin: 0;
+  font-size: 17px;
+  line-height: 1.9;
+  color: #475569;
+  text-align: center;
+}
+
+.quick-actions-large {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  justify-content: center;
+}
+
+.quick-prompt-large {
+  border-radius: 14px;
+  padding: 16px 28px;
+  font-size: 15px;
+  font-weight: 500;
+  height: auto;
+  border-color: #e2e8f0;
+  color: #475569;
+  transition: all 0.2s ease;
+}
+
+.quick-prompt-large:hover {
+  border-color: #6366f1;
+  color: #6366f1;
+  background: #f8fafc;
+  transform: translateY(-1px);
+}
+
+/* 消息气泡 */
+.message-wrapper {
+  margin-bottom: 24px;
+}
+
+.message-wrapper.is-user {
+  display: flex;
+  justify-content: flex-end;
 }
 
 .message {
   display: flex;
-  gap: 12px;
-  margin-bottom: 20px;
-  max-width: 85%;
+  gap: 16px;
+  max-width: 75%;
 }
 
-.message.is-user {
+.message-wrapper.is-user .message {
   flex-direction: row-reverse;
 }
 
 .message-avatar {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: #667eea;
-  color: white;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
+  color: white;
   flex-shrink: 0;
 }
 
-.message.is-assistant .message-avatar {
-  background: #67c23a;
-}
-
 .message-content {
-  background: white;
-  border-radius: 12px;
-  padding: 12px 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  background: #f8fafc;
+  border-radius: 18px;
+  padding: 18px 22px;
+  border: 1px solid #e2e8f0;
 }
 
-.message.is-user .message-content {
-  background: #667eea;
+.message-wrapper.is-user .message-content {
+  background: #6366f1;
   color: white;
+  border-color: transparent;
 }
 
 .message-header {
   display: flex;
-  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
   margin-bottom: 8px;
-  gap: 15px;
+}
+
+.message-wrapper.is-user .message-header {
+  flex-direction: row-reverse;
 }
 
 .sender-name {
-  font-weight: bold;
-  font-size: 13px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e293b;
 }
 
-.message.is-user .sender-name {
-  color: #c6d4ff;
+.message-wrapper.is-user .sender-name {
+  color: rgba(255, 255, 255, 0.95);
 }
 
 .message-time {
-  font-size: 11px;
-  color: #909399;
+  font-size: 12px;
+  color: #94a3b8;
 }
 
-.message.is-user .message-time {
-  color: #c6d4ff;
+.message-wrapper.is-user .message-time {
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .message-text {
-  line-height: 1.6;
+  font-size: 15px;
+  line-height: 1.75;
+  color: #334155;
+}
+
+.message-wrapper.is-user .message-text {
+  color: white;
+}
+
+.message-text :deep(p) {
+  margin: 0 0 10px 0;
+}
+
+.message-text :deep(p:last-child) {
+  margin-bottom: 0;
+}
+
+.message-text :deep(ul), .message-text :deep(ol) {
+  margin: 10px 0;
+  padding-left: 24px;
+}
+
+.message-text :deep(li) {
+  margin-bottom: 6px;
+}
+
+.message-text :deep(code) {
+  background: #e2e8f0;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-family: monospace;
   font-size: 14px;
 }
 
-.message-text .cursor-blink {
+.message-wrapper.is-user .message-text :deep(code) {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* 打字动画 */
+.typing-cursor {
   display: inline-block;
+  width: 2px;
+  height: 18px;
+  background: #667eea;
+  margin-left: 4px;
   animation: blink 1s infinite;
-  color: #667eea;
-  font-weight: bold;
+  vertical-align: middle;
 }
 
 @keyframes blink {
@@ -723,82 +977,44 @@ onMounted(() => {
   51%, 100% { opacity: 0; }
 }
 
-.message-text :deep(pre) {
-  background: #f5f7fa;
-  padding: 10px;
-  border-radius: 6px;
-  overflow-x: auto;
-}
-
-.typing-indicator {
-  display: flex;
-  gap: 4px;
-  padding: 5px 0;
-}
-
-.typing-indicator span {
-  width: 8px;
-  height: 8px;
-  background: #909399;
-  border-radius: 50%;
-  animation: typing 1.4s infinite ease-in-out both;
-}
-
-.typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
-.typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
-
-@keyframes typing {
-  0%, 80%, 100% { transform: scale(0); opacity: 0.5; }
-  40% { transform: scale(1); opacity: 1; }
-}
-
-.chat-input-area {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-/* 错误提示banner */
+/* 错误提示 */
 .error-banner {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 16px;
   background: #fef0f0;
-  border: 1px solid #fde2e2;
-  border-radius: 8px;
-  gap: 15px;
+  border-top: 1px solid #fde2e2;
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
 }
 
 .error-content {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 10px;
   flex: 1;
 }
 
 .error-icon {
   color: #f56c6c;
-  font-size: 18px;
-  margin-top: 2px;
+  flex-shrink: 0;
 }
 
-.error-message {
+.error-info {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
 }
 
 .error-title {
-  font-weight: bold;
+  font-size: 13px;
+  font-weight: 600;
   color: #f56c6c;
-  font-size: 14px;
 }
 
-.error-text {
-  color: #606266;
-  font-size: 13px;
-  line-height: 1.5;
+.error-desc {
+  font-size: 12px;
+  color: #909399;
 }
 
 .error-actions {
@@ -807,158 +1023,176 @@ onMounted(() => {
   flex-shrink: 0;
 }
 
-.chat-input-area .el-input {
+/* 输入区域 */
+.input-section {
+  border-top: 1px solid #e2e8f0;
+  padding: 20px 80px 30px;
+  background: #ffffff;
+}
+
+.input-box {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+  background: #f8fafc;
+  border-radius: 20px;
+  padding: 16px 20px;
+  border: 1px solid #e2e8f0;
+}
+
+.message-input {
   flex: 1;
+}
+
+.message-input :deep(.el-textarea__inner) {
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-size: 15px;
+  resize: none;
+  background: transparent;
+  border: none;
+  box-shadow: none;
 }
 
 .input-actions {
   display: flex;
-  gap: 8px;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.model-select-inline {
+  width: 130px;
+}
+
+.send-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 历史记录抽屉 */
+.history-drawer :deep(.el-drawer__header) {
+  margin-bottom: 16px;
+  padding: 20px;
+  border-bottom: 1px solid #ebeef5;
 }
 
 .history-list {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
+  padding: 0 16px;
+}
+
+.empty-history {
+  text-align: center;
+  padding: 60px 20px;
+  color: #909399;
+}
+
+.empty-icon {
+  color: #dcdfe6;
+  margin-bottom: 16px;
 }
 
 .history-group {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
+  margin-bottom: 20px;
 }
 
 .history-date {
   font-size: 12px;
-  font-weight: bold;
+  font-weight: 600;
   color: #909399;
-  padding: 8px 12px 4px;
-  background: #f5f7fa;
-  position: sticky;
-  top: 0;
-  z-index: 1;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 10px;
+  padding-left: 8px;
 }
 
 .history-item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
-  background: #f5f7fa;
-  border-radius: 6px;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 10px;
   cursor: pointer;
   transition: all 0.2s;
+  margin-bottom: 4px;
 }
 
 .history-item:hover {
-  background: #e4e7ed;
+  background: #f5f7fa;
+}
+
+.history-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: #f5f7fa;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #667eea;
+  flex-shrink: 0;
+}
+
+.history-info {
+  flex: 1;
+  min-width: 0;
 }
 
 .history-title {
-  flex: 1;
+  font-size: 14px;
+  font-weight: 500;
+  color: #303133;
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
+  margin-bottom: 4px;
 }
 
-.history-time {
+.history-meta {
+  display: flex;
+  gap: 12px;
   font-size: 12px;
   color: #909399;
 }
 
-.empty-history {
-  text-align: center;
-  padding: 40px 20px;
-  color: #909399;
-  font-size: 14px;
-}
-
-/* 移动端智能体选择器 - 默认隐藏（桌面端使用侧边栏） */
-.mobile-agent-selector {
-  display: none;
-}
-
-/* ===== 移动端响应式 ===== */
-
-/* 768px 以下：隐藏侧边栏，显示移动端智能体选择器 */
+/* 响应式 */
 @media (max-width: 768px) {
-  .agent-list {
+  .ai-chat-page {
+    padding: 16px;
+  }
+
+  .page-title {
+    font-size: 22px;
+  }
+
+  .agent-selector {
+    gap: 8px;
+  }
+
+  .agent-chip {
+    padding: 8px 12px;
+  }
+
+  .agent-text {
     display: none;
   }
 
   .chat-container {
-    gap: 10px;
+    height: calc(100vh - 240px);
+    min-height: 400px;
   }
 
-  .chat-area {
-    width: 100%;
-    min-width: 0;
+  .message {
+    max-width: 90%;
   }
 
-  /* 显示移动端智能体选择器 */
-  .mobile-agent-selector {
-    display: flex;
-    margin-bottom: 10px;
-  }
-
-  .mobile-agent-selector .el-select {
-    width: 100%;
-  }
-
-  .agent-option {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .agent-option-role {
-    color: #909399;
-    font-size: 12px;
-    margin-left: 4px;
-  }
-
-  /* 移动端输入操作按钮换行 */
-  .input-actions {
-    flex-wrap: wrap;
-    gap: 6px;
-  }
-
-  .input-actions .el-select {
-    flex: 1 1 100%;
-    min-width: 0;
-  }
-
-  .input-actions .el-button {
-    flex-shrink: 0;
-  }
-
-  /* 隐藏次要操作按钮，仅保留核心功能 */
-  .input-actions .el-button:last-child,
-  .input-actions .el-button:nth-last-child(2) {
-    display: none;
-  }
-
-  .chat-input-area .el-input {
-    min-width: 0;
-  }
-
-  .chat-messages {
-    min-height: 200px;
-  }
-
-  .empty-chat {
-    padding: 20px 10px;
-  }
-
-  .welcome-message {
-    padding: 20px 10px;
-  }
-}
-
-/* 480px 以下：进一步精简按钮 */
-@media (max-width: 480px) {
-  .input-actions .el-button:not(:first-child):not(:nth-child(2)):not(:nth-child(3)) {
-    display: none;
+  .welcome-card {
+    padding: 24px;
   }
 }
 </style>
