@@ -102,6 +102,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
+import { testProviderConnection } from '@/utils/ai-api'
 
 const providers = ref([])
 const newProvider = ref({
@@ -156,18 +157,22 @@ const removeProvider = (index) => {
 const testConnection = async (index) => {
   const provider = providers.value[index]
   provider.status = 'testing'
+  saveProviders()
 
-  // 模拟连接测试
-  setTimeout(() => {
-    if (provider.apiKey && provider.baseUrl) {
+  try {
+    const result = await testProviderConnection(provider.id)
+    if (result.success) {
       provider.status = 'connected'
       ElMessage.success(`${provider.name} 连接成功`)
     } else {
       provider.status = 'error'
-      ElMessage.error(`${provider.name} 配置不完整`)
+      ElMessage.error(`${provider.name} 连接失败: ${result.error}`)
     }
-    saveProviders()
-  }, 1500)
+  } catch (error) {
+    provider.status = 'error'
+    ElMessage.error(`${provider.name} 连接失败: ${error.message}`)
+  }
+  saveProviders()
 }
 
 const testAllConnections = () => {
