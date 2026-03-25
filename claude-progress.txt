@@ -33,8 +33,14 @@ Git commit: fc2f843
 Remaining features: 86
 Notes: 修复图标渲染bug：el-icon使用:is=componentObject导致图标为空，改为el-icon>component :is=正确嵌套后SVG图标正确渲染。同时修复了功能卡片的图标（影响F003的可视化显示）。通过Playwright端到端验证：标题存在、4项+SVG图标正确、淡入动画正常(scale=1.1悬停效果)。更新 F004 passes: true。
 
-=== Session 9 — 2026-03-25 ===
-Feature worked on: F005 - 首页CTA区域和页脚区域
+=== Session 10 — 2026-03-25 ===
+Feature worked on: F006 - 首页滚动超过400px后显示返回顶部按钮，点击可平滑滚动回页面顶部
+Status: completed
+Git commit: f6ef355
+Remaining features: 84
+Notes: 通过Playwright MCP端到端验证全部4个步骤通过。确认：Hero区域按钮opacity=0/pointer-events=none不可见；滚动>400px后opacity=1淡入显示，紫色渐变圆形48px带Top箭头图标；点击按钮window.scrollTo平滑滚动回顶部，按钮随后淡出；CSS hover规则存在(translateY(-4px)+阴影加深)。F006代码已存在于Home.vue中，无需额外编写。更新 F006 passes: true。
+
+
 Status: completed
 Git commit: 7dbe266
 Remaining features: 85
