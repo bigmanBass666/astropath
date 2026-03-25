@@ -34,7 +34,7 @@
           <span class="gpa-display">当前GPA: {{ form.basic.gpa.toFixed(1) }}</span>
         </el-form-item>
         <el-form-item label="语言成绩" prop="language">
-          <el-input v-model="form.language" placeholder="如：雅思7.0 / 托福100" />
+          <el-input v-model="form.basic.language" placeholder="如：雅思7.0 / 托福100" />
         </el-form-item>
       </el-form>
       <div class="step-actions">
