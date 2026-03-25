@@ -24,6 +24,18 @@
 
       <!-- 对话区域 -->
       <div class="chat-area">
+        <!-- 移动端智能体选择器 -->
+        <div class="mobile-agent-selector">
+          <el-select v-model="currentAgentId" placeholder="选择智能体" size="default">
+            <el-option v-for="agent in agents" :key="agent.id" :label="agent.name" :value="agent.id">
+              <div class="agent-option">
+                <el-icon><ChatLineRound /></el-icon>
+                <span>{{ agent.name }}</span>
+                <span class="agent-option-role">{{ agent.role }}</span>
+              </div>
+            </el-option>
+          </el-select>
+        </div>
         <div class="chat-messages" ref="messagesContainer">
           <div v-if="messages.length === 0 && currentAgent" class="empty-chat">
             <div class="welcome-message">
@@ -859,5 +871,94 @@ onMounted(() => {
   padding: 40px 20px;
   color: #909399;
   font-size: 14px;
+}
+
+/* 移动端智能体选择器 - 默认隐藏（桌面端使用侧边栏） */
+.mobile-agent-selector {
+  display: none;
+}
+
+/* ===== 移动端响应式 ===== */
+
+/* 768px 以下：隐藏侧边栏，显示移动端智能体选择器 */
+@media (max-width: 768px) {
+  .agent-list {
+    display: none;
+  }
+
+  .chat-container {
+    gap: 10px;
+  }
+
+  .chat-area {
+    width: 100%;
+    min-width: 0;
+  }
+
+  /* 显示移动端智能体选择器 */
+  .mobile-agent-selector {
+    display: flex;
+    margin-bottom: 10px;
+  }
+
+  .mobile-agent-selector .el-select {
+    width: 100%;
+  }
+
+  .agent-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .agent-option-role {
+    color: #909399;
+    font-size: 12px;
+    margin-left: 4px;
+  }
+
+  /* 移动端输入操作按钮换行 */
+  .input-actions {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .input-actions .el-select {
+    flex: 1 1 100%;
+    min-width: 0;
+  }
+
+  .input-actions .el-button {
+    flex-shrink: 0;
+  }
+
+  /* 隐藏次要操作按钮，仅保留核心功能 */
+  .input-actions .el-button:last-child,
+  .input-actions .el-button:nth-last-child(2) {
+    display: none;
+  }
+
+  .chat-input-area .el-input {
+    min-width: 0;
+  }
+
+  .chat-messages {
+    min-height: 200px;
+  }
+
+  .empty-chat {
+    padding: 20px 10px;
+  }
+
+  .welcome-message {
+    padding: 20px 10px;
+  }
+}
+
+/* 480px 以下：进一步精简按钮 */
+@media (max-width: 480px) {
+  .input-actions .el-button:not(:first-child):not(:nth-child(2)):not(:nth-child(3)) {
+    display: none;
+  }
 }
 </style>
