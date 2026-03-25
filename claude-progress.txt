@@ -40,22 +40,23 @@ Git commit: f6ef355
 Remaining features: 84
 Notes: 通过Playwright MCP端到端验证全部4个步骤通过。确认：Hero区域按钮opacity=0/pointer-events=none不可见；滚动>400px后opacity=1淡入显示，紫色渐变圆形48px带Top箭头图标；点击按钮window.scrollTo平滑滚动回顶部，按钮随后淡出；CSS hover规则存在(translateY(-4px)+阴影加深)。F006代码已存在于Home.vue中，无需额外编写。更新 F006 passes: true。
 
-
+=== Session 11 — 2026-03-25 ===
+Feature worked on: F005 - 首页CTA区域和页脚区域正确渲染
 Status: completed
 Git commit: 7dbe266
-Remaining features: 85
+Remaining features: 83
 Notes: 通过Playwright Python端到端验证全部4个步骤通过。确认：CTA区域「准备好开始您的留学规划了吗」标题、副标题「30秒完成背景评估，获取专属留学路径图」、「立即开始」按钮均正确渲染；点击按钮跳转到/assessment；页脚四栏布局（品牌介绍/快速链接/帮助支持/联系方式）全部存在；页脚快速链接6项（背景评估/AI选校/时间规划/材料中心/院校数据库/AI对话）均有href链接。F005代码已存在于Home.vue中，无需额外编写。更新 F005 passes: true。
 
-=== Session 11 — 2026-03-25 ===
+=== Session 12 — 2026-03-25 ===
 Feature worked on: F007 - 桌面端导航栏固定在顶部，紫色渐变背景，包含Logo和水平菜单项
 Status: completed
 Git commit: 2a3a62f
-Remaining features: 83
-Notes: 通过Playwright Python端到端验证全部5个步骤通过。修复关键bug：Vue Router使用createWebHashHistory()哈希模式，route.path返回不含哈希前缀的正确路径（/#/assessment → /assessment）。修复方案：将硬编码el-menu-item改为v-for循环渲染，移除:router="true"，使用:index和@click配合:class="{ 'is-active': activeMenu === item.path }"手动控制激活状态。验证：紫色渐变背景(rgb 102,126,234→118,75,162)、Logo公文包图标+「留学规划平台」、8个菜单项全部存在、/assessment页面激活「背景评估」(bg=rgba 255,255,255,0.25, border=3px solid white)、悬停非激活菜单项bg从0变为0.1。更新 F007 passes: true。
-
-=== Session 12 — 2026-03-25 ===
-Feature worked on: F008 - 移动端（≤768px）导航栏隐藏桌面菜单，显示汉堡菜单按钮，点击打开右侧抽屉导航
-Status: completed
-Git commit: e225731
 Remaining features: 82
-Notes: 通过Playwright Python端到端验证全部5个步骤通过（viewport 375x812）。确认：移动端下.desktop-nav隐藏(.desktop-nav{display:none})、.hamburger-btn显示(Expand图标)；点击汉堡按钮el-drawer从右侧滑入(direction=rtl, size=280px)；抽屉标题「导航菜单」、8个菜单项全部正确；点击「院校数据库」导航到/university-database且抽屉自动关闭；抽屉头部添加Close图标按钮，点击后抽屉关闭。补充添加了.drawer-close-btn样式和Close图标导入。更新 F008 passes: true。
+Notes: 通过Playwright Python端到端验证全部5个步骤通过。修复关键bug：Vue Router使用createWebHashHistory()哈希模式，route.path返回不含哈希前缀的正确路径。修复方案：将硬编码el-menu-item改为v-for循环渲染，移除:router="true"，使用:index和@click配合手动控制激活状态。验证：紫色渐变背景、Logo公文包图标+「留学规划平台」、8个菜单项全部存在、/assessment页面激活「背景评估」高亮正确、悬停效果正常。更新 F007 passes: true。
+
+=== Session 13 — 2026-03-25 ===
+Feature worked on: F009 - 使用指南、关于我们、联系方式三个对话框可从页脚和App组件中打开
+Status: completed
+Git commit: ea056f4
+Remaining features: 81
+Notes: 发现架构问题：Home.vue有hasFooter:true因此在首页隐藏App.vue footer；首页Home.vue footer's "使用指南"用本地showGuide ref无法触发App.vue对话框。解决方案：App.vue使用provide('guideVisible/aboutVisible/contactVisible')共享状态，Home.vue用inject接收；移除Home.vue重复的指南对话框，更新App.vue指南内容为高质量三章节版本（含图标+ol/ul格式）：快速开始（6个步骤）、AI功能使用、数据持久化；「关于我们」和「联系方式」在非首页通过App.vue footer触发。通过Playwright端到端验证全部4步通过。更新 F009 passes: true。
