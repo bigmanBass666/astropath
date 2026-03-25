@@ -1,6 +1,14 @@
 <template>
   <div class="university-database-page">
     <h2 class="page-title">院校数据库</h2>
+    
+    <el-alert
+      title="数据仅供参考演示，实际信息请以院校官网为准"
+      type="warning"
+      :closable="false"
+      show-icon
+      class="data-disclaimer"
+    />
 
     <el-tabs v-model="activeTab" class="database-tabs">
       <!-- Tab 1: 院校搜索 -->
@@ -603,6 +611,10 @@ onMounted(() => {
 <style scoped>
 .university-database-page {
   /* 不设置 max-width，与首页各区域保持一致，填满 app-main 全宽 */
+}
+
+.data-disclaimer {
+  margin-bottom: 16px;
 }
 
 /* 视图切换控件 */
