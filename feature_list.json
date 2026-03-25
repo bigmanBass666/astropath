@@ -24,7 +24,7 @@
       "点击「开始规划」按钮，验证页面跳转到 /assessment 路由",
       "返回首页，点击「探索院校」按钮，验证页面跳转到 /university-database 路由"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "F003",
