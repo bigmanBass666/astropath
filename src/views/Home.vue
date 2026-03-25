@@ -124,7 +124,7 @@
           <div class="footer-help">
             <h4>帮助支持</h4>
             <ul>
-              <li><a href="#" @click.prevent="showGuide = true">使用指南</a></li>
+              <li><a href="#" @click.prevent="guideVisible = true">使用指南</a></li>
               <li><a href="#">常见问题</a></li>
               <li><a href="#">联系我们</a></li>
             </ul>
@@ -145,49 +145,6 @@
       </div>
     </footer>
 
-    <!-- 使用指南模态框 -->
-    <el-dialog
-      v-model="showGuide"
-      title="使用指南"
-      width="800px"
-      :close-on-click-modal="true"
-      class="guide-dialog"
-    >
-      <div class="guide-content">
-        <div class="guide-section">
-          <h4><el-icon><Document /></el-icon> 快速开始</h4>
-          <ol>
-            <li><strong>填写背景评估</strong>：在"背景评估"页面完成您的个人信息、学术背景和实践经历的填写</li>
-            <li><strong>获取评估报告</strong>：系统会自动生成您的竞争力雷达图和详细评语</li>
-            <li><strong>AI智能选校</strong>：基于您的评估结果，系统推荐匹配的院校清单</li>
-            <li><strong>时间规划</strong>：查看动态生成的时间线，管理申请任务</li>
-            <li><strong>材料准备</strong>：使用文书助手和材料清单，赋能申请全流程</li>
-          </ol>
-        </div>
-        <div class="guide-section">
-          <h4><el-icon><Cpu /></el-icon> AI功能使用</h4>
-          <p>本平台支持多个AI供应商（OpenAI、Anthropic等），请先在"AI配置"页面完成API配置：</p>
-          <ul>
-            <li>配置Base URL、API Key和模型名称</li>
-            <li>使用"测试连接"验证配置有效性</li>
-            <li>在AI对话和文书生成功能中选择已配置的provider</li>
-          </ul>
-        </div>
-        <div class="guide-section">
-          <h4><el-icon><DataLine /></el-icon> 数据持久化</h4>
-          <p>您的所有数据（评估结果、选校清单、对话历史等）均保存在浏览器本地存储中：</p>
-          <ul>
-            <li>数据不会上传到服务器，保护您的隐私</li>
-            <li>清除浏览器数据会导致信息丢失，请及时导出重要内容</li>
-            <li>支持导出对话历史、材料清单等</li>
-          </ul>
-        </div>
-      </div>
-      <template #footer>
-        <el-button @click="showGuide = false">关闭</el-button>
-      </template>
-    </el-dialog>
-
     <!-- 返回顶部按钮 -->
     <button class="back-to-top" :class="{ visible: showBackToTop }" @click="scrollToTop" title="返回顶部">
       <el-icon><Top /></el-icon>
@@ -196,7 +153,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, inject } from 'vue'
 import {
   Document, Cpu, Calendar, Files, School, ChatDotRound,
   MagicStick, Timer, DataLine, User, ArrowRight, Top,
@@ -215,7 +172,10 @@ const featuresVisible = ref(false)
 const highlightsVisible = ref(false)
 const ctaVisible = ref(false)
 const showBackToTop = ref(false)
-const showGuide = ref(false)
+// 通过 inject 接收 App.vue provide 的对话框状态
+const guideVisible = inject('guideVisible')
+const aboutVisible = inject('aboutVisible')
+const contactVisible = inject('contactVisible')
 
 // 打字机效果的标题和副标题
 const fullTitle = '一站式智能留学规划'

@@ -77,18 +77,37 @@
     </el-drawer>
 
     <!-- 使用指南对话框 -->
-    <el-dialog v-model="guideVisible" title="使用指南" width="60%">
+    <el-dialog v-model="guideVisible" title="使用指南" width="60%" class="guide-dialog">
       <div class="guide-content">
-        <h4>快速开始</h4>
-        <ol>
-          <li>首先配置AI API（多个供应商可选）</li>
-          <li>完成背景评估问卷，获取竞争力分析</li>
-          <li>查看智能选校推荐，收藏心仪学校</li>
-          <li>使用时间规划工具管理申请进度</li>
-          <li>利用文书助手和材料清单准备申请</li>
-          <li>在院校数据库查询目标学校信息</li>
-          <li>与AI智能体对话获取专业建议</li>
-        </ol>
+        <div class="guide-section">
+          <h4><el-icon><Document /></el-icon> 快速开始（6个步骤）</h4>
+          <ol>
+            <li><strong>填写背景评估</strong>：在"背景评估"页面完成您的个人信息、学术背景和实践经历的填写</li>
+            <li><strong>获取评估报告</strong>：系统会自动生成您的竞争力雷达图和详细评语</li>
+            <li><strong>AI智能选校</strong>：基于您的评估结果，系统推荐匹配的院校清单</li>
+            <li><strong>时间规划</strong>：查看动态生成的时间线，管理申请任务</li>
+            <li><strong>材料准备</strong>：使用文书助手和材料清单，赋能申请全流程</li>
+            <li><strong>AI智能对话</strong>：与多角色AI智能体对话，获取专业申请建议</li>
+          </ol>
+        </div>
+        <div class="guide-section">
+          <h4><el-icon><Cpu /></el-icon> AI功能使用</h4>
+          <p>本平台支持多个AI供应商（OpenAI、Anthropic、DeepSeek等），请先在"AI配置"页面完成API配置：</p>
+          <ul>
+            <li>配置Base URL、API Key和模型名称</li>
+            <li>使用"测试连接"验证配置有效性</li>
+            <li>在AI对话和文书生成功能中选择已配置的provider</li>
+          </ul>
+        </div>
+        <div class="guide-section">
+          <h4><el-icon><DataLine /></el-icon> 数据持久化</h4>
+          <p>您的所有数据（评估结果、选校清单、对话历史等）均保存在浏览器本地存储中：</p>
+          <ul>
+            <li>数据不会上传到服务器，保护您的隐私</li>
+            <li>清除浏览器数据会导致信息丢失，请及时导出重要内容</li>
+            <li>支持导出对话历史、材料清单等</li>
+          </ul>
+        </div>
       </div>
     </el-dialog>
 
@@ -107,9 +126,9 @@
 </template>
 
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, ref, provide } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { Briefcase, Expand, Menu, Close } from '@element-plus/icons-vue'
+import { Briefcase, Expand, Menu, Close, Document, Cpu, DataLine } from '@element-plus/icons-vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -134,10 +153,14 @@ const navigateTo = (path) => {
   mobileMenuVisible.value = false
 }
 
+// 对话框状态 - 通过 provide 共享给子组件（如 Home.vue 的页脚）
 const guideVisible = ref(false)
 const aboutVisible = ref(false)
 const contactVisible = ref(false)
 
+provide('guideVisible', guideVisible)
+provide('aboutVisible', aboutVisible)
+provide('contactVisible', contactVisible)
 
 const showGuide = () => {
   guideVisible.value = true
@@ -358,6 +381,56 @@ const showContact = () => {
 .footer-copyright {
   font-size: 14px;
   color: rgba(255, 255, 255, 0.65);
+}
+
+/* ===== 使用指南对话框样式 ===== */
+:deep(.guide-dialog .el-dialog__body) {
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.guide-content {
+  padding: 10px 0;
+}
+
+.guide-section {
+  margin-bottom: 24px;
+  padding: 16px;
+  background: #f5f7fa;
+  border-radius: 8px;
+}
+
+.guide-section:last-child {
+  margin-bottom: 0;
+}
+
+.guide-section h4 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 12px;
+}
+
+.guide-section .el-icon {
+  color: #667eea;
+  font-size: 18px;
+}
+
+.guide-section p,
+.guide-section ul,
+.guide-section ol {
+  margin: 0;
+  padding-left: 20px;
+  color: #606266;
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+.guide-section li {
+  margin-bottom: 8px;
 }
 
 /* 页面切换动画 */
