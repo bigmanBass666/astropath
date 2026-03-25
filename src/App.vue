@@ -164,6 +164,11 @@ const showContact = () => {
   position: sticky;
   top: 0;
   z-index: 1000;
+  /* F046: 导航栏固定抖动修复 - 增强渲染稳定性 */
+  contain: layout style paint;
+  will-change: scroll-position;
+  backface-visibility: hidden;
+  transform: translateZ(0);
 }
 
 .header-content {

@@ -191,7 +191,7 @@
         </div>
 
         <!-- 专业对比对话框 -->
-        <el-dialog v-model="compareVisible" title="专业对比" width="80%" top="5vh">
+        <el-dialog v-model="compareVisible" title="专业对比" width="80%" top="5vh" class="major-compare-dialog">
           <div v-if="majorsToCompare.length > 0" class="compare-container">
             <el-table :data="compareTableData" border style="width: 100%" class="major-compare-table">
               <el-table-column prop="field" label="对比项" min-width="140" fixed>
@@ -857,6 +857,7 @@ onMounted(() => {
   }
 }
 
+/* 专业卡片：桌面端统一高度，移动端自适应 */
 .major-card {
   /* 使用 flex 布局强制统一卡片高度 */
   display: flex !important;
@@ -873,6 +874,58 @@ onMounted(() => {
   flex: 1 !important;
   height: 100% !important;
   overflow: hidden !important;
+}
+
+/* 移动端 (375px): 取消固定高度，内容完整显示 */
+@media (max-width: 480px) {
+  .major-card {
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+  }
+
+  .major-card :deep(.el-card__body) {
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  /* 移动端卡片内容不受截断限制 */
+  .major-description {
+    max-height: none !important;
+    -webkit-line-clamp: unset !important;
+  }
+
+  .major-career p {
+    max-height: none !important;
+    -webkit-line-clamp: unset !important;
+  }
+
+  .major-courses ul {
+    max-height: none !important;
+  }
+
+  /* 专业卡片 checkbox 移动端自适应宽度 */
+  .major-checkbox {
+    width: 100%;
+    overflow: hidden;
+  }
+
+  .major-checkbox :deep(.el-checkbox) {
+    max-width: 100%;
+    overflow: hidden;
+  }
+
+  .major-checkbox :deep(.el-checkbox__label) {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    max-width: 100%;
+    font-size: 12px;
+  }
 }
 
 /* 限制各内容区块高度，确保所有卡片高度一致 */
@@ -1061,7 +1114,29 @@ onMounted(() => {
   color: #f56c6c;
 }
 
-/* 专业对比表格：内容不换行，保持单行 */
+/* 对比操作栏：移动端垂直堆叠 */
+.compare-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: #f5f7fa;
+  border-radius: 8px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.compare-info {
+  font-size: 14px;
+  color: #606266;
+}
+
+.compare-info strong {
+  color: #667eea;
+}
+
+/* 专业对比表格：移动端响应式 */
 .major-compare-table :deep(.el-table__cell) {
   overflow: hidden;
 }
@@ -1070,5 +1145,85 @@ onMounted(() => {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* 移动端对比表格：允许换行 */
+@media (max-width: 480px) {
+  .major-compare-table :deep(.el-table__body .cell) {
+    white-space: normal !important;
+    text-overflow: unset !important;
+    overflow: visible !important;
+  }
+
+  .major-compare-table :deep(.el-table__cell) {
+    overflow: visible !important;
+  }
+
+  .compare-bar {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+  }
+
+  .compare-bar .el-button {
+    width: 100%;
+  }
+}
+
+/* 专业搜索 tab 移动端响应式补充 */
+@media (max-width: 480px) {
+  /* 筛选区域已在 480px 媒体查询中处理 */
+  /* 分页器移动端：隐藏不必要元素 */
+  .pagination :deep(.el-pagination__sizes) {
+    display: none;
+  }
+  .pagination :deep(.el-pagination__total) {
+    display: none;
+  }
+  .pagination :deep(.el-pagination__jump) {
+    display: none;
+  }
+  .pagination :deep(.el-pagination__rightwrapper) {
+    display: none;
+  }
+}
+
+/* 对比容器：允许水平滚动 */
+.compare-container {
+  overflow-x: auto;
+}
+
+/* 移动端对话框响应式宽度 */
+@media (max-width: 768px) {
+  .major-compare-dialog {
+    width: 90% !important;
+    max-width: 90% !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .major-compare-dialog {
+    width: 96% !important;
+    max-width: 96% !important;
+  }
+}
+
+/* 移动端专业对比对话框 */
+@media (max-width: 480px) {
+  .major-compare-table {
+    font-size: 13px;
+  }
+
+  .major-compare-table :deep(.el-table__header th) {
+    font-size: 11px;
+  }
+
+  .major-compare-table :deep(.el-table__body td) {
+    padding: 6px 4px;
+  }
+
+  .compare-container {
+    overflow-x: auto;
+  }
 }
 </style>
