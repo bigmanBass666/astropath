@@ -101,3 +101,81 @@ Status: completed
 Git commit: 678933d
 Remaining features: 74
 Notes: 通过Playwright MCP端到端验证全部5项测试通过。确认：页面标题「AI配置管理」正确；表格初始为空；填写供应商名称「DeepSeek」+类型「国内供应商」+Base URL「https://api.deepseek.com」+API Key「test-key-12345」+模型名称「deepseek-chat」后点击保存，表格新增DeepSeek行且状态显示「未测试」；API Key列正确显示星号掩码（12个*）；ElMessage提示「配置已保存」。AIConfig.vue代码已完整实现（供应商CRUD+localStorage持久化+测试连接模拟），无需额外编写。更新 F016 passes: true。
+
+════════════════════════════════════════════════════════════════
+=== Session 21 — 2026-03-25 20:25 ===
+════════════════════════════════════════════════════════════════
+
+## Summary
+- Type: feature
+- Feature: F017 - AI配置页面可编辑和删除已有供应商，点击编辑打开对话框修改配置
+- Status: completed
+
+## Changes
+- Files modified: src/views/AIConfig.vue, feature_list.json
+- Git commit: 407b1ad
+- Approximate lines: +2 -1
+
+## Verification
+- Smoke test: PASS
+- E2E test: PASS (4/4 steps)
+- Feature marked passing: YES
+
+## E2E Test Details (F017)
+1. ✅ 找到DeepSeek供应商行（表格中显示DeepSeek行，含编辑/删除/测试按钮）
+2. ✅ 点击编辑按钮，弹出「编辑供应商」对话框，表单预填充：DeepSeek/国内供应商/https://api.deepseek.com/test-key-12345/deepseek-chat
+3. ✅ 修改模型名称为「deepseek-coder」，点击保存，ElMessage提示「配置已更新」，表格模型列更新为deepseek-coder
+4. ✅ 点击删除按钮，表格行移除，ElMessage提示「已删除」
+- 小修复：AIConfig.vue表格缺少「模型名称」列，添加了 `<el-table-column prop="model" label="模型名称" min-width="140" show-overflow-tooltip />`
+
+## Metrics
+- Remaining features: 73
+- Priority queue: F018, F019, F020 (按优先级 P1/P1/P1)
+
+## Blockers
+- None
+
+## Next Session
+- Recommended action: F018 - AI配置页面支持单供应商测试和批量测试全部连接（已有testConnection和testAllConnections方法，代码已存在，需端到端验证）
+- Focus files: src/views/AIConfig.vue
+- Context needed: 熟悉AIConfig.vue中testConnection和testConnectionStatus的模拟逻辑
+
+════════════════════════════════════════════════════════════════
+=== Session 22 — 2026-03-25 ===
+════════════════════════════════════════════════════════════════
+
+## Summary
+- Type: feature
+- Feature: F018 - AI配置页面支持单供应商测试和批量测试全部连接
+- Status: completed
+
+## Changes
+- Files modified: src/views/AIConfig.vue, feature_list.json
+- Git commit: 76f67e7
+- Approximate lines: +3 -2
+
+## Verification
+- Smoke test: PASS
+- E2E test: PASS (4/4 steps)
+- Feature marked passing: YES
+
+## E2E Test Details (F018)
+1. ✅ 添加DeepSeek供应商，状态显示"未测试"
+2. ✅ 点击"测试"按钮 → 状态立即变为"测试中"（黄色标签）→ 1.5秒后变为"已连接"（绿色标签）
+3. ✅ 添加Anthropic供应商，点击"测试全部连接" → 两个供应商同时变为"测试中" → 各自1.5秒后变为"已连接"
+4. ✅ ElMessage正确提示"DeepSeek 连接成功"和"Anthropic 连接成功"
+- 小修复：状态列el-tag模板原只处理connected/info两种状态，改为v-if/v-else-if完整处理testing/warning(测试中)/connected/success(已连接)/error/danger(连接失败)/info(未测试)四种状态
+
+## Metrics
+- Remaining features: 72
+- Priority queue: F019, F020, F021 (localStorage持久化、选校推荐、收藏院校)
+
+## Blockers
+- None
+
+## Next Session
+- Recommended action: F019 - AI配置数据通过localStorage持久化（代码saveProviders/loadProviders已存在，localStorage在F016/F017测试中已验证有效，可快速验证刷新后数据保留）
+- Focus files: src/views/AIConfig.vue
+- Context needed: F019是localStorage持久化验证，代码在F016中已实现saveProviders/loadProviders
+
+════════════════════════════════════════════════════════════════

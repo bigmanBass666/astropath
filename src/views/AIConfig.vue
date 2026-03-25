@@ -23,9 +23,10 @@
         <el-table-column prop="model" label="模型名称" min-width="140" show-overflow-tooltip />
         <el-table-column prop="status" label="状态" min-width="90">
           <template #default="{ row }">
-            <el-tag :type="row.status === 'connected' ? 'success' : 'info'">
-              {{ row.status === 'connected' ? '已连接' : '未测试' }}
-            </el-tag>
+            <el-tag v-if="row.status === 'testing'" type="warning">测试中</el-tag>
+            <el-tag v-else-if="row.status === 'connected'" type="success">已连接</el-tag>
+            <el-tag v-else-if="row.status === 'error'" type="danger">连接失败</el-tag>
+            <el-tag v-else type="info">未测试</el-tag>
           </template>
         </el-table-column>
         <el-table-column label="操作" min-width="210">
