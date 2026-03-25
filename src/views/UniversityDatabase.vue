@@ -75,9 +75,6 @@
           <el-tag :type="school.rankType" size="small">{{ school.ranking }}</el-tag>
         </div>
         <div class="country-row">
-          <el-tag :type="getCountryTagType(school.country)" size="small" class="country-tag">
-            {{ getCountryAbbr(school.country) }}
-          </el-tag>
           <span class="country-name">{{ school.country }}</span>
         </div>
         <p class="major">{{ school.major }}</p>
@@ -118,16 +115,7 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column prop="country" label="国家/地区" width="120">
-          <template #default="scope">
-            <div class="list-country">
-              <el-tag :type="getCountryTagType(scope.row.country)" size="small" class="country-tag">
-                {{ getCountryAbbr(scope.row.country) }}
-              </el-tag>
-              <span>{{ scope.row.country }}</span>
-            </div>
-          </template>
-        </el-table-column>
+        <el-table-column prop="country" label="国家/地区" width="100" />
         <el-table-column prop="major" label="热门专业" width="140" />
         <el-table-column prop="tuition" label="学费" width="100" />
         <el-table-column prop="acceptanceRate" label="录取率" width="90">
@@ -427,46 +415,6 @@ const getCategoryTagType = (category) => {
     '文科': 'danger'
   }
   return types[category] || 'info'
-}
-
-// 获取国家/地区缩写
-const getCountryAbbr = (country) => {
-  const abbrs = {
-    '美国': 'US',
-    '英国': 'UK',
-    '中国': 'CN',
-    '澳洲': 'AU',
-    '澳大利亚': 'AU',
-    '加拿大': 'CA',
-    '日本': 'JP',
-    '韩国': 'KR',
-    '新加坡': 'SG',
-    '德国': 'DE',
-    '法国': 'FR',
-    '香港': 'HK',
-    '欧洲': 'EU'
-  }
-  return abbrs[country] || country.substring(0, 2).toUpperCase()
-}
-
-// 获取国家/地区标签类型（用于颜色区分）
-const getCountryTagType = (country) => {
-  const types = {
-    '美国': 'danger',
-    '英国': 'warning',
-    '中国': 'success',
-    '澳洲': '',
-    '澳大利亚': '',
-    '加拿大': 'primary',
-    '日本': 'info',
-    '韩国': 'info',
-    '新加坡': 'warning',
-    '德国': 'primary',
-    '法国': 'primary',
-    '香港': 'warning',
-    '欧洲': 'primary'
-  }
-  return types[country] || 'info'
 }
 
 // 解析排名数字
@@ -1006,14 +954,6 @@ onMounted(() => {
   margin-bottom: 5px;
 }
 
-.country-tag {
-  font-weight: 600;
-  font-size: 11px;
-  padding: 0 6px;
-  height: 20px;
-  line-height: 18px;
-}
-
 .country-name {
   color: #909399;
   font-size: 14px;
@@ -1076,12 +1016,6 @@ onMounted(() => {
   display: flex;
   gap: 8px;
   justify-content: flex-end;
-}
-
-.list-country {
-  display: flex;
-  align-items: center;
-  gap: 6px;
 }
 
 .pagination {
