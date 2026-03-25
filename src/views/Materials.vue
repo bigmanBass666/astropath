@@ -220,6 +220,55 @@
           </el-button>
         </div>
       </el-tab-pane>
+
+      <el-tab-pane label="申请进度" name="progress">
+        <div class="progress-dashboard">
+          <el-card class="overall-progress-card">
+            <div class="overall-progress">
+              <div class="progress-circle">
+                <el-progress type="circle" :percentage="overallProgress" :width="120" :stroke-width="12" :color="progressColors" />
+              </div>
+              <div class="progress-info">
+                <h3>整体申请进度</h3>
+                <div class="progress-stats">
+                  <div class="stat-item">
+                    <span class="stat-label">已完成阶段</span>
+                    <span class="stat-value">{{ completedStages }}/{{ applicationStages.length }}</span>
+                  </div>
+                  <div class="stat-item">
+                    <span class="stat-label">待完成任务</span>
+                    <span class="stat-value">{{ totalPendingTasks }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </el-card>
+
+          <div class="stages-grid">
+            <el-card v-for="stage in applicationStages" :key="stage.id" class="stage-card" :class="{ 'stage-completed': isStageCompleted(stage) }">
+              <div class="stage-header">
+                <div class="stage-icon">{{ stage.icon }}</div>
+                <h4>{{ stage.name }}</h4>
+                <el-tag :type="getStageTagType(stage)" size="small">{{ getStageStatus(stage) }}</el-tag>
+              </div>
+              <el-progress :percentage="getStageProgress(stage)" :color="getStageColor(stage)" :stroke-width="8" />
+              <div class="stage-tasks">
+                <div class="task-count">{{ getStageCompletedCount(stage) }}/{{ stage.tasks.length }} 任务</div>
+                <div class="task-list">
+                  <div v-for="(task, index) in stage.tasks" :key="index" 
+                       class="task-item" 
+                       :class="{ 'task-completed': task.completed }"
+                       @click="handleTaskClick(stage, task)">
+                    <el-checkbox v-model="task.completed" size="small" @click.stop @change="saveProgressData" />
+                    <span class="task-name">{{ task.name }}</span>
+                    <el-icon v-if="!task.completed" class="task-action"><Right /></el-icon>
+                  </div>
+                </div>
+              </div>
+            </el-card>
+          </div>
+        </div>
+      </el-tab-pane>
     </el-tabs>
 
     <!-- 编辑材料对话框 -->
@@ -397,7 +446,7 @@
 <script setup>
 import { ref, reactive, computed, onMounted, nextTick } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Plus } from '@element-plus/icons-vue'
+import { Plus, Right } from '@element-plus/icons-vue'
 import { getProviders, sendMessageToAI } from '@/utils/ai-api'
 import { jsPDF } from 'jspdf'
 import 'jspdf/dist/jspdf.umd.min.js'
@@ -1091,6 +1140,159 @@ const pendingItems = computed(() => {
 const completedCount = computed(() => completedItems.value.length)
 const pendingCount = computed(() => pendingItems.value.length)
 
+const applicationStages = ref([
+  {
+    id: 'background',
+    name: '背景准备',
+    icon: '📚',
+    route: '/assessment',
+    tasks: [
+      { name: '完成背景评估', completed: false },
+      { name: '准备语言成绩', completed: false },
+      { name: '准备GPA证明', completed: false },
+      { name: '整理科研经历', completed: false }
+    ]
+  },
+  {
+    id: 'documents',
+    name: '文书撰写',
+    icon: '✍️',
+    route: '/materials',
+    tasks: [
+      { name: '个人陈述', completed: false },
+      { name: '简历CV', completed: false },
+      { name: '推荐信', completed: false },
+      { name: '研究计划', completed: false }
+    ]
+  },
+  {
+    id: 'application',
+    name: '网申提交',
+    icon: '📝',
+    route: '/school-recommendation',
+    tasks: [
+      { name: '填写申请表', completed: false },
+      { name: '上传材料', completed: false },
+      { name: '支付申请费', completed: false },
+      { name: '确认提交', completed: false }
+    ]
+  },
+  {
+    id: 'offer',
+    name: 'Offer跟进',
+    icon: '📬',
+    route: '/timeline',
+    tasks: [
+      { name: '等待录取结果', completed: false },
+      { name: '确认Offer', completed: false },
+      { name: '缴纳留位费', completed: false }
+    ]
+  },
+  {
+    id: 'visa',
+    name: '签证办理',
+    icon: '🛂',
+    route: '/materials',
+    tasks: [
+      { name: '准备签证材料', completed: false },
+      { name: '预约签证面试', completed: false },
+      { name: '完成签证面试', completed: false },
+      { name: '获取签证', completed: false }
+    ]
+  }
+])
+
+const loadProgressData = () => {
+  const saved = localStorage.getItem('application_progress_data')
+  if (saved) {
+    try {
+      const data = JSON.parse(saved)
+      applicationStages.value.forEach(stage => {
+        const savedStage = data.find(s => s.id === stage.id)
+        if (savedStage) {
+          stage.tasks.forEach((task, idx) => {
+            if (savedStage.tasks[idx]) {
+              task.completed = savedStage.tasks[idx].completed
+            }
+          })
+        }
+      })
+    } catch (e) {
+      console.error('Failed to load progress data:', e)
+    }
+  }
+}
+
+const saveProgressData = () => {
+  const data = applicationStages.value.map(stage => ({
+    id: stage.id,
+    tasks: stage.tasks.map(t => ({ name: t.name, completed: t.completed }))
+  }))
+  localStorage.setItem('application_progress_data', JSON.stringify(data))
+}
+
+const getStageProgress = (stage) => {
+  const completed = stage.tasks.filter(t => t.completed).length
+  return Math.round((completed / stage.tasks.length) * 100)
+}
+
+const getStageCompletedCount = (stage) => {
+  return stage.tasks.filter(t => t.completed).length
+}
+
+const isStageCompleted = (stage) => {
+  return stage.tasks.every(t => t.completed)
+}
+
+const getStageStatus = (stage) => {
+  const progress = getStageProgress(stage)
+  if (progress === 100) return '已完成'
+  if (progress > 0) return '进行中'
+  return '待开始'
+}
+
+const getStageTagType = (stage) => {
+  const progress = getStageProgress(stage)
+  if (progress === 100) return 'success'
+  if (progress > 0) return 'warning'
+  return 'info'
+}
+
+const getStageColor = (stage) => {
+  const progress = getStageProgress(stage)
+  if (progress === 100) return '#67c23a'
+  if (progress >= 50) return '#e6a23c'
+  return '#409eff'
+}
+
+const overallProgress = computed(() => {
+  const allTasks = applicationStages.value.flatMap(s => s.tasks)
+  const completed = allTasks.filter(t => t.completed).length
+  return Math.round((completed / allTasks.length) * 100)
+})
+
+const completedStages = computed(() => {
+  return applicationStages.value.filter(s => isStageCompleted(s)).length
+})
+
+const totalPendingTasks = computed(() => {
+  return applicationStages.value.flatMap(s => s.tasks).filter(t => !t.completed).length
+})
+
+const progressColors = [
+  { color: '#f56c6c', percentage: 20 },
+  { color: '#e6a23c', percentage: 40 },
+  { color: '#409eff', percentage: 60 },
+  { color: '#67c23a', percentage: 80 },
+  { color: '#6f7ad3', percentage: 100 }
+]
+
+const handleTaskClick = (stage, task) => {
+  if (!task.completed && stage.route) {
+    window.location.href = stage.route
+  }
+}
+
 const removeItem = (categoryId, index) => {
   if (categoryId === 'visa') {
     const country = selectedCountry.value
@@ -1370,6 +1572,7 @@ onMounted(() => {
   if (savedChecklist) {
     Object.assign(allItems.value, JSON.parse(savedChecklist))
   }
+  loadProgressData()
 })
 </script>
 
@@ -2014,5 +2217,156 @@ onMounted(() => {
 .completed-text {
   text-decoration: line-through;
   color: #67c23a;
+}
+
+.progress-dashboard {
+  padding: 20px 0;
+}
+
+.overall-progress-card {
+  margin-bottom: 30px;
+}
+
+.overall-progress {
+  display: flex;
+  align-items: center;
+  gap: 40px;
+  padding: 20px;
+}
+
+.progress-circle {
+  flex-shrink: 0;
+}
+
+.progress-info h3 {
+  margin: 0 0 20px 0;
+  font-size: 20px;
+  color: #303133;
+}
+
+.progress-stats {
+  display: flex;
+  gap: 40px;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.stat-item .stat-label {
+  font-size: 13px;
+  color: #909399;
+}
+
+.stat-item .stat-value {
+  font-size: 24px;
+  font-weight: 600;
+  color: #303133;
+}
+
+.stages-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.stage-card {
+  transition: all 0.3s ease;
+}
+
+.stage-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.stage-card.stage-completed {
+  border-color: #67c23a;
+  background: linear-gradient(135deg, #f6ffed 0%, #ffffff 100%);
+}
+
+.stage-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.stage-icon {
+  font-size: 28px;
+}
+
+.stage-header h4 {
+  flex: 1;
+  margin: 0;
+  font-size: 16px;
+  color: #303133;
+}
+
+.stage-tasks {
+  margin-top: 15px;
+}
+
+.task-count {
+  font-size: 13px;
+  color: #909399;
+  margin-bottom: 10px;
+}
+
+.task-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.task-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: #f5f7fa;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.task-item:hover {
+  background: #ecf5ff;
+}
+
+.task-item.task-completed {
+  background: #f0f9eb;
+}
+
+.task-item.task-completed .task-name {
+  text-decoration: line-through;
+  color: #67c23a;
+}
+
+.task-name {
+  flex: 1;
+  font-size: 14px;
+  color: #303133;
+}
+
+.task-action {
+  color: #909399;
+  font-size: 12px;
+}
+
+@media (max-width: 768px) {
+  .overall-progress {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .progress-stats {
+    justify-content: center;
+  }
+
+  .stages-grid {
+    grid-template-columns: 1fr;
+  }
 }
 </style>
