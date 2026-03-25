@@ -242,7 +242,7 @@
       "验证页面刷新后表格中仍然显示Anthropic供应商及其完整配置（Base URL、模型名称、状态）",
       "验证API Key仍然以星号掩码显示，不泄露明文"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "F020",
