@@ -101,7 +101,7 @@
       "点击抽屉中的「院校数据库」菜单项，验证抽屉关闭且页面跳转到 /university-database",
       "验证抽屉关闭按钮（X图标）可点击，点击后抽屉关闭"
     ],
-    "passes": false
+    "passes": true
   },
   {
     "id": "F009",

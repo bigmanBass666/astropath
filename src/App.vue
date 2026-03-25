@@ -57,6 +57,9 @@
       <template #header>
         <div class="drawer-header">
           <span class="drawer-title">导航菜单</span>
+          <button class="drawer-close-btn" @click="mobileMenuVisible = false" aria-label="关闭菜单">
+            <el-icon :size="20"><Close /></el-icon>
+          </button>
         </div>
       </template>
       <div class="mobile-menu-list">
@@ -106,7 +109,7 @@
 <script setup>
 import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { Briefcase, Expand, Menu } from '@element-plus/icons-vue'
+import { Briefcase, Expand, Menu, Close } from '@element-plus/icons-vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -264,6 +267,26 @@ const showContact = () => {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  width: 100%;
+}
+
+.drawer-close-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.05);
+  cursor: pointer;
+  color: #606266;
+  transition: all 0.2s;
+}
+
+.drawer-close-btn:hover {
+  background: rgba(0, 0, 0, 0.1);
+  color: #303133;
 }
 
 .drawer-title {
