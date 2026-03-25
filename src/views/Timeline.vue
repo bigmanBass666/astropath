@@ -212,6 +212,10 @@ const taskForm = reactive({
   reminderDays: 1
 })
 
+// localStorage 持久化相关
+let isLoaded = false
+const isSaving = ref(false)
+
 // 模式调整因子
 const MODE_OFFSETS = {
   compact: -30,  // 提前30天
@@ -229,6 +233,51 @@ const MILESTONE_TEMPLATES = [
   { id: 6, title: '录取决策', status: 'pending', description: '选择学校并确认入学' },
   { id: 7, title: '签证办理', status: 'pending', description: '办理签证手续' }
 ]
+
+// localStorage 持久化
+const STORAGE_KEY = 'timeline_data'
+
+const loadFromStorage = () => {
+  const saved = localStorage.getItem(STORAGE_KEY)
+  if (saved) {
+    try {
+      const data = JSON.parse(saved)
+      if (data.milestones && Array.isArray(data.milestones) && data.milestones.length > 0) {
+        milestones.value = data.milestones
+      }
+      if (data.tasks && Array.isArray(data.tasks)) {
+        tasks.value = data.tasks
+      }
+      if (data.mode && ['compact', 'normal', 'relaxed'].includes(data.mode)) {
+        mode.value = data.mode
+      }
+      if (data.currentView && ['chart', 'timeline', 'kanban'].includes(data.currentView)) {
+        currentView.value = data.currentView
+      }
+    } catch (e) {
+      console.warn('Failed to parse timeline data from localStorage:', e)
+    }
+  }
+  isLoaded = true
+}
+
+const saveToStorage = () => {
+  if (isSaving.value) return
+  isSaving.value = true
+  try {
+    const data = {
+      milestones: milestones.value,
+      tasks: tasks.value,
+      mode: mode.value,
+      currentView: currentView.value
+    }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
+  } finally {
+    setTimeout(() => {
+      isSaving.value = false
+    }, 0)
+  }
+}
 
 // 当前日期作为基准
 const today = new Date()
@@ -415,19 +464,13 @@ const checkTaskReminders = () => {
 }
 
 // 初始化时请求通知权限
-onMounted(() => {
-  console.log('Timeline loaded in mode:', mode.value)
-  // 默认选中第一个里程碑
-  if (milestones.value.length > 0) {
-    selectedMilestone.value = milestones.value[0]
+
+// 监听数据变化自动保存到 localStorage（仅在数据加载完成后生效）
+watch([milestones, tasks, mode, currentView], () => {
+  if (isLoaded && !isSaving.value) {
+    saveToStorage()
   }
-  // 请求通知权限
-  requestNotificationPermission()
-  // 每小时检查一次提醒
-  setInterval(checkTaskReminders, 60 * 60 * 1000)
-  // 立即检查一次
-  checkTaskReminders()
-})
+}, { deep: true })
 
 onUnmounted(() => {
   // 清理定时器（实际中不需要，页面关闭自动停止）
@@ -802,6 +845,8 @@ watch([milestones, tasks], () => {
 
 onMounted(() => {
   console.log('Timeline loaded in mode:', mode.value)
+  // 从localStorage恢复数据
+  loadFromStorage()
   // 默认选中第一个里程碑
   if (milestones.value.length > 0) {
     selectedMilestone.value = milestones.value[0]
