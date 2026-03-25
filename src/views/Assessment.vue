@@ -345,7 +345,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, reactive, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import * as echarts from 'echarts'
@@ -496,13 +496,17 @@ const practiceScore = computed(() => {
 
 const nextStep = async () => {
   if (currentStep.value === 0) {
-    await basicFormRef.value.validate((valid) => {
-      if (valid) {
-        currentStep.value++
-      } else {
-        ElMessage.warning('请完善必填字段')
-      }
-    })
+    if (basicFormRef.value) {
+      await basicFormRef.value.validate((valid) => {
+        if (valid) {
+          currentStep.value++
+        } else {
+          ElMessage.warning('请完善必填字段')
+        }
+      })
+    } else {
+      currentStep.value++
+    }
   } else {
     currentStep.value++
   }
@@ -1031,18 +1035,79 @@ const resetForm = () => {
     confirmButtonText: '确定',
     cancelButtonText: '取消'
   }).then(() => {
-    Object.assign(form, {
-      basic: { name: '', age: 22, university: '', gpa: 3.0, language: '' },
-      academic: { degree: '本科', majors: [], averageScore: 80, research: [] },
-      practice: { internships: [], competitions: [] }
-    })
+    isResetting.value = true
+    form.basic.name = ''
+    form.basic.age = 22
+    form.basic.university = ''
+    form.basic.gpa = 3.0
+    form.basic.language = ''
+    form.academic.degree = '本科'
+    form.academic.majors = []
+    form.academic.averageScore = 80
+    form.academic.research = []
+    form.practice.internships = []
+    form.practice.competitions = []
+    form.practice.volunteers = []
     currentStep.value = 0
+    practiceTab.value = 'internship'
+    localStorage.removeItem('assessment_form')
+    // setTimeout 延迟到下一个事件循环，确保 watch 已在 isResetting=true 时执行完毕
+    setTimeout(() => { isResetting.value = false }, 0)
   }).catch(() => {})
 }
 
-// 组件挂载时添加窗口resize监听
+let isLoaded = false
+const isResetting = ref(false)
+
+const loadFromStorage = () => {
+  const saved = localStorage.getItem('assessment_form')
+  if (saved) {
+    try {
+      const data = JSON.parse(saved)
+      if (data.form) {
+        Object.assign(form.basic, data.form.basic || {})
+        Object.assign(form.academic, data.form.academic || {})
+        Object.assign(form.practice, data.form.practice || {})
+      }
+      if (typeof data.currentStep === 'number') {
+        currentStep.value = data.currentStep
+      }
+      if (data.practiceTab) {
+        practiceTab.value = data.practiceTab
+      }
+    } catch (e) {
+      // ignore parse errors
+    }
+  }
+  isLoaded = true
+}
+
+// 监听表单数据和步骤变化，自动保存到 localStorage（仅在数据加载完成后生效）
+watch(
+  [form, currentStep, practiceTab],
+  () => {
+    if (!isLoaded || isResetting.value) return
+    localStorage.setItem('assessment_form', JSON.stringify({
+      form: {
+        basic: { ...form.basic },
+        academic: { ...form.academic },
+        practice: {
+          internships: [...form.practice.internships],
+          competitions: [...form.practice.competitions],
+          volunteers: [...form.practice.volunteers]
+        }
+      },
+      currentStep: currentStep.value,
+      practiceTab: practiceTab.value
+    }))
+  },
+  { deep: true }
+)
+
+// 组件挂载时添加窗口resize监听并恢复数据
 onMounted(() => {
   window.addEventListener('resize', handleResize)
+  loadFromStorage()
 })
 
 // 组件卸载时清理
