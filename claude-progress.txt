@@ -32,3 +32,10 @@ Status: completed
 Git commit: fc2f843
 Remaining features: 86
 Notes: 修复图标渲染bug：el-icon使用:is=componentObject导致图标为空，改为el-icon>component :is=正确嵌套后SVG图标正确渲染。同时修复了功能卡片的图标（影响F003的可视化显示）。通过Playwright端到端验证：标题存在、4项+SVG图标正确、淡入动画正常(scale=1.1悬停效果)。更新 F004 passes: true。
+
+=== Session 9 — 2026-03-25 ===
+Feature worked on: F005 - 首页CTA区域和页脚区域
+Status: completed
+Git commit: 7dbe266
+Remaining features: 85
+Notes: 通过Playwright Python端到端验证全部4个步骤通过。确认：CTA区域「准备好开始您的留学规划了吗」标题、副标题「30秒完成背景评估，获取专属留学路径图」、「立即开始」按钮均正确渲染；点击按钮跳转到/assessment；页脚四栏布局（品牌介绍/快速链接/帮助支持/联系方式）全部存在；页脚快速链接6项（背景评估/AI选校/时间规划/材料中心/院校数据库/AI对话）均有href链接。F005代码已存在于Home.vue中，无需额外编写。更新 F005 passes: true。
