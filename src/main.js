@@ -61,6 +61,12 @@ const routes = [
     name: 'MajorDetail',
     component: () => import('@/views/MajorDetail.vue'),
     meta: { title: '专业详情' }
+  },
+  {
+    path: '/school-detail/:id',
+    name: 'SchoolDetail',
+    component: () => import('@/views/SchoolDetail.vue'),
+    meta: { title: '院校详情' }
   }
 ]
 

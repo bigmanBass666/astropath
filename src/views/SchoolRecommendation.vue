@@ -187,28 +187,6 @@
       </div>
     </template>
 
-    <!-- 详情对话框 -->
-    <el-dialog v-model="detailVisible" :title="currentSchool?.name" width="60%">
-      <div v-if="currentSchool" class="school-detail">
-        <el-descriptions :column="2" border>
-          <el-descriptions-item label="国家">{{ currentSchool.country }}</el-descriptions-item>
-          <el-descriptions-item label="排名">{{ currentSchool.ranking }}</el-descriptions-item>
-          <el-descriptions-item label="专业">{{ currentSchool.major }}</el-descriptions-item>
-          <el-descriptions-item label="学费">{{ currentSchool.tuition }}</el-descriptions-item>
-          <el-descriptions-item label="截止日期">{{ currentSchool.deadline }}</el-descriptions-item>
-          <el-descriptions-item label="录取率">{{ currentSchool.acceptanceRate }}</el-descriptions-item>
-        </el-descriptions>
-        <div class="requirement-section">
-          <h4>申请要求</h4>
-          <ul>
-            <li v-for="(req, index) in currentSchool.requirements" :key="index">{{ req }}</li>
-          </ul>
-        </div>
-        <p class="official-link">
-          <el-link type="primary" :href="currentSchool.website" target="_blank">访问学校官网</el-link>
-        </p>
-      </div>
-    </el-dialog>
 
     <!-- 对比对话框 -->
     <el-dialog v-model="compareVisible" title="学校对比" width="80%">
@@ -453,8 +431,7 @@ const toggleFavorite = (id) => {
 }
 
 const showDetail = (school) => {
-  currentSchool.value = school
-  detailVisible.value = true
+  router.push(`/school-detail/${school.id}`)
 }
 
 const toggleCompare = () => {
