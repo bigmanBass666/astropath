@@ -178,14 +178,30 @@
 
             <el-collapse v-model="activeCategory">
               <el-collapse-item v-for="category in categories" :key="category.id"
-                :name="category.id" :title="category.name">
-                <el-table :data="getCategoryItems(category.id)" style="width: 100%" class="materials-checklist-table">
+                :name="category.id">
+                <template #title>
+                  <span>{{ category.name }}</span>
+                  <el-select
+                    v-if="category.id === 'visa'"
+                    v-model="selectedCountry"
+                    size="small"
+                    style="margin-left: 15px; width: 120px;"
+                    @click.stop
+                  >
+                    <el-option v-for="country in countries" :key="country" :label="country" :value="country" />
+                  </el-select>
+                </template>
+                <el-table :data="getCategoryItems(category.id)" style="width: 100%" class="materials-checklist-table" :row-class-name="({ row }) => row.completed ? 'completed-row' : ''">
                   <el-table-column width="50">
                     <template #default="{ row }">
                       <el-checkbox v-model="row.completed" @change="updateProgress" />
                     </template>
                   </el-table-column>
-                  <el-table-column prop="name" label="材料名称" min-width="200" show-overflow-tooltip />
+                  <el-table-column prop="name" label="材料名称" min-width="200" show-overflow-tooltip>
+                    <template #default="{ row }">
+                      <span :class="{ 'completed-text': row.completed }">{{ row.name }}</span>
+                    </template>
+                  </el-table-column>
                   <el-table-column prop="note" label="备注" min-width="160" show-overflow-tooltip />
                   <el-table-column label="操作" width="110">
                     <template #default="{ row, $index }">
@@ -860,7 +876,8 @@ const finishWithEssay = () => {
 const categories = ref([
   { id: 'required', name: '必需材料' },
   { id: 'recommended', name: '推荐材料' },
-  { id: 'optional', name: '可选材料' }
+  { id: 'optional', name: '可选材料' },
+  { id: 'visa', name: '签证材料' }
 ])
 
 const allItems = ref({
@@ -886,6 +903,72 @@ const allItems = ref({
   ]
 })
 
+// 签证材料相关
+const countries = ['美国', '英国', '澳大利亚', '加拿大', '新加坡', '日本', '韩国', '欧洲']
+const selectedCountry = ref('美国')
+
+const defaultVisaMaterials = {
+  '美国': [
+    { name: '护照', completed: false, note: '' },
+    { name: 'I-20表格', completed: false, note: '' },
+    { name: 'SEVIS费用收据', completed: false, note: '' },
+    { name: '资金证明', completed: false, note: '' },
+    { name: '签证照片', completed: false, note: '近期白底证件照' },
+    { name: 'DS-160确认页', completed: false, note: '' },
+    { name: '签证预约确认单', completed: false, note: '' }
+  ],
+  '英国': [
+    { name: '护照', completed: false, note: '' },
+    { name: 'CAS文件', completed: false, note: '' },
+    { name: '资金证明', completed: false, note: '' },
+    { name: '肺结核检测证明', completed: false, note: '' },
+    { name: '签证照片', completed: false, note: '' }
+  ],
+  '澳大利亚': [
+    { name: '护照', completed: false, note: '' },
+    { name: 'CoE（入学确认书）', completed: false, note: '' },
+    { name: '资金证明', completed: false, note: '' },
+    { name: 'OSHC保险', completed: false, note: '海外学生健康保险' },
+    { name: 'GTE声明', completed: false, note: '真实临时入境声明' }
+  ],
+  '加拿大': [
+    { name: '护照', completed: false, note: '' },
+    { name: '录取通知书', completed: false, note: '' },
+    { name: '资金证明', completed: false, note: '' },
+    { name: '体检证明', completed: false, note: '' },
+    { name: '学习计划', completed: false, note: '' }
+  ],
+  '新加坡': [
+    { name: '护照', completed: false, note: '' },
+    { name: 'IPA letter', completed: false, note: '' },
+    { name: '资金证明', completed: false, note: '' },
+    { name: '签证申请表', completed: false, note: '' }
+  ],
+  '日本': [
+    { name: '护照', completed: false, note: '' },
+    { name: '在留资格认定证明书', completed: false, note: '' },
+    { name: '资金证明', completed: false, note: '' },
+    { name: '签证申请表', completed: false, note: '' },
+    { name: '照片', completed: false, note: '' }
+  ],
+  '韩国': [
+    { name: '护照', completed: false, note: '' },
+    { name: '录取通知书', completed: false, note: '' },
+    { name: '资金证明', completed: false, note: '' },
+    { name: '签证申请表', completed: false, note: '' }
+  ],
+  '欧洲': [
+    { name: '护照', completed: false, note: '' },
+    { name: '录取通知书', completed: false, note: '' },
+    { name: '资金证明', completed: false, note: '' },
+    { name: '旅行保险', completed: false, note: '' },
+    { name: '签证申请表', completed: false, note: '' }
+  ]
+}
+
+const visaMaterials = ref(JSON.parse(JSON.stringify(defaultVisaMaterials)))
+
+
 const versions = ref([
   { date: '2025-01-10 14:30', note: '初稿', content: '' },
   { date: '2025-01-12 10:20', note: '修改版', content: '' }
@@ -905,11 +988,19 @@ const progressColor = computed(() => {
 })
 
 const getCategoryItems = (catId) => {
+  if (catId === 'visa') {
+    return visaMaterials.value[selectedCountry.value] || []
+  }
   return allItems.value[catId] || []
 }
 
 const updateProgress = () => {
-  localStorage.setItem('materials_checklist', JSON.stringify(allItems.value))
+  const data = {
+    allItems: allItems.value,
+    selectedCountry: selectedCountry.value,
+    visaMaterials: visaMaterials.value
+  }
+  localStorage.setItem('materials_checklist', JSON.stringify(data))
 }
 
 const addCustomItem = () => {
@@ -927,14 +1018,19 @@ const confirmAddItem = () => {
     completed: false,
     note: newItem.note
   })
-  localStorage.setItem('materials_checklist', JSON.stringify(allItems.value))
+  updateProgress()
   ElMessage.success('已添加')
   itemDialogVisible.value = false
   Object.assign(newItem, { name: '', note: '', category: 'required' })
 }
 
 const editItem = (categoryId, index) => {
-  const item = allItems.value[categoryId][index]
+  let item
+  if (categoryId === 'visa') {
+    item = visaMaterials.value[selectedCountry.value][index]
+  } else {
+    item = allItems.value[categoryId][index]
+  }
   editingItem.name = item.name
   editingItem.note = item.note
   editingItem.category = categoryId
@@ -947,9 +1043,15 @@ const confirmEditItem = () => {
     ElMessage.warning('请输入材料名称')
     return
   }
-  allItems.value[editingItem.category][editingItem.index].name = editingItem.name
-  allItems.value[editingItem.category][editingItem.index].note = editingItem.note
-  localStorage.setItem('materials_checklist', JSON.stringify(allItems.value))
+  if (editingItem.category === 'visa') {
+    const country = selectedCountry.value
+    visaMaterials.value[country][editingItem.index].name = editingItem.name
+    visaMaterials.value[country][editingItem.index].note = editingItem.note
+  } else {
+    allItems.value[editingItem.category][editingItem.index].name = editingItem.name
+    allItems.value[editingItem.category][editingItem.index].note = editingItem.note
+  }
+  updateProgress()
   ElMessage.success('材料已更新')
   editItemDialogVisible.value = false
 }
@@ -990,8 +1092,13 @@ const completedCount = computed(() => completedItems.value.length)
 const pendingCount = computed(() => pendingItems.value.length)
 
 const removeItem = (categoryId, index) => {
-  allItems.value[categoryId].splice(index, 1)
-  localStorage.setItem('materials_checklist', JSON.stringify(allItems.value))
+  if (categoryId === 'visa') {
+    const country = selectedCountry.value
+    visaMaterials.value[country].splice(index, 1)
+  } else {
+    allItems.value[categoryId].splice(index, 1)
+  }
+  updateProgress()
   ElMessage.success('已删除')
 }
 
@@ -1244,7 +1351,12 @@ const resetChecklist = () => {
         item.completed = false
       })
     })
-    localStorage.setItem('materials_checklist', JSON.stringify(allItems.value))
+    Object.keys(visaMaterials.value).forEach(country => {
+      visaMaterials.value[country].forEach(item => {
+        item.completed = false
+      })
+    })
+    updateProgress()
     ElMessage.success('清单已重置')
   }).catch(() => {})
 }
@@ -1888,5 +2000,19 @@ onMounted(() => {
 .pending-items-table :deep(.el-table__body .el-button),
 .versions-table :deep(.el-table__body .el-button) {
   flex-shrink: 0;
+}
+
+/* 已完成材料项的视觉区分 */
+.materials-checklist-table :deep(.completed-row) {
+  background-color: #f0f9eb !important;
+}
+
+.materials-checklist-table :deep(.completed-row:hover > td) {
+  background-color: #e1f3d8 !important;
+}
+
+.completed-text {
+  text-decoration: line-through;
+  color: #67c23a;
 }
 </style>
