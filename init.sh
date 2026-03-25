@@ -17,17 +17,29 @@ echo "Starting Vite dev server..."
 npm run dev &
 DEV_PID=$!
 
-# 4. 等待服务器就绪（最多重试 60 秒）
+# 4. 等待服务器就绪（最多重试 60 秒）— 检测 Vite 实际使用的端口
 echo "Waiting for server..."
-for i in $(seq 1 30); do
-  curl -sf http://localhost:5173/ && { echo "Server ready."; break; }
-  [ $i -eq 30 ] && { echo "SMOKE TEST FAILED: server never started"; kill $DEV_PID 2>/dev/null; exit 1; }
-  sleep 2
+ACTUAL_PORT=""
+for port in $(seq 3000 3009); do
+  for i in $(seq 1 30); do
+    if curl -sf "http://localhost:${port}/" > /dev/null; then
+      echo "Server ready on port ${port}."
+      ACTUAL_PORT=$port
+      break 2
+    fi
+    sleep 2
+  done
 done
 
-# 5. 基本冒烟测试 — 验证应用返回 200 和关键内容
-BODY=$(curl -sf http://localhost:5173/)
-echo "$BODY" | grep -q "留学规划平台" \
+if [ -z "$ACTUAL_PORT" ]; then
+  echo "SMOKE TEST FAILED: server never started"
+  kill $DEV_PID 2>/dev/null || true
+  exit 1
+fi
+
+# 5. 基本冒烟测试 — 验证应用返回 200 和关键内容（使用检测到的实际端口）
+BODY=$(curl -sf "http://localhost:${ACTUAL_PORT}/")
+echo "$BODY" | grep -q "一站式智能留学规划与服务平台" \
   && echo "SMOKE TEST PASSED" \
   || { echo "SMOKE TEST FAILED: expected content not found"; kill $DEV_PID 2>/dev/null; exit 1; }
 
