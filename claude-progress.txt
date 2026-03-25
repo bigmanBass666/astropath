@@ -18,3 +18,10 @@ Status: completed
 Git commit: f29ad6a
 Remaining features: 88
 Notes: 通过Playwright MCP端到端验证：按钮存在且样式正确（主按钮白底紫字、次按钮半透明边框）、悬停动画已通过CSS实现（.cta-button:hover上移3px+阴影加深、.secondary-button:hover背景25%透明度+边框变亮）、点击「开始规划」跳转/assessment、点击「探索院校」跳转/university-database。更新 F002 passes: true。
+
+=== Session 7 — 2026-03-25 ===
+Feature worked on: F003 - 首页核心功能区（2x3网格展示6个功能卡片）
+Status: completed
+Git commit: 108a2b86
+Remaining features: 87
+Notes: 通过Playwright MCP端到端验证。确认：核心功能标题「核心功能」+紫色渐变装饰线、6个功能卡片（背景评估/AI智能选校/时间规划/材料中心/院校数据库/AI智能对话）全部存在且布局为2列grid、每卡片含图标+标题+描述+链接、悬停时box-shadow和border-color变化（rgba(102,126,234)）、点击第1卡→/assessment、第2卡→/school-recommendation、第3卡→/timeline全部验证通过。更新 F003 passes: true。
