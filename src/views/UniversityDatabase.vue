@@ -90,11 +90,6 @@
             </span>
           </div>
         </div>
-        <div class="deadline-row">
-          <el-icon class="deadline-icon"><Calendar /></el-icon>
-          <span class="deadline-label">申请截止：</span>
-          <span class="deadline-value">{{ school.deadline || '待公布' }}</span>
-        </div>
         <div class="card-footer">
           <el-button type="primary" size="small" plain @click.stop="addToShortlist(school)">
             {{ shortlisted.includes(school.id) ? '已在清单中' : '加入选校清单' }}
@@ -125,7 +120,6 @@
             </span>
           </template>
         </el-table-column>
-        <el-table-column prop="deadline" label="申请截止" width="100" />
         <el-table-column label="操作" width="160" fixed="right">
           <template #default="scope">
             <el-button type="primary" size="small" plain @click.stop="addToShortlist(scope.row)">
@@ -289,7 +283,6 @@
           <el-descriptions-item label="排名">{{ currentSchool.ranking }}</el-descriptions-item>
           <el-descriptions-item label="热门专业">{{ currentSchool.major }}</el-descriptions-item>
           <el-descriptions-item label="学费">{{ currentSchool.tuition }}</el-descriptions-item>
-          <el-descriptions-item label="申请截止">{{ currentSchool.deadline }}</el-descriptions-item>
           <el-descriptions-item label="录取率">{{ currentSchool.acceptanceRate }}</el-descriptions-item>
           <el-descriptions-item label="学校类型">{{ currentSchool.type || '综合大学' }}</el-descriptions-item>
           <el-descriptions-item label="学生人数">{{ currentSchool.students || 'N/A' }}</el-descriptions-item>
@@ -984,31 +977,6 @@ onMounted(() => {
 .stat-value {
   font-size: 14px;
   color: #303133;
-  font-weight: 500;
-}
-
-.deadline-row {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  margin-bottom: 12px;
-  padding: 8px 10px;
-  background: #fef0f0;
-  border-radius: 6px;
-  font-size: 13px;
-}
-
-.deadline-icon {
-  color: #f56c6c;
-  font-size: 14px;
-}
-
-.deadline-label {
-  color: #909399;
-}
-
-.deadline-value {
-  color: #f56c6c;
   font-weight: 500;
 }
 
