@@ -4,7 +4,7 @@
       <div class="header-content">
         <div class="logo" @click="$router.push('/')">
           <el-icon class="logo-icon"><Briefcase /></el-icon>
-          <span class="logo-text">留学规划平台</span>
+          <span class="logo-text">智途 AstroPath</span>
         </div>
         <!-- 桌面端导航菜单 -->
         <el-menu
@@ -33,7 +33,7 @@
         </transition>
       </router-view>
     </el-main>
-    <el-footer class="app-footer" v-if="!route.meta?.hasFooter">
+    <el-footer class="app-footer" v-if="route.meta && !route.meta.hasFooter">
       <div class="footer-content">
         <div class="footer-links">
           <a href="#" @click.prevent="showGuide">使用指南</a>
@@ -41,7 +41,7 @@
           <a href="#" @click.prevent="showContact">联系方式</a>
         </div>
         <div class="footer-copyright">
-          一站式智能留学规划与服务平台 &copy; 2026
+          智途 AstroPath &copy; 2026
         </div>
       </div>
     </el-footer>
@@ -113,7 +113,7 @@
 
     <!-- 关于对话框 -->
     <el-dialog v-model="aboutVisible" title="关于我们" width="50%">
-      <p>一站式智能留学规划与服务平台，通过AI分析用户背景，生成动态的、可执行的个性化留学规划路径图。</p>
+      <p>智途 AstroPath - 智能留学规划平台，通过AI分析用户背景，生成动态的、可执行的个性化留学规划路径图。</p>
       <p>技术栈：Vue 3 + Vite + Element-Plus + ECharts</p>
     </el-dialog>
 
@@ -273,6 +273,38 @@ const showContact = () => {
   background: #1a1a2e;
   color: rgba(255, 255, 255, 0.75);
   padding: 20px;
+}
+
+.app-footer .footer-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.app-footer .footer-links {
+  display: flex;
+  gap: 32px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.app-footer .footer-links a {
+  color: rgba(255, 255, 255, 0.75);
+  text-decoration: none;
+  font-size: 14px;
+  transition: color 0.3s ease;
+}
+
+.app-footer .footer-links a:hover {
+  color: #667eea;
+}
+
+.app-footer .footer-copyright {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.5);
 }
 
 /* 汉堡菜单按钮 */

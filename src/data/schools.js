@@ -4,7 +4,7 @@
 export const schoolsData = [
   {
     id: 1,
-    name: 'Harvard University',
+    name: '哈佛大学',
     country: '美国',
     major: 'Computer Science',
     ranking: 'QS #1',
@@ -21,7 +21,7 @@ export const schoolsData = [
   },
   {
     id: 2,
-    name: 'Stanford University',
+    name: '斯坦福大学',
     country: '美国',
     major: 'AI',
     ranking: 'QS #2',
@@ -38,7 +38,7 @@ export const schoolsData = [
   },
   {
     id: 3,
-    name: 'MIT',
+    name: '麻省理工学院',
     country: '美国',
     major: 'CS',
     ranking: 'QS #3',
@@ -55,7 +55,7 @@ export const schoolsData = [
   },
   {
     id: 4,
-    name: 'Oxford University',
+    name: '牛津大学',
     country: '英国',
     major: 'CS',
     ranking: 'QS #4',
@@ -72,7 +72,7 @@ export const schoolsData = [
   },
   {
     id: 5,
-    name: 'Cambridge University',
+    name: '剑桥大学',
     country: '英国',
     major: 'CS',
     ranking: 'QS #5',
@@ -89,7 +89,7 @@ export const schoolsData = [
   },
   {
     id: 6,
-    name: 'Tsinghua University',
+    name: '清华大学',
     country: '中国',
     major: 'CS',
     ranking: 'QS #25',
@@ -106,7 +106,7 @@ export const schoolsData = [
   },
   {
     id: 7,
-    name: 'University of Queensland',
+    name: '昆士兰大学',
     country: '澳大利亚',
     major: 'CS',
     ranking: 'QS #50',

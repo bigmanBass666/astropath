@@ -54,11 +54,11 @@
         <!-- 视图切换控件 -->
         <div class="view-toggle">
           <el-radio-group v-model="viewMode" size="small">
-            <el-radio-button value="card">
+            <el-radio-button label="card">
               <el-icon><Grid /></el-icon>
               卡片视图
             </el-radio-button>
-            <el-radio-button value="list">
+            <el-radio-button label="list">
               <el-icon><List /></el-icon>
               列表视图
             </el-radio-button>
@@ -178,45 +178,34 @@
 
         <!-- 专业列表 -->
         <div v-if="filteredMajors.length > 0" class="majors-grid">
-          <el-card v-for="major in filteredMajors" :key="major.id" class="major-card"
-            shadow="hover" @click="goToMajorDetail(major)">
-            <div class="major-checkbox">
-              <el-checkbox v-model="selectedMajors" :label="major.id" border @click.stop>
-                {{ major.name }}
-              </el-checkbox>
+          <div v-for="major in filteredMajors" :key="major.id" class="major-card"
+            :class="'category-' + getCategoryClass(major.category)"
+            @click="goToMajorDetail(major)">
+            <div class="major-card-header">
+              <div class="major-checkbox" @click.stop>
+                <el-checkbox v-model="selectedMajors" :label="major.id">
+                  <span class="checkbox-text">对比</span>
+                </el-checkbox>
+              </div>
+              <el-tag :type="getCategoryTagType(major.category)" size="small" class="category-tag">{{ major.category }}</el-tag>
             </div>
 
-            <div class="major-header">
-              <h3>{{ major.name }}</h3>
-              <el-tag :type="getCategoryTagType(major.category)" size="small">{{ major.category }}</el-tag>
+            <div class="major-card-body">
+              <h3 class="major-name">{{ major.name }}</h3>
+              <p class="major-degree">{{ major.degreeType }} · {{ major.duration }}</p>
+
+              <div class="major-salary">
+                <span class="salary-label">平均薪资</span>
+                <span class="salary-value">{{ major.salaryRange }}</span>
+              </div>
             </div>
 
-            <p class="major-degree">{{ major.degreeType }} | {{ major.duration }}</p>
-            <p class="major-description">{{ major.description }}</p>
-
-            <div class="major-courses">
-              <h4>核心课程</h4>
-              <ul>
-                <li v-for="(course, idx) in major.courses.slice(0, 4)" :key="idx">{{ course }}</li>
-              </ul>
-            </div>
-
-            <div class="major-career">
-              <h4>就业方向</h4>
-              <p>{{ major.career }}</p>
-            </div>
-
-            <div class="major-salary">
-              <span class="salary-label">平均薪资</span>
-              <span class="salary-value">{{ major.salaryRange }}</span>
-            </div>
-
-            <div class="major-actions">
-              <el-button type="primary" size="small" plain @click.stop="goToMajorDetail(major)">
-                查看详情
+            <div class="major-card-footer">
+              <el-button type="primary" size="small" text @click.stop="goToMajorDetail(major)">
+                查看详情 <el-icon class="el-icon--right"><ArrowRight /></el-icon>
               </el-button>
             </div>
-          </el-card>
+          </div>
         </div>
 
         <!-- 专业分页 -->
@@ -315,7 +304,7 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { Search, List, Grid, Calendar } from '@element-plus/icons-vue'
+import { Search, List, Grid, Calendar, ArrowRight } from '@element-plus/icons-vue'
 import { majorsData } from '@/data/majors'
 
 const router = useRouter()
@@ -344,15 +333,15 @@ const majorsToCompare = ref([])
 const compareTableData = ref([])
 
 const allSchools = ref([
-  { id: 1, name: 'Harvard University', country: '美国', major: 'Computer Science', ranking: 'QS #1', rankType: 'danger', tuition: '$50K', acceptanceRate: '4%', deadline: 'Jan 1', description: '世界顶尖研究型大学', requirements: ['GPA 3.9+', 'GRE 330+', 'Research papers'], website: 'https://harvard.edu' },
-  { id: 2, name: 'Stanford University', country: '美国', major: 'CS/AI', ranking: 'QS #2', rankType: 'danger', tuition: '$52K', acceptanceRate: '4.5%', deadline: 'Jan 2', requirements: ['GPA 3.8+', 'Innovation focus'], website: 'https://stanford.edu' },
-  { id: 3, name: 'MIT', country: '美国', major: 'CS', ranking: 'QS #3', rankType: 'danger', tuition: '$53K', acceptanceRate: '3.9%', deadline: 'Jan 3', requirements: ['GPA 3.95+', 'Mathematical olympiad'], website: 'https://mit.edu' },
-  { id: 4, name: 'Oxford University', country: '英国', major: 'CS', ranking: 'QS #4', rankType: 'warning', tuition: '£35K', acceptanceRate: '18%', deadline: 'Jan 15', requirements: ['First Class Degree'], website: 'https://ox.ac.uk' },
-  { id: 5, name: 'Cambridge University', country: '英国', major: 'CS', ranking: 'QS #5', rankType: 'warning', tuition: '£34K', acceptanceRate: '19%', deadline: 'Jan 20', requirements: ['2:1 Degree minimum'], website: 'https://cam.ac.uk' },
-  { id: 6, name: 'Tsinghua University', country: '中国', major: 'CS', ranking: 'QS #25', rankType: 'success', tuition: '¥30K', acceptanceRate: '15%', deadline: 'Mar 1', requirements: ['GPA 3.5+'], website: 'https://tsinghua.edu.cn' },
-  { id: 7, name: 'Peking University', country: '中国', major: 'CS', ranking: 'QS #14', rankType: 'success', tuition: '¥25K', acceptanceRate: '20%', deadline: 'Mar 1', requirements: ['GPA 3.3+'], website: 'https://pku.edu.cn' },
-  { id: 8, name: 'University of Toronto', country: '加拿大', major: 'CS', ranking: 'QS #21', rankType: 'warning', tuition: 'CAD 50K', acceptanceRate: '43%', deadline: 'Jan 15', requirements: ['GPA 3.3+'], website: 'https://utoronto.ca' },
-  { id: 9, name: 'University of Melbourne', country: '澳洲', major: 'CS', ranking: 'QS #13', rankType: 'warning', tuition: 'AUD 42K', acceptanceRate: '70%', deadline: 'Jan 15', requirements: ['GPA 3.0+'], website: 'https://unimelb.edu.au' }
+  { id: 1, name: '哈佛大学', country: '美国', major: 'Computer Science', ranking: 'QS #1', rankType: 'danger', tuition: '$50K', acceptanceRate: '4%', deadline: 'Jan 1', description: '世界顶尖研究型大学', requirements: ['GPA 3.9+', 'GRE 330+', 'Research papers'], website: 'https://harvard.edu' },
+  { id: 2, name: '斯坦福大学', country: '美国', major: 'CS/AI', ranking: 'QS #2', rankType: 'danger', tuition: '$52K', acceptanceRate: '4.5%', deadline: 'Jan 2', requirements: ['GPA 3.8+', 'Innovation focus'], website: 'https://stanford.edu' },
+  { id: 3, name: '麻省理工学院', country: '美国', major: 'CS', ranking: 'QS #3', rankType: 'danger', tuition: '$53K', acceptanceRate: '3.9%', deadline: 'Jan 3', requirements: ['GPA 3.95+', 'Mathematical olympiad'], website: 'https://mit.edu' },
+  { id: 4, name: '牛津大学', country: '英国', major: 'CS', ranking: 'QS #4', rankType: 'warning', tuition: '£35K', acceptanceRate: '18%', deadline: 'Jan 15', requirements: ['First Class Degree'], website: 'https://ox.ac.uk' },
+  { id: 5, name: '剑桥大学', country: '英国', major: 'CS', ranking: 'QS #5', rankType: 'warning', tuition: '£34K', acceptanceRate: '19%', deadline: 'Jan 20', requirements: ['2:1 Degree minimum'], website: 'https://cam.ac.uk' },
+  { id: 6, name: '清华大学', country: '中国', major: 'CS', ranking: 'QS #25', rankType: 'success', tuition: '¥30K', acceptanceRate: '15%', deadline: 'Mar 1', requirements: ['GPA 3.5+'], website: 'https://tsinghua.edu.cn' },
+  { id: 7, name: '北京大学', country: '中国', major: 'CS', ranking: 'QS #14', rankType: 'success', tuition: '¥25K', acceptanceRate: '20%', deadline: 'Mar 1', requirements: ['GPA 3.3+'], website: 'https://pku.edu.cn' },
+  { id: 8, name: '多伦多大学', country: '加拿大', major: 'CS', ranking: 'QS #21', rankType: 'warning', tuition: 'CAD 50K', acceptanceRate: '43%', deadline: 'Jan 15', requirements: ['GPA 3.3+'], website: 'https://utoronto.ca' },
+  { id: 9, name: '墨尔本大学', country: '澳洲', major: 'CS', ranking: 'QS #13', rankType: 'warning', tuition: 'AUD 42K', acceptanceRate: '70%', deadline: 'Jan 15', requirements: ['GPA 3.0+'], website: 'https://unimelb.edu.au' }
 ])
 
 // 专业数据（使用共享数据）
@@ -407,6 +396,18 @@ const getCategoryTagType = (category) => {
     '文科': 'danger'
   }
   return types[category] || 'info'
+}
+
+// 获取类别CSS类名
+const getCategoryClass = (category) => {
+  const classMap = {
+    '工科': 'engineering',
+    '商科': 'business',
+    '社科': 'social',
+    '理科': 'science',
+    '文科': 'arts'
+  }
+  return classMap[category] || 'default'
 }
 
 // 解析排名数字
@@ -602,6 +603,7 @@ onMounted(() => {
 <style scoped>
 .university-database-page {
   /* 不设置 max-width，与首页各区域保持一致，填满 app-main 全宽 */
+  padding-bottom: 40px;
 }
 
 .data-disclaimer {
@@ -619,6 +621,25 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 4px;
+}
+
+/* 修复视图切换 radio button 的 active 状态样式 */
+.view-toggle :deep(.el-radio-button.is-active .el-radio-button__inner) {
+  background-color: #667eea !important;
+  border-color: #667eea !important;
+  color: #fff !important;
+  box-shadow: -1px 0 0 0 #667eea !important;
+}
+
+/* 未选中的 radio button 样式 - 白色背景 */
+.view-toggle :deep(.el-radio-button:not(.is-active) .el-radio-button__inner) {
+  background-color: #fff !important;
+  color: #606266 !important;
+}
+
+/* 未选中的 radio button hover 状态 */
+.view-toggle :deep(.el-radio-button:not(.is-active) .el-radio-button__inner:hover) {
+  color: #667eea !important;
 }
 
 /* 过渡动画 */
@@ -989,164 +1010,6 @@ onMounted(() => {
   }
 }
 
-/* 专业卡片：桌面端统一高度，移动端自适应 */
-.major-card {
-  /* 使用 flex 布局强制统一卡片高度 */
-  display: flex !important;
-  flex-direction: column !important;
-  height: 360px !important;
-  overflow: hidden !important;
-  border-radius: 12px;
-}
-
-.major-card :deep(.el-card__body) {
-  padding: 16px !important;
-  display: flex !important;
-  flex-direction: column !important;
-  flex: 1 !important;
-  height: 100% !important;
-  overflow: hidden !important;
-}
-
-/* 移动端 (375px): 取消固定高度，内容完整显示 */
-@media (max-width: 480px) {
-  .major-card {
-    height: auto !important;
-    min-height: 0 !important;
-    overflow: visible !important;
-  }
-
-  .major-card :deep(.el-card__body) {
-    height: auto !important;
-    min-height: 0 !important;
-    overflow: visible !important;
-    display: flex !important;
-    flex-direction: column !important;
-  }
-
-  /* 移动端卡片内容不受截断限制 */
-  .major-description {
-    max-height: none !important;
-    -webkit-line-clamp: unset !important;
-  }
-
-  .major-career p {
-    max-height: none !important;
-    -webkit-line-clamp: unset !important;
-  }
-
-  .major-courses ul {
-    max-height: none !important;
-  }
-
-  /* 专业卡片 checkbox 移动端自适应宽度 */
-  .major-checkbox {
-    width: 100%;
-    overflow: hidden;
-  }
-
-  .major-checkbox :deep(.el-checkbox) {
-    max-width: 100%;
-    overflow: hidden;
-  }
-
-  .major-checkbox :deep(.el-checkbox__label) {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: inline-block;
-    max-width: 100%;
-    font-size: 12px;
-  }
-}
-
-/* 限制各内容区块高度，确保所有卡片高度一致 */
-.major-header {
-  flex-shrink: 0;
-}
-
-.major-degree {
-  flex-shrink: 0;
-  margin: 4px 0;
-  font-size: 13px;
-  color: #606266;
-}
-
-.major-description {
-  flex-shrink: 0;
-  margin: 0 0 8px;
-  font-size: 13px;
-  color: #606266;
-  line-height: 1.5;
-  max-height: 3em;
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-}
-
-.major-courses {
-  flex-shrink: 0;
-  margin-bottom: 8px;
-}
-
-.major-courses h4 {
-  margin: 0 0 4px;
-  font-size: 13px;
-  color: #303133;
-}
-
-.major-courses ul {
-  margin: 0;
-  padding-left: 16px;
-  max-height: 3.6em;
-  overflow: hidden;
-}
-
-.major-courses li {
-  font-size: 12px;
-  color: #606266;
-  line-height: 1.6;
-}
-
-.major-career {
-  flex-shrink: 0;
-  margin-bottom: 8px;
-}
-
-.major-career h4 {
-  margin: 0 0 4px;
-  font-size: 13px;
-  color: #303133;
-}
-
-.major-career p {
-  margin: 0;
-  font-size: 12px;
-  color: #606266;
-  line-height: 1.4;
-  max-height: 2.8em;
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-}
-
-.major-actions {
-  flex-shrink: 0;
-  margin-top: auto;
-  padding-top: 8px;
-  display: flex;
-  justify-content: flex-end;
-}
-
-.major-salary {
-  flex-shrink: 0;
-  margin-top: auto;
-  padding-top: 8px;
-  border-top: 1px solid #ebeef5;
-}
-
 /* 专业卡片网格布局 */
 .majors-grid {
   display: grid;
@@ -1166,6 +1029,164 @@ onMounted(() => {
 @media (min-width: 1024px) {
   .majors-grid {
     grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* 专业卡片 - 简洁设计 */
+.major-card {
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #e4e7ed;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 左侧色条 */
+.major-card::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: #909399;
+  transition: width 0.3s ease;
+}
+
+/* 不同类别的主题色 */
+.major-card.category-engineering::before {
+  background: #409eff;
+}
+
+.major-card.category-business::before {
+  background: #67c23a;
+}
+
+.major-card.category-social::before {
+  background: #e6a23c;
+}
+
+.major-card.category-science::before {
+  background: #909399;
+}
+
+.major-card.category-arts::before {
+  background: #f56c6c;
+}
+
+.major-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  border-color: #dcdfe6;
+}
+
+.major-card:hover::before {
+  width: 6px;
+}
+
+/* 卡片头部 */
+.major-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.major-checkbox {
+  flex-shrink: 0;
+}
+
+.major-checkbox :deep(.el-checkbox__label) {
+  font-size: 12px;
+  color: #909399;
+}
+
+.checkbox-text {
+  font-size: 12px;
+}
+
+.category-tag {
+  font-size: 12px;
+}
+
+/* 卡片主体 */
+.major-card-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.major-name {
+  margin: 0 0 8px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #303133;
+  line-height: 1.4;
+}
+
+.major-degree {
+  margin: 0 0 16px;
+  font-size: 13px;
+  color: #606266;
+}
+
+/* 薪资区域 */
+.major-salary {
+  margin-top: auto;
+  padding: 12px;
+  background: #f5f7fa;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.salary-label {
+  font-size: 12px;
+  color: #909399;
+}
+
+.salary-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: #f56c6c;
+  line-height: 1.4;
+}
+
+/* 卡片底部 */
+.major-card-footer {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #ebeef5;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.major-card-footer :deep(.el-button) {
+  font-weight: 500;
+}
+
+/* 移动端适配 */
+@media (max-width: 480px) {
+  .major-card {
+    padding: 16px;
+  }
+
+  .major-name {
+    font-size: 16px;
+  }
+
+  .major-salary {
+    padding: 10px;
+  }
+
+  .salary-value {
+    font-size: 13px;
   }
 }
 

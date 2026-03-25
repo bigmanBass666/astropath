@@ -1,7 +1,7 @@
 {
-  "name": "liuxue-platform",
+  "name": "astropath",
   "version": "1.0.0",
-  "description": "一站式智能留学规划与服务平台",
+  "description": "智途 AstroPath - 智能留学规划平台",
   "private": true,
   "scripts": {
     "dev": "vite",

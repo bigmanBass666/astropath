@@ -916,11 +916,12 @@ const renderRadarChart = () => {
     title: {
       text: '竞争力雷达图',
       left: 'center',
-      top: 10,
+      top: 0,
       textStyle: {
         fontSize: 16,
         fontWeight: 'bold',
-        color: '#303133'
+        color: '#303133',
+        lineHeight: 24
       }
     },
     tooltip: {
@@ -1129,10 +1130,97 @@ onUnmounted(() => {
 
 .steps-indicator {
   margin-bottom: 30px;
+  width: 100%;
+}
+
+/* 修复步骤指示器：确保占满整个宽度并正确显示连线 */
+:deep(.el-steps) {
+  display: flex;
+  width: 100%;
+}
+
+/* 步骤项样式 */
+:deep(.el-step) {
+  flex: 1;
+  flex-basis: auto !important;
+}
+
+/* 修复步骤连线 */
+:deep(.el-step__line) {
+  position: absolute;
+  top: 11px;
+  left: 50%;
+  right: -50%;
+  height: 2px;
+  background-color: #c0c4cc;
+  z-index: 1;
+}
+
+/* 激活状态的连线 */
+:deep(.el-step__line-inner) {
+  border-width: 1px !important;
+  border-style: solid;
+  border-color: #67c23a;
+  transition: all 0.3s;
+}
+
+/* 步骤标题样式 */
+:deep(.el-step__title) {
+  white-space: nowrap;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* 步骤图标容器 */
+:deep(.el-step__head) {
+  position: relative;
+  z-index: 2;
+}
+
+/* 确保步骤指示器在移动端也能正常显示 */
+@media (max-width: 768px) {
+  :deep(.el-step__title) {
+    font-size: 12px;
+  }
 }
 
 .step-card {
   margin-bottom: 20px;
+}
+
+/* 修复 el-radio-button 的 active 状态样式 - 仅选中项 */
+:deep(.el-radio-button.is-active .el-radio-button__inner) {
+  background-color: #667eea !important;
+  border-color: #667eea !important;
+  color: #fff !important;
+  box-shadow: -1px 0 0 0 #667eea !important;
+}
+
+/* 修复 el-checkbox-button 的 active 状态样式 - 仅选中项 */
+:deep(.el-checkbox-button.is-checked .el-checkbox-button__inner) {
+  background-color: #667eea !important;
+  border-color: #667eea !important;
+  color: #fff !important;
+  box-shadow: -1px 0 0 0 #667eea !important;
+}
+
+/* 未选中的 radio button 和 checkbox button 样式 - 白色背景 */
+:deep(.el-radio-button:not(.is-active) .el-radio-button__inner),
+:deep(.el-checkbox-button:not(.is-checked) .el-checkbox-button__inner) {
+  background-color: #fff !important;
+  color: #606266 !important;
+}
+
+/* 修复 el-radio-button 和 el-checkbox-button 的 hover 状态 */
+:deep(.el-radio-button:not(.is-active) .el-radio-button__inner:hover),
+:deep(.el-checkbox-button:not(.is-checked) .el-checkbox-button__inner:hover) {
+  color: #667eea !important;
+}
+
+/* 修复 el-radio-button 和 el-checkbox-button 的 focus 状态 */
+:deep(.el-radio-button:focus:not(.is-focus):not(:active):not(.is-disabled) .el-radio-button__inner),
+:deep(.el-checkbox-button:focus:not(.is-focus):not(:active):not(.is-disabled) .el-checkbox-button__inner) {
+  box-shadow: 0 0 2px 2px rgba(102, 126, 234, 0.3) !important;
 }
 
 /* 使用 flexbox 确保按钮在容器内水平居中 */
@@ -1294,6 +1382,55 @@ onUnmounted(() => {
   font-size: 13px;
   color: #909399;
   font-weight: normal;
+}
+
+/* 详细分析区域样式 */
+.report-details {
+  margin-top: 30px;
+  padding: 20px;
+  background: #f5f7fa;
+  border-radius: 12px;
+}
+
+.report-details h4 {
+  margin: 0 0 15px 0;
+  color: #303133;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.report-details ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.report-details li {
+  padding: 12px 16px;
+  margin-bottom: 10px;
+  background: #fff;
+  border-radius: 8px;
+  border-left: 4px solid #667eea;
+  font-size: 14px;
+  color: #303133;
+  line-height: 1.6;
+}
+
+.report-details li:last-child {
+  margin-bottom: 0;
+}
+
+.report-details li strong {
+  color: #667eea;
+  font-weight: 600;
+}
+
+/* 雷达图容器样式 */
+.radar-chart {
+  margin: 20px 0;
+  background: #fff;
+  border-radius: 12px;
+  padding-top: 20px;
 }
 
 .practice-tabs {

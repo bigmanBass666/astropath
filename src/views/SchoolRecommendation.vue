@@ -551,61 +551,155 @@ onMounted(() => {
   align-items: center;
 }
 
-.schools-list {
+.schools-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 20px;
 }
 
 .school-card {
   cursor: pointer;
-  transition: all 0.3s;
-  border-radius: 12px;
+  transition: all 0.3s ease;
+  border-radius: 16px;
+  background: #ffffff;
+  border: 1px solid #e8e8e8;
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.school-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
 }
 
 .school-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.15);
+  transform: translateY(-6px);
+  box-shadow: 0 12px 40px rgba(102, 126, 234, 0.2);
+  border-color: #667eea;
+}
+
+.school-card:hover::before {
+  opacity: 1;
 }
 
 .school-card.is-selected {
   border-color: #667eea;
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 8px 30px rgba(102, 126, 234, 0.25);
+  background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%);
+}
+
+.school-card.is-selected::before {
+  opacity: 1;
+  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
 }
 
 .school-card.is-favorite {
   border-color: #f0c239;
-  box-shadow: 0 4px 15px rgba(240, 194, 57, 0.3);
-  background: linear-gradient(135deg, #fffdf0 0%, #fffbe6 100%);
+  box-shadow: 0 8px 30px rgba(240, 194, 57, 0.2);
+  background: linear-gradient(135deg, #fffdf5 0%, #ffffff 100%);
+}
+
+.school-card.is-favorite::before {
+  opacity: 1;
+  background: linear-gradient(90deg, #f0c239 0%, #ff9f43 100%);
 }
 
 .school-header {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 12px;
+  gap: 10px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f0f0f0;
 }
 
 .school-name {
-  font-weight: bold;
-  font-size: 18px;
+  font-weight: 700;
+  font-size: 17px;
   cursor: pointer;
   flex: 1;
+  color: #1a1a2e;
+  line-height: 1.3;
+  transition: color 0.2s ease;
+}
+
+.school-name:hover {
+  color: #667eea;
 }
 
 .match-badge {
-  font-size: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+.school-info {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.school-info-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.school-info-label {
+  color: #8c8c8c;
+  font-weight: 500;
+  min-width: 60px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.school-info-value {
+  color: #333;
+  font-weight: 500;
 }
 
 .school-info p {
-  margin: 8px 0;
-  color: #606266;
+  margin: 0;
+  color: #555;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.school-info p strong {
+  color: #8c8c8c;
+  font-weight: 500;
+  min-width: 60px;
+  display: inline-block;
 }
 
 .school-actions {
-  margin-top: 15px;
+  margin-top: 18px;
   display: flex;
-  gap: 8px;
+  gap: 10px;
+}
+
+.school-actions .el-button {
+  flex: 1;
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.school-actions .el-button:hover {
+  transform: translateY(-2px);
 }
 
 .compare-header {
@@ -624,5 +718,74 @@ onMounted(() => {
 .compare-table :deep(.el-table__body .el-button) {
   flex-shrink: 0;
   white-space: nowrap;
+}
+
+/* 分类卡片样式 */
+.category-card {
+  margin-bottom: 24px;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.category-card :deep(.el-card__header) {
+  padding: 16px 20px;
+  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+  border-bottom: 1px solid #e8e8e8;
+}
+
+.category-card.reach :deep(.el-card__header) {
+  background: linear-gradient(135deg, #fff5f5 0%, #ffffff 100%);
+}
+
+.category-card.match :deep(.el-card__header) {
+  background: linear-gradient(135deg, #fff9f0 0%, #ffffff 100%);
+}
+
+.category-card.safe :deep(.el-card__header) {
+  background: linear-gradient(135deg, #f0fff4 0%, #ffffff 100%);
+}
+
+.category-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.category-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a1a2e;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.category-title::before {
+  content: '';
+  width: 4px;
+  height: 20px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+}
+
+.category-card.reach .category-title::before {
+  background: linear-gradient(180deg, #ff6b6b 0%, #ee5a6f 100%);
+}
+
+.category-card.match .category-title::before {
+  background: linear-gradient(180deg, #ffa502 0%, #ff7f50 100%);
+}
+
+.category-card.safe .category-title::before {
+  background: linear-gradient(180deg, #2ed573 0%, #1dd1a1 100%);
+}
+
+.category-count {
+  font-size: 14px;
+  color: #8c8c8c;
+  font-weight: 500;
+  background: #f5f5f5;
+  padding: 4px 12px;
+  border-radius: 20px;
 }
 </style>
