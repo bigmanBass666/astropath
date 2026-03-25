@@ -31,6 +31,10 @@
             <el-option label="全部" value="" />
             <el-option v-for="country in availableCountries" :key="country" :label="country" :value="country" />
           </el-select>
+          <el-select v-model="filterFavorites" placeholder="显示收藏" style="width: 120px;">
+            <el-option label="全部" :value="false" />
+            <el-option label="仅收藏" :value="true" />
+          </el-select>
           <el-select v-model="sortBy" ref="sortSelect" placeholder="排序方式" style="width: 150px;">
             <el-option label="默认顺序" value="default" />
             <el-option label="匹配度 (高→低)" value="match-desc" />
@@ -77,7 +81,7 @@
           </template>
           <div class="schools-grid">
             <div v-for="school in reachSchools" :key="school.id" class="school-card"
-              :class="{ 'is-selected': selectedSchools.includes(school.id) }">
+              :class="{ 'is-selected': selectedSchools.includes(school.id), 'is-favorite': favorites.includes(school.id) }">
               <div class="school-header" @click="toggleSelect(school.id)">
                 <el-checkbox :model-value="selectedSchools.includes(school.id)" @click.stop />
                 <span class="school-name" @click="showDetail(school)">{{ school.name }}</span>
@@ -110,7 +114,7 @@
           </template>
           <div class="schools-grid">
             <div v-for="school in matchSchools" :key="school.id" class="school-card"
-              :class="{ 'is-selected': selectedSchools.includes(school.id) }">
+              :class="{ 'is-selected': selectedSchools.includes(school.id), 'is-favorite': favorites.includes(school.id) }">
               <div class="school-header" @click="toggleSelect(school.id)">
                 <el-checkbox :model-value="selectedSchools.includes(school.id)" @click.stop />
                 <span class="school-name" @click="showDetail(school)">{{ school.name }}</span>
@@ -143,7 +147,7 @@
           </template>
           <div class="schools-grid">
             <div v-for="school in safeSchools" :key="school.id" class="school-card"
-              :class="{ 'is-selected': selectedSchools.includes(school.id) }">
+              :class="{ 'is-selected': selectedSchools.includes(school.id), 'is-favorite': favorites.includes(school.id) }">
               <div class="school-header" @click="toggleSelect(school.id)">
                 <el-checkbox :model-value="selectedSchools.includes(school.id)" @click.stop />
                 <span class="school-name" @click="showDetail(school)">{{ school.name }}</span>
@@ -246,6 +250,7 @@ const compareVisible = ref(false)
 const currentSchool = ref(null)
 const selectedCountry = ref('')
 const sortBy = ref('default')
+const filterFavorites = ref(false)
 const compareMode = ref('selected') // 'selected' or 'favorites'
 const strategy = ref('all') // 'all', 'reach', 'match', 'safe'
 
@@ -270,6 +275,11 @@ const availableCountries = computed(() => {
 // 计算属性：过滤和排序后的学校列表
 const filteredAndSortedSchools = computed(() => {
   let result = [...schools.value]
+
+  // 收藏筛选
+  if (filterFavorites.value) {
+    result = result.filter(s => favorites.value.includes(s.id))
+  }
 
   // 国家筛选
   if (selectedCountry.value) {
@@ -429,6 +439,8 @@ onMounted(() => {
     set strategy(val) { strategy.value = val },
     get selectedCountry() { return selectedCountry.value },
     set selectedCountry(val) { selectedCountry.value = val },
+    get filterFavorites() { return filterFavorites.value },
+    set filterFavorites(val) { filterFavorites.value = val },
     get sortBy() { return sortBy.value },
     set sortBy(val) { sortBy.value = val },
     get schools() { return schools.value },
@@ -505,6 +517,12 @@ onMounted(() => {
 .school-card.is-selected {
   border-color: #667eea;
   box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.school-card.is-favorite {
+  border-color: #f0c239;
+  box-shadow: 0 4px 15px rgba(240, 194, 57, 0.3);
+  background: linear-gradient(135deg, #fffdf0 0%, #fffbe6 100%);
 }
 
 .school-header {
