@@ -609,7 +609,7 @@ onMounted(() => {
 }
 
 .welcome-message h3 {
-  font-size: 24px;
+  font-size: 20px;
   margin: 0 0 8px 0;
   color: #303133;
 }

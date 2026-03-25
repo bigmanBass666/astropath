@@ -698,7 +698,7 @@ onUnmounted(() => {
 }
 
 .feature-card h3 {
-  font-size: 20px;
+  font-size: 18px;
   color: #2c3e50;
   margin-bottom: 10px;
   font-weight: 600;
@@ -930,7 +930,7 @@ onUnmounted(() => {
   }
 
   .feature-card h3 {
-    font-size: 18px;
+    font-size: 16px;
   }
 
   .feature-card p {
