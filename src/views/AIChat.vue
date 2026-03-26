@@ -1,9 +1,19 @@
 <template>
   <div class="ai-chat-page">
-    <div class="sidebar">
+    <div class="sidebar" :class="{ 'is-collapsed': sidebarCollapsed }">
       <div class="sidebar-header">
-        <h2 class="sidebar-title">AI 助手</h2>
-        <p class="sidebar-subtitle">选择专业智能体</p>
+        <template v-if="!sidebarCollapsed">
+          <div class="sidebar-brand">
+            <el-icon :size="20"><ChatDotRound /></el-icon>
+            <span>AI 助手</span>
+          </div>
+        </template>
+        <button class="sidebar-toggle-btn" @click="toggleSidebar" :title="sidebarCollapsed ? '展开侧边栏' : '收起侧边栏'">
+          <el-icon :size="18">
+            <ArrowLeft v-if="!sidebarCollapsed" />
+            <ArrowRight v-else />
+          </el-icon>
+        </button>
       </div>
       <div class="agent-list">
         <div
@@ -12,11 +22,12 @@
           class="agent-item"
           :class="{ 'is-active': currentAgentId === agent.id }"
           @click="selectAgent(agent.id)"
+          :title="sidebarCollapsed ? agent.name : ''"
         >
           <div class="agent-icon" :style="{ background: agent.gradient }">
             <el-icon :size="20"><component :is="agent.icon" /></el-icon>
           </div>
-          <div class="agent-info">
+          <div class="agent-info" v-if="!sidebarCollapsed">
             <span class="agent-name">{{ agent.name }}</span>
             <span class="agent-role">{{ agent.role }}</span>
           </div>
@@ -27,10 +38,6 @@
     <div class="main-chat">
       <div class="chat-header">
         <div class="header-left">
-          <button class="back-btn" @click="goBack" aria-label="返回">
-            <el-icon :size="20"><ArrowLeft /></el-icon>
-            <span>返回</span>
-          </button>
           <div class="header-agent-info">
             <div class="header-icon" :style="{ background: currentAgent?.gradient }">
               <el-icon :size="18"><component :is="currentAgent?.icon" /></el-icon>
@@ -44,6 +51,7 @@
         <div class="header-actions">
           <el-button size="small" text :icon="Clock" @click="openHistory">历史记录</el-button>
           <el-button size="small" text :icon="Delete" @click="clearChat" :disabled="messages.length === 0">清空对话</el-button>
+          <el-button size="small" text :icon="ArrowLeft" @click="goBack">返回</el-button>
         </div>
       </div>
 
@@ -88,10 +96,6 @@
                 </el-icon>
               </div>
               <div class="message-content">
-                <div class="message-header">
-                  <span class="sender-name">{{ getSenderName(msg) }}</span>
-                  <span class="message-time">{{ formatTime(msg.timestamp) }}</span>
-                </div>
                 <div class="message-text">
                   <span v-html="renderMessage(msg.content)"></span>
                   <span v-if="isGenerating && msg.role === 'assistant' && isLastMessage(msg)" class="typing-cursor"></span>
@@ -106,10 +110,6 @@
                 <el-icon :size="16"><component :is="currentAgent?.icon" /></el-icon>
               </div>
               <div class="message-content">
-                <div class="message-header">
-                  <span class="sender-name">{{ currentAgent?.name }}</span>
-                  <span class="message-time">{{ formatTime(Date.now()) }}</span>
-                </div>
                 <div class="message-text">
                   <span v-html="renderMessage(streamingContent || '')"></span>
                   <span class="typing-cursor"></span>
@@ -147,19 +147,42 @@
             class="message-input"
           />
           <div class="input-actions">
-            <el-select
-              v-model="selectedProvider"
-              placeholder="选择模型"
-              size="small"
-              class="model-select-inline"
+            <el-dropdown
+              v-if="providers.length > 0"
+              trigger="click"
+              class="model-dropdown"
+              @command="(cmd) => selectedProvider = cmd"
             >
-              <el-option
-                v-for="p in providers"
-                :key="p.id"
-                :label="p.name"
-                :value="p.id"
-              />
-            </el-select>
+              <div class="model-selector">
+                <el-icon :size="14"><Cpu /></el-icon>
+                <span class="model-name">{{ currentProviderName }}</span>
+                <el-icon :size="12"><ArrowDown /></el-icon>
+              </div>
+              <template #dropdown>
+                <el-dropdown-menu>
+                  <el-dropdown-item
+                    v-for="p in providers"
+                    :key="p.id"
+                    :command="p.id"
+                    :class="{ 'is-active': selectedProvider === p.id }"
+                  >
+                    <div class="model-option">
+                      <span class="option-name">{{ p.name }}</span>
+                      <el-icon v-if="selectedProvider === p.id" :size="12"><Check /></el-icon>
+                    </div>
+                  </el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
+            <el-button
+              v-else
+              size="small"
+              class="config-model-btn"
+              @click="$router.push('/ai-config')"
+            >
+              <el-icon :size="14"><Setting /></el-icon>
+              配置模型
+            </el-button>
             <el-button
               v-if="!isGenerating"
               type="primary"
@@ -233,7 +256,8 @@ import { ElMessage } from 'element-plus'
 import {
   ChatLineRound, User, WarningFilled, Delete, Clock,
   Download, Promotion, VideoPause, ChatDotRound,
-  School, Document, Files, Ticket, ArrowLeft
+  School, Document, Files, Ticket, ArrowLeft, ArrowRight,
+  Cpu, ArrowDown, Check, Setting
 } from '@element-plus/icons-vue'
 import { marked } from 'marked'
 import { sendMessageToAI, buildSystemPrompt, AIError } from '@/utils/ai-api'
@@ -281,6 +305,7 @@ const agents = ref([
 
 const currentAgentId = ref('consultant')
 const currentAgent = computed(() => agents.value.find(a => a.id === currentAgentId.value) || agents.value[0])
+const sidebarCollapsed = ref(false)
 const hasStreamingMessage = computed(() => messages.value.some(m => m.role === 'assistant' && m.content === ''))
 const selectedProvider = ref(null)
 const inputMessage = ref('')
@@ -297,6 +322,10 @@ const retryMessage = ref(null)
 const CHAT_STATE_KEY = 'ai_chat_current_state'
 
 let isRestoringState = false
+
+const toggleSidebar = () => {
+  sidebarCollapsed.value = !sidebarCollapsed.value
+}
 
 const goBack = () => {
   router.back()
@@ -370,6 +399,11 @@ const providers = computed(() => {
   return saved ? JSON.parse(saved) : []
 })
 
+const currentProviderName = computed(() => {
+  const provider = providers.value.find(p => p.id === selectedProvider.value)
+  return provider ? provider.name : '选择模型'
+})
+
 const getAgentName = (agentId) => {
   const agent = agents.value.find(a => a.id === agentId)
   return agent ? agent.name : 'AI助手'
@@ -386,11 +420,29 @@ const loadProviders = () => {
 }
 
 const selectAgent = (agentId) => {
+  if (currentAgentId.value === agentId) return
+
+  if (messages.value.length > 0) {
+    saveConversation()
+  }
+
   currentAgentId.value = agentId
-  messages.value = []
-  currentConversationId.value = null
-  clearCurrentState()
-  ElMessage.success(`已切换到 ${currentAgent.value.name}`)
+
+  const lastConv = conversations.value
+    .filter(c => c.agentId === agentId)
+    .sort((a, b) => b.createdAt - a.createdAt)[0]
+
+  if (lastConv && lastConv.messages && lastConv.messages.length > 0) {
+    messages.value = JSON.parse(JSON.stringify(lastConv.messages))
+    currentConversationId.value = lastConv.id
+    saveCurrentState()
+    ElMessage.success(`已切换到 ${currentAgent.value.name}，已恢复最近对话`)
+  } else {
+    messages.value = []
+    currentConversationId.value = null
+    clearCurrentState()
+    ElMessage.success(`已切换到 ${currentAgent.value.name}`)
+  }
 }
 
 const useQuickPrompt = (prompt) => {
@@ -711,47 +763,98 @@ onMounted(() => {
 }
 
 .sidebar {
-  width: 260px;
+  width: 200px;
   background: #f8fafc;
   border-right: 1px solid #e2e8f0;
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
+  transition: width 0.3s ease;
+}
+
+.sidebar.is-collapsed {
+  width: 60px;
 }
 
 .sidebar-header {
-  padding: 24px 20px 16px;
+  padding: 12px 16px;
   border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 52px;
+}
+
+.sidebar.is-collapsed .sidebar-header {
+  padding: 12px 10px;
+  justify-content: center;
+}
+
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #1e293b;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.sidebar-toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.sidebar-toggle-btn:hover {
+  background: #f1f5f9;
+  border-color: #667eea;
+  color: #667eea;
 }
 
 .sidebar-title {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
   color: #1e293b;
   margin: 0 0 4px 0;
+  white-space: nowrap;
 }
 
 .sidebar-subtitle {
-  font-size: 13px;
+  font-size: 12px;
   color: #64748b;
   margin: 0;
+  white-space: nowrap;
 }
 
 .agent-list {
   flex: 1;
   overflow-y: auto;
-  padding: 12px;
+  padding: 8px;
 }
 
 .agent-item {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px;
-  border-radius: 12px;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 10px;
   cursor: pointer;
   transition: all 0.2s ease;
   margin-bottom: 4px;
+}
+
+.sidebar.is-collapsed .agent-item {
+  justify-content: center;
+  padding: 10px 6px;
 }
 
 .agent-item:hover {
@@ -759,19 +862,46 @@ onMounted(() => {
 }
 
 .agent-item.is-active {
-  background: #ede9fe;
-  border: 1px solid #c4b5fd;
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%);
+  position: relative;
+}
+
+.agent-item.is-active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 24px;
+  background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+  border-radius: 0 3px 3px 0;
+}
+
+.sidebar.is-collapsed .agent-item.is-active {
+  background: transparent;
+}
+
+.sidebar.is-collapsed .agent-item.is-active::before {
+  height: 32px;
+  width: 4px;
+}
+
+.sidebar.is-collapsed .agent-item.is-active .agent-icon {
+  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.3), 0 4px 12px rgba(102, 126, 234, 0.25);
+  transform: scale(1.05);
 }
 
 .agent-item .agent-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
   flex-shrink: 0;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .agent-info {
@@ -784,11 +914,17 @@ onMounted(() => {
   font-size: 14px;
   font-weight: 600;
   color: #1e293b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .agent-item .agent-role {
   font-size: 12px;
   color: #64748b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .main-chat {
@@ -802,40 +938,16 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 24px;
+  padding: 12px 24px;
   border-bottom: 1px solid #e2e8f0;
   background: #ffffff;
+  flex-shrink: 0;
 }
 
 .header-left {
   display: flex;
   align-items: center;
   gap: 20px;
-}
-
-.back-btn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 16px;
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  background: #ffffff;
-  color: #475569;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.back-btn:hover {
-  background: #f8fafc;
-  border-color: #667eea;
-  color: #667eea;
-}
-
-.back-btn .el-icon {
-  color: inherit;
 }
 
 .header-agent-info {
@@ -878,12 +990,12 @@ onMounted(() => {
 .chat-messages {
   flex: 1;
   overflow-y: auto;
-  padding: 40px 80px;
+  padding: 24px 32px;
   background: #ffffff;
 }
 
 .welcome-fullscreen {
-  height: 100%;
+  min-height: calc(100% - 48px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -896,44 +1008,45 @@ onMounted(() => {
 }
 
 .welcome-icon-large {
-  width: 120px;
-  height: 120px;
-  border-radius: 32px;
+  width: 80px;
+  height: 80px;
+  border-radius: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
-  margin: 0 auto 32px;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+  margin: 0 auto 20px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
 }
 
 .welcome-title-large {
-  font-size: 42px;
+  font-size: 32px;
   font-weight: 700;
   color: #1e293b;
-  margin: 0 0 8px 0;
-  letter-spacing: -1px;
+  margin: 0 0 6px 0;
+  letter-spacing: -0.5px;
 }
 
 .welcome-role-large {
-  font-size: 18px;
+  font-size: 15px;
   color: #6366f1;
   font-weight: 500;
-  margin: 0 0 40px 0;
+  margin: 0 0 24px 0;
 }
 
 .welcome-desc {
   background: #f8fafc;
-  border-radius: 20px;
-  padding: 32px 40px;
-  margin-bottom: 40px;
+  border-radius: 16px;
+  padding: 20px 28px;
+  margin-bottom: 24px;
   border: 1px solid #e2e8f0;
+  max-width: 600px;
 }
 
 .welcome-desc p {
   margin: 0;
-  font-size: 17px;
-  line-height: 1.9;
+  font-size: 15px;
+  line-height: 1.7;
   color: #475569;
   text-align: center;
 }
@@ -941,14 +1054,14 @@ onMounted(() => {
 .quick-actions-large {
   display: flex;
   flex-wrap: wrap;
-  gap: 16px;
+  gap: 12px;
   justify-content: center;
 }
 
 .quick-prompt-large {
-  border-radius: 14px;
-  padding: 16px 28px;
-  font-size: 15px;
+  border-radius: 10px;
+  padding: 12px 20px;
+  font-size: 14px;
   font-weight: 500;
   height: auto;
   border-color: #e2e8f0;
@@ -964,7 +1077,7 @@ onMounted(() => {
 }
 
 .message-wrapper {
-  margin-bottom: 24px;
+  margin-bottom: 16px;
 }
 
 .message-wrapper.is-user {
@@ -974,8 +1087,8 @@ onMounted(() => {
 
 .message {
   display: flex;
-  gap: 16px;
-  max-width: 75%;
+  gap: 12px;
+  max-width: 80%;
 }
 
 .message-wrapper.is-user .message {
@@ -983,9 +1096,9 @@ onMounted(() => {
 }
 
 .message-avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -995,8 +1108,8 @@ onMounted(() => {
 
 .message-content {
   background: #f8fafc;
-  border-radius: 18px;
-  padding: 18px 22px;
+  border-radius: 14px;
+  padding: 14px 18px;
   border: 1px solid #e2e8f0;
 }
 
@@ -1004,36 +1117,6 @@ onMounted(() => {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   border-color: transparent;
-}
-
-.message-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 8px;
-}
-
-.message-wrapper.is-user .message-header {
-  flex-direction: row-reverse;
-}
-
-.sender-name {
-  font-size: 14px;
-  font-weight: 600;
-  color: #1e293b;
-}
-
-.message-wrapper.is-user .sender-name {
-  color: rgba(255, 255, 255, 0.95);
-}
-
-.message-time {
-  font-size: 12px;
-  color: #94a3b8;
-}
-
-.message-wrapper.is-user .message-time {
-  color: rgba(255, 255, 255, 0.7);
 }
 
 .message-text {
@@ -1137,18 +1220,25 @@ onMounted(() => {
 
 .input-section {
   border-top: 1px solid #e2e8f0;
-  padding: 20px 80px 30px;
-  background: #ffffff;
+  padding: 16px 32px 24px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
 }
 
 .input-box {
   display: flex;
   gap: 12px;
   align-items: flex-end;
-  background: #f8fafc;
+  background: #ffffff;
   border-radius: 20px;
-  padding: 16px 20px;
+  padding: 14px 18px;
   border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
+  transition: all 0.3s ease;
+}
+
+.input-box:focus-within {
+  border-color: #667eea;
+  box-shadow: 0 4px 24px rgba(102, 126, 234, 0.15), 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
 .message-input {
@@ -1168,28 +1258,115 @@ onMounted(() => {
 .input-actions {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   flex-shrink: 0;
 }
 
-.model-select-inline {
-  width: 130px;
+.model-dropdown {
+  cursor: pointer;
+}
+
+.model-selector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: linear-gradient(135deg, #f0f4ff 0%, #f8faff 100%);
+  border: 1px solid #e0e7ff;
+  border-radius: 12px;
+  transition: all 0.25s ease;
+  min-width: 120px;
+}
+
+.model-selector:hover {
+  border-color: #c7d2fe;
+  background: linear-gradient(135deg, #e8edff 0%, #f0f4ff 100%);
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.12);
+}
+
+.model-selector .el-icon {
+  color: #667eea;
+  flex-shrink: 0;
+}
+
+.model-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: #4c51bf;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100px;
+  flex: 1;
+}
+
+.model-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 140px;
+}
+
+.model-option .option-name {
+  font-size: 13px;
+  color: #374151;
+}
+
+.model-option .el-icon {
+  color: #667eea;
+}
+
+.config-model-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 14px;
+  background: linear-gradient(135deg, #fef3c7 0%, #fffbeb 100%);
+  border: 1px solid #fcd34d;
+  border-radius: 12px;
+  color: #d97706;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.25s ease;
+}
+
+.config-model-btn:hover {
+  background: linear-gradient(135deg, #fde68a 0%, #fef3c7 100%);
+  border-color: #fbbf24;
+  color: #b45309;
 }
 
 .send-btn {
   width: 44px;
   height: 44px;
-  border-radius: 12px;
+  border-radius: 14px;
   padding: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   border: none;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.35);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .send-btn:hover {
   background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+  box-shadow: 0 6px 16px rgba(102, 126, 234, 0.45);
+  transform: translateY(-1px);
+}
+
+.send-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.35);
+}
+
+.send-btn:disabled {
+  background: linear-gradient(135deg, #cbd5e0 0%, #a0aec0 100%);
+  box-shadow: none;
+  cursor: not-allowed;
+  transform: none;
 }
 
 .history-drawer :deep(.el-drawer__header) {
