@@ -39,7 +39,7 @@ fi
 
 # 5. 基本冒烟测试 — 验证应用返回 200 和关键内容（使用检测到的实际端口）
 BODY=$(curl -sf "http://localhost:${ACTUAL_PORT}/")
-echo "$BODY" | grep -q "一站式智能留学规划与服务平台" \
+echo "$BODY" | grep -q "智途 AstroPath" \
   && echo "SMOKE TEST PASSED" \
   || { echo "SMOKE TEST FAILED: expected content not found"; kill $DEV_PID 2>/dev/null; exit 1; }
 
