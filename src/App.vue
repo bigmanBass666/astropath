@@ -1,6 +1,6 @@
 <template>
-  <el-container class="app-container">
-    <el-header class="app-header">
+  <el-container class="app-container" :class="{ 'is-immersive': isImmersivePage }">
+    <el-header class="app-header" v-if="!isImmersivePage">
       <div class="header-content">
         <div class="logo" @click="$router.push('/')">
           <el-icon class="logo-icon"><Briefcase /></el-icon>
@@ -33,7 +33,7 @@
         </transition>
       </router-view>
     </el-main>
-    <el-footer class="app-footer" v-if="route.meta && !route.meta.hasFooter">
+    <el-footer class="app-footer" v-if="!isImmersivePage && route.meta && !route.meta.hasFooter">
       <div class="footer-content">
         <div class="footer-links">
           <a href="#" @click.prevent="showGuide">使用指南</a>
@@ -134,6 +134,8 @@ const route = useRoute()
 const router = useRouter()
 
 const activeMenu = computed(() => route.path)
+
+const isImmersivePage = computed(() => route.path === '/ai-chat')
 
 const mobileMenuVisible = ref(false)
 
@@ -267,6 +269,11 @@ const showContact = () => {
   flex: 1;
   padding: 20px;
   background: #f5f7fa;
+}
+
+.app-container.is-immersive .app-main {
+  padding: 0;
+  background: #ffffff;
 }
 
 .app-footer {
