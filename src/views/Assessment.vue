@@ -70,7 +70,7 @@
         </el-form-item>
         <el-form-item label="科研经历">
           <el-button type="primary" @click="openResearchDialog">+ 添加科研经历</el-button>
-          <div v-if="form.academic.research.length === 0" class="empty-tip">暂无科研经历，点击按钮添加</div>
+          <div v-if="form.academic.research.length === 0" class="empty-tip" style="margin-left: 10px; display: inline-block; vertical-align: middle;">暂无科研经历，点击按钮添加</div>
           <div v-for="(item, index) in form.academic.research" :key="index" class="list-item">
             <div class="item-content">
               <strong>{{ item.name }}</strong>
@@ -956,6 +956,7 @@ const renderRadarChart = () => {
         { name: '实践背景', max: 5 },
         { name: '综合实力', max: 5 }
       ],
+      center: ['50%', '58%'],
       shape: 'polygon',
       splitNumber: 5,
       splitArea: {

@@ -1,6 +1,5 @@
 <template>
   <div class="ai-chat-page">
-    <!-- 左侧边栏：智能体选择 -->
     <div class="sidebar">
       <div class="sidebar-header">
         <h2 class="sidebar-title">AI 助手</h2>
@@ -25,9 +24,7 @@
       </div>
     </div>
 
-    <!-- 主对话区域 -->
     <div class="main-chat">
-      <!-- 顶部标题栏 -->
       <div class="chat-header">
         <div class="header-agent-info">
           <div class="header-icon" :style="{ background: currentAgent?.gradient }">
@@ -44,9 +41,7 @@
         </div>
       </div>
 
-      <!-- 消息列表 -->
       <div class="chat-messages" ref="messagesContainer">
-        <!-- 欢迎状态 -->
         <div v-if="messages.length === 0 && currentAgent" class="welcome-fullscreen">
           <div class="welcome-content">
             <div class="welcome-icon-large" :style="{ background: currentAgent.gradient }">
@@ -72,7 +67,6 @@
           </div>
         </div>
 
-        <!-- 消息气泡 -->
         <template v-else>
           <div
             v-for="msg in messages"
@@ -81,7 +75,7 @@
             :class="{ 'is-user': msg.role === 'user' }"
           >
             <div class="message">
-              <div class="message-avatar" :style="{ background: msg.role === 'user' ? '#667eea' : currentAgent?.gradient }">
+              <div class="message-avatar" :style="{ background: msg.role === 'user' ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : currentAgent?.gradient }">
                 <el-icon :size="16">
                   <User v-if="msg.role === 'user'" />
                   <component :is="currentAgent?.icon" v-else />
@@ -92,13 +86,15 @@
                   <span class="sender-name">{{ getSenderName(msg) }}</span>
                   <span class="message-time">{{ formatTime(msg.timestamp) }}</span>
                 </div>
-                <div class="message-text" v-html="renderMessage(msg.content)"></div>
+                <div class="message-text">
+                  <span v-html="renderMessage(msg.content)"></span>
+                  <span v-if="isGenerating && msg.role === 'assistant' && isLastMessage(msg)" class="typing-cursor"></span>
+                </div>
               </div>
             </div>
           </div>
 
-          <!-- 流式生成中 -->
-          <div v-if="isGenerating" class="message-wrapper">
+          <div v-if="isGenerating && !hasStreamingMessage" class="message-wrapper">
             <div class="message">
               <div class="message-avatar" :style="{ background: currentAgent?.gradient }">
                 <el-icon :size="16"><component :is="currentAgent?.icon" /></el-icon>
@@ -117,7 +113,6 @@
           </div>
         </template>
 
-        <!-- 错误提示 -->
         <div v-if="lastError" class="error-banner">
           <div class="error-content">
             <el-icon class="error-icon" :size="18"><WarningFilled /></el-icon>
@@ -133,7 +128,6 @@
         </div>
       </div>
 
-      <!-- 输入区域 -->
       <div class="input-section">
         <div class="input-box">
           <el-input
@@ -182,7 +176,6 @@
       </div>
     </div>
 
-    <!-- 历史记录抽屉 -->
     <el-drawer v-model="historyVisible" title="历史对话" size="380px" class="history-drawer">
       <div class="history-list">
         <div v-if="conversations.length === 0" class="empty-history">
@@ -228,7 +221,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, nextTick, watch } from 'vue'
+import { ref, reactive, computed, onMounted, onUnmounted, nextTick, watch, onActivated } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import {
@@ -241,7 +234,6 @@ import { sendMessageToAI, buildSystemPrompt, AIError } from '@/utils/ai-api'
 
 const router = useRouter()
 
-// 智能体定义
 const agents = ref([
   {
     id: 'consultant',
@@ -282,7 +274,8 @@ const agents = ref([
 ])
 
 const currentAgentId = ref('consultant')
-const currentAgent = computed(() => agents.value.find(a => a.id === currentAgentId.value))
+const currentAgent = computed(() => agents.value.find(a => a.id === currentAgentId.value) || agents.value[0])
+const hasStreamingMessage = computed(() => messages.value.some(m => m.role === 'assistant' && m.content === ''))
 const selectedProvider = ref(null)
 const inputMessage = ref('')
 const isGenerating = ref(false)
@@ -295,7 +288,57 @@ const currentConversationId = ref(null)
 const lastError = ref(null)
 const retryMessage = ref(null)
 
-// 按日期分组的历史会话
+const CHAT_STATE_KEY = 'ai_chat_current_state'
+
+let isRestoringState = false
+
+const saveCurrentState = () => {
+  if (isRestoringState) return
+  const state = {
+    messages: messages.value,
+    currentAgentId: currentAgentId.value,
+    isGenerating: isGenerating.value,
+    streamingContent: streamingContent.value,
+    currentConversationId: currentConversationId.value
+  }
+  console.log('[AIChat] Saving state:', state)
+  sessionStorage.setItem(CHAT_STATE_KEY, JSON.stringify(state))
+}
+
+const loadCurrentState = () => {
+  const saved = sessionStorage.getItem(CHAT_STATE_KEY)
+  console.log('[AIChat] Loading state from sessionStorage:', saved)
+  if (saved) {
+    try {
+      const state = JSON.parse(saved)
+      console.log('[AIChat] Parsed state:', state)
+      if (state.messages && state.messages.length > 0) {
+        isRestoringState = true
+        currentAgentId.value = state.currentAgentId || 'consultant'
+        currentConversationId.value = state.currentConversationId || null
+        messages.value = state.messages
+        console.log('[AIChat] Restored messages:', messages.value.length, 'agentId:', currentAgentId.value)
+        if (state.isGenerating) {
+          isGenerating.value = false
+          streamingContent.value = ''
+          const lastMsg = messages.value[messages.value.length - 1]
+          if (lastMsg && lastMsg.role === 'assistant' && lastMsg.content === '') {
+            messages.value.pop()
+          }
+        }
+        isRestoringState = false
+      }
+    } catch (e) {
+      console.error('Failed to load chat state:', e)
+      isRestoringState = false
+    }
+  }
+}
+
+const clearCurrentState = () => {
+  sessionStorage.removeItem(CHAT_STATE_KEY)
+}
+
 const groupedConversations = computed(() => {
   const groups = {}
   conversations.value.forEach(conv => {
@@ -312,7 +355,6 @@ const groupedConversations = computed(() => {
   return groups
 })
 
-// 加载保存的提供商
 const providers = computed(() => {
   const saved = localStorage.getItem('ai_providers')
   return saved ? JSON.parse(saved) : []
@@ -337,6 +379,7 @@ const selectAgent = (agentId) => {
   currentAgentId.value = agentId
   messages.value = []
   currentConversationId.value = null
+  clearCurrentState()
   ElMessage.success(`已切换到 ${currentAgent.value.name}`)
 }
 
@@ -395,16 +438,23 @@ const sendMessage = async () => {
       stream: true
     })
 
+    console.log('[AIChat] Got stream, starting to read...')
+    let chunkCount = 0
     for await (const chunk of stream) {
+      chunkCount++
+      console.log('[AIChat] Chunk', chunkCount, chunk)
       if (!isGenerating.value) break
       if (chunk.type === 'content') {
         streamingContent.value += chunk.content
         aiMsg.content = streamingContent.value
         await nextTick(() => scrollToBottom())
+        await new Promise(resolve => setTimeout(resolve, 20))
       }
     }
+    console.log('[AIChat] Stream finished, total chunks:', chunkCount)
 
     streamingContent.value = ''
+    saveCurrentState()
   } catch (error) {
     if (error instanceof AIError) {
       lastError.value = {
@@ -443,12 +493,23 @@ const sendMessage = async () => {
 }
 
 const renderMessage = (content) => {
-  return marked(content)
+  if (!content) return ''
+  try {
+    return marked(content)
+  } catch (e) {
+    console.error('[AIChat] Failed to render message:', e)
+    return content
+  }
 }
 
 const getSenderName = (msg) => {
   if (msg.role === 'user') return '您'
-  return currentAgent.value.name
+  return currentAgent.value?.name || 'AI助手'
+}
+
+const isLastMessage = (msg) => {
+  const lastMsg = messages.value[messages.value.length - 1]
+  return lastMsg && lastMsg.id === msg.id
 }
 
 const formatTime = (timestamp) => {
@@ -493,6 +554,7 @@ const clearChat = () => {
     streamingContent.value = ''
     clearError()
     currentConversationId.value = null
+    clearCurrentState()
   }
 }
 
@@ -570,6 +632,7 @@ const loadConversation = (conv) => {
   currentAgentId.value = conv.agentId || 'consultant'
   currentConversationId.value = conv.id || null
   historyVisible.value = false
+  saveCurrentState()
 }
 
 const deleteConversation = (convId) => {
@@ -593,6 +656,20 @@ const autoSaveConversation = () => {
   }, 2000)
 }
 
+watch(messages, (newVal) => {
+  if (isRestoringState) return
+  if (newVal.length > 0) {
+    autoSaveConversation()
+  }
+  if (!isGenerating.value) {
+    saveCurrentState()
+  }
+}, { deep: true })
+
+watch(currentAgentId, () => {
+  saveCurrentState()
+})
+
 onMounted(() => {
   loadProviders()
   const saved = localStorage.getItem('conversations')
@@ -605,11 +682,7 @@ onMounted(() => {
     })
   }
 
-  watch(messages, () => {
-    if (messages.value.length > 0) {
-      autoSaveConversation()
-    }
-  }, { deep: true })
+  loadCurrentState()
 })
 </script>
 
@@ -621,7 +694,6 @@ onMounted(() => {
   overflow: hidden;
 }
 
-/* 左侧边栏 */
 .sidebar {
   width: 260px;
   background: #f8fafc;
@@ -703,7 +775,6 @@ onMounted(() => {
   color: #64748b;
 }
 
-/* 主对话区域 */
 .main-chat {
   flex: 1;
   display: flex;
@@ -711,7 +782,6 @@ onMounted(() => {
   overflow: hidden;
 }
 
-/* 顶部标题栏 */
 .chat-header {
   display: flex;
   align-items: center;
@@ -758,7 +828,6 @@ onMounted(() => {
   gap: 8px;
 }
 
-/* 消息区域 */
 .chat-messages {
   flex: 1;
   overflow-y: auto;
@@ -766,7 +835,6 @@ onMounted(() => {
   background: #ffffff;
 }
 
-/* 全屏欢迎区域 */
 .welcome-fullscreen {
   height: 100%;
   display: flex;
@@ -848,7 +916,6 @@ onMounted(() => {
   transform: translateY(-1px);
 }
 
-/* 消息气泡 */
 .message-wrapper {
   margin-bottom: 24px;
 }
@@ -887,7 +954,7 @@ onMounted(() => {
 }
 
 .message-wrapper.is-user .message-content {
-  background: #6366f1;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   border-color: transparent;
 }
@@ -961,7 +1028,6 @@ onMounted(() => {
   background: rgba(255, 255, 255, 0.25);
 }
 
-/* 打字动画 */
 .typing-cursor {
   display: inline-block;
   width: 2px;
@@ -977,7 +1043,6 @@ onMounted(() => {
   51%, 100% { opacity: 0; }
 }
 
-/* 错误提示 */
 .error-banner {
   background: #fef0f0;
   border-top: 1px solid #fde2e2;
@@ -1023,7 +1088,6 @@ onMounted(() => {
   flex-shrink: 0;
 }
 
-/* 输入区域 */
 .input-section {
   border-top: 1px solid #e2e8f0;
   padding: 20px 80px 30px;
@@ -1073,9 +1137,14 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
 }
 
-/* 历史记录抽屉 */
+.send-btn:hover {
+  background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
+}
+
 .history-drawer :deep(.el-drawer__header) {
   margin-bottom: 16px;
   padding: 20px;
@@ -1160,39 +1229,43 @@ onMounted(() => {
   color: #909399;
 }
 
-/* 响应式 */
 @media (max-width: 768px) {
-  .ai-chat-page {
-    padding: 16px;
-  }
-
-  .page-title {
-    font-size: 22px;
-  }
-
-  .agent-selector {
-    gap: 8px;
-  }
-
-  .agent-chip {
-    padding: 8px 12px;
-  }
-
-  .agent-text {
+  .sidebar {
     display: none;
   }
 
-  .chat-container {
-    height: calc(100vh - 240px);
-    min-height: 400px;
+  .chat-messages {
+    padding: 20px;
+  }
+
+  .input-section {
+    padding: 16px;
   }
 
   .message {
     max-width: 90%;
   }
 
-  .welcome-card {
-    padding: 24px;
+  .welcome-title-large {
+    font-size: 28px;
+  }
+
+  .welcome-icon-large {
+    width: 80px;
+    height: 80px;
+    border-radius: 24px;
+  }
+
+  .welcome-desc {
+    padding: 20px;
+  }
+
+  .quick-actions-large {
+    flex-direction: column;
+  }
+
+  .quick-prompt-large {
+    width: 100%;
   }
 }
 </style>

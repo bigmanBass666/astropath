@@ -555,7 +555,7 @@ onUnmounted(() => {
 
 /* ===== Features区域 ===== */
 .features {
-  padding: 40px 120px 100px;
+  padding: 40px 40px 100px;
   background: #f5f7fa;
   opacity: 0;
   transform: translateY(40px);
