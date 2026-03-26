@@ -322,6 +322,7 @@ const retryMessage = ref(null)
 const CHAT_STATE_KEY = 'ai_chat_current_state'
 
 let isRestoringState = false
+let isFreshEntry = true
 
 const toggleSidebar = () => {
   sidebarCollapsed.value = !sidebarCollapsed.value
@@ -428,6 +429,13 @@ const selectAgent = (agentId) => {
 
   currentAgentId.value = agentId
 
+  if (isFreshEntry) {
+    messages.value = []
+    currentConversationId.value = null
+    clearCurrentState()
+    return
+  }
+
   const lastConv = conversations.value
     .filter(c => c.agentId === agentId)
     .sort((a, b) => b.createdAt - a.createdAt)[0]
@@ -449,6 +457,8 @@ const useQuickPrompt = (prompt) => {
 }
 
 const sendMessage = async () => {
+  isFreshEntry = false
+  
   if (!inputMessage.value.trim()) {
     ElMessage.warning('请输入消息')
     return
@@ -757,6 +767,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   clearCurrentState()
+  isFreshEntry = true
 })
 </script>
 
