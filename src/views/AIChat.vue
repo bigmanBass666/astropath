@@ -49,8 +49,8 @@
           </div>
         </div>
         <div class="header-actions">
+          <el-button size="small" text :icon="Plus" @click="startNewChat">新对话</el-button>
           <el-button size="small" text :icon="Clock" @click="openHistory">历史记录</el-button>
-          <el-button size="small" text :icon="Delete" @click="clearChat" :disabled="messages.length === 0">清空对话</el-button>
           <el-button size="small" text :icon="ArrowLeft" @click="goBack">返回</el-button>
         </div>
       </div>
@@ -257,7 +257,7 @@ import {
   ChatLineRound, User, WarningFilled, Delete, Clock,
   Download, Promotion, VideoPause, ChatDotRound,
   School, Document, Files, Ticket, ArrowLeft, ArrowRight,
-  Cpu, ArrowDown, Check, Setting
+  Cpu, ArrowDown, Check, Setting, Plus
 } from '@element-plus/icons-vue'
 import { marked } from 'marked'
 import { sendMessageToAI, buildSystemPrompt, AIError } from '@/utils/ai-api'
@@ -436,12 +436,10 @@ const selectAgent = (agentId) => {
     messages.value = JSON.parse(JSON.stringify(lastConv.messages))
     currentConversationId.value = lastConv.id
     saveCurrentState()
-    ElMessage.success(`已切换到 ${currentAgent.value.name}，已恢复最近对话`)
   } else {
     messages.value = []
     currentConversationId.value = null
     clearCurrentState()
-    ElMessage.success(`已切换到 ${currentAgent.value.name}`)
   }
 }
 
@@ -620,6 +618,16 @@ const clearChat = () => {
   }
 }
 
+const startNewChat = () => {
+  if (messages.value.length > 0) {
+    saveConversation()
+  }
+  messages.value = []
+  currentConversationId.value = null
+  clearCurrentState()
+  ElMessage.success('已开始新对话')
+}
+
 const openHistory = () => {
   historyVisible.value = true
 }
@@ -745,6 +753,10 @@ onMounted(() => {
   }
 
   loadCurrentState()
+})
+
+onUnmounted(() => {
+  clearCurrentState()
 })
 </script>
 
