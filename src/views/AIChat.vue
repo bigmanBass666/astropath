@@ -26,13 +26,19 @@
 
     <div class="main-chat">
       <div class="chat-header">
-        <div class="header-agent-info">
-          <div class="header-icon" :style="{ background: currentAgent?.gradient }">
-            <el-icon :size="18"><component :is="currentAgent?.icon" /></el-icon>
-          </div>
-          <div class="header-text">
-            <span class="header-name">{{ currentAgent?.name }}</span>
-            <span class="header-role">{{ currentAgent?.role }}</span>
+        <div class="header-left">
+          <button class="back-btn" @click="goBack" aria-label="返回">
+            <el-icon :size="20"><ArrowLeft /></el-icon>
+            <span>返回</span>
+          </button>
+          <div class="header-agent-info">
+            <div class="header-icon" :style="{ background: currentAgent?.gradient }">
+              <el-icon :size="18"><component :is="currentAgent?.icon" /></el-icon>
+            </div>
+            <div class="header-text">
+              <span class="header-name">{{ currentAgent?.name }}</span>
+              <span class="header-role">{{ currentAgent?.role }}</span>
+            </div>
           </div>
         </div>
         <div class="header-actions">
@@ -227,7 +233,7 @@ import { ElMessage } from 'element-plus'
 import {
   ChatLineRound, User, WarningFilled, Delete, Clock,
   Download, Promotion, VideoPause, ChatDotRound,
-  School, Document, Files, Ticket
+  School, Document, Files, Ticket, ArrowLeft
 } from '@element-plus/icons-vue'
 import { marked } from 'marked'
 import { sendMessageToAI, buildSystemPrompt, AIError } from '@/utils/ai-api'
@@ -291,6 +297,10 @@ const retryMessage = ref(null)
 const CHAT_STATE_KEY = 'ai_chat_current_state'
 
 let isRestoringState = false
+
+const goBack = () => {
+  router.back()
+}
 
 const saveCurrentState = () => {
   if (isRestoringState) return
@@ -689,9 +699,15 @@ onMounted(() => {
 <style scoped>
 .ai-chat-page {
   display: flex;
-  height: calc(100vh - 60px);
+  height: 100vh;
   background: #ffffff;
   overflow: hidden;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 100;
 }
 
 .sidebar {
@@ -789,6 +805,37 @@ onMounted(() => {
   padding: 16px 24px;
   border-bottom: 1px solid #e2e8f0;
   background: #ffffff;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.back-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #475569;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.back-btn:hover {
+  background: #f8fafc;
+  border-color: #667eea;
+  color: #667eea;
+}
+
+.back-btn .el-icon {
+  color: inherit;
 }
 
 .header-agent-info {
