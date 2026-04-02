@@ -74,6 +74,15 @@
           <el-button @click="toggleCompareFavorites" :disabled="favorites.length === 0" type="success" plain>
             对比已收藏 ({{ favorites.length }})
           </el-button>
+          <el-button 
+            v-if="schools.length > 0" 
+            @click="openAIAnalysis" 
+            type="warning" 
+            plain
+            :icon="Cpu"
+          >
+            AI深度分析
+          </el-button>
         </div>
         <!-- 进度条 -->
         <el-progress v-if="recommending" :percentage="progress" :status="progressStatus" style="margin-top: 15px;" />
@@ -215,6 +224,84 @@
         </el-table-column>
       </el-table>
     </el-dialog>
+
+    <!-- AI 深度分析对话框 -->
+    <el-dialog 
+      v-model="aiAnalysisVisible" 
+      title="AI 选校深度分析" 
+      width="85%"
+      :close-on-click-modal="false"
+      @close="closeAIAnalysis"
+    >
+      <div class="ai-analysis-container">
+        <!-- 模型选择 -->
+        <div class="ai-model-selector" v-if="!aiAnalyzing && !aiAnalysisContent">
+          <el-form label-width="100px">
+            <el-form-item label="选择AI模型">
+              <el-select v-model="selectedProvider" placeholder="请选择AI模型" style="width: 300px;">
+                <el-option 
+                  v-for="provider in providers" 
+                  :key="provider.id" 
+                  :label="provider.name" 
+                  :value="provider.id" 
+                />
+              </el-select>
+            </el-form-item>
+          </el-form>
+          <div class="ai-start-section">
+            <p class="ai-description">
+              AI 将基于您的背景信息和推荐院校，生成一份详细的选校分析报告，包括：
+            </p>
+            <ul class="ai-features">
+              <li>背景竞争力总结</li>
+              <li>冲刺/匹配/保底院校详细分析</li>
+              <li>整体申请策略建议</li>
+              <li>风险提示与备选方案</li>
+            </ul>
+            <el-button 
+              type="primary" 
+              size="large" 
+              @click="startAIAnalysis"
+              :loading="aiAnalyzing"
+              :disabled="!selectedProvider"
+            >
+              开始AI分析
+            </el-button>
+          </div>
+        </div>
+
+        <!-- 加载状态 -->
+        <div v-if="aiAnalyzing && !aiAnalysisContent" class="ai-loading">
+          <div class="thinking-animation">
+            <div class="thinking-dot"></div>
+            <div class="thinking-dot"></div>
+            <div class="thinking-dot"></div>
+          </div>
+          <p class="thinking-text">AI正在进行深度分析...</p>
+          <p class="thinking-tip">这可能需要10-30秒，请耐心等待</p>
+        </div>
+
+        <!-- 分析结果 -->
+        <div v-if="aiAnalysisContent" class="ai-result">
+          <div class="ai-content" v-html="renderAiContent(aiAnalysisContent)"></div>
+          <span v-if="aiAnalyzing" class="typing-cursor"></span>
+        </div>
+
+        <!-- 错误提示 -->
+        <div v-if="aiError" class="ai-error">
+          <el-alert
+            :title="getErrorTitle(aiError.type)"
+            :description="aiError.message"
+            type="error"
+            show-icon
+            :closable="false"
+          />
+          <el-button type="primary" style="margin-top: 12px;" @click="startAIAnalysis">
+            重新分析
+          </el-button>
+        </div>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -222,7 +309,10 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { schoolsData } from '@/data/schools'
+import { marked } from 'marked'
+import { Cpu } from '@element-plus/icons-vue'
+import { schoolsData, getAllSchoolsWithMatch, getRecommendedSchools, buildRecommendationAnalysisPrompt } from '@/utils/recommendationEngine'
+import { sendMessageToAI, AIError } from '@/utils/ai-api'
 
 const router = useRouter()
 
@@ -242,23 +332,38 @@ const selectedMajor = ref('')
 const rankingRange = ref('')
 const sortBy = ref('default')
 const filterFavorites = ref(false)
-const compareMode = ref('selected') // 'selected' or 'favorites'
-const strategy = ref('all') // 'all', 'reach', 'match', 'safe'
+const compareMode = ref('selected')
+const strategy = ref('all')
 
-// 使用共享院校数据
-const mockSchools = schoolsData
+const matchBreakdownVisible = ref(false)
+const selectedSchoolBreakdown = ref(null)
 
-// 计算属性：可用的国家列表
+const aiAnalysisVisible = ref(false)
+const aiAnalysisContent = ref('')
+const aiAnalyzing = ref(false)
+const aiError = ref(null)
+const selectedProvider = ref(null)
+const providers = computed(() => {
+  const saved = localStorage.getItem('ai_providers')
+  return saved ? JSON.parse(saved) : []
+})
+
+const mockSchools = computed(() => {
+  if (hasAssessment.value && assessment.value) {
+    return getAllSchoolsWithMatch(assessment.value)
+  }
+  return schoolsData.map(s => ({ ...s, match: s.match || 50, category: 'match' }))
+})
+
 const availableCountries = computed(() => {
   const countries = new Set()
-  mockSchools.forEach(s => countries.add(s.country))
+  mockSchools.value.forEach(s => countries.add(s.country))
   return Array.from(countries).sort()
 })
 
-// 计算属性：可用的专业方向列表
 const availableMajors = computed(() => {
   const majors = new Set()
-  mockSchools.forEach(s => majors.add(s.major))
+  mockSchools.value.forEach(s => majors.add(s.major))
   return Array.from(majors).sort()
 })
 
@@ -375,7 +480,6 @@ const startRecommendation = () => {
   progress.value = 0
   progressStatus.value = ''
 
-  // 模拟进度条动画
   const progressInterval = setInterval(() => {
     if (progress.value < 90) {
       progress.value += Math.random() * 15
@@ -388,15 +492,17 @@ const startRecommendation = () => {
     progress.value = 100
     progressStatus.value = 'success'
 
+    let allSchools = mockSchools.value
+    
     const filterByStrategy = (list) => {
       switch (strategy.value) {
-        case 'reach': return list.filter(s => s.match >= 85)
-        case 'safe': return list.filter(s => s.match < 70)
-        case 'match': return list.filter(s => s.match >= 70 && s.match < 85)
-        default: return list // 'all' returns all schools
+        case 'reach': return list.filter(s => s.category === 'reach' || s.match >= 80)
+        case 'safe': return list.filter(s => s.category === 'safe' || s.match < 55)
+        case 'match': return list.filter(s => s.category === 'match' || (s.match >= 55 && s.match < 80))
+        default: return list
       }
     }
-    schools.value = filterByStrategy(mockSchools)
+    schools.value = filterByStrategy(allSchools)
     recommending.value = false
     ElMessage.success(`为您推荐了 ${schools.value.length} 所学校`)
   }, 2000)
@@ -429,13 +535,13 @@ const showDetail = (school) => {
 
 const toggleCompare = () => {
   compareMode.value = 'selected'
-  compareSchools.value = mockSchools.filter(s => selectedSchools.value.includes(s.id))
+  compareSchools.value = schools.value.filter(s => selectedSchools.value.includes(s.id))
   compareVisible.value = true
 }
 
 const toggleCompareFavorites = () => {
   compareMode.value = 'favorites'
-  compareSchools.value = mockSchools.filter(s => favorites.value.includes(s.id))
+  compareSchools.value = schools.value.filter(s => favorites.value.includes(s.id))
   compareVisible.value = true
 }
 
@@ -457,6 +563,92 @@ const removeFavoriteAndClose = (schoolId) => {
 }
 
 const compareSchools = ref([])
+
+const openAIAnalysis = () => {
+  if (providers.value.length === 0) {
+    ElMessage.warning('请先配置AI模型')
+    router.push('/ai-config')
+    return
+  }
+  selectedProvider.value = providers.value[0].id
+  aiAnalysisVisible.value = true
+  aiAnalysisContent.value = ''
+  aiError.value = null
+}
+
+const startAIAnalysis = async () => {
+  if (!selectedProvider.value) {
+    ElMessage.warning('请选择AI模型')
+    return
+  }
+  
+  aiAnalyzing.value = true
+  aiAnalysisContent.value = ''
+  aiError.value = null
+  
+  try {
+    const prompt = buildRecommendationAnalysisPrompt(assessment.value, schools.value)
+    
+    const messages = [
+      { role: 'user', content: prompt }
+    ]
+    
+    const stream = await sendMessageToAI(selectedProvider.value, messages, {
+      temperature: 0.7,
+      stream: true,
+      enableThinking: true
+    })
+    
+    for await (const chunk of stream) {
+      if (!aiAnalyzing.value) break
+      if (chunk.type === 'content') {
+        aiAnalysisContent.value += chunk.content
+      }
+    }
+  } catch (error) {
+    console.error('AI analysis error:', error)
+    if (error instanceof AIError) {
+      aiError.value = {
+        type: error.type,
+        message: error.message
+      }
+    } else {
+      aiError.value = {
+        type: 'unknown',
+        message: error.message
+      }
+    }
+  } finally {
+    aiAnalyzing.value = false
+  }
+}
+
+const renderAiContent = (content) => {
+  if (!content) return ''
+  try {
+    return marked(content)
+  } catch (e) {
+    return content
+  }
+}
+
+const getErrorTitle = (errorType) => {
+  const titles = {
+    network: '网络连接失败',
+    auth: 'API认证失败',
+    config: '配置问题',
+    unsupported: '不支持的提供商',
+    api: '服务请求失败'
+  }
+  return titles[errorType] || '发生错误'
+}
+
+const closeAIAnalysis = () => {
+  aiAnalysisVisible.value = false
+  aiAnalyzing.value = false
+  aiAnalysisContent.value = ''
+  aiError.value = null
+}
 
 onMounted(() => {
   const saved = localStorage.getItem('assessment_report')
@@ -490,7 +682,7 @@ onMounted(() => {
     get favorites() { return favorites.value },
     get selectedSchools() { return selectedSchools.value },
     startRecommendation,
-    get mockSchools() { return mockSchools },
+    get mockSchools() { return mockSchools.value },
     get compareVisible() { return compareVisible.value },
     get compareMode() { return compareMode.value },
     toggleCompare,
@@ -780,5 +972,201 @@ onMounted(() => {
   background: #f5f5f5;
   padding: 4px 12px;
   border-radius: 20px;
+}
+
+/* AI 深度分析样式 */
+.ai-analysis-container {
+  min-height: 300px;
+}
+
+.ai-model-selector {
+  padding: 20px;
+}
+
+.ai-start-section {
+  text-align: center;
+  padding: 30px 20px;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border-radius: 12px;
+  margin-top: 20px;
+}
+
+.ai-description {
+  font-size: 16px;
+  color: #475569;
+  margin-bottom: 16px;
+}
+
+.ai-features {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 24px 0;
+  display: inline-block;
+  text-align: left;
+}
+
+.ai-features li {
+  padding: 8px 0;
+  color: #334155;
+  font-size: 14px;
+  position: relative;
+  padding-left: 24px;
+}
+
+.ai-features li::before {
+  content: '✓';
+  position: absolute;
+  left: 0;
+  color: #667eea;
+  font-weight: bold;
+}
+
+.ai-loading {
+  text-align: center;
+  padding: 60px 20px;
+  background: linear-gradient(135deg, #fef3c7 0%, #fffbeb 100%);
+  border-radius: 12px;
+}
+
+.thinking-animation {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.thinking-dot {
+  width: 12px;
+  height: 12px;
+  background: #f59e0b;
+  border-radius: 50%;
+  animation: thinking-bounce 1.4s ease-in-out infinite;
+}
+
+.thinking-dot:nth-child(1) { animation-delay: -0.32s; }
+.thinking-dot:nth-child(2) { animation-delay: -0.16s; }
+.thinking-dot:nth-child(3) { animation-delay: 0s; }
+
+@keyframes thinking-bounce {
+  0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
+  40% { transform: scale(1.2); opacity: 1; }
+}
+
+.thinking-text {
+  font-size: 18px;
+  font-weight: 600;
+  color: #92400e;
+  margin: 0 0 8px 0;
+}
+
+.thinking-tip {
+  font-size: 14px;
+  color: #b45309;
+  margin: 0;
+  opacity: 0.8;
+}
+
+.ai-result {
+  padding: 20px;
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+.ai-content {
+  line-height: 1.8;
+  color: #334155;
+}
+
+.ai-content :deep(h1) {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 20px 0;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #667eea;
+}
+
+.ai-content :deep(h2) {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 28px 0 12px 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.ai-content :deep(h3) {
+  font-size: 18px;
+  font-weight: 600;
+  color: #334155;
+  margin: 20px 0 10px 0;
+}
+
+.ai-content :deep(h4) {
+  font-size: 16px;
+  font-weight: 600;
+  color: #475569;
+  margin: 16px 0 8px 0;
+}
+
+.ai-content :deep(p) {
+  margin: 0 0 12px 0;
+  line-height: 1.8;
+}
+
+.ai-content :deep(ul), .ai-content :deep(ol) {
+  margin: 12px 0;
+  padding-left: 24px;
+}
+
+.ai-content :deep(li) {
+  margin-bottom: 8px;
+  line-height: 1.7;
+}
+
+.ai-content :deep(strong) {
+  color: #1e293b;
+  font-weight: 600;
+}
+
+.ai-content :deep(code) {
+  background: #f1f5f9;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 14px;
+  color: #667eea;
+}
+
+.ai-content :deep(blockquote) {
+  border-left: 4px solid #667eea;
+  padding-left: 16px;
+  margin: 16px 0;
+  color: #64748b;
+  font-style: italic;
+  background: #f8fafc;
+  padding: 12px 16px;
+  border-radius: 0 8px 8px 0;
+}
+
+.typing-cursor {
+  display: inline-block;
+  width: 2px;
+  height: 18px;
+  background: #667eea;
+  margin-left: 4px;
+  animation: blink 1s infinite;
+  vertical-align: middle;
+}
+
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+.ai-error {
+  padding: 20px;
+  text-align: center;
 }
 </style>

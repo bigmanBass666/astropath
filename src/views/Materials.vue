@@ -1297,7 +1297,7 @@ const removeItem = (categoryId, index) => {
   ElMessage.success('已删除')
 }
 
-// AI生成文书内容
+// AI生成文书内容（流式输出）
 const generateWithAI = async () => {
   if (!selectedProvider.value) {
     ElMessage.warning('请先配置AI提供商')
@@ -1322,20 +1322,50 @@ const generateWithAI = async () => {
       { role: 'user', content: `当前文书内容：\n${currentContent || '(空)'}\n\n我的指令：${aiPrompt.value}` }
     ]
 
-    const response = await sendMessageToAI(selectedProvider.value, messages, {
-      temperature: 0.7,
-      maxTokens: 1500
-    })
+    // 清空当前内容，准备流式输出
+    essayContent.value = ''
+    let accumulatedContent = ''
 
-    essayContent.value = response.content
-    aiPrompt.value = ''
-    // 更新编辑器内容
+    // 更新编辑器显示为空
     nextTick(() => {
       if (editorRef.value) {
-        editorRef.value.innerHTML = response.content.split('\n').map(line => {
-          if (line.trim()) return `<p>${line}</p>`
-          return '<p><br></p>'
-        }).join('')
+        editorRef.value.innerHTML = '<p><br></p>'
+      }
+    })
+
+    // 调用流式API
+    const streamGenerator = await sendMessageToAI(selectedProvider.value, messages, {
+      temperature: 0.7,
+      maxTokens: 1500,
+      stream: true
+    })
+
+    // 处理流式输出
+    for await (const chunk of streamGenerator) {
+      if (chunk.type === 'content') {
+        accumulatedContent += chunk.content
+        essayContent.value = accumulatedContent
+
+        // 实时更新编辑器内容
+        nextTick(() => {
+          if (editorRef.value) {
+            // 将文本转换为HTML，保持格式
+            const htmlContent = accumulatedContent.split('\n').map(line => {
+              if (line.trim()) return `<p>${escapeHtml(line)}</p>`
+              return '<p><br></p>'
+            }).join('')
+            editorRef.value.innerHTML = htmlContent
+            // 滚动到底部
+            editorRef.value.scrollTop = editorRef.value.scrollHeight
+          }
+        })
+      }
+    }
+
+    aiPrompt.value = ''
+    // 最终保存到localStorage
+    nextTick(() => {
+      if (editorRef.value) {
         localStorage.setItem('essay_current_content', editorRef.value.innerHTML)
       }
     })
@@ -1345,6 +1375,13 @@ const generateWithAI = async () => {
   } finally {
     isGenerating.value = false
   }
+}
+
+// HTML转义函数，防止XSS攻击
+const escapeHtml = (text) => {
+  const div = document.createElement('div')
+  div.textContent = text
+  return div.innerHTML
 }
 
 const getEssayTypeName = (type) => {

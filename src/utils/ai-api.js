@@ -118,20 +118,25 @@ function buildRequestBody(provider, messages, options) {
       content: msg.content
     })),
     temperature: options.temperature || 0.7,
-    max_tokens: options.maxTokens || 1000,
     stream: options.stream || false
   }
 
-  // 智谱 AI 思考模式控制
+  // 思考模式特殊处理
   if (options.enableThinking) {
-    // 开启思考模式
     baseBody.enable_thinking = true
+    // DeepSeek 思考模式需要设置更大的思考空间
+    if (provider.type === 'deepseek' || provider.model?.toLowerCase().includes('deepseek')) {
+      baseBody.max_thinking_tokens = 8000
+    }
   } else {
-    // 明确关闭思考模式 - 智谱 AI 默认可能开启
     baseBody.enable_thinking = false
   }
 
-  // Anthropic需要特殊的消息格式处理
+  // 只有在非思考模式或明确指定时才设置 max_tokens
+  if (!options.enableThinking && options.maxTokens && options.maxTokens > 0) {
+    baseBody.max_tokens = options.maxTokens
+  }
+
   if (provider.type === 'anthropic') {
     const anthropicBody = {
       model: provider.model || 'claude-3-opus-20240229',
@@ -140,12 +145,10 @@ function buildRequestBody(provider, messages, options) {
         content: msg.content
       })),
       system: messages.find(m => m.role === 'system')?.content || '',
-      max_tokens: options.maxTokens || 1000,
       stream: options.stream || false
     }
-    // Anthropic 的思考模式
     if (options.enableThinking) {
-      anthropicBody.thinking = { type: 'enabled', budget_tokens: 10000 }
+      anthropicBody.thinking = { type: 'enabled', budget_tokens: 16000 }
     }
     return anthropicBody
   }
@@ -408,11 +411,13 @@ export function buildAssessmentPrompt(formData, scores) {
     ? formData.practice.competitions.map(c => `${c.name}（${c.level}-${c.award}）`).join('、')
     : '无'
 
-  return `你是一位资深的留学申请顾问，拥有丰富的申请评估经验。请基于以下学生背景信息，生成一份专业、详细、有针对性的竞争力评估报告。
+  return `你是一位资深的留学申请顾问，拥有丰富的申请评估经验。请基于以下用户背景信息，生成一份专业、详细、有针对性的竞争力评估报告。
 
 【重要】请直接输出最终的评估报告，不要输出你的思考过程、分析步骤或任何中间推理内容。直接以"# 留学申请竞争力评估报告"开头，输出完整的报告内容。
 
-## 学生背景信息
+【重要】在整个报告中，请使用"您"来称呼用户，不要使用"该学生"、"该用户"等第三方称呼。
+
+## 用户背景信息
 
 **基础信息：**
 - 姓名：${formData.basic.name || '未填写'}
@@ -447,7 +452,7 @@ export function buildAssessmentPrompt(formData, scores) {
 请生成一份详细的评估报告，包含以下内容（使用Markdown格式）：
 
 ### 1. 综合竞争力评价
-用2-3句话概括该学生的整体竞争力水平，指出最突出的优势和需要改进的方面。
+用2-3句话概括您的整体竞争力水平，指出您最突出的优势和需要改进的方面。
 
 ### 2. 各维度详细分析
 
@@ -468,10 +473,10 @@ export function buildAssessmentPrompt(formData, scores) {
 - 这些经历对申请的加分作用
 
 ### 3. 改进建议
-列出3-5条具体、可操作的改进建议，帮助学生在申请前提升竞争力。
+列出3-5条具体、可操作的改进建议，帮助您在申请前提升竞争力。
 
 ### 4. 选校方向建议
-根据学生背景，推荐申请方向：
+根据您的背景，推荐申请方向：
 - 冲刺院校类型（建议2-3所）
 - 匹配院校类型（建议3-5所）
 - 保底院校类型（建议2-3所）
