@@ -271,26 +271,34 @@
             <el-tag v-else type="info" effect="plain">等待分析</el-tag>
           </div>
           
-          <!-- AI思考中提示 -->
-          <div v-if="isAiAnalyzing && !aiContent" class="ai-thinking">
+          <!-- AI思考中提示 - 只在刚开始时显示 -->
+          <div v-if="isAiAnalyzing && !aiContent && !aiReasoning" class="ai-thinking">
             <div class="thinking-animation">
               <div class="thinking-dot"></div>
               <div class="thinking-dot"></div>
               <div class="thinking-dot"></div>
             </div>
-            <p class="thinking-text">AI正在进行深度分析，这可能需要10-30秒，请耐心等待...</p>
+            <p class="thinking-text">AI正在启动深度分析...</p>
             <p class="thinking-tip">思考型模型会先分析您的背景，再生成更有针对性的建议</p>
           </div>
           
-          <!-- AI思考中提示 -->
-          <div v-if="isAiAnalyzing && !aiContent" class="ai-thinking">
-            <div class="thinking-animation">
-              <div class="thinking-dot"></div>
-              <div class="thinking-dot"></div>
-              <div class="thinking-dot"></div>
+          <!-- 思考过程（可折叠) - 有内容就立即显示 -->
+          <div v-if="aiReasoning || (isAiAnalyzing && !aiContent)" class="ai-reasoning-section">
+            <div class="reasoning-header" @click="toggleReasoning">
+              <div class="reasoning-title">
+                <el-icon><Cpu /></el-icon>
+                <span>思考过程</span>
+                <el-tag size="small" type="info">{{ showReasoning ? '点击收起' : '点击展开' }}</el-tag>
+                <el-icon class="toggle-icon" :class="{ rotated: showReasoning }">
+                  <ArrowUp v-if="!showReasoning" />
+                  <ArrowDown v-else />
+                </el-icon>
+              </div>
             </div>
-            <p class="thinking-text">AI正在进行深度分析，这可能需要10-30秒...</p>
-            <p class="thinking-tip">思考型模型会先分析您的背景，再生成更有针对性的建议</p>
+            <div v-show="showReasoning" class="reasoning-content" ref="reasoningContentRef">
+              <div class="reasoning-text">{{ aiReasoning || '正在思考...' }}</div>
+              <span v-if="isAiAnalyzing && !aiContent" class="typing-cursor"></span>
+            </div>
           </div>
           
           <!-- AI分析内容 -->
@@ -446,13 +454,14 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import * as echarts from 'echarts'
 import { marked } from 'marked'
 import { sendMessageToAI, buildAssessmentPrompt, AIError } from '@/utils/ai-api'
-import { Cpu, ArrowDown, Setting, Loading } from '@element-plus/icons-vue'
+import { Cpu, ArrowDown, Setting, Loading, ArrowUp } from '@element-plus/icons-vue'
 
 const router = useRouter()
 const currentStep = ref(0)
 const practiceTab = ref('internship')
 const basicFormRef = ref(null)
 const radarRef = ref(null)
+const reasoningContentRef = ref(null)
 let radarChart = null
 
 // 科研经历模态框
@@ -981,8 +990,10 @@ const getPracticeComment = () => {
 const isLoading = ref(false)
 const isAiAnalyzing = ref(false)
 const aiContent = ref('')
+const aiReasoning = ref('')
 const aiError = ref(null)
 const selectedProvider = ref(null)
+const showReasoning = ref(true)
 
 const providers = computed(() => {
   const saved = localStorage.getItem('ai_providers')
@@ -1024,6 +1035,7 @@ const generateReport = async () => {
 const callAIAnalysis = async () => {
   isAiAnalyzing.value = true
   aiContent.value = ''
+  aiReasoning.value = ''
   aiError.value = null
   
   try {
@@ -1043,14 +1055,23 @@ const callAIAnalysis = async () => {
     
     const stream = await sendMessageToAI(selectedProvider.value, messages, {
       temperature: 0.7,
-      maxTokens: 4000,
       stream: true,
       enableThinking: true
     })
     
     for await (const chunk of stream) {
       if (!isAiAnalyzing.value) break
-      if (chunk.type === 'content') {
+      if (chunk.type === 'reasoning') {
+        aiReasoning.value += chunk.content
+        await nextTick(() => {
+          if (reasoningContentRef.value) {
+            reasoningContentRef.value.scrollTop = reasoningContentRef.value.scrollHeight
+          }
+        })
+      } else if (chunk.type === 'content') {
+        if (!aiContent.value && showReasoning.value) {
+          showReasoning.value = false
+        }
         aiContent.value += chunk.content
       }
     }
@@ -1078,70 +1099,15 @@ const retryAIAnalysis = () => {
 
 const renderAiContent = (content) => {
   if (!content) return ''
-  let filteredContent = filterThinkingProcess(content)
   try {
-    return marked(filteredContent)
+    return marked(content)
   } catch (e) {
-    return filteredContent
+    return content
   }
 }
 
-const filterThinkingProcess = (content) => {
-  if (!content) return ''
-  
-  const reportStartPattern = /#\s*留学申请竞争力评估报告/
-  const match = content.match(reportStartPattern)
-  
-  if (match && match.index !== undefined) {
-    return content.substring(match.index)
-  }
-  
-  const thinkingKeywords = [
-    '分析用户请求', '角色：', '任务：', '输入数据', '输出要求', 
-    '限制条件', '分析学生档案', '起草报告', '润色', '修正',
-    '完善和格式化', '自我修正', '最终润色', '对照限制条件',
-    '让我们撰写', '心理检查', '**优势**', '**劣势**',
-    '分析用户请求', '角色:', '任务:', '输入数据', '输出要求',
-    '限制条件', '分析学生档案', '起草报告', '润色', '修正',
-    '完善和格式化', '自我修正', '最终润色', '对照限制条件',
-    '让我们撰写', '心理检查', '**优势**', '**劣势**',
-    '优势：', '劣势：', '优势:', '劣势:',
-    '分析', '起草', '思考', '推理'
-  ]
-  
-  let lines = content.split('\n')
-  let filteredLines = []
-  let inThinkingBlock = false
-  
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i]
-    const trimmedLine = line.trim()
-    
-    if (trimmedLine.startsWith('# ') || trimmedLine.startsWith('## ') || trimmedLine.startsWith('### ')) {
-      const isThinkingHeader = thinkingKeywords.some(kw => trimmedLine.includes(kw))
-      if (!isThinkingHeader) {
-        inThinkingBlock = false
-        filteredLines.push(line)
-      } else {
-        inThinkingBlock = true
-      }
-      continue
-    }
-    
-    if (inThinkingBlock) {
-      if (trimmedLine === '' || trimmedLine.startsWith('-') || trimmedLine.startsWith('*') || trimmedLine.startsWith('1.') || trimmedLine.startsWith('2.')) {
-        continue
-      }
-    }
-    
-    const isThinkingLine = thinkingKeywords.some(kw => trimmedLine.startsWith(kw) || trimmedLine.includes('：' + kw) || trimmedLine.includes(': ' + kw))
-    
-    if (!isThinkingLine && !inThinkingBlock) {
-      filteredLines.push(line)
-    }
-  }
-  
-  return filteredLines.join('\n')
+const toggleReasoning = () => {
+  showReasoning.value = !showReasoning.value
 }
 
 const getErrorTitle = (errorType) => {
@@ -1312,6 +1278,9 @@ const resetForm = () => {
     form.practice.internships = []
     form.practice.competitions = []
     form.practice.volunteers = []
+    aiContent.value = ''
+    aiReasoning.value = ''
+    aiError.value = null
     currentStep.value = 0
     practiceTab.value = 'internship'
     localStorage.removeItem('assessment_form')
@@ -1323,7 +1292,7 @@ const resetForm = () => {
 let isLoaded = false
 const isResetting = ref(false)
 
-const loadFromStorage = () => {
+const loadFromStorage = async () => {
   const saved = localStorage.getItem('assessment_form')
   if (saved) {
     try {
@@ -1339,16 +1308,27 @@ const loadFromStorage = () => {
       if (data.practiceTab) {
         practiceTab.value = data.practiceTab
       }
+      if (data.aiContent) {
+        aiContent.value = data.aiContent
+      }
+      if (data.aiReasoning) {
+        aiReasoning.value = data.aiReasoning
+      }
     } catch (e) {
       // ignore parse errors
     }
   }
   isLoaded = true
+  
+  if (currentStep.value === 3) {
+    await nextTick()
+    renderRadarChart()
+  }
 }
 
 // 监听表单数据和步骤变化，自动保存到 localStorage（仅在数据加载完成后生效）
 watch(
-  [form, currentStep, practiceTab],
+  [form, currentStep, practiceTab, aiContent, aiReasoning],
   () => {
     if (!isLoaded || isResetting.value) return
     localStorage.setItem('assessment_form', JSON.stringify({
@@ -1362,7 +1342,9 @@ watch(
         }
       },
       currentStep: currentStep.value,
-      practiceTab: practiceTab.value
+      practiceTab: practiceTab.value,
+      aiContent: aiContent.value,
+      aiReasoning: aiReasoning.value
     }))
   },
   { deep: true }
@@ -1942,6 +1924,66 @@ onUnmounted(() => {
 
 .model-dropdown {
   margin: 0 12px;
+}
+
+/* 思考过程样式 */
+.ai-reasoning-section {
+  margin: 20px 0;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.reasoning-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2ff 100%);
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.2s ease;
+}
+
+.reasoning-header:hover {
+  background: linear-gradient(135deg, #e0f2ff 0%, #d4e5ff 100%);
+}
+
+.reasoning-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  color: #6366f1;
+}
+
+.reasoning-title .el-icon {
+  color: #6366f1;
+}
+
+.toggle-icon {
+  color: #6366f1;
+  transition: transform 0.3s ease;
+}
+
+.toggle-icon.rotated {
+  transform: rotate(180deg);
+}
+
+.reasoning-content {
+  padding: 16px;
+  background: #fafafa;
+  border-top: 1px solid #e2e8f0;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.reasoning-text {
+  font-size: 14px;
+  line-height: 1.8;
+  color: #64748b;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 </style>

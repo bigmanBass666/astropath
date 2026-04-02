@@ -55,7 +55,7 @@
         </div>
       </div>
 
-      <div class="chat-messages" ref="messagesContainer">
+      <div class="chat-messages" ref="messagesContainer" @scroll="handleScroll">
         <div v-if="messages.length === 0 && currentAgent" class="welcome-fullscreen">
           <div class="welcome-content">
             <div class="welcome-icon-large" :style="{ background: currentAgent.gradient }">
@@ -116,34 +116,6 @@
             </div>
           </div>
 
-          <div v-if="isGenerating && !hasStreamingMessage" class="message-wrapper">
-            <div class="message">
-              <div class="message-avatar" :style="{ background: currentAgent?.gradient }">
-                <el-icon :size="16"><component :is="currentAgent?.icon" /></el-icon>
-              </div>
-              <div class="message-content">
-                <div v-if="streamingReasoning" class="message-reasoning">
-                  <div class="reasoning-header">
-                    <el-icon :size="14"><Cpu /></el-icon>
-                    <span>思考中...</span>
-                  </div>
-                  <div class="reasoning-content">
-                    {{ streamingReasoning }}
-                  </div>
-                </div>
-                <div v-else-if="enableThinking && !streamingContent" class="thinking-loading">
-                  <div class="thinking-loading-header">
-                    <el-icon class="thinking-icon" :size="16"><Cpu /></el-icon>
-                    <span>正在深度思考中，请稍候...</span>
-                  </div>
-                </div>
-                <div class="message-text">
-                  <span v-html="renderMessage(streamingContent || '')"></span>
-                  <span class="typing-cursor"></span>
-                </div>
-              </div>
-            </div>
-          </div>
         </template>
 
         <div v-if="lastError" class="error-banner">
@@ -343,7 +315,6 @@ const agents = ref([
 const currentAgentId = ref('consultant')
 const currentAgent = computed(() => agents.value.find(a => a.id === currentAgentId.value) || agents.value[0])
 const sidebarCollapsed = ref(false)
-const hasStreamingMessage = computed(() => messages.value.some(m => m.role === 'assistant' && m.content === ''))
 const selectedProvider = ref(null)
 const inputMessage = ref('')
 const isGenerating = ref(false)
@@ -357,6 +328,7 @@ const conversations = ref([])
 const currentConversationId = ref(null)
 const lastError = ref(null)
 const retryMessage = ref(null)
+const userScrolledUp = ref(false)
 
 const CHAT_STATE_KEY = 'ai_chat_current_state'
 
@@ -522,8 +494,9 @@ const sendMessage = async () => {
   isGenerating.value = true
   streamingContent.value = ''
   streamingReasoning.value = ''
+  userScrolledUp.value = false
   clearError()
-  await nextTick(() => scrollToBottom())
+  await nextTick(() => scrollToBottom(true))
 
   try {
     const systemPrompt = buildSystemPrompt(currentAgentId.value)
@@ -539,10 +512,11 @@ const sendMessage = async () => {
       role: 'assistant',
       content: '',
       reasoning: '',
-      showReasoning: false,
+      showReasoning: enableThinking.value,
       timestamp: new Date().getTime()
     }
     messages.value.push(aiMsg)
+    const aiMsgIndex = messages.value.length - 1
 
     const stream = await sendMessageToAI(selectedProvider.value, apiMessages, {
       temperature: 0.7,
@@ -553,26 +527,31 @@ const sendMessage = async () => {
 
     console.log('[AIChat] Got stream, starting to read...')
     let chunkCount = 0
+    let hasReceivedContent = false
     for await (const chunk of stream) {
       chunkCount++
       console.log('[AIChat] Chunk', chunkCount, chunk)
       if (!isGenerating.value) break
       if (chunk.type === 'reasoning' && enableThinking.value) {
-        // 思考内容可能一次性返回很多，模拟流式显示
-        const reasoningChunks = splitIntoDisplayChunks(chunk.content)
-        for (const rc of reasoningChunks) {
-          streamingReasoning.value += rc
-          aiMsg.reasoning = streamingReasoning.value
-          await nextTick(() => scrollToBottom())
-          await new Promise(resolve => setTimeout(resolve, 10))
-        }
+        streamingReasoning.value += chunk.content
+        messages.value[aiMsgIndex].reasoning = streamingReasoning.value
       } else if (chunk.type === 'content') {
+        // 第一次收到正式内容时，折叠思考过程
+        if (!hasReceivedContent && messages.value[aiMsgIndex].reasoning) {
+          hasReceivedContent = true
+          messages.value[aiMsgIndex].showReasoning = false
+        }
         streamingContent.value += chunk.content
-        aiMsg.content = streamingContent.value
-        await nextTick(() => scrollToBottom())
-        await new Promise(resolve => setTimeout(resolve, 20))
+        messages.value[aiMsgIndex].content = streamingContent.value
+      }
+      if (chunkCount % 3 === 0) {
+        await nextTick()
+        scrollToBottom()
       }
     }
+    // 最终更新
+    await nextTick()
+    scrollToBottom()
     console.log('[AIChat] Stream finished, total chunks:', chunkCount)
 
     streamingContent.value = ''
@@ -616,6 +595,45 @@ const sendMessage = async () => {
   }
 }
 
+// 将内容分割成小块用于流式显示
+const splitIntoDisplayChunks = (text) => {
+  if (!text || text.length <= 3) return [text || '']
+  
+  const chunks = []
+  let currentChunk = ''
+  
+  for (let i = 0; i < text.length; i++) {
+    const char = text[i]
+    currentChunk += char
+    
+    // 在标点符号或一定长度后分割
+    const shouldSplit = 
+      char === '。' || 
+      char === '，' || 
+      char === '、' || 
+      char === '；' || 
+      char === '：' || 
+      char === '！' || 
+      char === '？' || 
+      char === '.' || 
+      char === ',' || 
+      char === ' ' || 
+      char === '\n' ||
+      currentChunk.length >= 8
+    
+    if (shouldSplit && currentChunk.length > 0) {
+      chunks.push(currentChunk)
+      currentChunk = ''
+    }
+  }
+  
+  if (currentChunk.length > 0) {
+    chunks.push(currentChunk)
+  }
+  
+  return chunks.length > 0 ? chunks : [text]
+}
+
 const renderMessage = (content) => {
   if (!content) return ''
   try {
@@ -641,10 +659,17 @@ const formatTime = (timestamp) => {
   return date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
 }
 
-const scrollToBottom = () => {
-  if (messagesContainer.value) {
+const scrollToBottom = (force = false) => {
+  if (messagesContainer.value && (!userScrolledUp.value || force)) {
     messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight
   }
+}
+
+const handleScroll = () => {
+  if (!messagesContainer.value) return
+  const { scrollTop, scrollHeight, clientHeight } = messagesContainer.value
+  const isAtBottom = scrollHeight - scrollTop - clientHeight < 100
+  userScrolledUp.value = !isAtBottom
 }
 
 const getErrorTitle = (errorType) => {
