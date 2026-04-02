@@ -181,8 +181,8 @@
         </el-card>
 
         <!-- 空状态 -->
-        <el-empty v-if="schools.length === 0 && !recommending" description="暂无推荐学校，请点击">
-          开始推荐
+        <el-empty v-if="schools.length === 0 && !recommending" description="暂无推荐学校">
+          <el-button type="primary" size="large" @click="startRecommendation">开始推荐</el-button>
         </el-empty>
       </div>
     </template>
@@ -222,6 +222,7 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import { schoolsData } from '@/data/schools'
 
 const router = useRouter()
 
@@ -244,16 +245,8 @@ const filterFavorites = ref(false)
 const compareMode = ref('selected') // 'selected' or 'favorites'
 const strategy = ref('all') // 'all', 'reach', 'match', 'safe'
 
-// 模拟院校数据
-const mockSchools = [
-  { id: 1, name: 'Harvard University', country: '美国', major: 'Computer Science', ranking: 'QS #1', match: 95, deadline: '2025-01-01', tuition: '$50,000', acceptanceRate: '4%', requirements: ['GPA 3.9+', 'GRE 330+', 'Research experience'], website: 'https://harvard.edu' },
-  { id: 2, name: 'Stanford University', country: '美国', major: 'AI', ranking: 'QS #2', match: 88, deadline: '2025-01-02', tuition: '$52,000', acceptanceRate: '4.5%', requirements: ['GPA 3.8+', 'Strong research background'], website: 'https://stanford.edu' },
-  { id: 3, name: 'MIT', country: '美国', major: 'CS', ranking: 'QS #3', match: 92, deadline: '2025-01-03', tuition: '$53,000', acceptanceRate: '3.9%', requirements: ['GPA 3.95+', 'Olympiad medals preferred'], website: 'https://mit.edu' },
-  { id: 4, name: 'Oxford University', country: '英国', major: 'CS', ranking: 'QS #4', match: 85, deadline: '2025-01-15', tuition: '£35,000', acceptanceRate: '18%', requirements: ['First Class Degree', 'Strong references'], website: 'https://ox.ac.uk' },
-  { id: 5, name: 'Cambridge University', country: '英国', major: 'CS', ranking: 'QS #5', match: 82, deadline: '2025-01-20', tuition: '£34,000', acceptanceRate: '19%', requirements: ['2:1 Degree minimum'], website: 'https://cam.ac.uk' },
-  { id: 6, name: 'Tsinghua University', country: '中国', major: 'CS', ranking: 'QS #25', match: 75, deadline: '2025-03-01', tuition: '¥30,000', acceptanceRate: '15%', requirements: ['GPA 3.5+'], website: 'https://tsinghua.edu.cn' },
-  { id: 7, name: 'University of Queensland', country: '澳大利亚', major: 'CS', ranking: 'QS #50', match: 65, deadline: '2025-02-15', tuition: 'AUD 40,000', acceptanceRate: '30%', requirements: ['GPA 3.0+'], website: 'https://uq.edu.au' }
-]
+// 使用共享院校数据
+const mockSchools = schoolsData
 
 // 计算属性：可用的国家列表
 const availableCountries = computed(() => {

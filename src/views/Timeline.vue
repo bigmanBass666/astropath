@@ -4,16 +4,23 @@
 
     <!-- 视图切换 -->
     <div class="view-toggle">
-      <el-radio-group v-model="currentView" size="large">
-        <el-radio-button label="chart">图表视图</el-radio-button>
-        <el-radio-button label="timeline">时间线</el-radio-button>
-        <el-radio-button label="kanban">任务看板</el-radio-button>
-      </el-radio-group>
-      <el-select v-model="mode" placeholder="规划模式" @change="handleModeChange" style="width: 150px;">
-        <el-option label="紧凑" value="compact" />
-        <el-option label="常规" value="normal" />
-        <el-option label="宽松" value="relaxed" />
-      </el-select>
+      <div class="toggle-left">
+        <el-radio-group v-model="currentView" size="large">
+          <el-radio-button label="chart">图表视图</el-radio-button>
+          <el-radio-button label="timeline">时间线</el-radio-button>
+          <el-radio-button label="kanban">任务看板</el-radio-button>
+        </el-radio-group>
+        <el-select v-model="mode" placeholder="规划模式" @change="handleModeChange" style="width: 150px;">
+          <el-option label="紧凑" value="compact" />
+          <el-option label="常规" value="normal" />
+          <el-option label="宽松" value="relaxed" />
+        </el-select>
+      </div>
+      <div class="toggle-right">
+        <el-button type="danger" :icon="Delete" @click="deleteAllTasks">删除所有任务</el-button>
+        <el-button type="warning" :icon="RefreshRight" @click="resetAllTasks">重置所有任务</el-button>
+        <el-button type="primary" :icon="DocumentAdd" @click="generateSampleTasks">生成示例任务</el-button>
+      </div>
     </div>
 
     <!-- ECharts图表视图 -->
@@ -190,7 +197,7 @@
 <script setup>
 import { ref, computed, reactive, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { CircleCheck, Calendar, Plus, Bell, Back } from '@element-plus/icons-vue'
+import { CircleCheck, Calendar, Plus, Bell, Back, RefreshRight, DocumentAdd, Delete } from '@element-plus/icons-vue'
 import * as echarts from 'echarts'
 
 const currentView = ref('chart')
@@ -329,10 +336,51 @@ const generateMilestones = () => {
     deadline: calculateMilestoneDate(startDate, template.id),
     tasks: template.id === 1 ? [
       { id: 101, title: '完成背景评估', milestoneId: template.id, status: 'done', deadline: calculateMilestoneDate(startDate, template.id), priority: 'high', completed: true, reminderEnabled: false, reminderDays: 1 },
-      { id: 102, title: '提交科研项目', milestoneId: template.id, status: 'done', deadline: calculateMilestoneDate(startDate, template.id), priority: 'medium', completed: true, reminderEnabled: false, reminderDays: 1 }
+      { id: 102, title: '提交科研项目申请', milestoneId: template.id, status: 'done', deadline: calculateMilestoneDate(startDate, template.id), priority: 'medium', completed: true, reminderEnabled: false, reminderDays: 1 },
+      { id: 103, title: '参加暑期实习', milestoneId: template.id, status: 'in-progress', deadline: calculateMilestoneDate(startDate, template.id), priority: 'high', completed: false, reminderEnabled: true, reminderDays: 3 },
+      { id: 104, title: '托福/雅思备考', milestoneId: template.id, status: 'in-progress', deadline: calculateMilestoneDate(startDate, template.id), priority: 'high', completed: false, reminderEnabled: true, reminderDays: 7 },
+      { id: 105, title: 'GRE/GMAT准备', milestoneId: template.id, status: 'todo', deadline: calculateMilestoneDate(startDate, template.id), priority: 'medium', completed: false, reminderEnabled: false, reminderDays: 1 },
+      { id: 106, title: '发表论文或项目成果', milestoneId: template.id, status: 'todo', deadline: calculateMilestoneDate(startDate, template.id), priority: 'medium', completed: false, reminderEnabled: false, reminderDays: 1 }
     ] : template.id === 2 ? [
-      { id: 201, title: '选校清单初版', milestoneId: template.id, status: 'todo', deadline: calculateMilestoneDate(startDate, template.id), priority: 'high', completed: false, reminderEnabled: false, reminderDays: 1 },
-      { id: 202, title: '专业方向确认', milestoneId: template.id, status: 'todo', deadline: calculateMilestoneDate(startDate, template.id), priority: 'medium', completed: false, reminderEnabled: false, reminderDays: 1 }
+      { id: 201, title: '选校清单初版', milestoneId: template.id, status: 'done', deadline: calculateMilestoneDate(startDate, template.id), priority: 'high', completed: true, reminderEnabled: false, reminderDays: 1 },
+      { id: 202, title: '专业方向确认', milestoneId: template.id, status: 'in-progress', deadline: calculateMilestoneDate(startDate, template.id), priority: 'high', completed: false, reminderEnabled: true, reminderDays: 3 },
+      { id: 203, title: '研究目标院校课程设置', milestoneId: template.id, status: 'todo', deadline: calculateMilestoneDate(startDate, template.id), priority: 'medium', completed: false, reminderEnabled: false, reminderDays: 1 },
+      { id: 204, title: '了解教授研究方向', milestoneId: template.id, status: 'todo', deadline: calculateMilestoneDate(startDate, template.id), priority: 'medium', completed: false, reminderEnabled: false, reminderDays: 1 },
+      { id: 205, title: '确定推荐人名单', milestoneId: template.id, status: 'todo', deadline: calculateMilestoneDate(startDate, template.id), priority: 'high', completed: false, reminderEnabled: true, reminderDays: 7 },
+      { id: 206, title: '最终选校名单确定', milestoneId: template.id, status: 'todo', deadline: calculateMilestoneDate(startDate, template.id), priority: 'high', completed: false, reminderEnabled: true, reminderDays: 7 }
+    ] : template.id === 3 ? [
+      { id: 301, title: '个人陈述(PS)初稿', milestoneId: template.id, status: 'todo', deadline: calculateMilestoneDate(startDate, template.id), priority: 'high', completed: false, reminderEnabled: true, reminderDays: 7 },
+      { id: 302, title: '简历(CV)制作', milestoneId: template.id, status: 'todo', deadline: calculateMilestoneDate(startDate, template.id), priority: 'high', completed: false, reminderEnabled: true, reminderDays: 7 },
+      { id: 303, title: '联系推荐人', milestoneId: template.id, status: 'todo', deadline: calculateMilestoneDate(startDate, template.id), priority: 'high', completed: false, reminderEnabled: true, reminderDays: 3 },
+      { id: 304, title: '推荐信跟进', milestoneId: template.id, status: 'todo', deadline: calculateMilestoneDate(startDate, template.id), priority: 'medium', completed: false, reminderEnabled: false, reminderDays: 1 },
+      { id: 305, title: '文书修改润色', milestoneId: template.id, status: 'todo', deadline: calculateMilestoneDate(startDate, template.id), priority: 'high', completed: false, reminderEnabled: true, reminderDays: 7 },
+      { id: 306, title: '成绩单认证', milestoneId: template.id, status: 'todo', deadline: calculateMilestoneDate(startDate, template.id), priority: 'medium', completed: false, reminderEnabled: false, reminderDays: 1 }
+    ] : template.id === 4 ? [
+      { id: 401, title: '注册网申账号', milestoneId: template.id, status: 'todo', deadline: calculateMilestoneDate(startDate, template.id), priority: 'high', completed: false, reminderEnabled: true, reminderDays: 3 },
+      { id: 402, title: '填写申请表', milestoneId: template.id, status: 'todo', deadline: calculateMilestoneDate(startDate, template.id), priority: 'high', completed: false, reminderEnabled: true, reminderDays: 7 },
+      { id: 403, title: '上传申请材料', milestoneId: template.id, status: 'todo', deadline: calculateMilestoneDate(startDate, template.id), priority: 'high', completed: false, reminderEnabled: true, reminderDays: 7 },
+      { id: 404, title: '支付申请费用', milestoneId: template.id, status: 'todo', deadline: calculateMilestoneDate(startDate, template.id), priority: 'medium', completed: false, reminderEnabled: false, reminderDays: 1 },
+      { id: 405, title: '确认材料完整性', milestoneId: template.id, status: 'todo', deadline: calculateMilestoneDate(startDate, template.id), priority: 'high', completed: false, reminderEnabled: true, reminderDays: 3 }
+    ] : template.id === 5 ? [
+      { id: 501, title: '面试技巧培训', milestoneId: template.id, status: 'todo', deadline: calculateMilestoneDate(startDate, template.id), priority: 'high', completed: false, reminderEnabled: true, reminderDays: 7 },
+      { id: 502, title: '模拟面试练习', milestoneId: template.id, status: 'todo', deadline: calculateMilestoneDate(startDate, template.id), priority: 'high', completed: false, reminderEnabled: true, reminderDays: 7 },
+      { id: 503, title: '准备常见问题答案', milestoneId: template.id, status: 'todo', deadline: calculateMilestoneDate(startDate, template.id), priority: 'medium', completed: false, reminderEnabled: false, reminderDays: 1 },
+      { id: 504, title: '参加正式面试', milestoneId: template.id, status: 'todo', deadline: calculateMilestoneDate(startDate, template.id), priority: 'high', completed: false, reminderEnabled: true, reminderDays: 3 },
+      { id: 505, title: '发送感谢邮件', milestoneId: template.id, status: 'todo', deadline: calculateMilestoneDate(startDate, template.id), priority: 'medium', completed: false, reminderEnabled: false, reminderDays: 1 }
+    ] : template.id === 6 ? [
+      { id: 601, title: '等待录取通知', milestoneId: template.id, status: 'todo', deadline: calculateMilestoneDate(startDate, template.id), priority: 'high', completed: false, reminderEnabled: true, reminderDays: 7 },
+      { id: 602, title: '收到录取结果汇总', milestoneId: template.id, status: 'todo', deadline: calculateMilestoneDate(startDate, template.id), priority: 'high', completed: false, reminderEnabled: true, reminderDays: 7 },
+      { id: 603, title: '对比分析各校offer', milestoneId: template.id, status: 'todo', deadline: calculateMilestoneDate(startDate, template.id), priority: 'high', completed: false, reminderEnabled: true, reminderDays: 3 },
+      { id: 604, title: '缴纳留位费', milestoneId: template.id, status: 'todo', deadline: calculateMilestoneDate(startDate, template.id), priority: 'high', completed: false, reminderEnabled: true, reminderDays: 3 },
+      { id: 605, title: '确认入学意向', milestoneId: template.id, status: 'todo', deadline: calculateMilestoneDate(startDate, template.id), priority: 'high', completed: false, reminderEnabled: true, reminderDays: 7 }
+    ] : template.id === 7 ? [
+      { id: 701, title: '准备签证材料', milestoneId: template.id, status: 'todo', deadline: calculateMilestoneDate(startDate, template.id), priority: 'high', completed: false, reminderEnabled: true, reminderDays: 7 },
+      { id: 702, title: '预约签证面试', milestoneId: template.id, status: 'todo', deadline: calculateMilestoneDate(startDate, template.id), priority: 'high', completed: false, reminderEnabled: true, reminderDays: 7 },
+      { id: 703, title: '参加签证面试', milestoneId: template.id, status: 'todo', deadline: calculateMilestoneDate(startDate, template.id), priority: 'high', completed: false, reminderEnabled: true, reminderDays: 3 },
+      { id: 704, title: '体检和疫苗接种', milestoneId: template.id, status: 'todo', deadline: calculateMilestoneDate(startDate, template.id), priority: 'medium', completed: false, reminderEnabled: false, reminderDays: 1 },
+      { id: 705, title: '购买机票', milestoneId: template.id, status: 'todo', deadline: calculateMilestoneDate(startDate, template.id), priority: 'medium', completed: false, reminderEnabled: false, reminderDays: 1 },
+      { id: 706, title: '安排住宿', milestoneId: template.id, status: 'todo', deadline: calculateMilestoneDate(startDate, template.id), priority: 'medium', completed: false, reminderEnabled: false, reminderDays: 1 },
+      { id: 707, title: '行李准备', milestoneId: template.id, status: 'todo', deadline: calculateMilestoneDate(startDate, template.id), priority: 'low', completed: false, reminderEnabled: false, reminderDays: 1 }
     ] : []
   }))
 }
@@ -515,20 +563,82 @@ const handleModeChange = () => {
   ElMessage.success(`已切换到${mode.value === 'compact' ? '紧凑' : mode.value === 'relaxed' ? '宽松' : '常规'}模式`)
 }
 
+const deleteAllTasks = () => {
+  ElMessageBox.confirm(
+    '确定要删除所有任务吗？此操作不可恢复！',
+    '确认删除',
+    {
+      confirmButtonText: '确定删除',
+      cancelButtonText: '取消',
+      type: 'error'
+    }
+  ).then(() => {
+    tasks.value = []
+    milestones.value.forEach(milestone => {
+      milestone.tasks = []
+    })
+    ElMessage.success('已删除所有任务')
+  }).catch(() => {})
+}
+
+const resetAllTasks = () => {
+  ElMessageBox.confirm(
+    '确定要重置所有任务吗？这将清除所有数据并恢复到初始状态。',
+    '确认重置',
+    {
+      confirmButtonText: '确定重置',
+      cancelButtonText: '取消',
+      type: 'warning'
+    }
+  ).then(() => {
+    localStorage.removeItem(STORAGE_KEY)
+    milestones.value = generateMilestones()
+    tasks.value = []
+    selectedMilestone.value = milestones.value[0] || null
+    ElMessage.success('已重置所有任务')
+  }).catch(() => {})
+}
+
+const generateSampleTasks = () => {
+  ElMessageBox.confirm(
+    '确定要生成示例任务吗？这将重新生成所有里程碑的示例任务。',
+    '确认生成',
+    {
+      confirmButtonText: '确定生成',
+      cancelButtonText: '取消',
+      type: 'info'
+    }
+  ).then(() => {
+    milestones.value = generateMilestones()
+    tasks.value = []
+    milestones.value.forEach(milestone => {
+      milestone.tasks.forEach(task => {
+        tasks.value.push({
+          ...task,
+          status: task.completed ? 'done' : task.status || 'todo'
+        })
+      })
+    })
+    selectedMilestone.value = milestones.value[0] || null
+    ElMessage.success(`已生成 ${tasks.value.length} 个示例任务`)
+  }).catch(() => {})
+}
+
 const toggleTask = (milestoneId, taskId) => {
+  const milestone = milestones.value.find(m => m.id === milestoneId)
+  if (!milestone) return
+  
+  const mTask = milestone.tasks.find(t => t.id === taskId)
+  if (!mTask) return
+  
+  mTask.completed = !mTask.completed
+  
   const task = tasks.value.find(t => t.id === taskId)
   if (task) {
-    task.status = task.status === 'done' ? 'todo' : 'done'
-    // 同步更新里程碑中的任务状态
-    const milestone = milestones.value.find(m => m.id === milestoneId)
-    if (milestone) {
-      const mTask = milestone.tasks.find(t => t.id === taskId)
-      if (mTask) {
-        mTask.completed = task.status === 'done'
-      }
-    }
-    ElMessage.success('任务状态已更新')
+    task.status = mTask.completed ? 'done' : 'todo'
   }
+  
+  ElMessage.success('任务状态已更新')
 }
 
 const dragStart = (task, fromColumn) => {
@@ -883,6 +993,20 @@ onUnmounted(() => {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.toggle-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.toggle-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 /* 视图切换按钮默认状态 - 未选中时为白色背景 */
@@ -1336,12 +1460,22 @@ onUnmounted(() => {
     align-items: stretch;
   }
 
-  .view-toggle .el-radio-group {
+  .toggle-left {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .toggle-left .el-radio-group {
     justify-content: center;
   }
 
-  .view-toggle .el-select {
+  .toggle-left .el-select {
     align-self: center;
+  }
+
+  .toggle-right {
+    justify-content: center;
+    flex-wrap: wrap;
   }
 
   .milestone-content {

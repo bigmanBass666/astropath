@@ -174,6 +174,34 @@
 
       <div class="step-actions">
         <el-button @click="prevStep">上一步</el-button>
+        <el-dropdown
+          v-if="providers.length > 0"
+          trigger="click"
+          class="model-dropdown"
+          @command="(cmd) => selectedProvider = cmd"
+        >
+          <el-button>
+            <el-icon style="margin-right: 6px;"><Cpu /></el-icon>
+            {{ currentProviderName }}
+            <el-icon class="el-icon--right"><ArrowDown /></el-icon>
+          </el-button>
+          <template #dropdown>
+            <el-dropdown-menu>
+              <el-dropdown-item
+                v-for="p in providers"
+                :key="p.id"
+                :command="p.id"
+                :class="{ 'is-active': selectedProvider === p.id }"
+              >
+                {{ p.name }}
+              </el-dropdown-item>
+            </el-dropdown-menu>
+          </template>
+        </el-dropdown>
+        <el-button v-else type="warning" @click="$router.push('/ai-config')">
+          <el-icon style="margin-right: 6px;"><Setting /></el-icon>
+          配置AI模型
+        </el-button>
         <el-button type="primary" @click="generateReport" :loading="isLoading">生成评估报告</el-button>
       </div>
     </el-card>
@@ -226,6 +254,73 @@
         </div>
 
         <div class="radar-chart" ref="radarRef" style="height: 400px;"></div>
+        
+        <!-- AI深度分析区域 -->
+        <div class="ai-analysis-section">
+          <div class="ai-header">
+            <h4>
+              <el-icon style="margin-right: 8px;"><Cpu /></el-icon>
+              AI深度分析
+            </h4>
+            <el-tag v-if="isAiAnalyzing" type="warning" effect="dark">
+              <el-icon class="is-loading" style="margin-right: 4px;"><Loading /></el-icon>
+              {{ aiContent ? '生成中...' : '思考中...' }}
+            </el-tag>
+            <el-tag v-else-if="aiContent" type="success" effect="dark">分析完成</el-tag>
+            <el-tag v-else-if="aiError" type="danger" effect="dark">分析失败</el-tag>
+            <el-tag v-else type="info" effect="plain">等待分析</el-tag>
+          </div>
+          
+          <!-- AI思考中提示 -->
+          <div v-if="isAiAnalyzing && !aiContent" class="ai-thinking">
+            <div class="thinking-animation">
+              <div class="thinking-dot"></div>
+              <div class="thinking-dot"></div>
+              <div class="thinking-dot"></div>
+            </div>
+            <p class="thinking-text">AI正在进行深度分析，这可能需要10-30秒，请耐心等待...</p>
+            <p class="thinking-tip">思考型模型会先分析您的背景，再生成更有针对性的建议</p>
+          </div>
+          
+          <!-- AI思考中提示 -->
+          <div v-if="isAiAnalyzing && !aiContent" class="ai-thinking">
+            <div class="thinking-animation">
+              <div class="thinking-dot"></div>
+              <div class="thinking-dot"></div>
+              <div class="thinking-dot"></div>
+            </div>
+            <p class="thinking-text">AI正在进行深度分析，这可能需要10-30秒...</p>
+            <p class="thinking-tip">思考型模型会先分析您的背景，再生成更有针对性的建议</p>
+          </div>
+          
+          <!-- AI分析内容 -->
+          <div v-if="aiContent || (isAiAnalyzing && aiContent)" class="ai-content">
+            <div class="ai-markdown" v-html="renderAiContent(aiContent)"></div>
+            <span v-if="isAiAnalyzing" class="typing-cursor"></span>
+          </div>
+          
+          <!-- 错误提示 -->
+          <div v-else-if="aiError" class="ai-error">
+            <el-alert
+              :title="getErrorTitle(aiError.type)"
+              :description="aiError.message"
+              type="error"
+              show-icon
+              :closable="false"
+            />
+            <el-button type="primary" style="margin-top: 12px;" @click="retryAIAnalysis">
+              重新分析
+            </el-button>
+          </div>
+          
+          <!-- 未开始分析提示 -->
+          <div v-else-if="!selectedProvider" class="ai-placeholder">
+            <el-empty description="未配置AI模型，无法进行深度分析">
+              <el-button type="primary" @click="$router.push('/ai-config')">去配置</el-button>
+            </el-empty>
+          </div>
+        </div>
+        
         <div class="report-details">
           <h4>详细分析</h4>
           <ul>
@@ -349,6 +444,9 @@ import { ref, reactive, computed, onMounted, onUnmounted, nextTick, watch } from
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import * as echarts from 'echarts'
+import { marked } from 'marked'
+import { sendMessageToAI, buildAssessmentPrompt, AIError } from '@/utils/ai-api'
+import { Cpu, ArrowDown, Setting, Loading } from '@element-plus/icons-vue'
 
 const router = useRouter()
 const currentStep = ref(0)
@@ -881,16 +979,180 @@ const getPracticeComment = () => {
 }
 
 const isLoading = ref(false)
+const isAiAnalyzing = ref(false)
+const aiContent = ref('')
+const aiError = ref(null)
+const selectedProvider = ref(null)
+
+const providers = computed(() => {
+  const saved = localStorage.getItem('ai_providers')
+  return saved ? JSON.parse(saved) : []
+})
+
+const currentProviderName = computed(() => {
+  const provider = providers.value.find(p => p.id === selectedProvider.value)
+  return provider ? provider.name : '选择AI模型'
+})
+
+const loadProviders = () => {
+  const saved = localStorage.getItem('ai_providers')
+  if (saved) {
+    const parsed = JSON.parse(saved)
+    if (parsed.length > 0) {
+      selectedProvider.value = parsed[0].id
+    }
+  }
+}
 
 const generateReport = async () => {
   isLoading.value = true
-  // 模拟3秒加载时间
-  await new Promise(resolve => setTimeout(resolve, 3000))
+  aiContent.value = ''
+  aiError.value = null
+  
+  await new Promise(resolve => setTimeout(resolve, 500))
   isLoading.value = false
   currentStep.value = 3
-  nextTick(() => {
-    renderRadarChart()
-  })
+  
+  await nextTick()
+  renderRadarChart()
+  
+  if (selectedProvider.value) {
+    await callAIAnalysis()
+  }
+}
+
+const callAIAnalysis = async () => {
+  isAiAnalyzing.value = true
+  aiContent.value = ''
+  aiError.value = null
+  
+  try {
+    const scores = {
+      overall: overallScore.value,
+      academic: academicScore.value,
+      language: languageScore.value,
+      research: researchScore.value,
+      practice: practiceScore.value
+    }
+    
+    const prompt = buildAssessmentPrompt(form, scores)
+    
+    const messages = [
+      { role: 'user', content: prompt }
+    ]
+    
+    const stream = await sendMessageToAI(selectedProvider.value, messages, {
+      temperature: 0.7,
+      maxTokens: 4000,
+      stream: true,
+      enableThinking: true
+    })
+    
+    for await (const chunk of stream) {
+      if (!isAiAnalyzing.value) break
+      if (chunk.type === 'content') {
+        aiContent.value += chunk.content
+      }
+    }
+  } catch (error) {
+    console.error('AI analysis error:', error)
+    if (error instanceof AIError) {
+      aiError.value = {
+        type: error.type,
+        message: error.message
+      }
+    } else {
+      aiError.value = {
+        type: 'unknown',
+        message: error.message
+      }
+    }
+  } finally {
+    isAiAnalyzing.value = false
+  }
+}
+
+const retryAIAnalysis = () => {
+  callAIAnalysis()
+}
+
+const renderAiContent = (content) => {
+  if (!content) return ''
+  let filteredContent = filterThinkingProcess(content)
+  try {
+    return marked(filteredContent)
+  } catch (e) {
+    return filteredContent
+  }
+}
+
+const filterThinkingProcess = (content) => {
+  if (!content) return ''
+  
+  const reportStartPattern = /#\s*留学申请竞争力评估报告/
+  const match = content.match(reportStartPattern)
+  
+  if (match && match.index !== undefined) {
+    return content.substring(match.index)
+  }
+  
+  const thinkingKeywords = [
+    '分析用户请求', '角色：', '任务：', '输入数据', '输出要求', 
+    '限制条件', '分析学生档案', '起草报告', '润色', '修正',
+    '完善和格式化', '自我修正', '最终润色', '对照限制条件',
+    '让我们撰写', '心理检查', '**优势**', '**劣势**',
+    '分析用户请求', '角色:', '任务:', '输入数据', '输出要求',
+    '限制条件', '分析学生档案', '起草报告', '润色', '修正',
+    '完善和格式化', '自我修正', '最终润色', '对照限制条件',
+    '让我们撰写', '心理检查', '**优势**', '**劣势**',
+    '优势：', '劣势：', '优势:', '劣势:',
+    '分析', '起草', '思考', '推理'
+  ]
+  
+  let lines = content.split('\n')
+  let filteredLines = []
+  let inThinkingBlock = false
+  
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i]
+    const trimmedLine = line.trim()
+    
+    if (trimmedLine.startsWith('# ') || trimmedLine.startsWith('## ') || trimmedLine.startsWith('### ')) {
+      const isThinkingHeader = thinkingKeywords.some(kw => trimmedLine.includes(kw))
+      if (!isThinkingHeader) {
+        inThinkingBlock = false
+        filteredLines.push(line)
+      } else {
+        inThinkingBlock = true
+      }
+      continue
+    }
+    
+    if (inThinkingBlock) {
+      if (trimmedLine === '' || trimmedLine.startsWith('-') || trimmedLine.startsWith('*') || trimmedLine.startsWith('1.') || trimmedLine.startsWith('2.')) {
+        continue
+      }
+    }
+    
+    const isThinkingLine = thinkingKeywords.some(kw => trimmedLine.startsWith(kw) || trimmedLine.includes('：' + kw) || trimmedLine.includes(': ' + kw))
+    
+    if (!isThinkingLine && !inThinkingBlock) {
+      filteredLines.push(line)
+    }
+  }
+  
+  return filteredLines.join('\n')
+}
+
+const getErrorTitle = (errorType) => {
+  const titles = {
+    network: '网络连接失败',
+    auth: 'API认证失败',
+    config: '配置问题',
+    unsupported: '不支持的提供商',
+    api: '服务请求失败'
+  }
+  return titles[errorType] || '发生错误'
 }
 
 const renderRadarChart = () => {
@@ -1110,6 +1372,7 @@ watch(
 onMounted(() => {
   window.addEventListener('resize', handleResize)
   loadFromStorage()
+  loadProviders()
 })
 
 // 组件卸载时清理
@@ -1494,4 +1757,191 @@ onUnmounted(() => {
 .el-tag {
   font-size: 12px;
 }
+
+/* AI分析区域样式 */
+.ai-analysis-section {
+  margin: 30px 0;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border-radius: 16px;
+  padding: 24px;
+  border: 1px solid #e2e8f0;
+}
+
+.ai-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.ai-header h4 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1e293b;
+  display: flex;
+  align-items: center;
+}
+
+.ai-header h4 .el-icon {
+  color: #6366f1;
+}
+
+.ai-content {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 24px;
+  border: 1px solid #e2e8f0;
+  min-height: 200px;
+}
+
+.ai-markdown {
+  line-height: 1.8;
+  color: #334155;
+}
+
+.ai-markdown :deep(h1) {
+  font-size: 22px;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0 0 16px 0;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.ai-markdown :deep(h2) {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 24px 0 12px 0;
+}
+
+.ai-markdown :deep(h3) {
+  font-size: 18px;
+  font-weight: 600;
+  color: #334155;
+  margin: 20px 0 10px 0;
+}
+
+.ai-markdown :deep(h4) {
+  font-size: 16px;
+  font-weight: 600;
+  color: #475569;
+  margin: 16px 0 8px 0;
+}
+
+.ai-markdown :deep(p) {
+  margin: 0 0 12px 0;
+  line-height: 1.8;
+}
+
+.ai-markdown :deep(ul), .ai-markdown :deep(ol) {
+  margin: 12px 0;
+  padding-left: 24px;
+}
+
+.ai-markdown :deep(li) {
+  margin-bottom: 8px;
+  line-height: 1.7;
+}
+
+.ai-markdown :deep(strong) {
+  color: #1e293b;
+  font-weight: 600;
+}
+
+.ai-markdown :deep(code) {
+  background: #f1f5f9;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 14px;
+  color: #6366f1;
+}
+
+.ai-markdown :deep(blockquote) {
+  border-left: 4px solid #6366f1;
+  padding-left: 16px;
+  margin: 16px 0;
+  color: #64748b;
+  font-style: italic;
+}
+
+.typing-cursor {
+  display: inline-block;
+  width: 2px;
+  height: 18px;
+  background: #6366f1;
+  margin-left: 4px;
+  animation: blink 1s infinite;
+  vertical-align: middle;
+}
+
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+.ai-error {
+  padding: 20px;
+  text-align: center;
+}
+
+.ai-placeholder {
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.ai-thinking {
+  text-align: center;
+  padding: 40px 20px;
+  background: linear-gradient(135deg, #fef3c7 0%, #fffbeb 100%);
+  border-radius: 12px;
+  margin: 20px 0;
+}
+
+.thinking-animation {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.thinking-dot {
+  width: 12px;
+  height: 12px;
+  background: #f59e0b;
+  border-radius: 50%;
+  animation: thinking-bounce 1.4s ease-in-out infinite;
+}
+
+.thinking-dot:nth-child(1) { animation-delay: -0.32s; }
+.thinking-dot:nth-child(2) { animation-delay: -0.16s; }
+.thinking-dot:nth-child(3) { animation-delay: 0s; }
+
+@keyframes thinking-bounce {
+  0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
+  40% { transform: scale(1.2); opacity: 1; }
+}
+
+.thinking-text {
+  font-size: 16px;
+  font-weight: 600;
+  color: #92400e;
+  margin: 0 0 8px 0;
+}
+
+.thinking-tip {
+  font-size: 14px;
+  color: #b45309;
+  margin: 0;
+  opacity: 0.8;
+}
+
+.model-dropdown {
+  margin: 0 12px;
+}
+
 </style>

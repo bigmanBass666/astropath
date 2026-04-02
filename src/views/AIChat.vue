@@ -96,6 +96,18 @@
                 </el-icon>
               </div>
               <div class="message-content">
+                <div v-if="msg.reasoning" class="message-reasoning">
+                  <div class="reasoning-header" @click="msg.showReasoning = !msg.showReasoning">
+                    <el-icon :size="14"><Cpu /></el-icon>
+                    <span>思考过程</span>
+                    <el-icon :size="12" class="reasoning-arrow" :class="{ 'is-expanded': msg.showReasoning }">
+                      <ArrowDown />
+                    </el-icon>
+                  </div>
+                  <div v-show="msg.showReasoning" class="reasoning-content">
+                    {{ msg.reasoning }}
+                  </div>
+                </div>
                 <div class="message-text">
                   <span v-html="renderMessage(msg.content)"></span>
                   <span v-if="isGenerating && msg.role === 'assistant' && isLastMessage(msg)" class="typing-cursor"></span>
@@ -110,6 +122,21 @@
                 <el-icon :size="16"><component :is="currentAgent?.icon" /></el-icon>
               </div>
               <div class="message-content">
+                <div v-if="streamingReasoning" class="message-reasoning">
+                  <div class="reasoning-header">
+                    <el-icon :size="14"><Cpu /></el-icon>
+                    <span>思考中...</span>
+                  </div>
+                  <div class="reasoning-content">
+                    {{ streamingReasoning }}
+                  </div>
+                </div>
+                <div v-else-if="enableThinking && !streamingContent" class="thinking-loading">
+                  <div class="thinking-loading-header">
+                    <el-icon class="thinking-icon" :size="16"><Cpu /></el-icon>
+                    <span>正在深度思考中，请稍候...</span>
+                  </div>
+                </div>
                 <div class="message-text">
                   <span v-html="renderMessage(streamingContent || '')"></span>
                   <span class="typing-cursor"></span>
@@ -147,6 +174,16 @@
             class="message-input"
           />
           <div class="input-actions">
+            <el-tooltip content="开启后显示AI思考过程" placement="top">
+              <div 
+                class="thinking-toggle" 
+                :class="{ 'is-active': enableThinking }"
+                @click="enableThinking = !enableThinking"
+              >
+                <el-icon :size="14"><Cpu /></el-icon>
+                <span>思考</span>
+              </div>
+            </el-tooltip>
             <el-dropdown
               v-if="providers.length > 0"
               trigger="click"
@@ -311,6 +348,8 @@ const selectedProvider = ref(null)
 const inputMessage = ref('')
 const isGenerating = ref(false)
 const streamingContent = ref('')
+const streamingReasoning = ref('')
+const enableThinking = ref(false)
 const messagesContainer = ref(null)
 const messages = ref([])
 const historyVisible = ref(false)
@@ -482,6 +521,7 @@ const sendMessage = async () => {
 
   isGenerating.value = true
   streamingContent.value = ''
+  streamingReasoning.value = ''
   clearError()
   await nextTick(() => scrollToBottom())
 
@@ -498,6 +538,8 @@ const sendMessage = async () => {
       id: aiMsgId,
       role: 'assistant',
       content: '',
+      reasoning: '',
+      showReasoning: false,
       timestamp: new Date().getTime()
     }
     messages.value.push(aiMsg)
@@ -505,7 +547,8 @@ const sendMessage = async () => {
     const stream = await sendMessageToAI(selectedProvider.value, apiMessages, {
       temperature: 0.7,
       maxTokens: 1000,
-      stream: true
+      stream: true,
+      enableThinking: enableThinking.value
     })
 
     console.log('[AIChat] Got stream, starting to read...')
@@ -514,7 +557,16 @@ const sendMessage = async () => {
       chunkCount++
       console.log('[AIChat] Chunk', chunkCount, chunk)
       if (!isGenerating.value) break
-      if (chunk.type === 'content') {
+      if (chunk.type === 'reasoning' && enableThinking.value) {
+        // 思考内容可能一次性返回很多，模拟流式显示
+        const reasoningChunks = splitIntoDisplayChunks(chunk.content)
+        for (const rc of reasoningChunks) {
+          streamingReasoning.value += rc
+          aiMsg.reasoning = streamingReasoning.value
+          await nextTick(() => scrollToBottom())
+          await new Promise(resolve => setTimeout(resolve, 10))
+        }
+      } else if (chunk.type === 'content') {
         streamingContent.value += chunk.content
         aiMsg.content = streamingContent.value
         await nextTick(() => scrollToBottom())
@@ -524,6 +576,7 @@ const sendMessage = async () => {
     console.log('[AIChat] Stream finished, total chunks:', chunkCount)
 
     streamingContent.value = ''
+    streamingReasoning.value = ''
     saveCurrentState()
   } catch (error) {
     if (error instanceof AIError) {
@@ -558,6 +611,7 @@ const sendMessage = async () => {
   } finally {
     isGenerating.value = false
     streamingContent.value = ''
+    streamingReasoning.value = ''
     await nextTick(() => scrollToBottom())
   }
 }
@@ -1474,6 +1528,106 @@ onUnmounted(() => {
   gap: 12px;
   font-size: 12px;
   color: #909399;
+}
+
+.thinking-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 14px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  font-size: 13px;
+  color: #64748b;
+}
+
+.thinking-toggle:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+.thinking-toggle.is-active {
+  background: linear-gradient(135deg, #fef3c7 0%, #fffbeb 100%);
+  border-color: #fcd34d;
+  color: #d97706;
+}
+
+.thinking-toggle.is-active .el-icon {
+  color: #d97706;
+}
+
+.message-reasoning {
+  margin-bottom: 12px;
+  background: linear-gradient(135deg, #fef3c7 0%, #fffbeb 100%);
+  border: 1px solid #fcd34d;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.reasoning-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  color: #d97706;
+  user-select: none;
+}
+
+.reasoning-header:hover {
+  background: rgba(252, 211, 77, 0.2);
+}
+
+.reasoning-arrow {
+  margin-left: auto;
+  transition: transform 0.2s ease;
+}
+
+.reasoning-arrow.is-expanded {
+  transform: rotate(180deg);
+}
+
+.reasoning-content {
+  padding: 12px 14px;
+  padding-top: 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #92400e;
+  white-space: pre-wrap;
+  border-top: 1px solid rgba(252, 211, 77, 0.5);
+  margin-top: 8px;
+  padding-top: 12px;
+}
+
+.thinking-loading {
+  margin-bottom: 12px;
+  background: linear-gradient(135deg, #fef3c7 0%, #fffbeb 100%);
+  border: 1px solid #fcd34d;
+  border-radius: 10px;
+  padding: 16px;
+}
+
+.thinking-loading-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #d97706;
+}
+
+.thinking-icon {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.95); }
 }
 
 @media (max-width: 768px) {

@@ -23,11 +23,7 @@
                 </template>
               </el-input>
               <el-select v-model="filterCountry" placeholder="国家" clearable class="filter-select filter-select--country">
-                <el-option label="美国" value="美国" />
-                <el-option label="英国" value="英国" />
-                <el-option label="中国" value="中国" />
-                <el-option label="澳洲" value="澳洲" />
-                <el-option label="加拿大" value="加拿大" />
+                <el-option v-for="country in uniqueCountries" :key="country" :label="country" :value="country" />
               </el-select>
               <el-select v-model="filterRankRange" placeholder="排名范围" clearable class="filter-select filter-select--rank">
                 <el-option label="Top 10" value="top10" />
@@ -268,10 +264,19 @@
 
         <el-descriptions :column="2" border>
           <el-descriptions-item label="国家">{{ currentSchool.country }}</el-descriptions-item>
-          <el-descriptions-item label="排名">{{ currentSchool.ranking }}</el-descriptions-item>
+          <el-descriptions-item label="排名">
+            {{ currentSchool.ranking }}
+            <sup v-if="currentSchool.sources?.ranking" class="source-sup" @click.stop="openSource(currentSchool.sources.ranking.url)">[{{ currentSchool.sources.ranking.label }}]</sup>
+          </el-descriptions-item>
           <el-descriptions-item label="热门专业">{{ currentSchool.major }}</el-descriptions-item>
-          <el-descriptions-item label="学费">{{ currentSchool.tuition }}</el-descriptions-item>
-          <el-descriptions-item label="录取率">{{ currentSchool.acceptanceRate }}</el-descriptions-item>
+          <el-descriptions-item label="学费">
+            {{ currentSchool.tuition }}
+            <sup v-if="currentSchool.sources?.tuition" class="source-sup" @click.stop="openSource(currentSchool.sources.tuition.url)">[{{ currentSchool.sources.tuition.label }}]</sup>
+          </el-descriptions-item>
+          <el-descriptions-item label="录取率">
+            {{ currentSchool.acceptanceRate }}
+            <sup v-if="currentSchool.sources?.acceptance" class="source-sup" @click.stop="openSource(currentSchool.sources.acceptance.url)">[{{ currentSchool.sources.acceptance.label }}]</sup>
+          </el-descriptions-item>
           <el-descriptions-item label="学校类型">{{ currentSchool.type || '综合大学' }}</el-descriptions-item>
           <el-descriptions-item label="学生人数">{{ currentSchool.students || 'N/A' }}</el-descriptions-item>
         </el-descriptions>
@@ -282,7 +287,9 @@
         </div>
 
         <div class="requirements-section">
-          <h4>申请要求</h4>
+          <h4>申请要求
+            <sup v-if="currentSchool.sources?.requirements" class="source-sup" @click.stop="openSource(currentSchool.sources.requirements.url)">[{{ currentSchool.sources.requirements.label }}]</sup>
+          </h4>
           <ul>
             <li v-for="(req, idx) in currentSchool.requirements" :key="idx">{{ req }}</li>
           </ul>
@@ -306,6 +313,7 @@ import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { Search, List, Grid, Calendar, ArrowRight } from '@element-plus/icons-vue'
 import { majorsData } from '@/data/majors'
+import { schoolsData } from '@/data/schools'
 
 const router = useRouter()
 const activeTab = ref('schools')
@@ -332,17 +340,19 @@ const compareVisible = ref(false)
 const majorsToCompare = ref([])
 const compareTableData = ref([])
 
-const allSchools = ref([
-  { id: 1, name: '哈佛大学', country: '美国', major: 'Computer Science', ranking: 'QS #1', rankType: 'danger', tuition: '$50K', acceptanceRate: '4%', deadline: 'Jan 1', description: '世界顶尖研究型大学', requirements: ['GPA 3.9+', 'GRE 330+', 'Research papers'], website: 'https://harvard.edu' },
-  { id: 2, name: '斯坦福大学', country: '美国', major: 'CS/AI', ranking: 'QS #2', rankType: 'danger', tuition: '$52K', acceptanceRate: '4.5%', deadline: 'Jan 2', requirements: ['GPA 3.8+', 'Innovation focus'], website: 'https://stanford.edu' },
-  { id: 3, name: '麻省理工学院', country: '美国', major: 'CS', ranking: 'QS #3', rankType: 'danger', tuition: '$53K', acceptanceRate: '3.9%', deadline: 'Jan 3', requirements: ['GPA 3.95+', 'Mathematical olympiad'], website: 'https://mit.edu' },
-  { id: 4, name: '牛津大学', country: '英国', major: 'CS', ranking: 'QS #4', rankType: 'warning', tuition: '£35K', acceptanceRate: '18%', deadline: 'Jan 15', requirements: ['First Class Degree'], website: 'https://ox.ac.uk' },
-  { id: 5, name: '剑桥大学', country: '英国', major: 'CS', ranking: 'QS #5', rankType: 'warning', tuition: '£34K', acceptanceRate: '19%', deadline: 'Jan 20', requirements: ['2:1 Degree minimum'], website: 'https://cam.ac.uk' },
-  { id: 6, name: '清华大学', country: '中国', major: 'CS', ranking: 'QS #25', rankType: 'success', tuition: '¥30K', acceptanceRate: '15%', deadline: 'Mar 1', requirements: ['GPA 3.5+'], website: 'https://tsinghua.edu.cn' },
-  { id: 7, name: '北京大学', country: '中国', major: 'CS', ranking: 'QS #14', rankType: 'success', tuition: '¥25K', acceptanceRate: '20%', deadline: 'Mar 1', requirements: ['GPA 3.3+'], website: 'https://pku.edu.cn' },
-  { id: 8, name: '多伦多大学', country: '加拿大', major: 'CS', ranking: 'QS #21', rankType: 'warning', tuition: 'CAD 50K', acceptanceRate: '43%', deadline: 'Jan 15', requirements: ['GPA 3.3+'], website: 'https://utoronto.ca' },
-  { id: 9, name: '墨尔本大学', country: '澳洲', major: 'CS', ranking: 'QS #13', rankType: 'warning', tuition: 'AUD 42K', acceptanceRate: '70%', deadline: 'Jan 15', requirements: ['GPA 3.0+'], website: 'https://unimelb.edu.au' }
-])
+// 使用共享院校数据，添加 rankType 字段用于显示
+const allSchools = ref(schoolsData.map(school => ({
+  ...school,
+  rankType: getRankType(school.ranking)
+})))
+
+function getRankType(ranking) {
+  const rankNum = parseInt(ranking.match(/\d+/)?.[0] || '999')
+  if (rankNum <= 10) return 'danger'
+  if (rankNum <= 20) return 'warning'
+  if (rankNum <= 50) return 'success'
+  return 'info'
+}
 
 // 专业数据（使用共享数据）
 const allMajors = ref(majorsData)
@@ -351,6 +361,12 @@ const allMajors = ref(majorsData)
 const uniqueMajors = computed(() => {
   const majors = allSchools.value.map(s => s.major)
   return [...new Set(majors)]
+})
+
+// 提取所有唯一的国家用于下拉选项
+const uniqueCountries = computed(() => {
+  const countries = allSchools.value.map(s => s.country)
+  return [...new Set(countries)].sort()
 })
 
 // 提取所有唯一的专业类别
@@ -559,6 +575,12 @@ const visitWebsite = (url) => {
     window.open(url, '_blank')
   } else {
     ElMessage.warning('暂无官网链接')
+  }
+}
+
+const openSource = (url) => {
+  if (url) {
+    window.open(url, '_blank')
   }
 }
 
@@ -1265,6 +1287,19 @@ onMounted(() => {
 
 .low-rate {
   color: #f56c6c;
+}
+
+.source-sup {
+  color: #409eff;
+  cursor: pointer;
+  font-size: 10px;
+  margin-left: 2px;
+  font-weight: normal;
+}
+
+.source-sup:hover {
+  color: #66b1ff;
+  text-decoration: underline;
 }
 
 /* 对比操作栏：移动端垂直堆叠 */

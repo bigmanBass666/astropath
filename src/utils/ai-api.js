@@ -47,9 +47,10 @@ export async function sendMessageToAI(providerId, messages, options = {}) {
   const requestBody = buildRequestBody(provider, messages, options)
 
   try {
-    // 发送请求
+    // 发送请求 - 思考模式需要更长的超时时间
     const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), 30000) // 30秒超时
+    const timeout = options.enableThinking ? 120000 : 60000 // 思考模式120秒，普通模式60秒
+    const timeoutId = setTimeout(() => controller.abort(), timeout)
 
     const response = await fetch(`${provider.baseUrl}/chat/completions`, {
       method: 'POST',
@@ -78,7 +79,17 @@ export async function sendMessageToAI(providerId, messages, options = {}) {
 
     // 处理流式或非流式响应
     if (options.stream) {
-      return handleStreamResponse(response)
+      const contentType = response.headers.get('content-type') || ''
+      console.log('[AI API] Response content-type:', contentType)
+      
+      // 检查是否是流式响应
+      if (contentType.includes('text/event-stream') || contentType.includes('application/stream+json')) {
+        return handleStreamResponse(response)
+      } else {
+        // API 可能不支持流式输出，返回的是普通 JSON
+        console.log('[AI API] API did not return stream format, falling back to normal response')
+        return handleNonStreamAsStream(response)
+      }
     } else {
       return handleNormalResponse(response)
     }
@@ -98,6 +109,8 @@ export async function sendMessageToAI(providerId, messages, options = {}) {
 
 // 构建请求体
 function buildRequestBody(provider, messages, options) {
+  console.log('[AI API] buildRequestBody options:', options)
+  
   const baseBody = {
     model: provider.model || 'gpt-3.5-turbo',
     messages: messages.map(msg => ({
@@ -105,12 +118,22 @@ function buildRequestBody(provider, messages, options) {
       content: msg.content
     })),
     temperature: options.temperature || 0.7,
-    max_tokens: options.maxTokens || 1000
+    max_tokens: options.maxTokens || 1000,
+    stream: options.stream || false
+  }
+
+  // 智谱 AI 思考模式控制
+  if (options.enableThinking) {
+    // 开启思考模式
+    baseBody.enable_thinking = true
+  } else {
+    // 明确关闭思考模式 - 智谱 AI 默认可能开启
+    baseBody.enable_thinking = false
   }
 
   // Anthropic需要特殊的消息格式处理
   if (provider.type === 'anthropic') {
-    return {
+    const anthropicBody = {
       model: provider.model || 'claude-3-opus-20240229',
       messages: messages.filter(m => m.role !== 'system').map(msg => ({
         role: msg.role === 'assistant' ? 'assistant' : 'user',
@@ -120,12 +143,15 @@ function buildRequestBody(provider, messages, options) {
       max_tokens: options.maxTokens || 1000,
       stream: options.stream || false
     }
+    // Anthropic 的思考模式
+    if (options.enableThinking) {
+      anthropicBody.thinking = { type: 'enabled', budget_tokens: 10000 }
+    }
+    return anthropicBody
   }
 
-  return {
-    ...baseBody,
-    stream: options.stream || false
-  }
+  console.log('[AI API] Final request body:', baseBody)
+  return baseBody
 }
 
 // 处理普通响应
@@ -138,17 +164,89 @@ async function handleNormalResponse(response) {
   }
 }
 
+// 将非流式响应转换为流式输出（模拟打字效果）
+async function* handleNonStreamAsStream(response) {
+  const data = await response.json()
+  const fullContent = data.choices?.[0]?.message?.content || ''
+  
+  console.log('[AI API] Converting non-stream response to stream, content length:', fullContent.length)
+  
+  if (!fullContent) {
+    return
+  }
+  
+  // 按字符或词组分割，模拟流式输出
+  // 使用词组分割会更自然
+  const chunks = splitIntoChunks(fullContent)
+  
+  for (let i = 0; i < chunks.length; i++) {
+    // 添加小延迟，模拟打字效果
+    await new Promise(resolve => setTimeout(resolve, 15))
+    yield { type: 'content', content: chunks[i] }
+  }
+}
+
+// 将文本分割成适合流式输出的块
+function splitIntoChunks(text) {
+  const chunks = []
+  let currentChunk = ''
+  
+  for (let i = 0; i < text.length; i++) {
+    const char = text[i]
+    currentChunk += char
+    
+    // 在标点符号、空格或换行处分隔
+    const shouldSplit = 
+      char === '。' || 
+      char === '，' || 
+      char === '、' || 
+      char === '；' || 
+      char === '：' || 
+      char === '！' || 
+      char === '？' || 
+      char === '.' || 
+      char === ',' || 
+      char === ' ' || 
+      char === '\n' ||
+      currentChunk.length >= 5
+    
+    if (shouldSplit && currentChunk.length > 0) {
+      chunks.push(currentChunk)
+      currentChunk = ''
+    }
+  }
+  
+  // 添加剩余内容
+  if (currentChunk.length > 0) {
+    chunks.push(currentChunk)
+  }
+  
+  return chunks
+}
+
 // 处理流式响应
 async function* handleStreamResponse(response) {
+  console.log('[AI API] Starting stream response handling')
+  console.log('[AI API] Response headers:', Object.fromEntries(response.headers.entries()))
+  
   const reader = response.body.getReader()
   const decoder = new TextDecoder()
   let buffer = ''
+  let chunkCount = 0
 
   while (true) {
     const { done, value } = await reader.read()
-    if (done) break
+    console.log('[AI API] Read chunk:', { done, valueLength: value?.length })
+    
+    if (done) {
+      console.log('[AI API] Stream done, total chunks:', chunkCount)
+      break
+    }
 
-    buffer += decoder.decode(value, { stream: true })
+    const decodedValue = decoder.decode(value, { stream: true })
+    console.log('[AI API] Decoded value:', decodedValue.substring(0, 200))
+    
+    buffer += decodedValue
     const lines = buffer.split('\n')
     buffer = lines.pop() || ''
 
@@ -156,14 +254,53 @@ async function* handleStreamResponse(response) {
       const trimmedLine = line.trim()
       if (!trimmedLine) continue
       
+      console.log('[AI API] Processing line:', trimmedLine.substring(0, 100))
+      
+      // 尝试多种格式解析
+      let data = null
+      
+      // 格式1: 标准 SSE 格式 "data: {...}"
       if (trimmedLine.startsWith('data: ')) {
-        const data = trimmedLine.slice(6)
-        if (data === '[DONE]') return
+        data = trimmedLine.slice(6)
+      }
+      // 格式2: 无空格的 SSE 格式 "data:{...}"
+      else if (trimmedLine.startsWith('data:')) {
+        data = trimmedLine.slice(5).trim()
+      }
+      // 格式3: 直接是 JSON 对象
+      else if (trimmedLine.startsWith('{') && trimmedLine.endsWith('}')) {
+        data = trimmedLine
+      }
+      
+      if (data) {
+        if (data === '[DONE]') {
+          console.log('[AI API] Received [DONE] signal')
+          return
+        }
 
         try {
           const parsed = JSON.parse(data)
-          const content = parsed.choices?.[0]?.delta?.content
+          console.log('[AI API] Parsed data:', parsed)
+          
+          // 处理推理内容（智谱 AI 的 reasoning_content）
+          const reasoningContent = parsed.choices?.[0]?.delta?.reasoning_content
+          if (reasoningContent) {
+            chunkCount++
+            console.log('[AI API] Yielding reasoning chunk #', chunkCount, ':', reasoningContent)
+            yield { type: 'reasoning', content: reasoningContent }
+          }
+          
+          // 处理正常内容
+          const content = 
+            parsed.choices?.[0]?.delta?.content ||  // OpenAI 流式格式
+            parsed.choices?.[0]?.message?.content || // OpenAI 非流式格式
+            parsed.delta?.text ||                     // 某些 API 格式
+            parsed.text ||                            // 简单文本格式
+            parsed.content                            // 其他格式
+          
           if (content) {
+            chunkCount++
+            console.log('[AI API] Yielding content chunk #', chunkCount, ':', content)
             yield { type: 'content', content }
           }
         } catch (e) {
@@ -173,19 +310,40 @@ async function* handleStreamResponse(response) {
     }
   }
   
+  // 处理剩余的 buffer
   if (buffer.trim()) {
+    let data = null
     if (buffer.startsWith('data: ')) {
-      const data = buffer.slice(6)
-      if (data !== '[DONE]') {
-        try {
-          const parsed = JSON.parse(data)
-          const content = parsed.choices?.[0]?.delta?.content
-          if (content) {
-            yield { type: 'content', content }
-          }
-        } catch (e) {
-          console.warn('[AI API] Failed to parse remaining buffer:', buffer, e)
+      data = buffer.slice(6)
+    } else if (buffer.startsWith('data:')) {
+      data = buffer.slice(5).trim()
+    } else if (buffer.startsWith('{')) {
+      data = buffer
+    }
+    
+    if (data && data !== '[DONE]') {
+      try {
+        const parsed = JSON.parse(data)
+        
+        // 处理推理内容
+        const reasoningContent = parsed.choices?.[0]?.delta?.reasoning_content
+        if (reasoningContent) {
+          yield { type: 'reasoning', content: reasoningContent }
         }
+        
+        // 处理正常内容
+        const content = 
+          parsed.choices?.[0]?.delta?.content ||
+          parsed.choices?.[0]?.message?.content ||
+          parsed.delta?.text ||
+          parsed.text ||
+          parsed.content
+        
+        if (content) {
+          yield { type: 'content', content }
+        }
+      } catch (e) {
+        console.warn('[AI API] Failed to parse remaining buffer:', buffer, e)
       }
     }
   }
@@ -239,21 +397,87 @@ export function buildSystemPrompt(agentId) {
 }
 
 // 生成评估报告提示词
-export function buildAssessmentPrompt(formData) {
-  return `基于以下学生背景信息，请生成一份竞争力评估分析报告：
+export function buildAssessmentPrompt(formData, scores) {
+  const researchDetails = formData.academic.research.length > 0 
+    ? formData.academic.research.map(r => `${r.name}（${r.role}，${r.duration}）`).join('、')
+    : '无'
+  const internshipDetails = formData.practice.internships.length > 0
+    ? formData.practice.internships.map(i => `${i.company}（${i.position}）`).join('、')
+    : '无'
+  const competitionDetails = formData.practice.competitions.length > 0
+    ? formData.practice.competitions.map(c => `${c.name}（${c.level}-${c.award}）`).join('、')
+    : '无'
 
-学生信息：
-- 姓名：${formData.basic.name}
-- 年龄：${formData.basic.age}
-- 院校：${formData.basic.university}
-- GPA：${formData.basic.gpa}
-- 语言成绩：${formData.basic.language}
-- 学历：${formData.academic.degree}
-- 专业方向：${formData.academic.majors.join(', ')}
-- 均分：${formData.academic.averageScore}
-- 科研经历：${formData.academic.research.length} 项
-- 实习经历：${formData.practice.internships.length} 项
-- 竞赛获奖：${formData.practice.competitions.length} 项
+  return `你是一位资深的留学申请顾问，拥有丰富的申请评估经验。请基于以下学生背景信息，生成一份专业、详细、有针对性的竞争力评估报告。
 
-请提供详细的分析和改进建议。`
+【重要】请直接输出最终的评估报告，不要输出你的思考过程、分析步骤或任何中间推理内容。直接以"# 留学申请竞争力评估报告"开头，输出完整的报告内容。
+
+## 学生背景信息
+
+**基础信息：**
+- 姓名：${formData.basic.name || '未填写'}
+- 年龄：${formData.basic.age}岁
+- 在读院校：${formData.basic.university === '985' ? '985院校' : formData.basic.university === '211' ? '211院校' : formData.basic.university === 'overseas' ? '海外院校' : '普通本科'}
+- GPA：${formData.basic.gpa.toFixed(1)}/4.0
+- 语言成绩：${formData.basic.language || '未填写'}
+
+**学术背景：**
+- 学历层次：${formData.academic.degree}
+- 专业方向：${formData.academic.majors.length > 0 ? formData.academic.majors.join('、') : '未选择'}
+- 均分：${formData.academic.averageScore}/100
+
+**科研经历：** ${researchDetails}
+
+**实习经历：** ${internshipDetails}
+
+**竞赛获奖：** ${competitionDetails}
+
+**志愿服务：** ${formData.practice.volunteers.length > 0 ? formData.practice.volunteers.map(v => `${v.organization}（${v.role}）`).join('、') : '无'}
+
+## 系统初步评分（仅供参考）
+
+- 学术能力：${scores.academic.toFixed(1)}/5.0
+- 语言能力：${scores.language.toFixed(1)}/5.0
+- 科研经历：${scores.research.toFixed(1)}/5.0
+- 实践背景：${scores.practice.toFixed(1)}/5.0
+- 综合评分：${scores.overall.toFixed(1)}/5.0
+
+---
+
+请生成一份详细的评估报告，包含以下内容（使用Markdown格式）：
+
+### 1. 综合竞争力评价
+用2-3句话概括该学生的整体竞争力水平，指出最突出的优势和需要改进的方面。
+
+### 2. 各维度详细分析
+
+**学术背景分析：**
+- 院校背景和GPA的竞争力评估
+- 针对目标院校的学术要求差距分析
+
+**语言能力分析：**
+- 当前语言成绩的竞争力
+- 是否需要重考或提升的建议
+
+**科研经历分析：**
+- 科研经历的含金量评估
+- 如何在申请中突出科研亮点
+
+**实践背景分析：**
+- 实习、竞赛、志愿服务的综合评价
+- 这些经历对申请的加分作用
+
+### 3. 改进建议
+列出3-5条具体、可操作的改进建议，帮助学生在申请前提升竞争力。
+
+### 4. 选校方向建议
+根据学生背景，推荐申请方向：
+- 冲刺院校类型（建议2-3所）
+- 匹配院校类型（建议3-5所）
+- 保底院校类型（建议2-3所）
+
+注意：
+- 分析要具体、有针对性，避免泛泛而谈
+- 建议要切实可行，考虑时间成本
+- 如果某些信息未填写，请合理推断或给出通用建议`
 }
