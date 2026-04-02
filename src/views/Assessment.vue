@@ -208,55 +208,14 @@
 
     <!-- 评估报告 -->
     <el-card v-if="currentStep === 3" class="result-card">
-      <template #header>
-        <span>竞争力评估报告</span>
-      </template>
-
       <!-- 加载动画 -->
       <div v-if="isLoading" class="loading-container">
         <el-loading :fullscreen="true" tip="正在生成评估报告..."></el-loading>
       </div>
 
-      <div v-else class="report-summary">
-        <h3>综合评估结果</h3>
-        <p>根据您填写的信息，系统生成了以下评估报告</p>
-      </div>
       <div v-if="!isLoading" class="report-content">
-        <div class="score-overview">
-          <el-rate v-model="overallScore" disabled :max="5" />
-          <span class="score-text">竞争力总分: {{ overallScore.toFixed(1) }}/5.0</span>
-        </div>
-
-        <!-- GPA评级和语言成绩分析 -->
-        <div class="analysis-section">
-          <el-row :gutter="20">
-            <el-col :span="12">
-              <div class="analysis-card">
-                <h4><i class="el-icon-school"></i> GPA 评级</h4>
-                <div class="gpa-analysis">
-                  <span class="gpa-value">GPA: {{ form.basic.gpa.toFixed(1) }}</span>
-                  <span class="gpa-grade" :class="getGpaGradeClass(form.basic.gpa)">{{ getGpaGrade(form.basic.gpa) }}</span>
-                </div>
-                <p class="analysis-detail">{{ getGpaComment(form.basic.gpa, form.basic.university) }}</p>
-              </div>
-            </el-col>
-            <el-col :span="12">
-              <div class="analysis-card">
-                <h4><i class="el-icon-chat-line-round"></i> 语言成绩分析</h4>
-                <div class="language-analysis">
-                  <span class="lang-text">{{ form.basic.language || '未填写' }}</span>
-                  <span class="lang-level" :class="getLanguageScoreClass()">{{ getLanguageLevel() }}</span>
-                </div>
-                <p class="analysis-detail">{{ getLanguageComment() }}</p>
-              </div>
-            </el-col>
-          </el-row>
-        </div>
-
-        <div class="radar-chart" ref="radarRef" style="height: 400px;"></div>
-        
-        <!-- AI深度分析区域 -->
-        <div class="ai-analysis-section">
+        <!-- AI深度分析区域 - 置顶显示 -->
+        <div class="ai-analysis-section ai-analysis-highlight">
           <div class="ai-header">
             <h4>
               <el-icon style="margin-right: 8px;"><Cpu /></el-icon>
@@ -328,6 +287,42 @@
             </el-empty>
           </div>
         </div>
+
+        <!-- 评分概览 -->
+        <div class="score-overview">
+          <el-rate v-model="overallScore" disabled :max="5" />
+          <span class="score-text">竞争力总分: {{ overallScore.toFixed(1) }}/5.0</span>
+        </div>
+
+        <!-- GPA评级和语言成绩分析 -->
+        <div class="analysis-section">
+          <el-row :gutter="20">
+            <el-col :span="12">
+              <div class="analysis-card">
+                <h4><i class="el-icon-school"></i> GPA 评级</h4>
+                <div class="gpa-analysis">
+                  <span class="gpa-value">GPA: {{ form.basic.gpa.toFixed(1) }}</span>
+                  <span class="gpa-grade" :class="getGpaGradeClass(form.basic.gpa)">{{ getGpaGrade(form.basic.gpa) }}</span>
+                </div>
+                <p class="analysis-detail">{{ getGpaComment(form.basic.gpa, form.basic.university) }}</p>
+              </div>
+            </el-col>
+            <el-col :span="12">
+              <div class="analysis-card">
+                <h4><i class="el-icon-chat-line-round"></i> 语言成绩分析</h4>
+                <div class="language-analysis">
+                  <span class="lang-text">{{ form.basic.language || '未填写' }}</span>
+                  <span class="lang-level" :class="getLanguageScoreClass()">{{ getLanguageLevel() }}</span>
+                </div>
+                <p class="analysis-detail">{{ getLanguageComment() }}</p>
+              </div>
+            </el-col>
+          </el-row>
+        </div>
+
+        <div class="radar-chart" ref="radarRef" style="height: 400px;"></div>
+        
+
         
         <div class="report-details">
           <h4>详细分析</h4>
@@ -1331,7 +1326,7 @@ watch(
   [form, currentStep, practiceTab, aiContent, aiReasoning],
   () => {
     if (!isLoaded || isResetting.value) return
-    localStorage.setItem('assessment_form', JSON.stringify({
+    const formData = {
       form: {
         basic: { ...form.basic },
         academic: { ...form.academic },
@@ -1345,7 +1340,22 @@ watch(
       practiceTab: practiceTab.value,
       aiContent: aiContent.value,
       aiReasoning: aiReasoning.value
-    }))
+    }
+    localStorage.setItem('assessment_form', JSON.stringify(formData))
+    if (form.basic.name || form.basic.university) {
+      const report = {
+        ...form,
+        scores: {
+          overall: overallScore.value,
+          academic: academicScore.value,
+          language: languageScore.value,
+          research: researchScore.value,
+          practice: practiceScore.value
+        },
+        savedAt: new Date().toISOString()
+      }
+      localStorage.setItem('assessment_report', JSON.stringify(report))
+    }
   },
   { deep: true }
 )
@@ -1538,6 +1548,25 @@ onUnmounted(() => {
   background: #f5f7fa;
   margin: 5px 0;
   border-radius: 6px;
+}
+
+/* 报告标题样式 */
+.report-summary {
+  text-align: center;
+  margin-bottom: 30px;
+  padding: 20px 0;
+}
+
+.report-summary h3 {
+  margin: 0 0 10px 0;
+  font-size: 20px;
+  color: #303133;
+}
+
+.report-summary p {
+  margin: 0;
+  color: #606266;
+  font-size: 14px;
 }
 
 .score-overview {
@@ -1747,6 +1776,33 @@ onUnmounted(() => {
   border-radius: 16px;
   padding: 24px;
   border: 1px solid #e2e8f0;
+}
+
+/* AI分析高亮样式 - 置顶显示 */
+.ai-analysis-highlight {
+  margin: 0 0 30px 0;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  border: 2px solid #6366f1;
+  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.15);
+  position: relative;
+}
+
+.ai-analysis-highlight::before {
+  content: '核心分析';
+  position: absolute;
+  top: -12px;
+  left: 24px;
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  color: white;
+  padding: 4px 16px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+}
+
+.ai-analysis-highlight .ai-header {
+  padding-top: 8px;
 }
 
 .ai-header {

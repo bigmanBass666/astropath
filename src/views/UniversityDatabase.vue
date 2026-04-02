@@ -557,13 +557,16 @@ const goToMajorDetail = (major) => {
 }
 
 const addToShortlist = (school) => {
-  if (shortlisted.value.includes(school.id)) {
-    ElMessage.warning('学校已在清单中')
-    return
+  const idx = shortlisted.value.indexOf(school.id)
+  if (idx > -1) {
+    shortlisted.value.splice(idx, 1)
+    localStorage.setItem('school_favorites', JSON.stringify(shortlisted.value))
+    ElMessage.success(`已将 ${school.name} 从选校清单移除`)
+  } else {
+    shortlisted.value.push(school.id)
+    localStorage.setItem('school_favorites', JSON.stringify(shortlisted.value))
+    ElMessage.success(`已将 ${school.name} 加入选校清单`)
   }
-  shortlisted.value.push(school.id)
-  localStorage.setItem('school_favorites', JSON.stringify(shortlisted.value))
-  ElMessage.success(`已将 ${school.name} 加入选校清单`)
 }
 
 const goToApply = (school) => {
@@ -896,7 +899,7 @@ onMounted(() => {
 }
 
 .search-row--actions {
-  justify-content: center;
+  justify-content: flex-start;
   gap: 16px;
 }
 

@@ -2183,5 +2183,52 @@ ${formatSchoolList(safeSchools, '保底')}
 注意：
 - 分析要具体、有针对性，避免泛泛而谈
 - 建议要切实可行，考虑时间成本
-- 录取概率要客观评估，不要过度乐观或悲观`
+- 录取概率要客观评估，不要过度乐观或悲观
+
+---
+
+## AI推荐院校（JSON格式）
+
+请在报告末尾以如下JSON格式输出您推荐的院校列表。JSON必须完整且可直接解析，schoolName必须与上方院校名称完全一致：
+
+` + "```json" + `
+{
+  "summary": "整体推荐策略的一句话总结（20字以内）",
+  "reach": [
+    {
+      "schoolName": "学校名称（必须与上方列表中的名称完全一致）",
+      "matchScore": 85,
+      "reason": "推荐理由：为什么适合冲刺该校",
+      "admissionProbability": "概率预估（如：60%，或'概率较低/风险较高'）",
+      "gap": "与用户背景的主要差距",
+      "strategy": "针对性的申请策略建议"
+    }
+  ],
+  "match": [
+    {
+      "schoolName": "学校名称",
+      "matchScore": 75,
+      "reason": "推荐理由：为什么与用户背景匹配",
+      "admissionProbability": "概率预估（如：75%）",
+      "fit": "契合度分析",
+      "strategy": "申请策略建议"
+    }
+  ],
+  "safe": [
+    {
+      "schoolName": "学校名称",
+      "matchScore": 60,
+      "reason": "推荐理由：为什么适合保底",
+      "admissionProbability": "概率预估（如：90%）",
+      "notes": "申请注意事项"
+    }
+  ]
+}
+` + "```" + `
+
+【重要】
+- reach、match、safe三个分类每个至少推荐1所学校，最多5所
+- matchScore为0-100的整数，表示AI评估的匹配度
+- 如果某分类没有合适的学校，可为空数组但不能省略
+- JSON必须是有效的，不要包含任何注释或额外文本`
 }

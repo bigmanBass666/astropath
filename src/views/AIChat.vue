@@ -329,11 +329,49 @@ const currentConversationId = ref(null)
 const lastError = ref(null)
 const retryMessage = ref(null)
 const userScrolledUp = ref(false)
+const userData = ref(null)
 
 const CHAT_STATE_KEY = 'ai_chat_current_state'
 
 let isRestoringState = false
 let isFreshEntry = true
+
+const loadUserData = () => {
+  const saved = localStorage.getItem('assessment_form')
+  console.log('[AIChat] Raw localStorage assessment_form:', saved)
+  if (saved) {
+    try {
+      const data = JSON.parse(saved)
+      console.log('[AIChat] Parsed localStorage data:', data)
+      if (data.form) {
+        userData.value = data.form
+      } else {
+        userData.value = data
+      }
+      console.log('[AIChat] Loaded user data:', userData.value)
+    } catch (e) {
+      console.error('[AIChat] Failed to load user data:', e)
+      userData.value = null
+    }
+  } else {
+    console.log('[AIChat] No assessment_form found in localStorage')
+    const report = localStorage.getItem('assessment_report')
+    console.log('[AIChat] Raw localStorage assessment_report:', report)
+    if (report) {
+      try {
+        const reportData = JSON.parse(report)
+        userData.value = {
+          basic: reportData.basic || {},
+          academic: reportData.academic || {},
+          practice: reportData.practice || {}
+        }
+        console.log('[AIChat] Loaded user data from assessment_report:', userData.value)
+      } catch (e) {
+        console.error('[AIChat] Failed to load from report:', e)
+      }
+    }
+  }
+}
 
 const toggleSidebar = () => {
   sidebarCollapsed.value = !sidebarCollapsed.value
@@ -499,7 +537,8 @@ const sendMessage = async () => {
   await nextTick(() => scrollToBottom(true))
 
   try {
-    const systemPrompt = buildSystemPrompt(currentAgentId.value)
+    const systemPrompt = buildSystemPrompt(currentAgentId.value, userData.value)
+    console.log('[AIChat] Generated system prompt:', systemPrompt)
     const apiMessages = [
       { role: 'system', content: systemPrompt },
       ...messages.value.filter(m => m.role === 'user' || m.role === 'assistant')
@@ -831,6 +870,7 @@ watch(currentAgentId, () => {
 
 onMounted(() => {
   loadProviders()
+  loadUserData()
   const saved = localStorage.getItem('conversations')
   if (saved) {
     conversations.value = JSON.parse(saved)

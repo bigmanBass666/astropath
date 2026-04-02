@@ -287,6 +287,78 @@
           <span v-if="aiAnalyzing" class="typing-cursor"></span>
         </div>
 
+        <!-- AI推荐院校区域 -->
+        <div v-if="aiRecommendedSchools && !aiAnalyzing" class="ai-recommendation-section">
+          <el-divider content-position="left">
+            <span class="recommendation-divider">AI 推荐院校</span>
+            <el-tag v-if="aiRecommendationSummary" type="warning" size="small" style="margin-left: 10px;">
+              {{ aiRecommendationSummary }}
+            </el-tag>
+          </el-divider>
+          
+          <div v-if="aiRecommendedSchools.reach && aiRecommendedSchools.reach.length > 0" class="ai-rec-category">
+            <h4 class="ai-rec-category-title reach-title">冲刺院校</h4>
+            <div class="ai-rec-cards">
+              <div v-for="(item, idx) in aiRecommendedSchools.reach" :key="'reach-' + idx" class="ai-rec-card reach-card">
+                <div class="ai-rec-card-header">
+                  <span class="ai-rec-school-name">{{ item.schoolName }}</span>
+                  <el-tag type="danger" size="small">匹配度 {{ item.matchScore }}%</el-tag>
+                </div>
+                <div class="ai-rec-card-body">
+                  <p class="ai-rec-item"><strong>推荐理由：</strong>{{ item.reason }}</p>
+                  <p class="ai-rec-item"><strong>录取概率：</strong>{{ item.admissionProbability }}</p>
+                  <p class="ai-rec-item" v-if="item.gap"><strong>差距分析：</strong>{{ item.gap }}</p>
+                  <p class="ai-rec-item" v-if="item.strategy"><strong>申请策略：</strong>{{ item.strategy }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div v-if="aiRecommendedSchools.match && aiRecommendedSchools.match.length > 0" class="ai-rec-category">
+            <h4 class="ai-rec-category-title match-title">匹配院校</h4>
+            <div class="ai-rec-cards">
+              <div v-for="(item, idx) in aiRecommendedSchools.match" :key="'match-' + idx" class="ai-rec-card match-card">
+                <div class="ai-rec-card-header">
+                  <span class="ai-rec-school-name">{{ item.schoolName }}</span>
+                  <el-tag type="warning" size="small">匹配度 {{ item.matchScore }}%</el-tag>
+                </div>
+                <div class="ai-rec-card-body">
+                  <p class="ai-rec-item"><strong>推荐理由：</strong>{{ item.reason }}</p>
+                  <p class="ai-rec-item"><strong>录取概率：</strong>{{ item.admissionProbability }}</p>
+                  <p class="ai-rec-item" v-if="item.fit"><strong>契合度：</strong>{{ item.fit }}</p>
+                  <p class="ai-rec-item" v-if="item.strategy"><strong>申请策略：</strong>{{ item.strategy }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div v-if="aiRecommendedSchools.safe && aiRecommendedSchools.safe.length > 0" class="ai-rec-category">
+            <h4 class="ai-rec-category-title safe-title">保底院校</h4>
+            <div class="ai-rec-cards">
+              <div v-for="(item, idx) in aiRecommendedSchools.safe" :key="'safe-' + idx" class="ai-rec-card safe-card">
+                <div class="ai-rec-card-header">
+                  <span class="ai-rec-school-name">{{ item.schoolName }}</span>
+                  <el-tag type="success" size="small">匹配度 {{ item.matchScore }}%</el-tag>
+                </div>
+                <div class="ai-rec-card-body">
+                  <p class="ai-rec-item"><strong>推荐理由：</strong>{{ item.reason }}</p>
+                  <p class="ai-rec-item"><strong>录取概率：</strong>{{ item.admissionProbability }}</p>
+                  <p class="ai-rec-item" v-if="item.notes"><strong>注意事项：</strong>{{ item.notes }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="ai-rec-actions">
+            <el-button type="primary" size="large" @click="applyAIRecommendation">
+              应用此推荐
+            </el-button>
+            <el-button size="large" @click="useOriginalRecommendation" v-if="schools.length > 0">
+              使用原始推荐
+            </el-button>
+          </div>
+        </div>
+
         <!-- 错误提示 -->
         <div v-if="aiError" class="ai-error">
           <el-alert
@@ -340,13 +412,30 @@ const selectedSchoolBreakdown = ref(null)
 
 const aiAnalysisVisible = ref(false)
 const aiAnalysisContent = ref('')
+const aiReasoningContent = ref('')
 const aiAnalyzing = ref(false)
 const aiError = ref(null)
 const selectedProvider = ref(null)
+const showReasoning = ref(false)
+const isThinking = ref(false)
+const reasoningComplete = ref(false)
+const aiRecommendedSchools = ref(null)
+const aiRecommendationSummary = ref('')
+const showAIRecommendation = ref(false)
 const providers = computed(() => {
   const saved = localStorage.getItem('ai_providers')
   return saved ? JSON.parse(saved) : []
 })
+
+watch(showReasoning, (val) => {
+  localStorage.setItem('ai_show_reasoning', JSON.stringify(val))
+})
+
+watch([reasoningComplete, aiReasoningContent, aiAnalysisContent], () => {
+  localStorage.setItem('ai_reasoning_complete', JSON.stringify(reasoningComplete.value))
+  localStorage.setItem('ai_reasoning_content', aiReasoningContent.value)
+  localStorage.setItem('ai_analysis_content', aiAnalysisContent.value)
+}, { deep: true })
 
 const mockSchools = computed(() => {
   if (hasAssessment.value && assessment.value) {
@@ -504,6 +593,16 @@ const startRecommendation = () => {
     }
     schools.value = filterByStrategy(allSchools)
     recommending.value = false
+    
+    // 保存推荐结果到 localStorage，同时备份原始推荐
+    localStorage.setItem('recommended_schools_backup', JSON.stringify(schools.value))
+    localStorage.setItem('recommended_schools', JSON.stringify(schools.value))
+    
+    // 重置AI推荐状态
+    showAIRecommendation.value = false
+    aiRecommendedSchools.value = null
+    aiRecommendationSummary.value = ''
+    
     ElMessage.success(`为您推荐了 ${schools.value.length} 所学校`)
   }, 2000)
 }
@@ -584,7 +683,11 @@ const startAIAnalysis = async () => {
   
   aiAnalyzing.value = true
   aiAnalysisContent.value = ''
+  aiReasoningContent.value = ''
   aiError.value = null
+  aiRecommendedSchools.value = null
+  aiRecommendationSummary.value = ''
+  isThinking.value = true
   
   try {
     const prompt = buildRecommendationAnalysisPrompt(assessment.value, schools.value)
@@ -601,9 +704,20 @@ const startAIAnalysis = async () => {
     
     for await (const chunk of stream) {
       if (!aiAnalyzing.value) break
-      if (chunk.type === 'content') {
+      if (chunk.type === 'reasoning') {
+        aiReasoningContent.value += chunk.content
+      } else if (chunk.type === 'content') {
+        if (isThinking.value) {
+          isThinking.value = false
+          reasoningComplete.value = true
+        }
         aiAnalysisContent.value += chunk.content
       }
+    }
+    
+    // 分析完成后尝试解析AI推荐院校JSON
+    if (aiAnalysisContent.value) {
+      parseAIRecommendation(aiAnalysisContent.value)
     }
   } catch (error) {
     console.error('AI analysis error:', error)
@@ -620,6 +734,7 @@ const startAIAnalysis = async () => {
     }
   } finally {
     aiAnalyzing.value = false
+    isThinking.value = false
   }
 }
 
@@ -630,6 +745,84 @@ const renderAiContent = (content) => {
   } catch (e) {
     return content
   }
+}
+
+const parseAIRecommendation = (content) => {
+  const jsonMatch = content.match(/```json\s*([\s\S]*?)\s*```/)
+  if (jsonMatch && jsonMatch[1]) {
+    try {
+      const parsed = JSON.parse(jsonMatch[1].trim())
+      if (parsed.summary) {
+        aiRecommendationSummary.value = parsed.summary
+      }
+      if (parsed.reach || parsed.match || parsed.safe) {
+        aiRecommendedSchools.value = parsed
+        return true
+      }
+    } catch (e) {
+      console.error('Failed to parse AI recommendation JSON:', e)
+    }
+  }
+  return false
+}
+
+const convertAIRecommendationToSchools = () => {
+  if (!aiRecommendedSchools.value) return []
+  
+  const schoolMap = {}
+  schoolsData.forEach(s => { schoolMap[s.name] = s })
+  
+  const convertCategory = (category, type) => {
+    if (!category || !Array.isArray(category)) return []
+    return category.map(item => {
+      const originalSchool = schoolMap[item.schoolName]
+      if (originalSchool) {
+        return {
+          ...originalSchool,
+          match: item.matchScore || 50,
+          category: type,
+          aiRecommendation: item
+        }
+      }
+      return null
+    }).filter(Boolean)
+  }
+  
+  const reach = convertCategory(aiRecommendedSchools.value.reach, 'reach')
+  const match = convertCategory(aiRecommendedSchools.value.match, 'match')
+  const safe = convertCategory(aiRecommendedSchools.value.safe, 'safe')
+  
+  return { reach, match, safe, all: [...reach, ...match, ...safe] }
+}
+
+const applyAIRecommendation = () => {
+  const converted = convertAIRecommendationToSchools()
+  if (converted.all.length === 0) {
+    ElMessage.warning('AI推荐数据解析失败，无法应用')
+    return
+  }
+  schools.value = converted.all
+  showAIRecommendation.value = true
+  localStorage.setItem('recommended_schools', JSON.stringify(schools.value))
+  localStorage.setItem('ai_recommended_schools', JSON.stringify(aiRecommendedSchools.value))
+  ElMessage.success('已应用AI推荐院校')
+  aiAnalysisVisible.value = false
+}
+
+const useOriginalRecommendation = () => {
+  showAIRecommendation.value = false
+  aiRecommendedSchools.value = null
+  aiRecommendationSummary.value = ''
+  const savedSchools = localStorage.getItem('recommended_schools_backup')
+  if (savedSchools) {
+    try {
+      schools.value = JSON.parse(savedSchools)
+    } catch (e) {
+      console.error('Failed to restore original schools:', e)
+    }
+  }
+  ElMessage.info('已切换回原始推荐')
+  aiAnalysisVisible.value = false
 }
 
 const getErrorTitle = (errorType) => {
@@ -1168,5 +1361,118 @@ onMounted(() => {
 .ai-error {
   padding: 20px;
   text-align: center;
+}
+
+/* AI推荐院校样式 */
+.ai-recommendation-section {
+  margin-top: 24px;
+  padding: 20px;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+.recommendation-divider {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.ai-rec-category {
+  margin-bottom: 20px;
+}
+
+.ai-rec-category-title {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  padding-left: 8px;
+  border-left: 3px solid #667eea;
+}
+
+.ai-rec-category-title.reach-title {
+  border-left-color: #ff6b6b;
+  color: #dc2626;
+}
+
+.ai-rec-category-title.match-title {
+  border-left-color: #ffa502;
+  color: #d97706;
+}
+
+.ai-rec-category-title.safe-title {
+  border-left-color: #2ed573;
+  color: #16a34a;
+}
+
+.ai-rec-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+.ai-rec-card {
+  background: #ffffff;
+  border-radius: 10px;
+  padding: 16px;
+  border: 1px solid #e8e8e8;
+  transition: all 0.2s ease;
+}
+
+.ai-rec-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.ai-rec-card.reach-card {
+  border-left: 3px solid #ff6b6b;
+}
+
+.ai-rec-card.match-card {
+  border-left: 3px solid #ffa502;
+}
+
+.ai-rec-card.safe-card {
+  border-left: 3px solid #2ed573;
+}
+
+.ai-rec-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.ai-rec-school-name {
+  font-weight: 600;
+  font-size: 15px;
+  color: #1e293b;
+}
+
+.ai-rec-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ai-rec-item {
+  margin: 0;
+  font-size: 13px;
+  color: #475569;
+  line-height: 1.5;
+}
+
+.ai-rec-item strong {
+  color: #64748b;
+  font-weight: 500;
+}
+
+.ai-rec-actions {
+  margin-top: 20px;
+  display: flex;
+  gap: 12px;
+  justify-content: center;
 }
 </style>

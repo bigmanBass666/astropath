@@ -12,7 +12,7 @@ const routes = [
     path: '/',
     name: 'Home',
     component: () => import('@/views/Home.vue'),
-    meta: { title: '首页', hasFooter: true }
+    meta: { title: '首页' }
   },
   {
     path: '/ai-config',
@@ -54,7 +54,7 @@ const routes = [
     path: '/ai-chat',
     name: 'AIChat',
     component: () => import('@/views/AIChat.vue'),
-    meta: { title: 'AI对话', hasFooter: true }
+    meta: { title: 'AI对话' }
   },
   {
     path: '/major-detail/:id',

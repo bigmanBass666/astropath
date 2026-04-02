@@ -574,13 +574,6 @@ onUnmounted(() => {
   box-sizing: border-box;
 }
 
-/* 页脚使用全宽容器 */
-.site-footer .container {
-  max-width: 100%;
-  padding: 0;
-  box-sizing: border-box;
-}
-
 .section-title {
   text-align: center;
   font-size: 32px;
@@ -966,6 +959,56 @@ onUnmounted(() => {
   }
 }
 
+/* ===== 使用指南模态框样式 ===== */
+.guide-dialog .el-dialog__body {
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.guide-content {
+  padding: 10px 0;
+}
+
+.guide-section {
+  margin-bottom: 24px;
+  padding: 16px;
+  background: #f5f7fa;
+  border-radius: 8px;
+}
+
+.guide-section:last-child {
+  margin-bottom: 0;
+}
+
+.guide-section h4 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 12px;
+}
+
+.guide-section .el-icon {
+  color: #667eea;
+  font-size: 18px;
+}
+
+.guide-section p,
+.guide-section ul,
+.guide-section ol {
+  margin: 0;
+  padding-left: 20px;
+  color: #606266;
+  font-size: 14px;
+  line-height: 1.8;
+}
+
+.guide-section li {
+  margin-bottom: 8px;
+}
+
 /* ===== 页脚样式 ===== */
 .site-footer {
   background: #1a1a2e;
@@ -1088,56 +1131,6 @@ onUnmounted(() => {
   color: rgba(255, 255, 255, 0.65);
   font-size: 13px;
   margin: 0;
-}
-
-/* ===== 使用指南模态框样式 ===== */
-.guide-dialog .el-dialog__body {
-  max-height: 60vh;
-  overflow-y: auto;
-}
-
-.guide-content {
-  padding: 10px 0;
-}
-
-.guide-section {
-  margin-bottom: 24px;
-  padding: 16px;
-  background: #f5f7fa;
-  border-radius: 8px;
-}
-
-.guide-section:last-child {
-  margin-bottom: 0;
-}
-
-.guide-section h4 {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 16px;
-  font-weight: 600;
-  color: #2c3e50;
-  margin-bottom: 12px;
-}
-
-.guide-section .el-icon {
-  color: #667eea;
-  font-size: 18px;
-}
-
-.guide-section p,
-.guide-section ul,
-.guide-section ol {
-  margin: 0;
-  padding-left: 20px;
-  color: #606266;
-  font-size: 14px;
-  line-height: 1.8;
-}
-
-.guide-section li {
-  margin-bottom: 8px;
 }
 
 /* ===== 页脚响应式设计 ===== */

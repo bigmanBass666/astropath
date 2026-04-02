@@ -146,26 +146,30 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { majorsData } from '@/data/majors'
+import { getSchoolById } from '@/utils/recommendationEngine'
 
 const route = useRoute()
 const router = useRouter()
 const pageRoot = ref(null)
 
-// 模拟院校数据（与SchoolRecommendation保持一致）
-const mockSchools = [
-  { id: 1, name: 'Harvard University', country: '美国', major: 'Computer Science', ranking: 'QS #1', match: 95, deadline: '2025-01-01', tuition: '$50,000', acceptanceRate: '4%', requirements: ['GPA 3.9+', 'GRE 330+', 'Research experience'], website: 'https://harvard.edu' },
-  { id: 2, name: 'Stanford University', country: '美国', major: 'AI', ranking: 'QS #2', match: 88, deadline: '2025-01-02', tuition: '$52,000', acceptanceRate: '4.5%', requirements: ['GPA 3.8+', 'Strong research background'], website: 'https://stanford.edu' },
-  { id: 3, name: 'MIT', country: '美国', major: 'CS', ranking: 'QS #3', match: 92, deadline: '2025-01-03', tuition: '$53,000', acceptanceRate: '3.9%', requirements: ['GPA 3.95+', 'Olympiad medals preferred'], website: 'https://mit.edu' },
-  { id: 4, name: 'Oxford University', country: '英国', major: 'CS', ranking: 'QS #4', match: 85, deadline: '2025-01-15', tuition: '£35,000', acceptanceRate: '18%', requirements: ['First Class Degree', 'Strong references'], website: 'https://ox.ac.uk' },
-  { id: 5, name: 'Cambridge University', country: '英国', major: 'CS', ranking: 'QS #5', match: 82, deadline: '2025-01-20', tuition: '£34,000', acceptanceRate: '19%', requirements: ['2:1 Degree minimum'], website: 'https://cam.ac.uk' },
-  { id: 6, name: 'Tsinghua University', country: '中国', major: 'CS', ranking: 'QS #25', match: 75, deadline: '2025-03-01', tuition: '¥30,000', acceptanceRate: '15%', requirements: ['GPA 3.5+'], website: 'https://tsinghua.edu.cn' },
-  { id: 7, name: 'University of Queensland', country: '澳大利亚', major: 'CS', ranking: 'QS #50', match: 65, deadline: '2025-02-15', tuition: 'AUD 40,000', acceptanceRate: '30%', requirements: ['GPA 3.0+'], website: 'https://uq.edu.au' }
-]
-
 const school = computed(() => {
   const id = parseInt(route.params.id)
-  return mockSchools.find(s => s.id === id) || null
+  const foundSchool = getSchoolById(id)
+  if (!foundSchool) return null
+  if (foundSchool.match !== undefined) return foundSchool
+  const competitivenessMap = {
+    'extreme': 88,
+    'very_high': 78,
+    'high': 68,
+    'moderate': 55,
+    'accessible': 45
+  }
+  return {
+    ...foundSchool,
+    match: foundSchool.admissionCriteria
+      ? competitivenessMap[foundSchool.admissionCriteria.competitiveness] || 50
+      : 50
+  }
 })
 
 const isFavorite = computed(() => {

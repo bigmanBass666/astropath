@@ -1,7 +1,11 @@
 /**
  * AI API 调用工具模块
  * 支持多provider切换：OpenAI、Anthropic、国内供应商、其他
+ * 支持代理模式：通过 Cloudflare Worker 代理隐藏 API Key
  */
+
+const USE_PROXY = true;  // 是否使用代理模式
+const PROXY_URL = 'https://liuxue-ai-proxy.bigmanbass666.workers.dev';  // Cloudflare Worker 代理地址
 
 // 自定义错误类
 export class AIError extends Error {
@@ -33,7 +37,8 @@ export async function sendMessageToAI(providerId, messages, options = {}) {
     throw new AIError('config', 'AI服务提供商未找到，请检查配置')
   }
 
-  if (!provider.apiKey || !provider.baseUrl) {
+  const isProxyMode = USE_PROXY && provider.useProxy
+  if (!isProxyMode && (!provider.apiKey || !provider.baseUrl)) {
     throw new AIError('config', 'AI服务配置不完整，请完善API Key和Base URL')
   }
 
@@ -52,12 +57,22 @@ export async function sendMessageToAI(providerId, messages, options = {}) {
     const timeout = options.enableThinking ? 120000 : 60000 // 思考模式120秒，普通模式60秒
     const timeoutId = setTimeout(() => controller.abort(), timeout)
 
-    const response = await fetch(`${provider.baseUrl}/chat/completions`, {
+    // 构建请求 URL 和 headers
+    const isProxyMode = USE_PROXY && provider.useProxy
+    const requestUrl = isProxyMode ? PROXY_URL : `${provider.baseUrl}/chat/completions`
+    
+    const headers = {
+      'Content-Type': 'application/json'
+    }
+    
+    // 代理模式下不需要 Authorization header（key 在 Worker 端）
+    if (!isProxyMode) {
+      headers['Authorization'] = `Bearer ${provider.apiKey}`
+    }
+
+    const response = await fetch(requestUrl, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${provider.apiKey}`
-      },
+      headers: headers,
       body: JSON.stringify(requestBody),
       signal: controller.signal
     })
@@ -360,7 +375,8 @@ export async function testProviderConnection(providerId) {
     return { success: false, error: 'Provider未找到', errorType: 'config' }
   }
 
-  if (!provider.apiKey || !provider.baseUrl) {
+  const isProxyMode = USE_PROXY && provider.useProxy
+  if (!isProxyMode && (!provider.apiKey || !provider.baseUrl)) {
     return { success: false, error: '配置不完整', errorType: 'config' }
   }
 
@@ -384,7 +400,7 @@ export async function testProviderConnection(providerId) {
 }
 
 // 为不同智能体构建系统提示词
-export function buildSystemPrompt(agentId) {
+export function buildSystemPrompt(agentId, userData = null) {
   const prompts = {
     consultant: `你是一位专业的留学顾问，帮助用户解答关于出国留学的整体规划问题。
 你的回答应该专业、全面、实用，涵盖选校、申请、时间规划等方面。`,
@@ -396,7 +412,64 @@ export function buildSystemPrompt(agentId) {
 你需要针对不同国家（美国、英国、澳洲、加拿大等）提供具体的签证指导。`
   }
 
-  return prompts[agentId] || '你是一个有用的助手。'
+  let basePrompt = prompts[agentId] || '你是一个有用的助手。'
+
+  if (userData) {
+    const userInfo = formatUserInfoForPrompt(userData)
+    if (userInfo) {
+      basePrompt = `【用户背景信息】
+${userInfo}
+
+【助手角色】
+${basePrompt}
+
+【重要】请根据上述用户背景信息，提供个性化的建议和回答。如果用户的问题涉及选校、申请策略等，请结合他们的GPA、院校背景、语言成绩等具体情况进行推荐。`
+    }
+  }
+
+  return basePrompt
+}
+
+function formatUserInfoForPrompt(userData) {
+  if (!userData || !userData.basic) return null
+
+  const basic = userData.basic
+  const academic = userData.academic || {}
+  const practice = userData.practice || {}
+
+  const universityMap = {
+    '985': '985院校',
+    '211': '211院校',
+    'overseas': '海外院校',
+    'regular': '普通本科'
+  }
+
+  const parts = []
+
+  if (basic.name) parts.push(`姓名：${basic.name}`)
+  if (basic.university) parts.push(`在读院校：${universityMap[basic.university] || basic.university}`)
+  if (basic.gpa) parts.push(`GPA：${typeof basic.gpa === 'number' ? basic.gpa.toFixed(1) : basic.gpa}/4.0`)
+  if (basic.language) parts.push(`语言成绩：${basic.language}`)
+  if (academic.degree) parts.push(`学历层次：${academic.degree}`)
+  if (academic.majors && academic.majors.length > 0) parts.push(`专业方向：${academic.majors.join('、')}`)
+  if (academic.averageScore) parts.push(`均分：${academic.averageScore}/100`)
+
+  if (academic.research && academic.research.length > 0) {
+    const researchList = academic.research.map(r => `${r.name}（${r.role}，${r.duration}）`).join('、')
+    parts.push(`科研经历：${researchList}`)
+  }
+
+  if (practice.internships && practice.internships.length > 0) {
+    const internshipList = practice.internships.map(i => `${i.company}（${i.position}）`).join('、')
+    parts.push(`实习经历：${internshipList}`)
+  }
+
+  if (practice.competitions && practice.competitions.length > 0) {
+    const compList = practice.competitions.map(c => `${c.name}（${c.level}-${c.award}）`).join('、')
+    parts.push(`竞赛获奖：${compList}`)
+  }
+
+  return parts.length > 0 ? parts.join('\n') : null
 }
 
 // 生成评估报告提示词
