@@ -8,12 +8,12 @@
         class="ranking-badge"
         :class="rankingClass"
       >
-        <component 
-          :is="rankingIcon" 
-          :weight="rankingWeight"
+        <el-icon
           :size="20"
           class="ranking-icon"
-        />
+        >
+          <component :is="rankingIcon" />
+        </el-icon>
         <span class="ranking-text">#{{ recommendation.ranking }}</span>
       </div>
       <div class="header-actions">
@@ -96,9 +96,8 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
-import { Star, StarFilled, ChatDotRound, View, QuestionFilled } from '@element-plus/icons-vue'
-import { Trophy, Medal, Award, Circle } from '@phosphor-icons/vue'
+import { computed, h } from 'vue'
+import { Star, StarFilled, ChatDotRound, View, QuestionFilled, Trophy, Medal, CircleCheck, CollectionTag } from '@element-plus/icons-vue'
 import { schoolsData } from '@/utils/recommendationEngine'
 
 const props = defineProps({
@@ -130,15 +129,11 @@ const rankingIcon = computed(() => {
   const rank = props.recommendation.ranking
   if (rank === 1) return Trophy
   if (rank === 2) return Medal
-  if (rank === 3) return Award
-  return Circle
+  if (rank === 3) return CollectionTag
+  return CircleCheck
 })
 
-const rankingWeight = computed(() => {
-  const rank = props.recommendation.ranking
-  if (rank <= 3) return 'fill'
-  return 'regular'
-})
+
 
 const matchColor = computed(() => {
   const score = props.recommendation.matchScore

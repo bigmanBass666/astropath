@@ -408,13 +408,14 @@ onUnmounted(() => {
 /* ===== Hero区域 ===== */
 .hero {
   position: relative;
-  background: var(--gradient-primary);
-  color: white;
+  background: var(--gradient-hero);
+  color: var(--color-text-primary);
   padding: 100px 120px 100px;
   text-align: center;
   overflow: hidden;
   opacity: var(--hero-opacity, 1);
   transform: translateY(calc(var(--parallax-y, 0) * -0.3));
+  border-bottom: 1px solid var(--color-border);
 }
 
 /* 动态粒子背景 - 优化性能 */
@@ -428,23 +429,23 @@ onUnmounted(() => {
 .particle {
   position: absolute;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(30, 58, 95, 0.05);
   animation: particle-float 6s ease-in-out infinite;
   will-change: transform;
   transform: translateZ(0);
 }
 
 .p1 { width: 80px; height: 80px; top: 10%; left: 5%; animation-duration: 8s; animation-delay: 0s; }
-.p2 { width: 120px; height: 120px; top: 20%; right: 10%; animation-duration: 10s; animation-delay: 1s; background: rgba(255,255,255,0.08); }
+.p2 { width: 120px; height: 120px; top: 20%; right: 10%; animation-duration: 10s; animation-delay: 1s; background: rgba(30, 58, 95, 0.04); }
 .p3 { width: 60px; height: 60px; top: 60%; left: 15%; animation-duration: 7s; animation-delay: 2s; }
-.p4 { width: 100px; height: 100px; bottom: 20%; right: 20%; animation-duration: 9s; animation-delay: 0.5s; background: rgba(255,255,255,0.06); }
+.p4 { width: 100px; height: 100px; bottom: 20%; right: 20%; animation-duration: 9s; animation-delay: 0.5s; background: rgba(30, 58, 95, 0.03); }
 
-/* 渐变叠加动画 */
+/* 渐变叠加动画 - 学术风格 */
 .hero-gradient-overlay {
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse at 30% 50%, rgba(79, 70, 229, 0.3) 0%, transparent 50%),
-              radial-gradient(ellipse at 70% 50%, rgba(124, 58, 237, 0.3) 0%, transparent 50%);
+  background: radial-gradient(ellipse at 30% 50%, rgba(30, 58, 95, 0.06) 0%, transparent 50%),
+              radial-gradient(ellipse at 70% 50%, rgba(184, 134, 11, 0.04) 0%, transparent 50%);
   animation: gradient-shift 8s ease-in-out infinite alternate;
   pointer-events: none;
 }
@@ -470,23 +471,28 @@ onUnmounted(() => {
   font-size: 52px;
   font-weight: var(--font-bold);
   margin-bottom: var(--space-6);
-  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
   letter-spacing: -1px;
   line-height: var(--leading-tight);
-  background: linear-gradient(90deg, #ffffff 0%, rgba(255,255,255,0.9) 50%, #ffffff 100%);
-  background-size: 200% 100%;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  animation: shimmer 3s ease-in-out infinite;
+  color: var(--color-text-primary);
+  font-family: var(--font-family-display);
+  position: relative;
+}
+
+.hero-title::after {
+  content: '';
+  display: block;
+  width: 80px;
+  height: 4px;
+  background: var(--gradient-primary);
+  margin: var(--space-4) auto 0;
+  border-radius: var(--radius-sm);
 }
 
 .hero-subtitle {
   font-size: var(--text-xl);
-  opacity: 0.95;
+  color: var(--color-text-secondary);
   margin-bottom: var(--space-10);
   line-height: var(--leading-relaxed);
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
   min-height: 1.7em;
 }
 
@@ -499,41 +505,40 @@ onUnmounted(() => {
 }
 
 .cta-button {
-  background: var(--color-surface);
-  color: var(--color-primary);
+  background: var(--gradient-primary);
+  color: white;
   font-size: var(--text-lg);
   padding: var(--space-4) var(--space-10);
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-lg);
   font-weight: var(--font-semibold);
   border: none;
   white-space: nowrap;
   transition: all var(--transition-spring);
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--shadow-md);
   min-width: 160px;
 }
 
 .cta-button:hover {
   transform: translateY(-2px) scale(1.02);
-  box-shadow: var(--shadow-xl), var(--shadow-glow-primary);
+  box-shadow: var(--shadow-lg), var(--shadow-glow-primary);
 }
 
 .secondary-button {
-  background: rgba(255, 255, 255, 0.15);
-  color: white;
+  background: transparent;
+  color: var(--color-primary);
   font-size: var(--text-lg);
   padding: var(--space-4) var(--space-10);
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-lg);
   font-weight: var(--font-semibold);
-  border: 2px solid rgba(255, 255, 255, 0.4);
-  backdrop-filter: blur(10px);
+  border: 2px solid var(--color-primary);
   white-space: nowrap;
   transition: all var(--transition-spring);
   min-width: 160px;
 }
 
 .secondary-button:hover {
-  background: rgba(255, 255, 255, 0.25);
-  border-color: rgba(255, 255, 255, 0.6);
+  background: var(--color-primary-50);
+  border-color: var(--color-primary-light);
   transform: translateY(-2px);
 }
 
@@ -543,7 +548,6 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   gap: var(--space-6);
-  opacity: 0.9;
 }
 
 .stat-item {
@@ -557,17 +561,19 @@ onUnmounted(() => {
   font-weight: var(--font-bold);
   line-height: 1;
   margin-bottom: var(--space-1);
+  color: var(--color-primary);
+  font-family: var(--font-family-display);
 }
 
 .stat-desc {
   font-size: var(--text-xs);
-  opacity: 0.8;
+  color: var(--color-text-secondary);
 }
 
 .stat-divider {
   width: 1px;
   height: 40px;
-  background: rgba(255, 255, 255, 0.3);
+  background: var(--color-border);
 }
 
 /* 滚动提示 */
@@ -588,7 +594,7 @@ onUnmounted(() => {
 .scroll-mouse {
   width: 24px;
   height: 38px;
-  border: 2px solid rgba(255, 255, 255, 0.6);
+  border: 2px solid var(--color-text-tertiary);
   border-radius: 12px;
   display: flex;
   justify-content: center;
@@ -598,7 +604,7 @@ onUnmounted(() => {
 .scroll-wheel {
   width: 4px;
   height: 8px;
-  background: rgba(255, 255, 255, 0.8);
+  background: var(--color-text-secondary);
   border-radius: 2px;
   animation: scroll-wheel 2s ease-in-out infinite;
 }
@@ -610,7 +616,7 @@ onUnmounted(() => {
 
 .scroll-indicator span {
   font-size: var(--text-xs);
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--color-text-secondary);
 }
 
 /* ===== Features区域 ===== */
@@ -792,13 +798,15 @@ onUnmounted(() => {
 
 /* ===== CTA区域 ===== */
 .cta-section {
-  background: var(--gradient-primary);
+  background: var(--color-background-warm);
   padding: var(--space-20) var(--space-24);
   margin-bottom: var(--space-10);
   text-align: center;
   opacity: 0;
   transform: translateY(30px);
   transition: opacity var(--transition-slow), transform var(--transition-slow);
+  border-top: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .cta-section.is-visible {
@@ -814,33 +822,34 @@ onUnmounted(() => {
 }
 
 .cta-content h2 {
-  color: white;
+  color: var(--color-text-primary);
   font-size: var(--text-3xl);
   font-weight: var(--font-bold);
   margin-bottom: var(--space-4);
+  font-family: var(--font-family-display);
 }
 
 .cta-content p {
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--color-text-secondary);
   font-size: var(--text-lg);
   margin-bottom: var(--space-8);
 }
 
 .cta-final-button {
-  background: var(--color-surface);
-  color: var(--color-primary);
+  background: var(--gradient-primary);
+  color: white;
   font-size: var(--text-lg);
   padding: var(--space-4) var(--space-12);
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-lg);
   font-weight: var(--font-semibold);
   border: none;
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--shadow-md);
   transition: all var(--transition-spring);
 }
 
 .cta-final-button:hover {
   transform: translateY(-2px) scale(1.02);
-  box-shadow: var(--shadow-xl), var(--shadow-glow-primary);
+  box-shadow: var(--shadow-lg), var(--shadow-glow-primary);
 }
 
 /* ===== 返回顶部按钮 ===== */
@@ -851,14 +860,14 @@ onUnmounted(() => {
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background: var(--gradient-primary);
-  color: white;
-  border: none;
+  background: var(--color-surface);
+  color: var(--color-primary);
+  border: 2px solid var(--color-primary);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: var(--shadow-glow-primary);
+  box-shadow: var(--shadow-md);
   transition: all var(--transition-normal);
   z-index: 999;
   opacity: 0;
@@ -871,8 +880,10 @@ onUnmounted(() => {
 }
 
 .back-to-top:hover {
+  background: var(--color-primary);
+  color: white;
   transform: translateY(-4px);
-  box-shadow: var(--shadow-xl), var(--shadow-glow-primary);
+  box-shadow: var(--shadow-lg);
 }
 
 /* ===== 页脚样式 ===== */
@@ -901,10 +912,8 @@ onUnmounted(() => {
   font-size: var(--text-xl);
   font-weight: var(--font-bold);
   margin-bottom: var(--space-4);
-  background: var(--gradient-primary);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: white;
+  font-family: var(--font-family-display);
 }
 
 .footer-brand p {
@@ -944,7 +953,7 @@ onUnmounted(() => {
 
 .footer-links a:hover,
 .footer-help a:hover {
-  color: var(--color-primary-light);
+  color: #D4AF37;
 }
 
 .footer-contact p {
@@ -958,7 +967,7 @@ onUnmounted(() => {
 
 .footer-contact .el-icon {
   font-size: var(--text-base);
-  color: var(--color-primary-light);
+  color: #D4AF37;
 }
 
 .social-links {
@@ -981,8 +990,8 @@ onUnmounted(() => {
 }
 
 .social-link:hover {
-  background: var(--color-primary);
-  color: white;
+  background: #D4AF37;
+  color: var(--color-text-primary);
   transform: translateY(-2px);
 }
 

@@ -150,7 +150,7 @@
             <div class="message">
               <div
                 class="message-avatar"
-                :style="{ background: msg.role === 'user' ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : currentAgent?.gradient }"
+                :style="{ background: msg.role === 'user' ? 'var(--gradient-primary)' : currentAgent?.gradient }"
               >
                 <el-icon :size="16">
                   <User v-if="msg.role === 'user'" />
@@ -418,7 +418,7 @@ const agents = ref([
     name: '留学顾问',
     role: '整体规划咨询',
     icon: School,
-    gradient: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+    gradient: 'var(--gradient-primary)',
     welcome: '您好！我是您的留学顾问。我可以帮您制定整体的留学规划，包括背景提升、时间安排、申请策略等。请告诉我您的留学目标或任何困惑，我会为您提供专业建议。',
     quickPrompts: ['帮我制定留学时间规划', '我的背景能申请什么学校？', '需要准备哪些申请材料？']
   },
@@ -427,7 +427,7 @@ const agents = ref([
     name: '文书导师',
     role: '文书写作指导',
     icon: Document,
-    gradient: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+    gradient: 'linear-gradient(135deg, #5D4E37 0%, #8B7355 100%)',
     welcome: '您好！我是您的文书导师。我专注于帮助您撰写高质量的申请文书，包括个人陈述、简历、推荐信等。请告诉我您需要什么样的文书帮助，我会为您提供指导和建议。',
     quickPrompts: ['如何写好个人陈述？', '推荐信应该包含什么？', '帮我修改这段文书']
   },
@@ -436,7 +436,7 @@ const agents = ref([
     name: '选校专家',
     role: '院校选择建议',
     icon: Files,
-    gradient: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+    gradient: 'linear-gradient(135deg, #2D5A8E 0%, #486581 100%)',
     welcome: '您好！我是您的选校专家。我拥有丰富的院校数据库，可以根据您的背景和需求，为您推荐合适的学校和专业。请告诉我您的GPA、语言成绩和意向方向，我会为您制定选校策略。',
     quickPrompts: ['根据我的背景推荐学校', '这所学校录取难度如何？', '比较这几所学校的优劣']
   },
@@ -445,7 +445,7 @@ const agents = ref([
     name: '签证助手',
     role: '签证申请指导',
     icon: Ticket,
-    gradient: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+    gradient: 'linear-gradient(135deg, #1E3A5F 0%, #2D5A8E 100%)',
     welcome: '您好！我是您的签证助手。我熟悉各国签证申请流程，可以为您解答关于签证材料、面签准备、签证政策等方面的问题。请告诉我您的签证需求，我会为您提供详细指导。',
     quickPrompts: ['签证需要准备哪些材料？', '面签常见问题有哪些？', '签证被拒怎么办？']
   }
@@ -474,6 +474,8 @@ const CHAT_STATE_KEY = 'ai_chat_current_state'
 
 let isRestoringState = false
 let isFreshEntry = true
+let abortController = null
+let isPageVisible = ref(true)
 
 const loadUserData = () => {
   const saved = localStorage.getItem('assessment_form')
@@ -527,7 +529,10 @@ const saveCurrentState = () => {
     currentAgentId: currentAgentId.value,
     isGenerating: isGenerating.value,
     streamingContent: streamingContent.value,
-    currentConversationId: currentConversationId.value
+    streamingReasoning: streamingReasoning.value,
+    currentConversationId: currentConversationId.value,
+    enableThinking: enableThinking.value,
+    savedAt: Date.now()
   }
   console.log('[AIChat] Saving state:', state)
   sessionStorage.setItem(CHAT_STATE_KEY, JSON.stringify(state))
@@ -544,17 +549,22 @@ const loadCurrentState = () => {
         isRestoringState = true
         currentAgentId.value = state.currentAgentId || 'consultant'
         currentConversationId.value = state.currentConversationId || null
+        enableThinking.value = state.enableThinking || false
         messages.value = state.messages
         console.log('[AIChat] Restored messages:', messages.value.length, 'agentId:', currentAgentId.value)
+        
+        // 恢复生成中的状态
         if (state.isGenerating) {
-          isGenerating.value = false
-          streamingContent.value = ''
-          const lastMsg = messages.value[messages.value.length - 1]
-          if (lastMsg && lastMsg.role === 'assistant' && lastMsg.content === '') {
-            messages.value.pop()
-          }
+          streamingContent.value = state.streamingContent || ''
+          streamingReasoning.value = state.streamingReasoning || ''
+          // 标记为生成中，但不自动继续，等待用户操作或页面可见性恢复
+          isGenerating.value = true
+          console.log('[AIChat] Restored generating state, content:', streamingContent.value)
         }
         isRestoringState = false
+        
+        // 恢复后滚动到底部
+        nextTick(() => scrollToBottom(true))
       }
     } catch (e) {
       console.error('Failed to load chat state:', e)
@@ -708,7 +718,10 @@ const sendMessage = async () => {
     }
     console.log('[AIChat] Sending request with options:', requestOptions, 'enableThinking:', enableThinking.value)
     
-    const stream = await sendMessageToAI(selectedProvider.value, apiMessages, requestOptions)
+    // 创建新的 AbortController
+    abortController = new AbortController()
+    
+    const stream = await sendMessageToAI(selectedProvider.value, apiMessages, requestOptions, abortController.signal)
 
     console.log('[AIChat] Got stream, starting to read...')
     let chunkCount = 0
@@ -776,6 +789,8 @@ const sendMessage = async () => {
     isGenerating.value = false
     streamingContent.value = ''
     streamingReasoning.value = ''
+    abortController = null
+    saveCurrentState()
     await nextTick(() => scrollToBottom())
   }
 }
@@ -939,8 +954,15 @@ const exportConversation = () => {
 }
 
 const stopGeneration = () => {
+  // 中止正在进行的请求
+  if (abortController) {
+    abortController.abort()
+    abortController = null
+  }
   isGenerating.value = false
   streamingContent.value = ''
+  streamingReasoning.value = ''
+  saveCurrentState()
 }
 
 const saveConversation = () => {
@@ -1014,6 +1036,31 @@ watch(currentAgentId, () => {
   saveCurrentState()
 })
 
+// 页面可见性变化处理
+const handleVisibilityChange = () => {
+  const wasHidden = !isPageVisible.value
+  isPageVisible.value = document.visibilityState === 'visible'
+  
+  console.log('[AIChat] Visibility changed:', document.visibilityState, 'wasHidden:', wasHidden)
+  
+  if (isPageVisible.value && wasHidden) {
+    // 页面从隐藏变为可见
+    console.log('[AIChat] Page became visible, current generating state:', isGenerating.value)
+    
+    // 如果正在生成中，确保状态是最新的
+    if (isGenerating.value) {
+      // 强制保存当前状态
+      saveCurrentState()
+      // 滚动到底部显示最新内容
+      nextTick(() => scrollToBottom(true))
+    }
+  } else if (!isPageVisible.value) {
+    // 页面即将隐藏，保存当前状态
+    console.log('[AIChat] Page hidden, saving state')
+    saveCurrentState()
+  }
+}
+
 onMounted(() => {
   loadProviders()
   loadUserData()
@@ -1028,10 +1075,23 @@ onMounted(() => {
   }
 
   loadCurrentState()
+  
+  // 监听页面可见性变化
+  document.addEventListener('visibilitychange', handleVisibilityChange)
 })
 
 onUnmounted(() => {
-  clearCurrentState()
+  // 页面卸载前保存状态（不清除）
+  saveCurrentState()
+  
+  // 移除事件监听
+  document.removeEventListener('visibilitychange', handleVisibilityChange)
+  
+  // 中止正在进行的请求
+  if (abortController) {
+    abortController.abort()
+  }
+  
   isFreshEntry = true
 })
 </script>
@@ -1103,9 +1163,9 @@ onUnmounted(() => {
 }
 
 .sidebar-toggle-btn:hover {
-  background: #f1f5f9;
-  border-color: #667eea;
-  color: #667eea;
+  background: var(--color-primary-50);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
 }
 
 .sidebar-title {
@@ -1150,7 +1210,7 @@ onUnmounted(() => {
 }
 
 .agent-item.is-active {
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%);
+  background: var(--color-primary-50);
   position: relative;
 }
 
@@ -1162,7 +1222,7 @@ onUnmounted(() => {
   transform: translateY(-50%);
   width: 3px;
   height: 24px;
-  background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+  background: var(--gradient-primary);
   border-radius: 0 3px 3px 0;
 }
 
@@ -1176,7 +1236,7 @@ onUnmounted(() => {
 }
 
 .sidebar.is-collapsed .agent-item.is-active .agent-icon {
-  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.3), 0 4px 12px rgba(102, 126, 234, 0.25);
+  box-shadow: 0 0 0 2px rgba(30, 58, 95, 0.3), 0 4px 12px rgba(30, 58, 95, 0.25);
   transform: scale(1.05);
 }
 
@@ -1317,7 +1377,7 @@ onUnmounted(() => {
 
 .welcome-role-large {
   font-size: 15px;
-  color: #6366f1;
+  color: var(--color-primary);
   font-weight: 500;
   margin: 0 0 24px 0;
 }
@@ -1358,9 +1418,9 @@ onUnmounted(() => {
 }
 
 .quick-prompt-large:hover {
-  border-color: #6366f1;
-  color: #6366f1;
-  background: #f8fafc;
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background: var(--color-primary-50);
   transform: translateY(-1px);
 }
 
@@ -1402,7 +1462,7 @@ onUnmounted(() => {
 }
 
 .message-wrapper.is-user .message-content {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--gradient-primary);
   color: white;
   border-color: transparent;
 }
@@ -1450,7 +1510,7 @@ onUnmounted(() => {
   display: inline-block;
   width: 2px;
   height: 18px;
-  background: #667eea;
+  background: var(--color-primary);
   margin-left: 4px;
   animation: blink 1s infinite;
   vertical-align: middle;
@@ -1525,8 +1585,8 @@ onUnmounted(() => {
 }
 
 .input-box:focus-within {
-  border-color: #667eea;
-  box-shadow: 0 4px 24px rgba(102, 126, 234, 0.15), 0 1px 3px rgba(0, 0, 0, 0.04);
+  border-color: var(--color-primary);
+  box-shadow: 0 4px 24px rgba(30, 58, 95, 0.15), 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
 .message-input {
@@ -1559,28 +1619,28 @@ onUnmounted(() => {
   align-items: center;
   gap: 8px;
   padding: 10px 14px;
-  background: linear-gradient(135deg, #f0f4ff 0%, #f8faff 100%);
-  border: 1px solid #e0e7ff;
+  background: var(--color-primary-50);
+  border: 1px solid var(--color-primary-100);
   border-radius: 12px;
   transition: all 0.25s ease;
   min-width: 120px;
 }
 
 .model-selector:hover {
-  border-color: #c7d2fe;
-  background: linear-gradient(135deg, #e8edff 0%, #f0f4ff 100%);
-  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.12);
+  border-color: var(--color-primary-200);
+  background: var(--color-primary-50);
+  box-shadow: 0 2px 8px rgba(30, 58, 95, 0.12);
 }
 
 .model-selector .el-icon {
-  color: #667eea;
+  color: var(--color-primary);
   flex-shrink: 0;
 }
 
 .model-name {
   font-size: 13px;
   font-weight: 500;
-  color: #4c51bf;
+  color: var(--color-primary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1602,7 +1662,7 @@ onUnmounted(() => {
 }
 
 .model-option .el-icon {
-  color: #667eea;
+  color: var(--color-primary);
 }
 
 .config-model-btn {
@@ -1633,21 +1693,21 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--gradient-primary);
   border: none;
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.35);
+  box-shadow: 0 4px 12px rgba(30, 58, 95, 0.35);
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .send-btn:hover {
-  background: linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%);
-  box-shadow: 0 6px 16px rgba(102, 126, 234, 0.45);
+  background: var(--gradient-primary);
+  box-shadow: 0 6px 16px rgba(30, 58, 95, 0.45);
   transform: translateY(-1px);
 }
 
 .send-btn:active {
   transform: translateY(0);
-  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.35);
+  box-shadow: 0 2px 8px rgba(30, 58, 95, 0.35);
 }
 
 .send-btn:disabled {
@@ -1715,7 +1775,7 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #667eea;
+  color: var(--color-primary);
   flex-shrink: 0;
 }
 

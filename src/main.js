@@ -93,6 +93,7 @@ app.use(ElementPlus)
 // 路由守卫：设置页面标题
 router.beforeEach((to) => {
   document.title = `${to.meta.title || '首页'} - 一站式智能留学规划平台`
+  return true
 })
 
 // 暴露 router 到 window 以便测试和调试

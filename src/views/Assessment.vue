@@ -1714,13 +1714,13 @@ const renderRadarChart = () => {
         indicators.forEach((name, index) => {
           html += `<div style="display:flex;justify-content:space-between;gap:15px;">
             <span>${name}:</span>
-            <span style="font-weight:bold;color:#667eea;">${data[index].toFixed(1)}/5.0</span>
+            <span style="font-weight:bold;color:var(--color-primary);">${data[index].toFixed(1)}/5.0</span>
           </div>`
         })
         return html
       },
       backgroundColor: 'rgba(255, 255, 255, 0.95)',
-      borderColor: '#667eea',
+      borderColor: 'var(--color-primary)',
       borderWidth: 1,
       textStyle: {
         color: '#303133',
@@ -1743,9 +1743,9 @@ const renderRadarChart = () => {
       splitArea: {
         show: true,
         areaStyle: {
-          color: ['rgba(102, 126, 234, 0.1)', 'rgba(102, 126, 234, 0.15)',
-                 'rgba(102, 126, 234, 0.2)', 'rgba(102, 126, 234, 0.25)',
-                 'rgba(102, 126, 234, 0.3)']
+          color: ['rgba(30, 58, 95, 0.1)', 'rgba(30, 58, 95, 0.15)',
+                 'rgba(30, 58, 95, 0.2)', 'rgba(30, 58, 95, 0.25)',
+                 'rgba(30, 58, 95, 0.3)']
         }
       },
       splitLine: {
@@ -2004,18 +2004,18 @@ onUnmounted(() => {
 
 /* 修复 el-radio-button 的 active 状态样式 - 仅选中项 */
 :deep(.el-radio-button.is-active .el-radio-button__inner) {
-  background-color: #667eea !important;
-  border-color: #667eea !important;
+  background-color: var(--color-primary) !important;
+  border-color: var(--color-primary) !important;
   color: #fff !important;
-  box-shadow: -1px 0 0 0 #667eea !important;
+  box-shadow: -1px 0 0 0 var(--color-primary) !important;
 }
 
 /* 修复 el-checkbox-button 的 active 状态样式 - 仅选中项 */
 :deep(.el-checkbox-button.is-checked .el-checkbox-button__inner) {
-  background-color: #667eea !important;
-  border-color: #667eea !important;
+  background-color: var(--color-primary) !important;
+  border-color: var(--color-primary) !important;
   color: #fff !important;
-  box-shadow: -1px 0 0 0 #667eea !important;
+  box-shadow: -1px 0 0 0 var(--color-primary) !important;
 }
 
 /* 未选中的 radio button 和 checkbox button 样式 - 白色背景 */
@@ -2028,13 +2028,13 @@ onUnmounted(() => {
 /* 修复 el-radio-button 和 el-checkbox-button 的 hover 状态 */
 :deep(.el-radio-button:not(.is-active) .el-radio-button__inner:hover),
 :deep(.el-checkbox-button:not(.is-checked) .el-checkbox-button__inner:hover) {
-  color: #667eea !important;
+  color: var(--color-primary) !important;
 }
 
 /* 修复 el-radio-button 和 el-checkbox-button 的 focus 状态 */
 :deep(.el-radio-button:focus:not(.is-focus):not(:active):not(.is-disabled) .el-radio-button__inner),
 :deep(.el-checkbox-button:focus:not(.is-focus):not(:active):not(.is-disabled) .el-checkbox-button__inner) {
-  box-shadow: 0 0 2px 2px rgba(102, 126, 234, 0.3) !important;
+  box-shadow: 0 0 2px 2px rgba(30, 58, 95, 0.3) !important;
 }
 
 /* 使用 flexbox 确保按钮在容器内水平居中 */
@@ -2088,7 +2088,7 @@ onUnmounted(() => {
 
 .gpa-display {
   margin-left: 10px;
-  color: #667eea;
+  color: var(--color-primary);
   font-weight: bold;
 }
 
@@ -2136,7 +2136,7 @@ onUnmounted(() => {
   display: block;
   margin-top: 10px;
   font-size: 18px;
-  color: #667eea;
+  color: var(--color-primary);
   font-weight: bold;
 }
 
@@ -2161,7 +2161,7 @@ onUnmounted(() => {
 
 .analysis-card h4 {
   margin: 0 0 15px 0;
-  color: #667eea;
+  color: var(--color-primary);
   font-size: 16px;
   display: flex;
   align-items: center;
@@ -2193,13 +2193,13 @@ onUnmounted(() => {
 }
 
 .grade-excellent { background: #f0f9eb; color: #67c23a; }
-.grade-good { background: #ecf5ff; color: #667eea; }
+.grade-good { background: var(--color-primary-50); color: var(--color-primary); }
 .grade-medium { background: #fdf6ec; color: #e6a23c; }
 .grade-pass { background: #fef0f0; color: #f56c6c; }
 .grade-low { background: #fef0f0; color: #f56c6c; }
 
 .score-excellent { background: #f0f9eb; color: #67c23a; }
-.score-good { background: #ecf5ff; color: #667eea; }
+.score-good { background: var(--color-primary-50); color: var(--color-primary); }
 .score-low { background: #fef0f0; color: #f56c6c; }
 
 .analysis-detail {
@@ -2243,7 +2243,7 @@ onUnmounted(() => {
   margin-bottom: 10px;
   background: #fff;
   border-radius: 8px;
-  border-left: 4px solid #667eea;
+  border-left: 4px solid var(--color-primary);
   font-size: 14px;
   color: #303133;
   line-height: 1.6;
@@ -2254,7 +2254,7 @@ onUnmounted(() => {
 }
 
 .report-details li strong {
-  color: #667eea;
+  color: var(--color-primary);
   font-weight: 600;
 }
 
@@ -2287,12 +2287,12 @@ onUnmounted(() => {
   background: #f5f7fa;
   margin: 10px 0;
   border-radius: 8px;
-  border-left: 4px solid #667eea;
+  border-left: 4px solid var(--color-primary);
   transition: all 0.3s ease;
 }
 
 .list-item.enhanced:hover {
-  background: #ecf5ff;
+  background: var(--color-primary-50);
   transform: translateX(5px);
 }
 
@@ -2340,8 +2340,8 @@ onUnmounted(() => {
 .ai-analysis-highlight {
   margin: 0 0 30px 0;
   background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-  border: 2px solid #6366f1;
-  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.15);
+  border: 2px solid var(--color-primary);
+  box-shadow: 0 4px 20px rgba(30, 58, 95, 0.15);
   position: relative;
 }
 
@@ -2350,13 +2350,13 @@ onUnmounted(() => {
   position: absolute;
   top: -12px;
   left: 24px;
-  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  background: var(--gradient-primary);
   color: white;
   padding: 4px 16px;
   border-radius: 12px;
   font-size: 12px;
   font-weight: 600;
-  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+  box-shadow: 0 2px 8px rgba(30, 58, 95, 0.3);
 }
 
 .ai-analysis-highlight .ai-header {
@@ -2382,7 +2382,7 @@ onUnmounted(() => {
 }
 
 .ai-header h4 .el-icon {
-  color: #6366f1;
+  color: var(--color-primary);
 }
 
 .ai-content {
@@ -2454,11 +2454,11 @@ onUnmounted(() => {
   border-radius: 4px;
   font-family: monospace;
   font-size: 14px;
-  color: #6366f1;
+  color: var(--color-primary);
 }
 
 .ai-markdown :deep(blockquote) {
-  border-left: 4px solid #6366f1;
+  border-left: 4px solid var(--color-primary);
   padding-left: 16px;
   margin: 16px 0;
   color: #64748b;
@@ -2469,7 +2469,7 @@ onUnmounted(() => {
   display: inline-block;
   width: 2px;
   height: 18px;
-  background: #6366f1;
+  background: var(--color-primary);
   margin-left: 4px;
   animation: blink 1s infinite;
   vertical-align: middle;
@@ -2568,15 +2568,15 @@ onUnmounted(() => {
   align-items: center;
   gap: 8px;
   font-weight: 600;
-  color: #6366f1;
+  color: var(--color-primary);
 }
 
 .reasoning-title .el-icon {
-  color: #6366f1;
+  color: var(--color-primary);
 }
 
 .toggle-icon {
-  color: #6366f1;
+  color: var(--color-primary);
   transition: transform 0.3s ease;
 }
 
