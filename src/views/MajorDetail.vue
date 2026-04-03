@@ -198,15 +198,15 @@ onMounted(() => {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  color: #667eea;
-  border-color: #667eea;
+  color: var(--color-primary);
+  border-color: var(--color-primary);
   font-size: 14px;
 }
 
 .back-btn:hover {
-  background: rgba(102, 126, 234, 0.08);
-  border-color: #667eea;
-  color: #667eea;
+  background: var(--color-primary-50);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
 }
 
 /* 主详情卡片 */
@@ -218,7 +218,7 @@ onMounted(() => {
 
 /* 头部信息 */
 .detail-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--gradient-primary);
   border-radius: 16px;
   padding: 32px;
   color: white;
@@ -290,7 +290,7 @@ onMounted(() => {
 
 .info-icon {
   font-size: 20px;
-  color: #667eea;
+  color: var(--color-primary);
 }
 
 .info-text {
@@ -355,15 +355,15 @@ onMounted(() => {
 }
 
 .primary-btn {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--gradient-primary);
   border: none;
   color: white;
 }
 
 .primary-btn:hover {
   transform: scale(1.03);
-  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.35);
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  box-shadow: var(--shadow-glow-primary);
+  background: var(--gradient-primary);
 }
 
 /* 响应式设计 */

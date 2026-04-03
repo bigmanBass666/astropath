@@ -227,12 +227,12 @@ const submitPreferences = () => {
   width: 70px;
   height: 70px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--gradient-primary);
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
-  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 8px 25px rgba(30, 58, 95, 0.3);
 }
 
 .ai-welcome h3 {
@@ -248,16 +248,16 @@ const submitPreferences = () => {
 }
 
 .background-summary {
-  background: linear-gradient(135deg, #f8f9ff 0%, #f0f4ff 100%);
+  background: var(--color-primary-50);
   border-radius: 12px;
   padding: 20px;
   margin-bottom: 30px;
-  border: 1px solid #e0e7ff;
+  border: 1px solid var(--color-primary-100);
 }
 
 .summary-text {
   margin: 0 0 12px 0;
-  color: #4c51bf;
+  color: var(--color-primary);
   font-weight: 500;
 }
 
@@ -298,7 +298,7 @@ const submitPreferences = () => {
   justify-content: center;
   width: 24px;
   height: 24px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--gradient-primary);
   color: white;
   border-radius: 50%;
   font-size: 13px;
@@ -332,13 +332,13 @@ const submitPreferences = () => {
 
 .priority-tag:hover,
 .country-tag:hover {
-  border-color: #667eea;
-  color: #667eea;
+  border-color: var(--color-primary);
+  color: var(--color-primary);
 }
 
 .priority-tag.is-checked,
 .country-tag.is-checked {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--gradient-primary);
   border-color: transparent;
   color: white;
 }
@@ -363,14 +363,14 @@ const submitPreferences = () => {
   padding: 14px 40px;
   font-size: 16px;
   border-radius: 25px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--gradient-primary);
   border: none;
-  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+  box-shadow: 0 8px 25px rgba(30, 58, 95, 0.3);
 }
 
 .submit-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 12px 30px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 12px 30px rgba(30, 58, 95, 0.4);
 }
 
 .submit-btn .el-icon {

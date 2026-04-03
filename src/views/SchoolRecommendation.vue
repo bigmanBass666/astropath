@@ -181,6 +181,19 @@ const getScoreColor = (score) => {
   return '#f56c6c'
 }
 
+// 生成评估数据的简单哈希（用于检测评估数据是否变化）
+const generateAssessmentHash = (assessmentData) => {
+  if (!assessmentData) return ''
+  // 提取关键字段生成哈希
+  const keyData = {
+    basic: assessmentData.basic,
+    academic: assessmentData.academic,
+    practice: assessmentData.practice,
+    savedAt: assessmentData.savedAt
+  }
+  return btoa(JSON.stringify(keyData))
+}
+
 // 处理偏好提交
 const handlePreferenceSubmit = async (preference) => {
   userPreference.value = preference
@@ -202,12 +215,13 @@ const handlePreferenceSubmit = async (preference) => {
     summary.value = result.summary
     currentStep.value = 'recommendation'
     
-    // 保存到localStorage
+    // 保存到localStorage，同时记录评估数据的标识（用于检测评估数据是否变化）
     localStorage.setItem('school_recommendations', JSON.stringify({
       recommendations: result.recommendations,
       summary: result.summary,
       preference: preference,
-      timestamp: Date.now()
+      timestamp: Date.now(),
+      assessmentHash: generateAssessmentHash(assessment.value)
     }))
     
     ElMessage.success('推荐生成完成！')
@@ -313,16 +327,25 @@ onMounted(() => {
   
   // 加载之前的推荐
   const savedRecommendations = localStorage.getItem('school_recommendations')
-  if (savedRecommendations) {
+  if (savedRecommendations && assessment.value) {
     const data = JSON.parse(savedRecommendations)
-    // 检查是否在24小时内
-    if (Date.now() - data.timestamp < 24 * 60 * 60 * 1000) {
+    // 检查是否在24小时内，并且评估数据没有变化
+    const isWithin24Hours = Date.now() - data.timestamp < 24 * 60 * 60 * 1000
+    const currentHash = generateAssessmentHash(assessment.value)
+    const isAssessmentUnchanged = data.assessmentHash === currentHash
+    
+    if (isWithin24Hours && isAssessmentUnchanged) {
       recommendations.value = data.recommendations
       summary.value = data.summary
       userPreference.value = data.preference
       if (recommendations.value.length > 0) {
         currentStep.value = 'recommendation'
       }
+    } else if (!isAssessmentUnchanged) {
+      // 评估数据已变化，清除旧的推荐数据，要求重新生成
+      localStorage.removeItem('school_recommendations')
+      currentStep.value = 'preference'
+      ElMessage.info('检测到背景信息已更新，请重新生成院校推荐')
     }
   }
 })

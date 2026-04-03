@@ -157,7 +157,7 @@ const submitAdjust = () => {
   width: 50px;
   height: 50px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--gradient-primary);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -177,7 +177,7 @@ const submitAdjust = () => {
 }
 
 .welcome-text strong {
-  color: #667eea;
+  color: var(--color-primary);
 }
 
 .summary-text {
@@ -208,7 +208,7 @@ const submitAdjust = () => {
 }
 
 .section-title .el-icon {
-  color: #667eea;
+  color: var(--color-primary);
 }
 
 .alternative .section-title {
@@ -241,7 +241,7 @@ const submitAdjust = () => {
 
 .adjust-input :deep(.el-input-group__append) {
   border-radius: 0 25px 25px 0;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--gradient-primary);
   border-color: transparent;
 }
 

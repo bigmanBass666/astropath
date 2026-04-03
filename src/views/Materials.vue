@@ -592,7 +592,7 @@
             <div class="summary-stat">
               <div
                 class="stat-value"
-                style="color: #667eea;"
+                style="color: var(--color-primary);"
               >
                 {{ completionRate }}%
               </div>
@@ -2074,6 +2074,44 @@ onMounted(() => {
   margin: 0 auto;
 }
 
+/* ===== Tabs 选中状态样式优化 ===== */
+.materials-page :deep(.el-tabs--card > .el-tabs__header) {
+  border-bottom: 2px solid #e4e7ed;
+  margin-bottom: 20px;
+}
+
+.materials-page :deep(.el-tabs--card > .el-tabs__header .el-tabs__nav) {
+  border: none;
+}
+
+.materials-page :deep(.el-tabs--card > .el-tabs__header .el-tabs__item) {
+  border: none;
+  border-bottom: 3px solid transparent;
+  transition: all 0.3s ease;
+  font-size: 15px;
+  padding: 0 24px;
+  height: 44px;
+  line-height: 44px;
+  color: #606266;
+  background: transparent;
+}
+
+.materials-page :deep(.el-tabs--card > .el-tabs__header .el-tabs__item:hover) {
+  color: var(--color-primary);
+  background: rgba(30, 58, 95, 0.05);
+}
+
+.materials-page :deep(.el-tabs--card > .el-tabs__header .el-tabs__item.is-active) {
+  color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
+  background: rgba(30, 58, 95, 0.1);
+  font-weight: 600;
+}
+
+.materials-page :deep(.el-tabs__active-bar) {
+  display: none;
+}
+
 .editor-toolbar {
   display: flex;
   justify-content: space-between;
@@ -2149,7 +2187,7 @@ onMounted(() => {
   font-weight: bold;
   margin: 12px 0 8px 0;
   color: #303133;
-  border-bottom: 2px solid #667eea;
+  border-bottom: 2px solid var(--color-primary);
   padding-bottom: 6px;
 }
 
@@ -2183,7 +2221,7 @@ onMounted(() => {
 
 .rich-editor strong {
   font-weight: bold;
-  color: #667eea;
+  color: var(--color-primary);
 }
 
 .rich-editor em {
@@ -2405,7 +2443,7 @@ onMounted(() => {
 .essay-type-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-  border-color: #667eea;
+  border-color: var(--color-primary);
 }
 
 .essay-type-card .card-icon {
@@ -2445,7 +2483,7 @@ onMounted(() => {
 
 .current-essay-info {
   margin-left: auto;
-  color: #667eea;
+  color: var(--color-primary);
   font-weight: 500;
 }
 
@@ -2484,8 +2522,8 @@ onMounted(() => {
 }
 
 .template-card:hover {
-  border-color: #667eea;
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+  border-color: var(--color-primary);
+  box-shadow: 0 4px 12px rgba(30, 58, 95, 0.15);
 }
 
 .template-name {
@@ -2523,8 +2561,8 @@ onMounted(() => {
 
 .essay-type-badge {
   padding: 4px 12px;
-  background: #ecf5ff;
-  color: #667eea;
+  background: var(--color-primary-50);
+  color: var(--color-primary);
   border-radius: 4px;
   font-size: 13px;
   white-space: nowrap;
@@ -2573,7 +2611,7 @@ onMounted(() => {
 .essay-type-card:hover {
   transform: translateY(-4px);
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-  border-color: #667eea;
+  border-color: var(--color-primary);
 }
 
 .essay-type-card .card-icon {
@@ -2611,9 +2649,9 @@ onMounted(() => {
   color: #303133;
 }
 
-.current-essay-info {
+.template-header .current-essay-info {
   margin-left: auto;
-  color: #667eea;
+  color: var(--color-primary);
   font-weight: 500;
 }
 
@@ -2652,8 +2690,8 @@ onMounted(() => {
 }
 
 .template-card:hover {
-  border-color: #667eea;
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+  border-color: var(--color-primary);
+  box-shadow: 0 4px 12px rgba(30, 58, 95, 0.15);
 }
 
 .template-name {

@@ -984,10 +984,10 @@ onMounted(() => {
 
 /* 修复视图切换 radio button 的 active 状态样式 */
 .view-toggle :deep(.el-radio-button.is-active .el-radio-button__inner) {
-  background-color: #667eea !important;
-  border-color: #667eea !important;
+  background-color: var(--color-primary) !important;
+  border-color: var(--color-primary) !important;
   color: #fff !important;
-  box-shadow: -1px 0 0 0 #667eea !important;
+  box-shadow: -1px 0 0 0 var(--color-primary) !important;
 }
 
 /* 未选中的 radio button 样式 - 白色背景 */
@@ -998,7 +998,7 @@ onMounted(() => {
 
 /* 未选中的 radio button hover 状态 */
 .view-toggle :deep(.el-radio-button:not(.is-active) .el-radio-button__inner:hover) {
-  color: #667eea !important;
+  color: var(--color-primary) !important;
 }
 
 /* 过渡动画 */
@@ -1319,7 +1319,7 @@ onMounted(() => {
 }
 
 .major {
-  color: #667eea;
+  color: var(--color-primary);
   font-weight: 500;
   margin-bottom: 15px;
 }
@@ -1658,7 +1658,7 @@ onMounted(() => {
 }
 
 .compare-info strong {
-  color: #667eea;
+  color: var(--color-primary);
 }
 
 /* 专业对比表格：移动端响应式 */

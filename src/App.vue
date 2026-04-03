@@ -22,13 +22,12 @@
           :default-active="activeMenu"
           mode="horizontal"
           class="nav-menu desktop-nav"
+          @select="handleMenuSelect"
         >
           <el-menu-item
             v-for="item in menuItems"
             :key="item.path"
             :index="item.path"
-            :class="{ 'is-active': activeMenu === item.path }"
-            @click="$router.push(item.path)"
           >
             {{ item.name }}
           </el-menu-item>
@@ -263,6 +262,10 @@ const navigateTo = (path) => {
   mobileMenuVisible.value = false
 }
 
+const handleMenuSelect = (path) => {
+  router.push(path)
+}
+
 // 对话框状态 - 通过 provide 共享给子组件（如 Home.vue 的页脚）
 const guideVisible = ref(false)
 const aboutVisible = ref(false)
@@ -292,9 +295,10 @@ const showContact = () => {
 }
 
 .app-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--color-surface);
   padding: 0 20px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  border-bottom: 1px solid var(--color-border);
   position: sticky;
   top: 0;
   z-index: 1000;
@@ -310,29 +314,30 @@ const showContact = () => {
   margin: 0 auto;
   display: flex;
   align-items: center;
-  justify-content: center;
   height: 100%;
-  position: relative;
+  gap: 40px;
 }
 
 .logo {
-  position: absolute;
-  left: 0;
   display: flex;
   align-items: center;
   cursor: pointer;
-  color: white;
+  color: var(--color-primary);
   font-size: 20px;
   font-weight: bold;
+  font-family: var(--font-family-display);
+  flex-shrink: 0;
 }
 
 .logo-icon {
   font-size: 28px;
   margin-right: 10px;
+  color: var(--color-primary);
 }
 
 .logo-text {
-  font-family: 'Microsoft YaHei', sans-serif;
+  font-family: var(--font-family-display);
+  white-space: nowrap;
 }
 
 .nav-menu {
@@ -341,51 +346,90 @@ const showContact = () => {
   flex: 1;
   overflow-x: auto;
   /* Element Plus菜单变量覆盖 */
-  --el-menu-active-color: #ffffff;
-  --el-menu-hover-color: #ffffff;
-  --el-menu-text-color: rgba(255, 255, 255, 0.9);
+  --el-menu-active-color: var(--color-primary);
+  --el-menu-hover-color: var(--color-primary);
+  --el-menu-text-color: var(--color-text-secondary);
   /* 隐藏滚动条但保持滚动功能 */
   scrollbar-width: none; /* Firefox */
+}
+
+.nav-menu :deep(.el-menu) {
   /* 菜单项水平居中 */
-  display: flex;
   justify-content: center;
+}
+
+/* 汉堡菜单按钮 */
+.hamburger-btn {
+  display: none;
+  background: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 8px;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.hamburger-btn:hover {
+  background: var(--color-primary-50);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+/* 响应式布局 */
+@media (max-width: 992px) {
+  .header-content {
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .nav-menu {
+    display: none;
+  }
+
+  .hamburger-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 }
 .nav-menu::-webkit-scrollbar {
   display: none; /* Chrome/Safari */
 }
 
 .nav-menu :deep(.el-menu-item) {
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--color-text-secondary);
   border-bottom: 2px solid transparent;
   padding: 0 12px;  /* 减少水平内边距以容纳更多菜单项 */
 }
 
 .nav-menu :deep(.el-menu-item:hover) {
-  background: rgba(255, 255, 255, 0.1);
-  color: white;
-  border-bottom-color: rgba(255, 255, 255, 0.5);
+  background: var(--color-primary-50);
+  color: var(--color-primary);
+  border-bottom-color: var(--color-primary-300);
 }
 
 .nav-menu :deep(.el-menu-item.is-active) {
-  background: rgba(255, 255, 255, 0.25) !important;
-  color: #ffffff !important;
-  border-bottom: 3px solid #ffffff;
+  background: var(--color-primary-50) !important;
+  color: var(--color-primary) !important;
+  border-bottom: 3px solid var(--color-primary);
   font-weight: 600;
 }
 
 .app-main {
   flex: 1;
   padding: 20px;
-  background: #f5f7fa;
+  background: var(--color-background);
 }
 
 .app-container.is-immersive .app-main {
   padding: 0;
-  background: #ffffff;
+  background: var(--color-surface);
 }
 
 .app-footer {
-  background-color: #1a1a2e;
+  background-color: var(--color-text-primary);
   color: rgba(255, 255, 255, 0.75);
   padding: 0;
 }
@@ -409,10 +453,8 @@ const showContact = () => {
   font-size: 20px;
   font-weight: 700;
   margin-bottom: 16px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: white;
+  font-family: var(--font-family-display);
 }
 
 .app-footer .footer-brand p {
@@ -452,7 +494,7 @@ const showContact = () => {
 
 .app-footer .footer-links a:hover,
 .app-footer .footer-help a:hover {
-  color: #667eea;
+  color: #D4AF37;
 }
 
 .app-footer .footer-contact p {
@@ -466,7 +508,7 @@ const showContact = () => {
 
 .app-footer .footer-contact .el-icon {
   font-size: 16px;
-  color: #667eea;
+  color: #D4AF37;
 }
 
 .app-footer .social-links {
@@ -489,8 +531,8 @@ const showContact = () => {
 }
 
 .app-footer .social-link:hover {
-  background: #667eea;
-  color: white;
+  background: #D4AF37;
+  color: var(--color-text-primary);
   transform: translateY(-2px);
 }
 
@@ -553,22 +595,6 @@ const showContact = () => {
   }
 }
 
-/* 汉堡菜单按钮 */
-.hamburger-btn {
-  display: none;
-  background: rgba(255, 255, 255, 0.15);
-  border: none;
-  border-radius: 8px;
-  padding: 8px;
-  cursor: pointer;
-  color: white;
-  transition: background 0.2s;
-}
-
-.hamburger-btn:hover {
-  background: rgba(255, 255, 255, 0.25);
-}
-
 /* 移动端菜单抽屉 */
 .drawer-header {
   display: flex;
@@ -622,13 +648,13 @@ const showContact = () => {
 }
 
 .mobile-menu-item:hover {
-  background: #f5f7fa;
-  color: #667eea;
+  background: var(--color-primary-50);
+  color: var(--color-primary);
 }
 
 .mobile-menu-item.is-active {
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
-  color: #667eea;
+  background: var(--color-primary-50);
+  color: var(--color-primary);
   font-weight: 600;
 }
 
@@ -659,7 +685,7 @@ const showContact = () => {
 }
 
 .footer-links a:hover {
-  color: #667eea;
+  color: var(--color-accent-light);
 }
 
 .footer-copyright {
@@ -680,8 +706,9 @@ const showContact = () => {
 .guide-section {
   margin-bottom: 24px;
   padding: 16px;
-  background: #f5f7fa;
+  background: var(--color-background);
   border-radius: 8px;
+  border: 1px solid var(--color-border);
 }
 
 .guide-section:last-child {
@@ -694,12 +721,12 @@ const showContact = () => {
   gap: 8px;
   font-size: 16px;
   font-weight: 600;
-  color: #2c3e50;
+  color: var(--color-text-primary);
   margin-bottom: 12px;
 }
 
 .guide-section .el-icon {
-  color: #667eea;
+  color: var(--color-primary);
   font-size: 18px;
 }
 
@@ -708,7 +735,7 @@ const showContact = () => {
 .guide-section ol {
   margin: 0;
   padding-left: 20px;
-  color: #606266;
+  color: var(--color-text-secondary);
   font-size: 14px;
   line-height: 1.8;
 }

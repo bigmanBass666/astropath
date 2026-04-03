@@ -26,7 +26,7 @@ export function getProviderById(id) {
 }
 
 // 发送消息到AI API
-export async function sendMessageToAI(providerId, messages, options = {}) {
+export async function sendMessageToAI(providerId, messages, options = {}, externalSignal = null) {
   const provider = getProviderById(providerId)
 
   if (!provider) {
@@ -51,6 +51,14 @@ export async function sendMessageToAI(providerId, messages, options = {}) {
     const controller = new AbortController()
     const timeout = options.enableThinking ? 120000 : 60000 // 思考模式120秒，普通模式60秒
     const timeoutId = setTimeout(() => controller.abort(), timeout)
+    
+    // 如果提供了外部 signal，监听它
+    if (externalSignal) {
+      externalSignal.addEventListener('abort', () => {
+        controller.abort()
+        clearTimeout(timeoutId)
+      })
+    }
 
     const response = await fetch(`${provider.baseUrl}/chat/completions`, {
       method: 'POST',

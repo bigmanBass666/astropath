@@ -1136,10 +1136,10 @@ const updateChart = () => {
         symbolSize: 12,
         lineStyle: {
           width: 3,
-          color: '#667eea'
+          color: 'var(--color-primary)'
         },
         itemStyle: {
-          color: '#667eea',
+          color: 'var(--color-primary)',
           borderWidth: 2,
           borderColor: '#fff'
         }
@@ -1236,23 +1236,23 @@ onUnmounted(() => {
 
 /* 视图切换按钮 hover 状态 */
 .view-toggle :deep(.el-radio-button:hover .el-radio-button__inner) {
-  color: #667eea;
+  color: var(--color-primary);
 }
 
-/* 视图切换按钮 active 状态 - 选中时为紫色 */
+/* 视图切换按钮 active 状态 - 选中时为学术蓝 */
 .view-toggle :deep(.el-radio-button__original-radio:checked + .el-radio-button__inner) {
-  background-color: #667eea;
-  border-color: #667eea;
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
   color: #fff;
-  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 2px 8px rgba(30, 58, 95, 0.4);
 }
 
 /* 修复对话框中优先级 radio button 的样式 */
 :deep(.el-radio-button.is-active .el-radio-button__inner) {
-  background-color: #667eea !important;
-  border-color: #667eea !important;
+  background-color: var(--color-primary) !important;
+  border-color: var(--color-primary) !important;
   color: #fff !important;
-  box-shadow: -1px 0 0 0 #667eea !important;
+  box-shadow: -1px 0 0 0 var(--color-primary) !important;
 }
 
 /* 未选中的 radio button 样式 - 白色背景 */
@@ -1263,7 +1263,7 @@ onUnmounted(() => {
 
 /* 未选中的 radio button hover 状态 */
 :deep(.el-radio-button:not(.is-active) .el-radio-button__inner:hover) {
-  color: #667eea !important;
+  color: var(--color-primary) !important;
 }
 
 /* 图表视图 */
@@ -1316,8 +1316,8 @@ onUnmounted(() => {
 }
 
 .milestone-item.is-selected .milestone-content {
-  border: 2px solid #667eea;
-  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.2);
+  border: 2px solid var(--color-primary);
+  box-shadow: 0 4px 16px rgba(30, 58, 95, 0.2);
 }
 
 .milestone-item.is-overdue .milestone-date {
@@ -1367,7 +1367,7 @@ onUnmounted(() => {
 }
 
 .milestone-date {
-  color: #667eea;
+  color: var(--color-primary);
   font-weight: 600;
   margin-bottom: 8px;
   font-size: 14px;
@@ -1401,7 +1401,7 @@ onUnmounted(() => {
 }
 
 .detail-date {
-  color: #667eea;
+  color: var(--color-primary);
   font-weight: 600;
   margin-bottom: 12px;
   font-size: 14px;
@@ -1524,7 +1524,7 @@ onUnmounted(() => {
 }
 
 .task-count {
-  background: #667eea;
+  background: var(--color-primary);
   color: white;
   padding: 2px 8px;
   border-radius: 10px;
@@ -1635,7 +1635,7 @@ onUnmounted(() => {
 
 .add-task-btn:hover {
   background: #f5f7fa;
-  color: #667eea;
+  color: var(--color-primary);
 }
 
 /* 响应式看板 */
