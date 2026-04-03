@@ -33,14 +33,14 @@
             type="primary"
             size="large"
             class="cta-button"
-            @click="$router.push('/assessment')"
+            @click="router.push('/assessment')"
           >
             开始规划
           </el-button>
           <el-button
             size="large"
             class="secondary-button"
-            @click="$router.push('/university-database')"
+            @click="router.push('/university-database')"
           >
             探索院校
           </el-button>
@@ -63,13 +63,6 @@
         </div>
       </div>
 
-      <!-- 向下滚动提示 -->
-      <div class="scroll-indicator">
-        <div class="scroll-mouse">
-          <div class="scroll-wheel" />
-        </div>
-        <span>向下滚动</span>
-      </div>
     </section>
 
     <!-- 核心功能展示 -->
@@ -158,7 +151,7 @@
           type="primary"
           size="large"
           class="cta-final-button"
-          @click="$router.push('/assessment')"
+          @click="router.push('/assessment')"
         >
           立即开始
         </el-button>
@@ -254,11 +247,14 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted, inject } from 'vue'
+import { useRouter } from 'vue-router'
 import {
   Document, Cpu, Calendar, Files, School, ChatDotRound,
   MagicStick, Timer, DataLine, User, ArrowRight, Top,
   Message, Phone, Platform
 } from '@element-plus/icons-vue'
+
+const router = useRouter()
 
 const homePageRef = ref(null)
 const heroRef = ref(null)
@@ -304,9 +300,7 @@ const highlights = [
 ]
 
 const navigateTo = (path) => {
-  if (window.$router) {
-    window.$router.push(path)
-  }
+  router.push(path)
 }
 
 // 打字机效果
@@ -410,7 +404,7 @@ onUnmounted(() => {
   position: relative;
   background: var(--gradient-hero);
   color: var(--color-text-primary);
-  padding: 100px 120px 100px;
+  padding: 100px 0 80px;
   text-align: center;
   overflow: hidden;
   opacity: var(--hero-opacity, 1);
@@ -548,6 +542,7 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   gap: var(--space-6);
+  margin-bottom: var(--space-12);
 }
 
 .stat-item {
@@ -579,7 +574,7 @@ onUnmounted(() => {
 /* 滚动提示 */
 .scroll-indicator {
   position: absolute;
-  bottom: 30px;
+  bottom: 20px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
@@ -587,8 +582,11 @@ onUnmounted(() => {
   align-items: center;
   gap: var(--space-2);
   opacity: 0.7;
-  animation: bounce 2s ease-in-out infinite;
   z-index: 2;
+}
+
+.scroll-indicator .scroll-mouse {
+  animation: bounce 2s ease-in-out infinite;
 }
 
 .scroll-mouse {

@@ -87,14 +87,14 @@ const router = createRouter({
   routes
 })
 
-app.use(router)
-app.use(ElementPlus)
-
-// 路由守卫：设置页面标题
+// 路由守卫：设置页面标题（必须在 app.use(router) 之前注册）
 router.beforeEach((to) => {
   document.title = `${to.meta.title || '首页'} - 一站式智能留学规划平台`
   return true
 })
+
+app.use(router)
+app.use(ElementPlus)
 
 // 暴露 router 到 window 以便测试和调试
 import { useRoute } from 'vue-router'

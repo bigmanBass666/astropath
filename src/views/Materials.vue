@@ -29,7 +29,9 @@
               @click="selectEssayType(type.value)"
             >
               <div class="card-icon">
-                {{ type.icon }}
+                <el-icon :size="48" color="var(--color-primary)">
+                  <component :is="type.icon" />
+                </el-icon>
               </div>
               <h4>{{ type.label }}</h4>
               <p>{{ type.description }}</p>
@@ -901,7 +903,7 @@
 <script setup>
 import { ref, reactive, computed, onMounted, nextTick } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Plus, Right } from '@element-plus/icons-vue'
+import { Plus, Right, Document, DocumentCopy, Message, Collection } from '@element-plus/icons-vue'
 import { getProviders, sendMessageToAI } from '@/utils/ai-api'
 import { jsPDF } from 'jspdf'
 import 'jspdf/dist/jspdf.umd.min.js'
@@ -936,25 +938,25 @@ const essayTypes = [
     value: 'ps',
     label: '个人陈述',
     description: '阐述你的学术背景、研究兴趣和职业目标',
-    icon: '📝'
+    icon: Document
   },
   {
     value: 'cv',
     label: '简历',
     description: '展示你的教育背景、工作经历和技能成就',
-    icon: '📄'
+    icon: DocumentCopy
   },
   {
     value: 'reference',
     label: '推荐信',
     description: '由推荐人撰写，评价你的能力和潜力',
-    icon: '✉️'
+    icon: Message
   },
   {
     value: 'research',
     label: '研究计划',
     description: '描述你的研究方向和计划 (适用于研究型学位)',
-    icon: '🔬'
+    icon: Collection
   }
 ]
 
@@ -2447,8 +2449,10 @@ onMounted(() => {
 }
 
 .essay-type-card .card-icon {
-  font-size: 48px;
   margin-bottom: 15px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .essay-type-card h4 {
@@ -2615,8 +2619,10 @@ onMounted(() => {
 }
 
 .essay-type-card .card-icon {
-  font-size: 48px;
   margin-bottom: 15px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .essay-type-card h4 {

@@ -442,7 +442,7 @@
         <el-button
           v-else
           type="warning"
-          @click="$router.push('/ai-config')"
+          @click="router.push('/ai-config')"
         >
           <el-icon style="margin-right: 6px;">
             <Setting />
@@ -628,7 +628,7 @@
             <el-empty description="未配置AI模型，无法进行深度分析">
               <el-button
                 type="primary"
-                @click="$router.push('/ai-config')"
+                @click="router.push('/ai-config')"
               >
                 去配置
               </el-button>

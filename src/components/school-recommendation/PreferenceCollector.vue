@@ -142,6 +142,14 @@ const props = defineProps({
   loading: {
     type: Boolean,
     default: false
+  },
+  currentStep: {
+    type: String,
+    default: 'idle'
+  },
+  stepProgress: {
+    type: Number,
+    default: 0
   }
 })
 
