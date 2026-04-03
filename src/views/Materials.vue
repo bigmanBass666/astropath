@@ -1456,7 +1456,7 @@ const completedItems = computed(() => {
   const catNames = { required: '必需材料', recommended: '推荐材料', optional: '可选材料' }
   for (const [cat, catName] of Object.entries(catNames)) {
     for (const item of allItems.value[cat] || []) {
-      if (completed) items.push({ ...item, categoryName: catName })
+      if (item.completed) items.push({ ...item, categoryName: catName })
     }
   }
   return items
