@@ -1,11 +1,35 @@
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { sendMessageToAI, AIError } from '@/utils/ai-api'
 import { schoolsData, getAllSchoolsWithMatch } from '@/utils/recommendationEngine'
 import type { UserPreference, AIRecommendation, SchoolAnalysis, AIRecommendationResponse, AIAnalysisResponse } from '@/types/recommendation'
 
+export type RecommendationStep = 'idle' | 'analyzing' | 'matching' | 'generating' | 'completed' | 'error'
+
+export const stepLabels: Record<RecommendationStep, string> = {
+  idle: '准备开始',
+  analyzing: '正在分析你的背景信息...',
+  matching: '正在匹配适合你的院校...',
+  generating: '正在生成推荐理由...',
+  completed: '推荐完成！',
+  error: '生成失败'
+}
+
 export function useAIRecommendation() {
   const loading = ref(false)
   const error = ref<string | null>(null)
+  const currentStep = ref<RecommendationStep>('idle')
+  
+  const stepProgress = computed(() => {
+    const progressMap: Record<RecommendationStep, number> = {
+      idle: 0,
+      analyzing: 25,
+      matching: 50,
+      generating: 75,
+      completed: 100,
+      error: 0
+    }
+    return progressMap[currentStep.value]
+  })
 
   // 构建推荐Prompt
   const buildRecommendationPrompt = (assessment: any, preference: UserPreference): string => {
@@ -139,14 +163,19 @@ ${JSON.stringify(schoolsList, null, 2)}
   ): Promise<{ recommendations: AIRecommendation[], summary: string }> => {
     loading.value = true
     error.value = null
+    currentStep.value = 'analyzing'
 
     try {
+      await new Promise(resolve => setTimeout(resolve, 500))
+      currentStep.value = 'matching'
+      
       const prompt = buildRecommendationPrompt(assessment, preference)
       
       const messages = [
         { role: 'user' as const, content: prompt }
       ]
 
+      currentStep.value = 'generating'
       const response = await sendMessageToAI(providerId, messages, {
         temperature: 0.7,
         stream: false
@@ -180,6 +209,7 @@ ${JSON.stringify(schoolsList, null, 2)}
         }
       })
 
+      currentStep.value = 'completed'
       return {
         recommendations,
         summary: parsed.summary
@@ -187,6 +217,7 @@ ${JSON.stringify(schoolsList, null, 2)}
     } catch (err) {
       console.error('Generate recommendations error:', err)
       error.value = err instanceof Error ? err.message : '生成推荐失败'
+      currentStep.value = 'error'
       
       // 返回默认推荐（基于匹配度算法）
       return generateFallbackRecommendations(assessment)
@@ -315,6 +346,8 @@ ${JSON.stringify(schoolsList, null, 2)}
   return {
     loading,
     error,
+    currentStep,
+    stepProgress,
     generateRecommendations,
     generateAnalysis
   }

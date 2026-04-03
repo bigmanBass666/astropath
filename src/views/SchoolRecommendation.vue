@@ -17,7 +17,7 @@
         <template #extra>
           <el-button
             type="primary"
-            @click="$router.push('/assessment')"
+            @click="router.push('/assessment')"
           >
             去评估
           </el-button>
@@ -184,14 +184,17 @@ const getScoreColor = (score) => {
 // 生成评估数据的简单哈希（用于检测评估数据是否变化）
 const generateAssessmentHash = (assessmentData) => {
   if (!assessmentData) return ''
-  // 提取关键字段生成哈希
   const keyData = {
     basic: assessmentData.basic,
     academic: assessmentData.academic,
     practice: assessmentData.practice,
     savedAt: assessmentData.savedAt
   }
-  return btoa(JSON.stringify(keyData))
+  try {
+    return btoa(encodeURIComponent(JSON.stringify(keyData)))
+  } catch (e) {
+    return JSON.stringify(keyData)
+  }
 }
 
 // 处理偏好提交
@@ -308,16 +311,36 @@ const handleAdjustRequest = async (message) => {
   }
 }
 
+// 检查评估数据
+const checkAssessment = () => {
+  const savedAssessment = localStorage.getItem('assessment_report')
+  console.log('检查评估数据:', savedAssessment ? '存在' : '不存在')
+  
+  if (savedAssessment) {
+    try {
+      const parsed = JSON.parse(savedAssessment)
+      assessment.value = parsed
+      console.log('评估数据解析成功, basic:', parsed.basic)
+      
+      if (parsed.basic && (parsed.basic.name || parsed.basic.university)) {
+        hasAssessment.value = true
+        console.log('hasAssessment 设置为 true')
+      } else {
+        hasAssessment.value = false
+        console.log('basic 数据不完整, hasAssessment 为 false')
+      }
+    } catch (e) {
+      console.error('解析评估数据失败:', e)
+      hasAssessment.value = false
+    }
+  } else {
+    hasAssessment.value = false
+  }
+}
+
 // 初始化
 onMounted(() => {
-  // 加载评估数据
-  const savedAssessment = localStorage.getItem('assessment_report')
-  if (savedAssessment) {
-    assessment.value = JSON.parse(savedAssessment)
-    if (assessment.value.basic) {
-      hasAssessment.value = true
-    }
-  }
+  checkAssessment()
   
   // 加载收藏
   const savedFavorites = localStorage.getItem('school_favorites')
@@ -327,25 +350,27 @@ onMounted(() => {
   
   // 加载之前的推荐
   const savedRecommendations = localStorage.getItem('school_recommendations')
-  if (savedRecommendations && assessment.value) {
+  if (savedRecommendations) {
     const data = JSON.parse(savedRecommendations)
-    // 检查是否在24小时内，并且评估数据没有变化
-    const isWithin24Hours = Date.now() - data.timestamp < 24 * 60 * 60 * 1000
-    const currentHash = generateAssessmentHash(assessment.value)
-    const isAssessmentUnchanged = data.assessmentHash === currentHash
-    
-    if (isWithin24Hours && isAssessmentUnchanged) {
-      recommendations.value = data.recommendations
-      summary.value = data.summary
-      userPreference.value = data.preference
-      if (recommendations.value.length > 0) {
+    // 检查是否有推荐数据
+    if (data.recommendations && data.recommendations.length > 0) {
+      // 检查是否在24小时内
+      const isWithin24Hours = Date.now() - data.timestamp < 24 * 60 * 60 * 1000
+      
+      // 如果有评估数据，检查评估是否变化；如果没有评估数据，直接恢复推荐
+      const currentHash = generateAssessmentHash(assessment.value)
+      const isAssessmentUnchanged = !currentHash || data.assessmentHash === currentHash
+      
+      if (isWithin24Hours && isAssessmentUnchanged) {
+        recommendations.value = data.recommendations
+        summary.value = data.summary
+        userPreference.value = data.preference
         currentStep.value = 'recommendation'
+      } else if (!isAssessmentUnchanged) {
+        localStorage.removeItem('school_recommendations')
+        currentStep.value = 'preference'
+        ElMessage.info('检测到背景信息已更新，请重新生成院校推荐')
       }
-    } else if (!isAssessmentUnchanged) {
-      // 评估数据已变化，清除旧的推荐数据，要求重新生成
-      localStorage.removeItem('school_recommendations')
-      currentStep.value = 'preference'
-      ElMessage.info('检测到背景信息已更新，请重新生成院校推荐')
     }
   }
 })
@@ -372,7 +397,7 @@ onMounted(() => {
 }
 
 .main-card :deep(.el-card__body) {
-  padding: 0;
+  padding: 24px;
 }
 
 .compare-table :deep(.el-table__body .el-button) {

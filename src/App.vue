@@ -1,37 +1,25 @@
 <template>
   <el-container
     class="app-container"
-    :class="{ 'is-immersive': isImmersivePage }"
+    :class="{ 'is-immersive': isImmersivePage, 'is-home': isHomePage }"
   >
     <el-header
       v-if="!isImmersivePage"
       class="app-header"
     >
       <div class="header-content">
-        <div
-          class="logo"
-          @click="$router.push('/')"
-        >
-          <el-icon class="logo-icon">
-            <Briefcase />
-          </el-icon>
-          <span class="logo-text">智途 AstroPath</span>
-        </div>
+        <Logo @click="router.push('/')" />
         <!-- 桌面端导航菜单 -->
-        <el-menu
-          :default-active="activeMenu"
-          mode="horizontal"
-          class="nav-menu desktop-nav"
-          @select="handleMenuSelect"
-        >
-          <el-menu-item
+        <nav class="nav-menu-container desktop-nav">
+          <router-link
             v-for="item in menuItems"
             :key="item.path"
-            :index="item.path"
+            :to="item.path"
+            class="nav-item"
           >
             {{ item.name }}
-          </el-menu-item>
-        </el-menu>
+          </router-link>
+        </nav>
         <!-- 移动端汉堡菜单按钮 -->
         <button
           class="hamburger-btn"
@@ -45,13 +33,11 @@
       </div>
     </el-header>
     <el-main class="app-main">
-      <router-view v-slot="{ Component }">
-        <transition
-          name="fade"
-          mode="out-in"
-        >
-          <component :is="Component" />
-        </transition>
+      <router-view v-slot="{ Component, route }">
+        <component
+          :is="Component"
+          :key="route.fullPath"
+        />
       </router-view>
     </el-main>
     <footer
@@ -234,7 +220,8 @@
 <script setup>
 import { computed, ref, provide } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { Briefcase, Expand, Menu, Close, Document, Cpu, DataLine, Message, Phone } from '@element-plus/icons-vue'
+import { Expand, Menu, Close, Document, Cpu, DataLine, Message, Phone } from '@element-plus/icons-vue'
+import Logo from './components/common/Logo.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -301,12 +288,7 @@ const showContact = () => {
   border-bottom: 1px solid var(--color-border);
   position: sticky;
   top: 0;
-  z-index: 1000;
-  /* F046: 导航栏固定抖动修复 - 增强渲染稳定性 */
-  contain: layout style paint;
-  will-change: scroll-position;
-  backface-visibility: hidden;
-  transform: translateZ(0);
+  z-index: 9999;
 }
 
 .header-content {
@@ -318,26 +300,39 @@ const showContact = () => {
   gap: 40px;
 }
 
-.logo {
+.nav-menu-container {
   display: flex;
   align-items: center;
-  cursor: pointer;
-  color: var(--color-primary);
-  font-size: 20px;
-  font-weight: bold;
-  font-family: var(--font-family-display);
-  flex-shrink: 0;
+  gap: 4px;
+  flex: 1;
+  justify-content: center;
 }
 
-.logo-icon {
-  font-size: 28px;
-  margin-right: 10px;
-  color: var(--color-primary);
+.nav-item {
+  padding: 0 16px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s ease;
 }
 
-.logo-text {
-  font-family: var(--font-family-display);
-  white-space: nowrap;
+.nav-item:hover {
+  background: var(--color-primary-50);
+  color: var(--color-primary);
+  border-bottom-color: var(--color-primary-300);
+}
+
+.nav-item.is-active,
+.nav-item.router-link-active {
+  background: var(--color-primary-50);
+  color: var(--color-primary);
+  border-bottom: 3px solid var(--color-primary);
+  font-weight: 600;
 }
 
 .nav-menu {
@@ -384,7 +379,8 @@ const showContact = () => {
     gap: 16px;
   }
 
-  .nav-menu {
+  .nav-menu,
+  .nav-menu-container {
     display: none;
   }
 
@@ -423,7 +419,8 @@ const showContact = () => {
   background: var(--color-background);
 }
 
-.app-container.is-immersive .app-main {
+.app-container.is-immersive .app-main,
+.app-container.is-home .app-main {
   padding: 0;
   background: var(--color-surface);
 }

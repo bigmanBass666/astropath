@@ -8,7 +8,7 @@
       <div class="detail-back">
         <el-button
           class="back-btn"
-          @click="$router.back()"
+          @click="router.back()"
         >
           <el-icon><ArrowLeft /></el-icon>
           返回专业库
@@ -112,7 +112,7 @@
           <el-button
             size="large"
             class="action-btn"
-            @click="$router.push('/school-recommendation')"
+            @click="router.push('/school-recommendation')"
           >
             <el-icon><Search /></el-icon>
             查看相关院校
@@ -120,7 +120,7 @@
           <el-button
             size="large"
             class="action-btn"
-            @click="$router.push('/ai-chat')"
+            @click="router.push('/ai-chat')"
           >
             <el-icon><ChatDotRound /></el-icon>
             咨询AI
@@ -138,7 +138,7 @@
         <template #extra>
           <el-button
             type="primary"
-            @click="$router.push('/university-database')"
+            @click="router.push('/university-database')"
           >
             返回专业库
           </el-button>
@@ -150,6 +150,8 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+const router = useRouter()
 import { useRoute } from 'vue-router'
 import { majorsData } from '@/data/majors'
 

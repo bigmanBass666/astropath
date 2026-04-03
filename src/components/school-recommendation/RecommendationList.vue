@@ -67,33 +67,43 @@
 
     <!-- 底部操作栏 -->
     <div class="list-actions">
-      <el-input
-        v-model="adjustInput"
-        placeholder="告诉AI调整方向，例如：我想去加州的学校"
-        class="adjust-input"
-        @keyup.enter="submitAdjust"
-      >
-        <template #append>
-          <el-button
-            :icon="Position"
+      <!-- AI 调整输入区 -->
+      <div class="ai-chat-input-wrapper">
+        <div class="ai-input-container">
+          <el-icon class="ai-input-icon"><ChatDotRound /></el-icon>
+          <input
+            v-model="adjustInput"
+            type="text"
+            placeholder="告诉AI调整方向，例如：我想去加州的学校"
+            class="ai-input"
+            @keyup.enter="submitAdjust"
+          >
+          <button
+            class="ai-send-btn"
+            :class="{ 'is-active': adjustInput.trim() }"
             @click="submitAdjust"
-          />
-        </template>
-      </el-input>
+          >
+            <el-icon><Position /></el-icon>
+          </button>
+        </div>
+      </div>
 
+      <!-- 操作按钮组 -->
       <div class="action-buttons">
-        <el-button @click="$emit('reset')">
+        <button class="action-btn secondary" @click="$emit('reset')">
           <el-icon><RefreshLeft /></el-icon>
-          重新填写偏好
-        </el-button>
-        <el-button
-          type="primary"
+          <span>重新填写偏好</span>
+        </button>
+        <button
+          class="action-btn primary"
+          :class="{ 'is-disabled': favorites.length < 2 }"
           :disabled="favorites.length < 2"
           @click="$emit('compare')"
         >
           <el-icon><ScaleToOriginal /></el-icon>
-          对比收藏 ({{ favorites.length }})
-        </el-button>
+          <span>对比收藏</span>
+          <span v-if="favorites.length > 0" class="btn-badge">{{ favorites.length }}</span>
+        </button>
       </div>
     </div>
   </div>
@@ -226,37 +236,138 @@ const submitAdjust = () => {
 }
 
 .list-actions {
-  margin-top: 30px;
-  padding-top: 20px;
+  margin-top: 40px;
+  padding-top: 24px;
   border-top: 1px solid #e8e8e8;
 }
 
-.adjust-input {
-  margin-bottom: 16px;
+/* AI 输入框样式 */
+.ai-chat-input-wrapper {
+  margin-bottom: 20px;
 }
 
-.adjust-input :deep(.el-input__wrapper) {
-  border-radius: 25px;
+.ai-input-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 8px 8px 16px;
+  background: linear-gradient(135deg, #f8f9ff 0%, #f0f4ff 100%);
+  border: 2px solid #e0e7ff;
+  border-radius: 16px;
+  transition: all 0.3s ease;
 }
 
-.adjust-input :deep(.el-input-group__append) {
-  border-radius: 0 25px 25px 0;
+.ai-input-container:focus-within {
+  border-color: var(--color-primary);
+  box-shadow: 0 4px 20px rgba(30, 58, 95, 0.15);
+  background: #fff;
+}
+
+.ai-input-icon {
+  font-size: 20px;
+  color: var(--color-primary);
+  flex-shrink: 0;
+}
+
+.ai-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: 15px;
+  color: #1a1a2e;
+  outline: none;
+  padding: 8px 0;
+}
+
+.ai-input::placeholder {
+  color: #9ca3af;
+}
+
+.ai-send-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: 12px;
+  background: #e0e7ff;
+  color: #9ca3af;
+  cursor: not-allowed;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.ai-send-btn.is-active {
   background: var(--gradient-primary);
-  border-color: transparent;
-}
-
-.adjust-input :deep(.el-input-group__append .el-button) {
   color: white;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(30, 58, 95, 0.3);
 }
 
+.ai-send-btn.is-active:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(30, 58, 95, 0.4);
+}
+
+/* 操作按钮样式 */
 .action-buttons {
   display: flex;
   justify-content: center;
-  gap: 12px;
+  gap: 16px;
 }
 
-.action-buttons .el-button {
-  border-radius: 20px;
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   padding: 12px 24px;
+  border: none;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.action-btn.secondary {
+  background: #f3f4f6;
+  color: #4b5563;
+}
+
+.action-btn.secondary:hover {
+  background: #e5e7eb;
+  transform: translateY(-1px);
+}
+
+.action-btn.primary {
+  background: var(--gradient-primary);
+  color: white;
+  box-shadow: 0 4px 12px rgba(30, 58, 95, 0.25);
+}
+
+.action-btn.primary:hover:not(.is-disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(30, 58, 95, 0.35);
+}
+
+.action-btn.primary.is-disabled {
+  background: #e5e7eb;
+  color: #9ca3af;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.btn-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 600;
 }
 </style>

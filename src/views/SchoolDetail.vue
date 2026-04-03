@@ -8,7 +8,7 @@
       <div class="detail-back">
         <el-button
           class="back-btn"
-          @click="$router.back()"
+          @click="router.back()"
         >
           <el-icon><ArrowLeft /></el-icon>
           返回选校推荐
@@ -201,7 +201,7 @@
         <template #extra>
           <el-button
             type="primary"
-            @click="$router.push('/university-database')"
+            @click="router.push('/university-database')"
           >
             返回院校数据库
           </el-button>

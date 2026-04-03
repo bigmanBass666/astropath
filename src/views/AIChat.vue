@@ -5,50 +5,42 @@
       :class="{ 'is-collapsed': sidebarCollapsed }"
     >
       <div class="sidebar-header">
-        <template v-if="!sidebarCollapsed">
-          <div class="sidebar-brand">
-            <el-icon :size="20">
-              <ChatDotRound />
-            </el-icon>
-            <span>AI 助手</span>
-          </div>
-        </template>
         <button
           class="sidebar-toggle-btn"
-          :title="sidebarCollapsed ? '展开侧边栏' : '收起侧边栏'"
-          @click="toggleSidebar"
+          title="返回"
+          @click="goBack"
         >
-          <el-icon :size="18">
-            <ArrowLeft v-if="!sidebarCollapsed" />
-            <ArrowRight v-else />
+          <el-icon :size="20">
+            <ArrowLeft />
           </el-icon>
         </button>
       </div>
       <div class="agent-list">
-        <div
+        <el-tooltip
           v-for="agent in agents"
           :key="agent.id"
-          class="agent-item"
-          :class="{ 'is-active': currentAgentId === agent.id }"
-          :title="sidebarCollapsed ? agent.name : ''"
-          @click="selectAgent(agent.id)"
+          :content="agent.name"
+          placement="right"
+          :show-after="100"
         >
           <div
-            class="agent-icon"
-            :style="{ background: agent.gradient }"
+            class="agent-item"
+            :class="{ 'is-active': currentAgentId === agent.id }"
+            @click="selectAgent(agent.id)"
           >
-            <el-icon :size="20">
-              <component :is="agent.icon" />
-            </el-icon>
+            <div
+              class="agent-icon"
+              :style="{
+                background: currentAgentId === agent.id ? agent.color : agent.bgColor,
+                color: currentAgentId === agent.id ? '#ffffff' : agent.color
+              }"
+            >
+              <el-icon :size="20">
+                <component :is="agent.icon" />
+              </el-icon>
+            </div>
           </div>
-          <div
-            v-if="!sidebarCollapsed"
-            class="agent-info"
-          >
-            <span class="agent-name">{{ agent.name }}</span>
-            <span class="agent-role">{{ agent.role }}</span>
-          </div>
-        </div>
+        </el-tooltip>
       </div>
     </div>
 
@@ -73,7 +65,7 @@
         <div class="header-actions">
           <el-button
             size="small"
-            text
+            type="primary"
             :icon="Plus"
             @click="startNewChat"
           >
@@ -85,15 +77,7 @@
             :icon="Clock"
             @click="openHistory"
           >
-            历史记录
-          </el-button>
-          <el-button
-            size="small"
-            text
-            :icon="ArrowLeft"
-            @click="goBack"
-          >
-            返回
+            历史
           </el-button>
         </div>
       </div>
@@ -108,34 +92,30 @@
           class="welcome-fullscreen"
         >
           <div class="welcome-content">
-            <div
-              class="welcome-icon-large"
-              :style="{ background: currentAgent.gradient }"
-            >
-              <el-icon :size="48">
-                <component :is="currentAgent.icon" />
-              </el-icon>
+            <div class="welcome-header">
+              <h2 class="welcome-title-large">
+                {{ currentAgent.name }}
+              </h2>
+              <p class="welcome-role-large">
+                {{ currentAgent.role }}
+              </p>
             </div>
-            <h2 class="welcome-title-large">
-              {{ currentAgent.name }}
-            </h2>
-            <p class="welcome-role-large">
-              {{ currentAgent.role }}
-            </p>
             <div class="welcome-desc">
               <p>{{ currentAgent.welcome }}</p>
             </div>
-            <div class="quick-actions-large">
-              <el-button
-                v-for="(prompt, idx) in currentAgent.quickPrompts"
-                :key="idx"
-                type="primary"
-                plain
-                class="quick-prompt-large"
-                @click="useQuickPrompt(prompt)"
-              >
-                {{ prompt }}
-              </el-button>
+            <div class="quick-actions-section">
+              <p class="quick-actions-title">您可以问我：</p>
+              <div class="quick-actions-large">
+                <div
+                  v-for="(prompt, idx) in currentAgent.quickPrompts"
+                  :key="idx"
+                  class="quick-prompt-card"
+                  @click="useQuickPrompt(prompt)"
+                >
+                  <span class="prompt-text">{{ prompt }}</span>
+                  <el-icon class="prompt-arrow"><ArrowRight /></el-icon>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -236,101 +216,91 @@
       </div>
 
       <div class="input-section">
-        <div class="input-box">
-          <el-input
-            v-model="inputMessage"
-            type="textarea"
-            :rows="2"
-            placeholder="输入您的问题，按 Enter 发送..."
-            :disabled="isGenerating"
-            resize="none"
-            class="message-input"
-            @keydown.enter.exact.prevent="sendMessage"
-          />
-          <div class="input-actions">
-            <el-tooltip
-              content="开启后显示AI思考过程"
-              placement="top"
-            >
-              <div 
-                class="thinking-toggle" 
-                :class="{ 'is-active': enableThinking }"
+        <div class="chat-input-container">
+          <!-- 输入框主体 -->
+          <div class="chat-input-wrapper">
+            <textarea
+              v-model="inputMessage"
+              class="chat-textarea"
+              placeholder="输入您的问题，按 Enter 发送..."
+              :disabled="isGenerating"
+              rows="1"
+              @input="autoResize"
+              @keydown.enter.exact.prevent="sendMessage"
+            />
+          </div>
+          
+          <!-- 底部工具栏 -->
+          <div class="chat-input-toolbar">
+            <div class="toolbar-left">
+              <!-- 思考模式开关 -->
+              <button 
+                class="toolbar-btn"
+                :class="{ 'is-active': enableThinking, 'is-disabled': isGenerating }"
+                :disabled="isGenerating"
                 @click="toggleThinking"
               >
-                <el-icon :size="14">
-                  <Cpu />
-                </el-icon>
-                <span>思考</span>
-              </div>
-            </el-tooltip>
-            <el-dropdown
-              v-if="providers.length > 0"
-              trigger="click"
-              class="model-dropdown"
-              @command="(cmd) => selectedProvider = cmd"
-            >
-              <div class="model-selector">
-                <el-icon :size="14">
-                  <Cpu />
-                </el-icon>
-                <span class="model-name">{{ currentProviderName }}</span>
-                <el-icon :size="12">
-                  <ArrowDown />
-                </el-icon>
-              </div>
-              <template #dropdown>
-                <el-dropdown-menu>
-                  <el-dropdown-item
-                    v-for="p in providers"
-                    :key="p.id"
-                    :command="p.id"
-                    :class="{ 'is-active': selectedProvider === p.id }"
-                  >
-                    <div class="model-option">
-                      <span class="option-name">{{ p.name }}</span>
-                      <el-icon
-                        v-if="selectedProvider === p.id"
-                        :size="12"
-                      >
-                        <Check />
-                      </el-icon>
-                    </div>
-                  </el-dropdown-item>
-                </el-dropdown-menu>
-              </template>
-            </el-dropdown>
-            <el-button
-              v-else
-              size="small"
-              class="config-model-btn"
-              @click="$router.push('/ai-config')"
-            >
-              <el-icon :size="14">
-                <Setting />
-              </el-icon>
-              配置模型
-            </el-button>
-            <el-button
-              v-if="!isGenerating"
-              type="primary"
-              class="send-btn"
-              :disabled="!inputMessage.trim()"
-              @click="sendMessage"
-            >
-              <el-icon :size="18">
-                <Promotion />
-              </el-icon>
-            </el-button>
-            <el-button
-              v-else
-              type="danger"
-              class="send-btn"
-              @click="stopGeneration"
-            >
-              <el-icon :size="18">
-                <VideoPause />
-              </el-icon>
-            </el-button>
+                <el-icon :size="14"><Cpu /></el-icon>
+                <span>深度思考</span>
+              </button>
+              
+              <!-- 模型选择器 -->
+              <el-dropdown
+                v-if="providers.length > 0"
+                trigger="click"
+                @command="(cmd) => selectedProvider = cmd"
+              >
+                <button class="toolbar-btn">
+                  <el-icon :size="14"><Cpu /></el-icon>
+                  <span class="model-name">{{ currentProviderName }}</span>
+                  <el-icon :size="12"><ArrowDown /></el-icon>
+                </button>
+                <template #dropdown>
+                  <el-dropdown-menu>
+                    <el-dropdown-item
+                      v-for="p in providers"
+                      :key="p.id"
+                      :command="p.id"
+                      :class="{ 'is-active': selectedProvider === p.id }"
+                    >
+                      <div class="model-option">
+                        <span class="option-name">{{ p.name }}</span>
+                        <el-icon v-if="selectedProvider === p.id" :size="12"><Check /></el-icon>
+                      </div>
+                    </el-dropdown-item>
+                  </el-dropdown-menu>
+                </template>
+              </el-dropdown>
+              
+              <button
+                v-else
+                class="toolbar-btn"
+                @click="router.push('/ai-config')"
+              >
+                <el-icon :size="14"><Setting /></el-icon>
+                <span>配置模型</span>
+              </button>
+            </div>
+            
+            <div class="toolbar-right">
+              <!-- 发送/停止按钮 -->
+              <button
+                v-if="!isGenerating"
+                class="send-button"
+                :class="{ 'is-active': inputMessage.trim() }"
+                :disabled="!inputMessage.trim()"
+                @click="sendMessage"
+              >
+                <el-icon :size="16"><Promotion /></el-icon>
+              </button>
+              <button
+                v-else
+                class="send-button is-stop"
+                @click="stopGeneration"
+              >
+                <el-icon :size="16"><VideoPause /></el-icon>
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -403,9 +373,10 @@ import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import {
   ChatLineRound, User, WarningFilled, Delete, Clock,
-  Download, Promotion, VideoPause, ChatDotRound,
-  School, Document, Files, Ticket, ArrowLeft, ArrowRight,
-  Cpu, ArrowDown, Check, Setting, Plus
+  Download, Promotion, VideoPause,
+  Compass, EditPen, Collection, Document, ArrowLeft,
+  Cpu, ArrowDown, Check, Setting, Plus,
+  School, DocumentCopy, OfficeBuilding, Stamp
 } from '@element-plus/icons-vue'
 import { marked } from 'marked'
 import { sendMessageToAI, buildSystemPrompt, AIError } from '@/utils/ai-api'
@@ -418,7 +389,8 @@ const agents = ref([
     name: '留学顾问',
     role: '整体规划咨询',
     icon: School,
-    gradient: 'var(--gradient-primary)',
+    color: '#3b82f6',
+    bgColor: '#dbeafe',
     welcome: '您好！我是您的留学顾问。我可以帮您制定整体的留学规划，包括背景提升、时间安排、申请策略等。请告诉我您的留学目标或任何困惑，我会为您提供专业建议。',
     quickPrompts: ['帮我制定留学时间规划', '我的背景能申请什么学校？', '需要准备哪些申请材料？']
   },
@@ -426,8 +398,9 @@ const agents = ref([
     id: 'essay',
     name: '文书导师',
     role: '文书写作指导',
-    icon: Document,
-    gradient: 'linear-gradient(135deg, #5D4E37 0%, #8B7355 100%)',
+    icon: DocumentCopy,
+    color: '#f59e0b',
+    bgColor: '#fef3c7',
     welcome: '您好！我是您的文书导师。我专注于帮助您撰写高质量的申请文书，包括个人陈述、简历、推荐信等。请告诉我您需要什么样的文书帮助，我会为您提供指导和建议。',
     quickPrompts: ['如何写好个人陈述？', '推荐信应该包含什么？', '帮我修改这段文书']
   },
@@ -435,8 +408,9 @@ const agents = ref([
     id: 'selection',
     name: '选校专家',
     role: '院校选择建议',
-    icon: Files,
-    gradient: 'linear-gradient(135deg, #2D5A8E 0%, #486581 100%)',
+    icon: OfficeBuilding,
+    color: '#10b981',
+    bgColor: '#d1fae5',
     welcome: '您好！我是您的选校专家。我拥有丰富的院校数据库，可以根据您的背景和需求，为您推荐合适的学校和专业。请告诉我您的GPA、语言成绩和意向方向，我会为您制定选校策略。',
     quickPrompts: ['根据我的背景推荐学校', '这所学校录取难度如何？', '比较这几所学校的优劣']
   },
@@ -444,8 +418,9 @@ const agents = ref([
     id: 'visa',
     name: '签证助手',
     role: '签证申请指导',
-    icon: Ticket,
-    gradient: 'linear-gradient(135deg, #1E3A5F 0%, #2D5A8E 100%)',
+    icon: Stamp,
+    color: '#8b5cf6',
+    bgColor: '#ede9fe',
     welcome: '您好！我是您的签证助手。我熟悉各国签证申请流程，可以为您解答关于签证材料、面签准备、签证政策等方面的问题。请告诉我您的签证需求，我会为您提供详细指导。',
     quickPrompts: ['签证需要准备哪些材料？', '面签常见问题有哪些？', '签证被拒怎么办？']
   }
@@ -453,7 +428,7 @@ const agents = ref([
 
 const currentAgentId = ref('consultant')
 const currentAgent = computed(() => agents.value.find(a => a.id === currentAgentId.value) || agents.value[0])
-const sidebarCollapsed = ref(false)
+const sidebarCollapsed = ref(true)
 const selectedProvider = ref(null)
 const inputMessage = ref('')
 const isGenerating = ref(false)
@@ -656,6 +631,13 @@ const toggleThinking = () => {
 const useQuickPrompt = (prompt) => {
   inputMessage.value = prompt
   sendMessage()
+}
+
+// textarea 自动调整高度
+const autoResize = (e) => {
+  const textarea = e.target
+  textarea.style.height = 'auto'
+  textarea.style.height = Math.min(textarea.scrollHeight, 200) + 'px'
 }
 
 const sendMessage = async () => {
@@ -1111,7 +1093,7 @@ onUnmounted(() => {
 }
 
 .sidebar {
-  width: 200px;
+  width: 72px;
   background: #f8fafc;
   border-right: 1px solid #e2e8f0;
   display: flex;
@@ -1121,40 +1103,34 @@ onUnmounted(() => {
 }
 
 .sidebar.is-collapsed {
-  width: 60px;
+  width: 72px;
 }
 
 .sidebar-header {
-  padding: 12px 16px;
-  border-bottom: 1px solid #e2e8f0;
+  padding: 16px 12px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  min-height: 52px;
+  justify-content: center;
+  min-height: 64px;
 }
 
 .sidebar.is-collapsed .sidebar-header {
-  padding: 12px 10px;
+  padding: 16px 12px;
   justify-content: center;
 }
 
 .sidebar-brand {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: #1e293b;
-  font-size: 15px;
-  font-weight: 600;
+  display: none;
 }
 
 .sidebar-toggle-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 40px;
+  height: 40px;
   border: 1px solid #e2e8f0;
-  border-radius: 8px;
+  border-radius: 10px;
   background: #ffffff;
   color: #64748b;
   cursor: pointer;
@@ -1186,93 +1162,38 @@ onUnmounted(() => {
 .agent-list {
   flex: 1;
   overflow-y: auto;
-  padding: 8px;
+  padding: 16px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .agent-item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px;
-  border-radius: 10px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  margin-bottom: 4px;
-}
-
-.sidebar.is-collapsed .agent-item {
   justify-content: center;
-  padding: 10px 6px;
+  padding: 0;
+  cursor: pointer;
+  transition: transform 0.2s ease;
 }
 
 .agent-item:hover {
-  background: #f1f5f9;
-}
-
-.agent-item.is-active {
-  background: var(--color-primary-50);
-  position: relative;
-}
-
-.agent-item.is-active::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 3px;
-  height: 24px;
-  background: var(--gradient-primary);
-  border-radius: 0 3px 3px 0;
-}
-
-.sidebar.is-collapsed .agent-item.is-active {
-  background: transparent;
-}
-
-.sidebar.is-collapsed .agent-item.is-active::before {
-  height: 32px;
-  width: 4px;
-}
-
-.sidebar.is-collapsed .agent-item.is-active .agent-icon {
-  box-shadow: 0 0 0 2px rgba(30, 58, 95, 0.3), 0 4px 12px rgba(30, 58, 95, 0.25);
   transform: scale(1.05);
 }
 
 .agent-item .agent-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 9px;
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
   flex-shrink: 0;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s ease;
 }
 
 .agent-info {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-
-.agent-item .agent-name {
-  font-size: 14px;
-  font-weight: 600;
-  color: #1e293b;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.agent-item .agent-role {
-  font-size: 12px;
-  color: #64748b;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  display: none;
 }
 
 .main-chat {
@@ -1345,83 +1266,110 @@ onUnmounted(() => {
 .welcome-fullscreen {
   min-height: calc(100% - 48px);
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-  padding: 40px;
+  padding: 60px 40px 40px;
 }
 
 .welcome-content {
-  text-align: center;
-  max-width: 700px;
+  text-align: left;
+  max-width: 680px;
+  width: 100%;
 }
 
-.welcome-icon-large {
-  width: 80px;
-  height: 80px;
-  border-radius: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  margin: 0 auto 20px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+.welcome-header {
+  margin-bottom: 20px;
 }
 
 .welcome-title-large {
-  font-size: 32px;
+  font-size: 28px;
   font-weight: 700;
   color: #1e293b;
-  margin: 0 0 6px 0;
+  margin: 0 0 8px 0;
   letter-spacing: -0.5px;
 }
 
 .welcome-role-large {
   font-size: 15px;
-  color: var(--color-primary);
+  color: var(--color-text-secondary);
   font-weight: 500;
-  margin: 0 0 24px 0;
+  margin: 0;
 }
 
 .welcome-desc {
-  background: #f8fafc;
-  border-radius: 16px;
-  padding: 20px 28px;
-  margin-bottom: 24px;
-  border: 1px solid #e2e8f0;
-  max-width: 600px;
+  background: transparent;
+  border-radius: 0;
+  padding: 0;
+  margin-bottom: 32px;
+  border: none;
+  max-width: 100%;
 }
 
 .welcome-desc p {
   margin: 0;
-  font-size: 15px;
+  font-size: 16px;
   line-height: 1.7;
   color: #475569;
-  text-align: center;
+  text-align: left;
+}
+
+.quick-actions-section {
+  margin-top: 32px;
+}
+
+.quick-actions-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  margin: 0 0 16px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .quick-actions-large {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   gap: 12px;
-  justify-content: center;
 }
 
-.quick-prompt-large {
-  border-radius: 10px;
-  padding: 12px 20px;
-  font-size: 14px;
-  font-weight: 500;
-  height: auto;
-  border-color: #e2e8f0;
-  color: #475569;
+.quick-prompt-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  cursor: pointer;
   transition: all 0.2s ease;
 }
 
-.quick-prompt-large:hover {
+.quick-prompt-card:hover {
   border-color: var(--color-primary);
-  color: var(--color-primary);
   background: var(--color-primary-50);
-  transform: translateY(-1px);
+  transform: translateX(4px);
+  box-shadow: 0 4px 12px rgba(30, 58, 95, 0.08);
+}
+
+.prompt-text {
+  font-size: 15px;
+  font-weight: 500;
+  color: #334155;
+}
+
+.quick-prompt-card:hover .prompt-text {
+  color: var(--color-primary);
+}
+
+.prompt-arrow {
+  color: #94a3b8;
+  font-size: 16px;
+  transition: all 0.2s ease;
+}
+
+.quick-prompt-card:hover .prompt-arrow {
+  color: var(--color-primary);
+  transform: translateX(4px);
 }
 
 .message-wrapper {
@@ -1568,84 +1516,150 @@ onUnmounted(() => {
 
 .input-section {
   border-top: 1px solid #e2e8f0;
-  padding: 16px 32px 24px;
-  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
-}
-
-.input-box {
-  display: flex;
-  gap: 12px;
-  align-items: flex-end;
+  padding: 16px 20px 20px;
   background: #ffffff;
-  border-radius: 20px;
-  padding: 14px 18px;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
-  transition: all 0.3s ease;
 }
 
-.input-box:focus-within {
+/* 新的聊天输入框容器 */
+.chat-input-container {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.chat-input-container:focus-within {
   border-color: var(--color-primary);
-  box-shadow: 0 4px 24px rgba(30, 58, 95, 0.15), 0 1px 3px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 0 0 3px rgba(30, 58, 95, 0.08);
 }
 
-.message-input {
-  flex: 1;
+/* 输入框区域 */
+.chat-input-wrapper {
+  padding: 14px 16px;
+  background: #ffffff;
 }
 
-.message-input :deep(.el-textarea__inner) {
-  border-radius: 12px;
-  padding: 12px 16px;
-  font-size: 15px;
-  resize: none;
-  background: transparent;
+.chat-textarea {
+  width: 100%;
+  min-height: 24px;
+  max-height: 200px;
   border: none;
-  box-shadow: none;
+  outline: none;
+  resize: none;
+  font-size: 15px;
+  line-height: 1.6;
+  color: #1f2937;
+  background: transparent;
+  font-family: inherit;
 }
 
-.input-actions {
+.chat-textarea::placeholder {
+  color: #9ca3af;
+}
+
+.chat-textarea:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* 底部工具栏 */
+.chat-input-toolbar {
   display: flex;
   align-items: center;
-  gap: 12px;
-  flex-shrink: 0;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: #f9fafb;
+  border-top: 1px solid #e5e7eb;
 }
 
-.model-dropdown {
-  cursor: pointer;
-}
-
-.model-selector {
+.toolbar-left {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 14px;
-  background: var(--color-primary-50);
-  border: 1px solid var(--color-primary-100);
-  border-radius: 12px;
-  transition: all 0.25s ease;
-  min-width: 120px;
 }
 
-.model-selector:hover {
-  border-color: var(--color-primary-200);
-  background: var(--color-primary-50);
-  box-shadow: 0 2px 8px rgba(30, 58, 95, 0.12);
+.toolbar-right {
+  display: flex;
+  align-items: center;
 }
 
-.model-selector .el-icon {
-  color: var(--color-primary);
-  flex-shrink: 0;
-}
-
-.model-name {
+/* 工具栏按钮 */
+.toolbar-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #6b7280;
   font-size: 13px;
   font-weight: 500;
-  color: var(--color-primary);
-  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.toolbar-btn:hover {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.toolbar-btn.is-active {
+  background: #dbeafe;
+  color: #2563eb;
+}
+
+.toolbar-btn.is-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.toolbar-btn.is-disabled:hover {
+  background: transparent;
+}
+
+.toolbar-btn .model-name {
+  max-width: 100px;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 100px;
-  flex: 1;
+  white-space: nowrap;
+}
+
+/* 发送按钮 */
+.send-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 8px;
+  background: #e5e7eb;
+  color: #9ca3af;
+  cursor: not-allowed;
+  transition: all 0.2s ease;
+}
+
+.send-button.is-active {
+  background: var(--color-primary);
+  color: white;
+  cursor: pointer;
+}
+
+.send-button.is-active:hover {
+  background: #1e3a5f;
+  transform: scale(1.05);
+}
+
+.send-button.is-stop {
+  background: #ef4444;
+  color: white;
+  cursor: pointer;
+}
+
+.send-button.is-stop:hover {
+  background: #dc2626;
 }
 
 .model-option {
@@ -1665,57 +1679,7 @@ onUnmounted(() => {
   color: var(--color-primary);
 }
 
-.config-model-btn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 10px 14px;
-  background: linear-gradient(135deg, #fef3c7 0%, #fffbeb 100%);
-  border: 1px solid #fcd34d;
-  border-radius: 12px;
-  color: #d97706;
-  font-size: 13px;
-  font-weight: 500;
-  transition: all 0.25s ease;
-}
 
-.config-model-btn:hover {
-  background: linear-gradient(135deg, #fde68a 0%, #fef3c7 100%);
-  border-color: #fbbf24;
-  color: #b45309;
-}
-
-.send-btn {
-  width: 44px;
-  height: 44px;
-  border-radius: 14px;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--gradient-primary);
-  border: none;
-  box-shadow: 0 4px 12px rgba(30, 58, 95, 0.35);
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.send-btn:hover {
-  background: var(--gradient-primary);
-  box-shadow: 0 6px 16px rgba(30, 58, 95, 0.45);
-  transform: translateY(-1px);
-}
-
-.send-btn:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 8px rgba(30, 58, 95, 0.35);
-}
-
-.send-btn:disabled {
-  background: linear-gradient(135deg, #cbd5e0 0%, #a0aec0 100%);
-  box-shadow: none;
-  cursor: not-allowed;
-  transform: none;
-}
 
 .history-drawer :deep(.el-drawer__header) {
   margin-bottom: 16px;
@@ -1801,34 +1765,7 @@ onUnmounted(() => {
   color: #909399;
 }
 
-.thinking-toggle {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 10px 14px;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  cursor: pointer;
-  transition: all 0.25s ease;
-  font-size: 13px;
-  color: #64748b;
-}
 
-.thinking-toggle:hover {
-  background: #f1f5f9;
-  border-color: #cbd5e1;
-}
-
-.thinking-toggle.is-active {
-  background: linear-gradient(135deg, #fef3c7 0%, #fffbeb 100%);
-  border-color: #fcd34d;
-  color: #d97706;
-}
-
-.thinking-toggle.is-active .el-icon {
-  color: #d97706;
-}
 
 .message-reasoning {
   margin-bottom: 12px;
