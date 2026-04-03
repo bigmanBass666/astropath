@@ -94,7 +94,7 @@
           <!-- 模板选择界面 -->
           <div
             v-else-if="!selectedTemplate"
-            class="template-selection animate-on-scroll"
+            class="template-selection"
           >
             <div class="template-header">
               <el-button
@@ -153,7 +153,7 @@
           <!-- 文书编辑器 -->
           <div
             v-else
-            class="essay-editor animate-on-scroll"
+            class="essay-editor"
           >
             <div class="editor-header-bar">
               <el-button
