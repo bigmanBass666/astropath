@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="university-database-page">
     <!-- Hero 搜索区域 -->
     <section
@@ -21,28 +21,20 @@
         </p>
 
         <!-- Hero 搜索框 -->
-        <div class="db-hero-search">
-          <el-input
+        <div
+          class="db-hero-search"
+          @keyup.enter="handleHeroSearch"
+        >
+          <input
             v-model="heroSearchKeyword"
+            type="text"
+            class="hero-search-field"
             placeholder="搜索院校名称、专业或国家..."
-            size="large"
-            clearable
-            class="hero-search-input"
-            @keyup.enter="handleHeroSearch"
           >
-            <template #prefix>
-              <el-icon><Search /></el-icon>
-            </template>
-            <template #suffix>
-              <div
-                class="hero-search-suffix"
-                @click="handleHeroSearch"
-              >
-                搜索
-                <el-icon class="search-arrow-icon"><ArrowRight /></el-icon>
-              </div>
-            </template>
-          </el-input>
+          <button
+            class="hero-search-action"
+            @click="handleHeroSearch"
+          >搜索</button>
         </div>
 
         <!-- 热门搜索标签 -->
@@ -1124,7 +1116,7 @@ onUnmounted(() => {
     linear-gradient(rgba(30, 58, 95, 0.03) 1px, transparent 1px),
     radial-gradient(ellipse at 25% 50%, rgba(30, 58, 95, 0.05) 0%, transparent 55%),
     radial-gradient(ellipse at 75% 50%, rgba(184, 134, 11, 0.04) 0%, transparent 55%),
-    linear-gradient(180deg, var(--color-background-warm) 0%, var(--color-surface) 100%);
+    linear-gradient(180deg, var(--color-background-alt) 0%, var(--color-surface) 100%);
   background-size: 80px 80px, 80px 80px, 100% 100%, 100% 100%, 100% 100%;
 }
 
@@ -1182,7 +1174,7 @@ onUnmounted(() => {
   display: block;
   width: 60px;
   height: 4px;
-  background: var(--gradient-primary);
+  background: var(--color-solid);
   margin: var(--space-4) auto 0;
   border-radius: var(--radius-sm);
 }
@@ -1196,58 +1188,67 @@ onUnmounted(() => {
 
 /* Hero 搜索框 */
 .db-hero-search {
-  max-width: 600px;
+  max-width: 560px;
   margin: 0 auto var(--space-6);
-}
-
-.hero-search-input :deep(.el-input__wrapper) {
-  padding: 8px 8px 8px 16px;
+  display: flex;
+  align-items: center;
+  background: #fff;
   border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-md), 0 0 0 1px var(--color-border-light);
-  transition: all var(--transition-normal);
+  box-shadow: var(--shadow-lg), 0 0 0 1px rgba(30, 58, 95, 0.06);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 2px;
 }
 
-.hero-search-input :deep(.el-input__wrapper:hover) {
-  box-shadow: var(--shadow-lg), 0 0 0 1px var(--color-primary-200);
+.db-hero-search:hover {
+  box-shadow: var(--shadow-xl), 0 0 0 1px rgba(30, 58, 95, 0.1);
 }
 
-.hero-search-input :deep(.el-input__wrapper.is-focus) {
-  box-shadow: var(--shadow-lg), 0 0 0 3px rgba(30, 58, 95, 0.1), var(--shadow-glow-primary);
-  border-color: var(--color-primary);
+.db-hero-search:focus-within {
+  box-shadow: var(--shadow-xl), 0 0 0 3px rgba(30, 58, 95, 0.08), 0 8px 32px rgba(30, 58, 95, 0.08);
 }
 
-.hero-search-input :deep(.el-input__inner) {
+.hero-search-field {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  padding: 14px 6px 14px 20px;
   font-size: var(--text-base);
+  color: var(--color-text-primary);
+  line-height: 24px;
+  min-width: 0;
 }
 
-.hero-search-suffix {
+.hero-search-field::placeholder {
+  color: var(--color-text-tertiary);
+}
+
+.hero-search-action {
+  flex-shrink: 0;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 4px 14px;
-  background: var(--gradient-primary);
+  justify-content: center;
+  padding: 10px 24px;
+  margin: 4px;
+  background: linear-gradient(135deg, var(--color-solid) 0%, var(--color-solid-hover) 100%);
   color: #fff;
+  border: none;
   border-radius: var(--radius-lg);
   font-size: var(--text-sm);
   font-weight: var(--font-semibold);
   cursor: pointer;
-  transition: all var(--transition-fast);
-  user-select: none;
-  margin-right: -4px;
+  white-space: nowrap;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  letter-spacing: 0.3px;
 }
 
-.hero-search-suffix:hover {
-  transform: translateX(2px);
-  box-shadow: 0 4px 12px rgba(30, 58, 95, 0.25);
+.hero-search-action:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(30, 58, 95, 0.35);
 }
 
-.search-arrow-icon {
-  font-size: 12px;
-  transition: transform var(--transition-fast);
-}
-
-.hero-search-suffix:hover .search-arrow-icon {
-  transform: translateX(2px);
+.hero-search-action:active {
+  transform: translateY(0) scale(0.98);
 }
 
 /* 热门标签 */
@@ -1273,9 +1274,9 @@ onUnmounted(() => {
 }
 
 .hot-tag:hover {
-  color: var(--color-primary);
-  border-color: var(--color-primary);
-  background: var(--color-primary-50);
+  color: var(--color-slate-700);
+  border-color: var(--color-slate-700);
+  background: var(--color-slate-50);
   transform: translateY(-1px);
 }
 
@@ -1295,7 +1296,7 @@ onUnmounted(() => {
   display: block;
   font-size: var(--text-2xl);
   font-weight: var(--font-bold);
-  color: var(--color-primary);
+  color: var(--color-slate-700);
   font-family: var(--font-family-display);
 }
 
@@ -1355,17 +1356,17 @@ onUnmounted(() => {
 }
 
 .database-tabs :deep(.el-tabs__item:hover) {
-  color: var(--color-primary);
+  color: var(--color-slate-700);
 }
 
 .database-tabs :deep(.el-tabs__item.is-active) {
-  color: var(--color-primary);
+  color: var(--color-slate-700);
   font-weight: var(--font-semibold);
 }
 
 .database-tabs :deep(.el-tabs__active-bar) {
   height: 3px;
-  background: var(--gradient-primary);
+  background: var(--color-solid);
   border-radius: var(--radius-sm);
 }
 
@@ -1411,14 +1412,14 @@ onUnmounted(() => {
 }
 
 .filter-chip:hover {
-  color: var(--color-primary);
-  border-color: var(--color-primary-200);
-  background: var(--color-primary-50);
+  color: var(--color-slate-700);
+  border-color: var(--color-slate-200);
+  background: var(--color-slate-50);
 }
 
 .filter-chip.is-active {
   color: #fff;
-  background: var(--gradient-primary);
+  background: var(--color-solid);
   border-color: transparent;
   box-shadow: 0 2px 8px rgba(30, 58, 95, 0.2);
 }
@@ -1442,7 +1443,7 @@ onUnmounted(() => {
 }
 
 .major-search-inline:focus-within {
-  border-color: var(--color-primary-300);
+  border-color: var(--color-slate-300);
   box-shadow: 0 0 0 2px rgba(30, 58, 95, 0.08);
 }
 
@@ -1502,7 +1503,7 @@ onUnmounted(() => {
 
 .view-mode-btn.is-active {
   color: #fff;
-  background: var(--gradient-primary);
+  background: var(--color-solid);
   box-shadow: 0 1px 4px rgba(30, 58, 95, 0.15);
 }
 
@@ -1568,14 +1569,14 @@ onUnmounted(() => {
   position: absolute;
   top: 0; left: 0; right: 0;
   height: 3px;
-  background: var(--gradient-primary);
+  background: var(--color-solid);
   transition: height 0.3s ease;
 }
 
 .school-card:hover {
   transform: translateY(-8px) rotateX(2deg);
   box-shadow: 0 25px 50px -12px rgba(30, 58, 95, 0.15), 0 0 0 1px rgba(30, 58, 95, 0.05);
-  border-color: var(--color-primary-200);
+  border-color: var(--color-slate-200);
 }
 
 .school-card:hover .school-card__top-bar {
@@ -1657,7 +1658,7 @@ onUnmounted(() => {
 }
 
 .school-card__major {
-  color: var(--color-primary);
+  color: var(--color-slate-700);
   font-weight: var(--font-medium);
   margin: 0 0 var(--space-4);
   font-size: var(--text-base);
@@ -1675,7 +1676,7 @@ onUnmounted(() => {
   gap: var(--space-4);
   margin-top: auto;
   padding: var(--space-3);
-  background: linear-gradient(135deg, var(--color-background-warm) 0%, var(--color-primary-50) 100%);
+  background: linear-gradient(135deg, var(--color-background-alt) 0%, var(--color-slate-50) 100%);
   border-radius: var(--radius-lg);
   border: 1px solid var(--color-border-light);
 }
@@ -1739,7 +1740,7 @@ onUnmounted(() => {
 }
 
 .schools-list :deep(.el-table__row:hover) {
-  background-color: var(--color-primary-50);
+  background-color: var(--color-slate-50);
 }
 
 .list-school-name {
@@ -1821,12 +1822,12 @@ onUnmounted(() => {
   position: absolute;
   top: 0; left: 0; right: 0;
   height: 3px;
-  background: var(--color-primary-300);
+  background: var(--color-slate-300);
   transition: height 0.3s ease;
 }
 
 .major-card.category-engineering .major-card__top-bar {
-  background: linear-gradient(90deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
+  background: linear-gradient(90deg, var(--color-slate-700) 0%, var(--color-slate-700) 100%);
 }
 
 .major-card.category-business .major-card__top-bar {
@@ -1848,7 +1849,7 @@ onUnmounted(() => {
 .major-card:hover {
   transform: translateY(-8px) rotateX(2deg);
   box-shadow: 0 25px 50px -12px rgba(30, 58, 95, 0.15), 0 0 0 1px rgba(30, 58, 95, 0.05);
-  border-color: var(--color-primary-200);
+  border-color: var(--color-slate-200);
 }
 
 .major-card:hover .major-card__top-bar {
@@ -1892,8 +1893,8 @@ onUnmounted(() => {
 }
 
 .category-tag.el-tag--primary {
-  background: var(--color-primary-50);
-  color: var(--color-primary);
+  background: var(--color-slate-50);
+  color: var(--color-slate-700);
 }
 
 .category-tag.el-tag--success {
@@ -1972,7 +1973,7 @@ onUnmounted(() => {
 .major-salary {
   margin-top: auto;
   padding: var(--space-3);
-  background: linear-gradient(135deg, var(--color-background-warm) 0%, var(--color-primary-50) 100%);
+  background: linear-gradient(135deg, var(--color-background-alt) 0%, var(--color-slate-50) 100%);
   border-radius: var(--radius-lg);
   display: flex;
   flex-direction: column;
@@ -2025,12 +2026,12 @@ onUnmounted(() => {
 
 .detail-link {
   font-weight: var(--font-medium);
-  color: var(--color-primary);
+  color: var(--color-slate-700);
   transition: all var(--transition-normal);
 }
 
 .detail-link:hover {
-  color: var(--color-primary-light);
+  color: var(--color-slate-700);
   transform: translateX(4px);
 }
 
@@ -2047,7 +2048,7 @@ onUnmounted(() => {
   display: flex;
   gap: var(--space-5);
   padding: var(--space-5);
-  background: linear-gradient(135deg, var(--color-primary-50) 0%, var(--color-background-warm) 100%);
+  background: linear-gradient(135deg, var(--color-slate-50) 0%, var(--color-background-alt) 100%);
   border-radius: var(--radius-xl);
   margin-bottom: var(--space-6);
 }
@@ -2127,7 +2128,7 @@ onUnmounted(() => {
 }
 
 .source-sup:hover {
-  color: var(--color-primary-light);
+  color: var(--color-slate-700);
   text-decoration: underline;
 }
 
@@ -2137,10 +2138,10 @@ onUnmounted(() => {
   align-items: center;
   justify-content: space-between;
   padding: var(--space-4) var(--space-5);
-  background: var(--color-primary-50);
+  background: var(--color-slate-50);
   border-radius: var(--radius-xl);
   margin-top: var(--space-5);
-  border: 1px solid var(--color-primary-100);
+  border: 1px solid var(--color-slate-100);
   flex-wrap: wrap;
   gap: var(--space-3);
 }
@@ -2151,7 +2152,7 @@ onUnmounted(() => {
 }
 
 .compare-info strong {
-  color: var(--color-primary);
+  color: var(--color-slate-700);
 }
 
 .compare-container {
@@ -2209,6 +2210,11 @@ onUnmounted(() => {
 
   .db-hero-search {
     max-width: 100%;
+  }
+
+  .hero-search-action {
+    padding: 10px 16px;
+    font-size: var(--text-xs);
   }
 
   .db-hero-stats {

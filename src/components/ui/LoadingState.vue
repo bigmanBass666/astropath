@@ -51,7 +51,7 @@ defineProps({
   height: 100%;
   border-radius: 50%;
   border: 3px solid transparent;
-  border-top-color: var(--color-primary);
+  border-top-color: var(--color-slate-700);
   animation: spin 1s linear infinite;
 }
 
@@ -62,12 +62,12 @@ defineProps({
 .spinner-ring:nth-child(2) {
   animation-duration: 1.2s;
   animation-direction: reverse;
-  border-top-color: var(--color-primary-light);
+  border-top-color: var(--color-slate-700);
 }
 
 .spinner-ring:nth-child(3) {
   animation-duration: 0.8s;
-  border-top-color: var(--color-primary-200);
+  border-top-color: var(--color-slate-200);
 }
 
 /* 尺寸 */

@@ -1790,7 +1790,7 @@ function initScrollAnimations() {
 .hero-section {
   position: relative;
   padding: var(--space-24) var(--space-10);
-  background: linear-gradient(180deg, var(--color-background-warm) 0%, var(--color-surface) 100%);
+  background: linear-gradient(180deg, var(--color-background-alt) 0%, var(--color-surface) 100%);
   overflow: hidden;
   min-height: 360px;
   display: flex;
@@ -1877,13 +1877,13 @@ function initScrollAnimations() {
 
 .stat-number {
   font-size: var(--text-4xl);
-  color: var(--color-primary);
+  color: var(--color-slate-700);
   line-height: 1.2;
 }
 
 .stat-suffix {
   font-size: var(--text-xl);
-  color: var(--color-primary);
+  color: var(--color-slate-700);
 }
 
 .stat-highlight {
@@ -1928,7 +1928,7 @@ function initScrollAnimations() {
   display: block;
   width: 60px;
   height: 4px;
-  background: var(--gradient-primary);
+  background: var(--color-solid);
   margin: var(--space-4) auto 0;
   border-radius: var(--radius-sm);
 }
@@ -1947,7 +1947,7 @@ function initScrollAnimations() {
   justify-content: center;
   gap: var(--space-2);
   margin-bottom: var(--space-10);
-  border-bottom: 2px solid var(--color-primary-100);
+  border-bottom: 2px solid var(--color-slate-100);
   padding-bottom: 0;
 }
 
@@ -1969,15 +1969,15 @@ function initScrollAnimations() {
 }
 
 .tab-btn:hover {
-  color: var(--color-primary);
-  background: var(--color-primary-50);
+  color: var(--color-slate-700);
+  background: var(--color-slate-50);
 }
 
 .tab-btn.active {
-  color: var(--color-primary);
+  color: var(--color-slate-700);
   font-weight: var(--font-semibold);
   background: var(--color-surface);
-  border-bottom: 3px solid var(--color-primary);
+  border-bottom: 3px solid var(--color-slate-700);
   margin-bottom: -2px;
 }
 
@@ -2018,24 +2018,24 @@ function initScrollAnimations() {
 .card-hover:hover {
   transform: translateY(-8px);
   box-shadow: var(--shadow-lg);
-  border-color: var(--color-primary-200);
+  border-color: var(--color-slate-200);
 }
 
 .icon-wrapper {
   width: 88px;
   height: 88px;
   border-radius: var(--radius-xl);
-  background: linear-gradient(135deg, var(--color-primary-50) 0%, var(--color-primary-100) 100%);
+  background: linear-gradient(135deg, var(--color-slate-50) 0%, var(--color-slate-100) 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   margin: 0 auto var(--space-5);
-  color: var(--color-primary);
+  color: var(--color-slate-700);
   transition: all var(--transition-spring);
 }
 
 .card-hover:hover .icon-wrapper {
-  background: linear-gradient(135deg, var(--color-primary-100) 0%, var(--color-primary-200) 100%);
+  background: linear-gradient(135deg, var(--color-slate-100) 0%, var(--color-slate-200) 100%);
   transform: scale(1.08);
   box-shadow: 0 10px 30px rgba(30, 58, 95, 0.15);
 }
@@ -2074,13 +2074,13 @@ function initScrollAnimations() {
 }
 
 .back-btn {
-  color: var(--color-primary);
+  color: var(--color-slate-700);
   font-weight: var(--font-medium);
   white-space: nowrap;
 }
 
 .back-btn:hover {
-  color: var(--color-primary-light);
+  color: var(--color-slate-700);
 }
 
 .key-points-alert {
@@ -2120,18 +2120,18 @@ function initScrollAnimations() {
 .template-card:hover {
   transform: translateY(-6px);
   box-shadow: var(--shadow-lg);
-  border-color: var(--color-primary-200);
+  border-color: var(--color-slate-200);
 }
 
 .template-icon {
   width: 52px;
   height: 52px;
   border-radius: var(--radius-lg);
-  background: var(--color-primary-50);
+  background: var(--color-slate-50);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--color-primary);
+  color: var(--color-slate-700);
   margin-bottom: var(--space-4);
 }
 
@@ -2155,7 +2155,7 @@ function initScrollAnimations() {
 
 .action-text {
   font-size: var(--text-sm);
-  color: var(--color-primary);
+  color: var(--color-slate-700);
   font-weight: var(--font-medium);
 }
 
@@ -2172,13 +2172,13 @@ function initScrollAnimations() {
   align-items: center;
   gap: var(--space-4);
   padding: var(--space-4) var(--space-6);
-  border-bottom: 1px solid var(--color-primary-100);
-  background: var(--color-primary-50);
+  border-bottom: 1px solid var(--color-slate-100);
+  background: var(--color-slate-50);
 }
 
 .current-essay-info {
   font-weight: var(--font-medium);
-  color: var(--color-primary);
+  color: var(--color-slate-700);
   font-size: var(--text-sm);
 }
 
@@ -2240,9 +2240,9 @@ function initScrollAnimations() {
 }
 
 .format-btn:hover {
-  border-color: var(--color-primary);
-  color: var(--color-primary);
-  background: var(--color-primary-50);
+  border-color: var(--color-slate-700);
+  color: var(--color-slate-700);
+  background: var(--color-slate-50);
 }
 
 /* 编辑/预览切换 */
@@ -2269,14 +2269,14 @@ function initScrollAnimations() {
 }
 
 .mode-tab.active {
-  color: var(--color-primary);
-  border-bottom-color: var(--color-primary);
+  color: var(--color-slate-700);
+  border-bottom-color: var(--color-slate-700);
   background: var(--color-surface);
 }
 
 .mode-tab:hover:not(.active) {
   color: var(--color-text-secondary);
-  background: var(--color-primary-50);
+  background: var(--color-slate-50);
 }
 
 .editor-body {
@@ -2318,7 +2318,7 @@ function initScrollAnimations() {
   font-weight: bold;
   margin: var(--space-4) 0 var(--space-2) 0;
   color: var(--color-text-primary);
-  border-bottom: 2px solid var(--color-primary);
+  border-bottom: 2px solid var(--color-slate-700);
   padding-bottom: var(--space-2);
 }
 
@@ -2352,7 +2352,7 @@ function initScrollAnimations() {
 
 .rich-editor strong {
   font-weight: bold;
-  color: var(--color-primary);
+  color: var(--color-slate-700);
 }
 
 .rich-editor em {
@@ -2370,7 +2370,7 @@ function initScrollAnimations() {
   font-weight: bold;
   margin-bottom: var(--space-4);
   color: var(--color-text-primary);
-  border-bottom: 2px solid var(--color-primary);
+  border-bottom: 2px solid var(--color-slate-700);
   padding-bottom: var(--space-2);
 }
 
@@ -2396,7 +2396,7 @@ function initScrollAnimations() {
 }
 
 .preview-content :deep(strong) {
-  color: var(--color-primary);
+  color: var(--color-slate-700);
 }
 
 .preview-content :deep(em) {
@@ -2558,7 +2558,7 @@ function initScrollAnimations() {
 .category-count {
   font-size: var(--text-xs);
   color: var(--color-text-tertiary);
-  background: var(--color-primary-50);
+  background: var(--color-slate-50);
   padding: 2px 10px;
   border-radius: var(--radius-full);
 }
@@ -2589,10 +2589,10 @@ function initScrollAnimations() {
   width: 100%;
   margin-top: var(--space-5);
   padding: var(--space-4);
-  border: 2px dashed var(--color-primary-200);
+  border: 2px dashed var(--color-slate-200);
   border-radius: var(--radius-xl);
   background: transparent;
-  color: var(--color-primary);
+  color: var(--color-slate-700);
   font-size: var(--text-base);
   font-weight: var(--font-medium);
   cursor: pointer;
@@ -2605,9 +2605,9 @@ function initScrollAnimations() {
 }
 
 .add-custom-btn:hover {
-  border-color: var(--color-primary);
-  background: var(--color-primary-50);
-  color: var(--color-primary-light);
+  border-color: var(--color-slate-700);
+  background: var(--color-slate-50);
+  color: var(--color-slate-700);
 }
 
 /* ========== 申请进度 ========== */
@@ -2725,7 +2725,7 @@ function initScrollAnimations() {
 }
 
 .task-item:hover {
-  background: var(--color-primary-50);
+  background: var(--color-slate-50);
 }
 
 .task-item.task-completed {
@@ -2751,7 +2751,7 @@ function initScrollAnimations() {
 /* ========== CTA 区域 ========== */
 .cta-section {
   padding: var(--space-20) var(--space-10);
-  background: linear-gradient(180deg, var(--color-surface) 0%, var(--color-background-warm) 100%);
+  background: linear-gradient(180deg, var(--color-surface) 0%, var(--color-background-alt) 100%);
   text-align: center;
 }
 
@@ -2783,7 +2783,7 @@ function initScrollAnimations() {
 }
 
 .cta-button.primary {
-  background: var(--gradient-primary);
+  background: var(--color-solid);
   color: white;
   box-shadow: var(--shadow-md);
   min-width: 180px;
@@ -2791,19 +2791,19 @@ function initScrollAnimations() {
 
 .cta-button.primary:hover {
   transform: translateY(-2px) scale(1.02);
-  box-shadow: var(--shadow-lg), var(--shadow-glow-primary);
+  box-shadow: var(--shadow-lg), var(--shadow-glow-accent);
 }
 
 .cta-button.secondary {
   background: transparent;
-  color: var(--color-primary);
-  border: 2px solid var(--color-primary);
+  color: var(--color-slate-700);
+  border: 2px solid var(--color-slate-700);
   min-width: 180px;
 }
 
 .cta-button.secondary:hover {
-  background: var(--color-primary-50);
-  border-color: var(--color-primary-light);
+  background: var(--color-slate-50);
+  border-color: var(--color-slate-700);
   transform: translateY(-2px);
 }
 
@@ -2832,7 +2832,7 @@ function initScrollAnimations() {
 }
 
 .report-summary-card {
-  background: linear-gradient(135deg, var(--color-primary-50) 0%, var(--color-primary-100) 100%);
+  background: linear-gradient(135deg, var(--color-slate-50) 0%, var(--color-slate-100) 100%);
   border-radius: var(--radius-xl);
   padding: var(--space-6);
   margin-bottom: var(--space-6);
@@ -2855,7 +2855,7 @@ function initScrollAnimations() {
 
 .success-color { color: var(--color-success); }
 .warning-color { color: var(--color-warning); }
-.primary-color { color: var(--color-primary); }
+.primary-color { color: var(--color-slate-700); }
 
 .pending-section {
   margin-top: var(--space-6);

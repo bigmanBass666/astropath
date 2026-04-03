@@ -224,15 +224,15 @@ onMounted(() => {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  color: var(--color-primary);
-  border-color: var(--color-primary);
+  color: var(--color-slate-700);
+  border-color: var(--color-slate-700);
   font-size: 14px;
 }
 
 .back-btn:hover {
-  background: var(--color-primary-50);
-  border-color: var(--color-primary);
-  color: var(--color-primary);
+  background: var(--color-slate-50);
+  border-color: var(--color-slate-700);
+  color: var(--color-slate-700);
 }
 
 /* 主详情卡片 */
@@ -244,7 +244,7 @@ onMounted(() => {
 
 /* 头部信息 */
 .detail-header {
-  background: var(--gradient-primary);
+  background: var(--color-solid);
   border-radius: 16px;
   padding: 32px;
   color: white;
@@ -316,7 +316,7 @@ onMounted(() => {
 
 .info-icon {
   font-size: 20px;
-  color: var(--color-primary);
+  color: var(--color-slate-700);
 }
 
 .info-text {
@@ -335,7 +335,7 @@ onMounted(() => {
 
 /* 来源角标样式 */
 .source-sup {
-  color: var(--color-primary);
+  color: var(--color-slate-700);
   cursor: pointer;
   font-size: 10px;
   margin-left: 2px;
@@ -344,7 +344,7 @@ onMounted(() => {
 }
 
 .source-sup:hover {
-  color: var(--color-primary-light);
+  color: var(--color-slate-700);
   text-decoration: underline;
 }
 
@@ -396,15 +396,15 @@ onMounted(() => {
 }
 
 .primary-btn {
-  background: var(--gradient-primary);
+  background: var(--color-solid);
   border: none;
   color: white;
 }
 
 .primary-btn:hover {
   transform: scale(1.03);
-  box-shadow: var(--shadow-glow-primary);
-  background: var(--gradient-primary);
+  box-shadow: var(--shadow-glow-accent);
+  background: var(--color-solid);
 }
 
 /* 响应式设计 */

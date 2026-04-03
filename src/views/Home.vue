@@ -147,7 +147,7 @@
               <div class="icon-ring" />
               <el-icon
                 :size="40"
-                :color="'var(--color-primary)'"
+                :color="'var(--color-slate-700)'"
               >
                 <component :is="item.icon" />
               </el-icon>
@@ -201,7 +201,7 @@
       <div class="footer-wave wave-layer-1">
         <svg viewBox="0 0 1440 150" preserveAspectRatio="none">
           <path
-            fill="var(--color-primary-dark)"
+            fill="var(--color-solid)"
             d="M0,100 C360,40 720,160 1080,100 C1260,70 1350,120 1440,100 L1440,150 L0,150 Z"
           />
         </svg>
@@ -836,7 +836,7 @@ onUnmounted(() => {
   display: block;
   width: 100px;
   height: 4px;
-  background: var(--gradient-accent);
+  background: var(--color-accent);
   margin: var(--space-4) auto 0;
   border-radius: var(--radius-sm);
   position: relative;
@@ -871,7 +871,7 @@ onUnmounted(() => {
 }
 
 .cta-button {
-  background: #0F172A;
+  background: var(--color-solid);
   color: white;
   font-size: var(--text-lg);
   padding: 14px 36px;
@@ -884,7 +884,7 @@ onUnmounted(() => {
 }
 
 .cta-button:hover {
-  background: #1E293B;
+  background: var(--color-solid-hover);
   transform: translateY(-1px);
 }
 
@@ -937,10 +937,7 @@ onUnmounted(() => {
   font-weight: 800;
   line-height: 1.1;
   margin-bottom: var(--space-2);
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--color-solid);
   font-family: var(--font-family-display);
   letter-spacing: -1px;
 }
@@ -997,7 +994,7 @@ onUnmounted(() => {
 .scroll-mouse {
   width: 24px;
   height: 38px;
-  border: 2px solid var(--color-primary-300);
+  border: 2px solid var(--color-slate-300);
   border-radius: 12px;
   display: flex;
   justify-content: center;
@@ -1008,7 +1005,7 @@ onUnmounted(() => {
 .scroll-wheel {
   width: 3px;
   height: 8px;
-  background: var(--color-primary);
+  background: var(--color-slate-700);
   border-radius: 2px;
   animation: scroll-wheel-move 1.5s ease-in-out infinite;
 }
@@ -1032,12 +1029,12 @@ onUnmounted(() => {
 }
 
 .scroll-indicator:hover .scroll-mouse {
-  border-color: var(--color-primary);
+  border-color: var(--color-slate-700);
   box-shadow: 0 4px 12px rgba(30, 58, 95, 0.15);
 }
 
 .scroll-indicator:hover .scroll-text {
-  color: var(--color-primary);
+  color: var(--color-slate-700);
 }
 
 /* ===== Features区域 ===== */
@@ -1075,7 +1072,7 @@ onUnmounted(() => {
   display: block;
   width: 60px;
   height: 4px;
-  background: var(--gradient-primary);
+  background: var(--color-solid);
   margin: var(--space-4) auto 0;
   border-radius: var(--radius-sm);
 }
@@ -1154,7 +1151,7 @@ onUnmounted(() => {
 .feature-card:hover {
   transform: translateY(-6px);
   box-shadow: 0 15px 30px -10px rgba(30, 58, 95, 0.12), 0 0 0 1px rgba(30, 58, 95, 0.05);
-  border-color: var(--color-primary-200);
+  border-color: var(--color-slate-200);
 }
 
 .feature-card:hover::before {
@@ -1201,7 +1198,7 @@ onUnmounted(() => {
 }
 
 .feature-card:hover .feature-icon-wrapper {
-  background: linear-gradient(135deg, var(--color-primary-100) 0%, var(--color-primary-150) 100%);
+  background: linear-gradient(135deg, var(--color-slate-100) 0%, var(--color-slate-200) 100%);
   transform: scale(1.05) translateY(-2px) rotate(-2deg);
   box-shadow:
     0 12px 28px rgba(30, 58, 95, 0.15),
@@ -1219,7 +1216,7 @@ onUnmounted(() => {
 
 .feature-icon {
   font-size: 40px;
-  color: var(--color-primary);
+  color: var(--color-slate-700);
   transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
   position: relative;
   z-index: 1;
@@ -1227,7 +1224,7 @@ onUnmounted(() => {
 
 .feature-card:hover .feature-icon {
   transform: scale(1.1) rotate(5deg);
-  color: var(--color-primary-dark);
+  color: var(--color-solid);
 }
 
 .feature-card h3 {
@@ -1249,11 +1246,11 @@ onUnmounted(() => {
   align-items: center;
   gap: var(--space-2);
   font-size: var(--text-sm);
-  color: var(--color-primary);
+  color: var(--color-slate-700);
   font-weight: var(--font-semibold);
   padding: var(--space-2) var(--space-5);
   border-radius: var(--radius-lg);
-  border: 1.5px solid var(--color-primary-200);
+  border: 1.5px solid var(--color-slate-200);
   background: transparent;
   transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
   position: relative;
@@ -1264,7 +1261,7 @@ onUnmounted(() => {
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  background: var(--color-solid);
   opacity: 0;
   transition: opacity 0.3s ease;
   z-index: -1;
@@ -1373,9 +1370,9 @@ onUnmounted(() => {
   height: 3px;
   background: linear-gradient(90deg,
     transparent 0%,
-    var(--color-primary-200) 15%,
-    var(--color-primary) 50%,
-    var(--color-primary-200) 85%,
+    var(--color-slate-200) 15%,
+    var(--color-slate-700) 50%,
+    var(--color-slate-200) 85%,
     transparent 100%
   );
   opacity: 0.5;
@@ -1449,18 +1446,18 @@ onUnmounted(() => {
   justify-content: center;
   font-size: var(--text-xs);
   font-weight: 700;
-  color: var(--color-primary);
+  color: var(--color-slate-700);
   font-family: var(--font-family-mono);
   letter-spacing: 0;
   background: linear-gradient(135deg, #F0F4F8 0%, #E8EEF5 100%);
   border-radius: 50%;
-  border: 1.5px solid var(--color-primary-200);
+  border: 1.5px solid var(--color-slate-200);
   transition: all 0.3s ease;
   box-shadow: 0 2px 6px rgba(30, 58, 95, 0.08);
 }
 
 .highlight-item:hover .highlight-number {
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%);
+  background: var(--color-solid);
   color: white;
   border-color: transparent;
   box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
@@ -1471,7 +1468,7 @@ onUnmounted(() => {
   width: 80px;
   height: 80px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--color-primary-50) 0%, var(--color-primary-100) 100%);
+  background: linear-gradient(135deg, var(--color-slate-50) 0%, var(--color-slate-100) 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1488,14 +1485,14 @@ onUnmounted(() => {
   position: absolute;
   inset: -4px;
   border-radius: 50%;
-  border: 2px dashed var(--color-primary-200);
+  border: 2px dashed var(--color-slate-200);
   opacity: 0;
   transform: rotate(0deg);
   transition: all 0.4s ease;
 }
 
 .highlight-item:hover .highlight-icon-wrapper {
-  background: linear-gradient(135deg, var(--color-primary-100) 0%, var(--color-primary-200) 100%);
+  background: linear-gradient(135deg, var(--color-slate-100) 0%, var(--color-slate-200) 100%);
   transform: scale(1.05);
   box-shadow: 
     0 8px 24px rgba(30, 58, 95, 0.15),
@@ -1518,7 +1515,7 @@ onUnmounted(() => {
 }
 
 .highlight-item:hover h4 {
-  color: var(--color-primary);
+  color: var(--color-slate-700);
 }
 
 .highlight-item p {
@@ -1585,7 +1582,7 @@ onUnmounted(() => {
   display: block;
   width: 60px;
   height: 4px;
-  background: var(--gradient-accent);
+  background: var(--color-accent);
   margin: var(--space-4) auto 0;
   border-radius: var(--radius-sm);
 }
@@ -1597,38 +1594,19 @@ onUnmounted(() => {
 }
 
 .cta-final-button {
-  background: var(--gradient-accent);
+  background: var(--color-solid);
   color: white;
   font-size: var(--text-lg);
   padding: var(--space-4) var(--space-12);
   border-radius: var(--radius-lg);
-  font-weight: var(--font-semibold);
+  font-weight: 600;
   border: none;
-  box-shadow: 0 4px 15px rgba(184, 134, 11, 0.3);
-  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-  position: relative;
-  overflow: hidden;
-}
-
-.cta-final-button::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-  transition: left 0.6s ease;
+  transition: all 0.2s ease;
 }
 
 .cta-final-button:hover {
-  transform: translateY(-3px) scale(1.03);
-  box-shadow: 0 10px 30px rgba(184, 134, 11, 0.4);
-  animation: pulse-glow 2s ease-in-out infinite;
-}
-
-.cta-final-button:hover::before {
-  left: 100%;
+  background: var(--color-solid-hover);
+  transform: translateY(-1px);
 }
 
 /* ===== 返回顶部按钮 ===== */
@@ -1640,8 +1618,8 @@ onUnmounted(() => {
   height: 48px;
   border-radius: 50%;
   background: var(--color-surface);
-  color: var(--color-primary);
-  border: 2px solid var(--color-primary);
+  color: var(--color-slate-700);
+  border: 2px solid var(--color-slate-700);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1659,7 +1637,7 @@ onUnmounted(() => {
 }
 
 .back-to-top:hover {
-  background: var(--color-primary);
+  background: var(--color-slate-700);
   color: white;
   transform: translateY(-4px);
   box-shadow: var(--shadow-lg);
@@ -1729,14 +1707,14 @@ onUnmounted(() => {
   position: absolute;
   width: 2px;
   height: 2px;
-  background: var(--color-primary-light);
+  background: var(--color-slate-700);
   border-radius: 50%;
   animation: star-twinkle 3s ease-in-out infinite;
 }
 
 /* ===== 页脚样式 ===== */
 .site-footer {
-  background: linear-gradient(180deg, var(--color-primary-dark) 0%, var(--color-text-primary) 100%);
+  background: linear-gradient(180deg, var(--color-solid) 0%, var(--color-text-primary) 100%);
   color: white;
   padding: var(--space-24) var(--space-10) 0;
   margin: 0;
@@ -1755,9 +1733,9 @@ onUnmounted(() => {
   height: 2px;
   background: linear-gradient(90deg, 
     transparent 0%,
-    var(--color-primary-light) 20%,
+    var(--color-slate-700) 20%,
     var(--color-accent-light) 50%,
-    var(--color-primary-light) 80%,
+    var(--color-slate-700) 80%,
     transparent 100%
   );
   background-size: 200% 100%;

@@ -38,8 +38,8 @@ defineProps({
   width: 80px;
   height: 80px;
   border-radius: var(--radius-2xl);
-  background: var(--color-primary-50);
-  color: var(--color-primary);
+  background: var(--color-slate-50);
+  color: var(--color-slate-700);
   display: flex;
   align-items: center;
   justify-content: center;

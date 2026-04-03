@@ -16,12 +16,12 @@ html, body {
 
 /* 文字选中样式 - 使用 accent color 增添设计感 */
 ::selection {
-  background-color: var(--color-accent);
+  background-color: var(--color-solid);
   color: white;
 }
 
 ::-moz-selection {
-  background-color: var(--color-accent);
+  background-color: var(--color-solid);
   color: white;
 }
 

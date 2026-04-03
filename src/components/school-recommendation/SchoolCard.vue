@@ -173,7 +173,7 @@ const showAnalysis = () => {
   left: 0;
   right: 0;
   height: 4px;
-  background: var(--gradient-primary);
+  background: var(--color-solid);
   opacity: 0;
   transition: opacity var(--transition-normal);
 }
@@ -181,7 +181,7 @@ const showAnalysis = () => {
 .school-card:hover {
   transform: translateY(-6px);
   box-shadow: var(--shadow-xl);
-  border-color: var(--color-primary);
+  border-color: var(--color-slate-700);
 }
 
 .school-card:hover::before {
@@ -194,8 +194,7 @@ const showAnalysis = () => {
 }
 
 .school-card.is-favorite::before {
-  background: var(--gradient-gold);
-  opacity: 1;
+  background: var(--color-accent-light);
 }
 
 .card-header {
@@ -216,17 +215,17 @@ const showAnalysis = () => {
 }
 
 .rank-gold {
-  background: var(--gradient-gold);
+  background: var(--color-accent-light);
   color: #92400e;
 }
 
 .rank-silver {
-  background: var(--gradient-silver);
+  background: var(--color-slate-300);
   color: var(--color-text-secondary);
 }
 
 .rank-bronze {
-  background: var(--gradient-bronze);
+  background: var(--color-accent);
   color: white;
 }
 
@@ -259,11 +258,11 @@ const showAnalysis = () => {
 }
 
 .ai-reason {
-  background: var(--color-primary-50);
+  background: var(--color-slate-50);
   border-radius: var(--radius-lg);
   padding: var(--space-3);
   margin-bottom: var(--space-4);
-  border: 1px solid var(--color-primary-100);
+  border: 1px solid var(--color-slate-100);
 }
 
 .reason-header {
@@ -271,7 +270,7 @@ const showAnalysis = () => {
   align-items: center;
   gap: var(--space-1);
   margin-bottom: var(--space-2);
-  color: var(--color-primary);
+  color: var(--color-slate-700);
   font-size: var(--text-xs);
   font-weight: var(--font-semibold);
 }

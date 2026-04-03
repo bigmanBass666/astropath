@@ -382,12 +382,12 @@ watch(() => props.modelValue, (val) => {
 }
 
 .match-assessment {
-  background: var(--color-primary-50);
+  background: var(--color-slate-50);
   border-radius: var(--radius-xl);
   padding: var(--space-4);
   margin-bottom: var(--space-5);
   text-align: center;
-  border: 1px solid var(--color-primary-100);
+  border: 1px solid var(--color-slate-100);
 }
 
 .assessment-header {
@@ -495,8 +495,8 @@ watch(() => props.modelValue, (val) => {
 }
 
 .input-box.is-focused {
-  border-color: var(--color-primary);
-  box-shadow: var(--shadow-md), 0 0 0 3px var(--color-primary-100);
+  border-color: var(--color-slate-700);
+  box-shadow: var(--shadow-md), 0 0 0 3px var(--color-slate-100);
 }
 
 .follow-up-input :deep(.el-input__wrapper) {
@@ -507,7 +507,7 @@ watch(() => props.modelValue, (val) => {
 
 .follow-up-input :deep(.el-input-group__append) {
   border-radius: var(--radius-full);
-  background: var(--gradient-primary);
+  background: var(--color-solid);
   border-color: transparent;
   margin-left: var(--space-1);
 }
@@ -526,9 +526,9 @@ watch(() => props.modelValue, (val) => {
 .follow-up-response {
   margin-top: var(--space-4);
   padding: var(--space-4);
-  background: var(--color-primary-50);
+  background: var(--color-slate-50);
   border-radius: var(--radius-lg);
-  border-left: 3px solid var(--color-primary);
+  border-left: 3px solid var(--color-slate-700);
 }
 
 .response-header {
@@ -536,7 +536,7 @@ watch(() => props.modelValue, (val) => {
   align-items: center;
   gap: var(--space-1);
   margin-bottom: var(--space-2);
-  color: var(--color-primary);
+  color: var(--color-slate-700);
   font-size: var(--text-xs);
   font-weight: var(--font-semibold);
 }

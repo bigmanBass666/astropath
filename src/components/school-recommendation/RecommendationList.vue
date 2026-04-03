@@ -175,7 +175,7 @@ const submitAdjust = () => {
   width: 50px;
   height: 50px;
   border-radius: 50%;
-  background: var(--gradient-primary);
+  background: var(--color-solid);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -195,7 +195,7 @@ const submitAdjust = () => {
 }
 
 .welcome-text strong {
-  color: var(--color-primary);
+  color: var(--color-slate-700);
 }
 
 .summary-text {
@@ -226,7 +226,7 @@ const submitAdjust = () => {
 }
 
 .section-title .el-icon {
-  color: var(--color-primary);
+  color: var(--color-slate-700);
 }
 
 .alternative .section-title {
@@ -266,14 +266,14 @@ const submitAdjust = () => {
 }
 
 .ai-input-container:focus-within {
-  border-color: var(--color-primary);
+  border-color: var(--color-slate-700);
   box-shadow: 0 4px 20px rgba(30, 58, 95, 0.15);
   background: #fff;
 }
 
 .ai-input-icon {
   font-size: 20px;
-  color: var(--color-primary);
+  color: var(--color-slate-700);
   flex-shrink: 0;
 }
 
@@ -307,7 +307,7 @@ const submitAdjust = () => {
 }
 
 .ai-send-btn.is-active {
-  background: var(--gradient-primary);
+  background: var(--color-solid);
   color: white;
   cursor: pointer;
   box-shadow: 0 4px 12px rgba(30, 58, 95, 0.3);
@@ -349,7 +349,7 @@ const submitAdjust = () => {
 }
 
 .action-btn.primary {
-  background: var(--gradient-primary);
+  background: var(--color-solid);
   color: white;
   box-shadow: 0 4px 12px rgba(30, 58, 95, 0.25);
 }

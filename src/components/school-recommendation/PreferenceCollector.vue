@@ -370,7 +370,7 @@ const submitPreferences = () => {
   width: 70px;
   height: 70px;
   border-radius: 50%;
-  background: var(--gradient-primary);
+  background: var(--color-solid);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -391,16 +391,16 @@ const submitPreferences = () => {
 }
 
 .background-summary {
-  background: var(--color-primary-50);
+  background: var(--color-slate-50);
   border-radius: 12px;
   padding: 20px;
   margin-bottom: 30px;
-  border: 1px solid var(--color-primary-100);
+  border: 1px solid var(--color-slate-100);
 }
 
 .summary-text {
   margin: 0 0 12px 0;
-  color: var(--color-primary);
+  color: var(--color-slate-700);
   font-weight: 500;
 }
 
@@ -441,7 +441,7 @@ const submitPreferences = () => {
   justify-content: center;
   width: 24px;
   height: 24px;
-  background: var(--gradient-primary);
+  background: var(--color-solid);
   color: white;
   border-radius: 50%;
   font-size: 13px;
@@ -475,13 +475,13 @@ const submitPreferences = () => {
 
 .priority-tag:hover,
 .country-tag:hover {
-  border-color: var(--color-primary);
-  color: var(--color-primary);
+  border-color: var(--color-slate-700);
+  color: var(--color-slate-700);
 }
 
 .priority-tag.is-checked,
 .country-tag.is-checked {
-  background: var(--gradient-primary);
+  background: var(--color-solid);
   border-color: transparent;
   color: white;
 }
@@ -508,7 +508,7 @@ const submitPreferences = () => {
   padding: 14px 40px;
   font-size: 16px;
   border-radius: 25px;
-  background: var(--gradient-primary);
+  background: var(--color-solid);
   border: none;
   box-shadow: 0 8px 25px rgba(30, 58, 95, 0.3);
 }
@@ -541,7 +541,7 @@ const submitPreferences = () => {
 }
 
 .progress-bar :deep(.el-progress-bar__inner) {
-  background: var(--gradient-primary);
+  background: var(--color-solid);
   border-radius: 4px;
   transition: width 0.5s ease;
 }
@@ -584,7 +584,7 @@ const submitPreferences = () => {
 }
 
 .progress-step.is-active .step-icon {
-  background: var(--gradient-primary);
+  background: var(--color-solid);
   color: white;
   box-shadow: 0 4px 12px rgba(30, 58, 95, 0.3);
 }
@@ -611,7 +611,7 @@ const submitPreferences = () => {
 }
 
 .progress-step.is-active .step-label {
-  color: var(--color-primary);
+  color: var(--color-slate-700);
   font-weight: 600;
 }
 
@@ -619,7 +619,7 @@ const submitPreferences = () => {
   text-align: center;
   margin: 0;
   font-size: 15px;
-  color: var(--color-primary);
+  color: var(--color-slate-700);
   font-weight: 500;
   animation: pulse 2s ease-in-out infinite;
 }
@@ -643,7 +643,7 @@ const submitPreferences = () => {
   align-items: center;
   gap: 8px;
   font-size: 13px;
-  color: var(--color-primary);
+  color: var(--color-slate-700);
   font-weight: 500;
   margin-bottom: 12px;
 }

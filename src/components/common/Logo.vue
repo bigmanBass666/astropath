@@ -155,7 +155,7 @@ defineEmits(['click'])
   align-items: center;
   gap: 10px;
   cursor: pointer;
-  color: var(--color-primary);
+  color: var(--color-slate-700);
 }
 
 .logo-svg {

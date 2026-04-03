@@ -1,4 +1,4 @@
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
 import { sendMessageToAI, AIError } from '@/utils/ai-api'
 import { useGlobalAIState, type AIStreamState, type ActiveStreamInfo } from './useGlobalAIState'
 
@@ -199,6 +199,9 @@ export function useAIStream(options: UseAIStreamOptions): AIStreamResult {
 
     abortController = new AbortController()
 
+    let fullContent = ''
+    let fullReasoning = ''
+
     try {
       globalState.startConnecting(taskId)
       onStateChange?.('connecting')
@@ -211,9 +214,6 @@ export function useAIStream(options: UseAIStreamOptions): AIStreamResult {
         finalOptions,
         abortController.signal
       )
-
-      let fullContent = ''
-      let fullReasoning = ''
 
       for await (const chunk of stream) {
         if (!globalState.isTaskActive(taskId)) break
@@ -236,12 +236,30 @@ export function useAIStream(options: UseAIStreamOptions): AIStreamResult {
       }
 
       globalState.completeTask(taskId)
+      cleanupWatchers()
       globalState.clearActiveStream()
+      globalState._unregisterStreamActions(taskId)
       onStateChange?.('completed')
       onComplete?.(fullContent, fullReasoning)
 
       return fullContent
     } catch (err) {
+      const isAbortError = err instanceof DOMException && err.name === 'AbortError'
+        || (err instanceof Error && (
+            err.name === 'AbortError'
+            || err.message.includes('aborted')
+            || err.message.includes('AbortError')
+          ))
+
+      if (isAbortError) {
+        cleanupWatchers()
+        globalState.clearActiveStream()
+        globalState._unregisterStreamActions(taskId)
+        onStateChange?.('completed')
+        onComplete?.(fullContent, fullReasoning)
+        return fullContent
+      }
+
       const errorMsg = err instanceof AIError 
         ? err.message 
         : err instanceof Error 
@@ -264,28 +282,53 @@ export function useAIStream(options: UseAIStreamOptions): AIStreamResult {
     }
   }
 
+  const activeWatchers: Array<() => void> = []
+
   const registerAsActive = () => {
-    const info: ActiveStreamInfo = {
+    const info = reactive<ActiveStreamInfo>({
       taskId,
-      get isLoading() { return isLoading.value },
-      get isQueued() { return isQueued.value },
-      get isThinking() { return isThinking.value },
-      get isStreaming() { return isStreaming.value },
-      get isConnecting() { return isConnecting.value },
-      get hasError() { return hasError.value },
-      get queuePosition() { return queuePosition.value },
-      get canRetry() { return canRetry.value },
-      get retryCount() { return retryCount.value },
-      get maxRetries() { return maxRetries.value },
-      get waitingPhase() { return waitingPhase.value },
-      stop,
-      retry
-    }
+      isLoading: isLoading.value,
+      isQueued: isQueued.value,
+      isThinking: isThinking.value,
+      isStreaming: isStreaming.value,
+      isConnecting: isConnecting.value,
+      hasError: hasError.value,
+      queuePosition: queuePosition.value,
+      canRetry: canRetry.value,
+      retryCount: retryCount.value,
+      maxRetries: maxRetries.value,
+      waitingPhase: waitingPhase.value
+    })
+
+    const unwatchers = [
+      watch(isLoading, v => { info.isLoading = v }),
+      watch(isQueued, v => { info.isQueued = v }),
+      watch(isThinking, v => { info.isThinking = v }),
+      watch(isStreaming, v => { info.isStreaming = v }),
+      watch(isConnecting, v => { info.isConnecting = v }),
+      watch(hasError, v => { info.hasError = v }),
+      watch(queuePosition, v => { info.queuePosition = v }),
+      watch(canRetry, v => { info.canRetry = v }),
+      watch(retryCount, v => { info.retryCount = v }),
+      watch(maxRetries, v => { info.maxRetries = v }),
+      watch(waitingPhase, v => { info.waitingPhase = v })
+    ]
+
+    activeWatchers.forEach(w => w())
+    activeWatchers.length = 0
+    activeWatchers.push(...unwatchers)
+
     globalState.setActiveStream(info)
+    globalState._registerStreamActions(taskId, stop, retry)
   }
 
   const syncActiveStream = () => {
     registerAsActive()
+  }
+
+  const cleanupWatchers = () => {
+    activeWatchers.forEach(w => w())
+    activeWatchers.length = 0
   }
 
   const stop = () => {
@@ -293,9 +336,9 @@ export function useAIStream(options: UseAIStreamOptions): AIStreamResult {
       abortController.abort()
       abortController = null
     }
-    globalState.errorTask(taskId, '用户中止')
+    cleanupWatchers()
     globalState.clearActiveStream()
-    onStateChange?.('error')
+    globalState._unregisterStreamActions(taskId)
   }
 
   const reset = () => {
@@ -338,9 +381,9 @@ export function useAIStream(options: UseAIStreamOptions): AIStreamResult {
     
     const { scrollTop, scrollHeight, clientHeight } = container
     const distanceFromBottom = scrollHeight - scrollTop - clientHeight
-    const isAtBottom = distanceFromBottom < 150
+    const isAtBottom = distanceFromBottom < 60
     
-    if (!isAtBottom && distanceFromBottom > 300) {
+    if (!isAtBottom && distanceFromBottom > 80) {
       userScrollLocked = true
       userScrolledUp.value = true
     } else if (isAtBottom) {

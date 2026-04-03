@@ -40,8 +40,6 @@ export interface ActiveStreamInfo {
   retryCount: number
   maxRetries: number
   waitingPhase: 'connecting' | 'processing' | 'ready'
-  stop: () => void
-  retry: () => Promise<void>
 }
 
 export interface ChatMessage {
@@ -95,6 +93,7 @@ interface GlobalAIState {
 }
 
 const activeStreamRef = ref<ActiveStreamInfo | null>(null)
+const streamActionsMap = new Map<string, { stop: () => void; retry: () => Promise<string> }>()
 
 const DEFAULT_CONFIG: AIConfig = {
   defaultEnableThinking: true,
@@ -169,7 +168,13 @@ function loadStateFromStorage() {
     const configSaved = localStorage.getItem(CONFIG_KEY)
     if (configSaved) {
       const configParsed = JSON.parse(configSaved)
-      globalState.config = { ...DEFAULT_CONFIG, ...configParsed }
+      globalState.config = {
+        ...DEFAULT_CONFIG,
+        ...configParsed,
+        messageActions: { ...DEFAULT_CONFIG.messageActions, ...(configParsed?.messageActions ?? {}) },
+        waitingState: { ...DEFAULT_CONFIG.waitingState, ...(configParsed?.waitingState ?? {}) },
+        emptyUserGuidance: { ...DEFAULT_CONFIG.emptyUserGuidance, ...(configParsed?.emptyUserGuidance ?? {}) }
+      }
     }
   } catch (e) {
     console.error('[GlobalAIState] Failed to load state:', e)
@@ -462,13 +467,29 @@ export function useGlobalAIState() {
 
   const stopActiveStream = () => {
     if (activeStreamRef.value) {
-      activeStreamRef.value.stop()
+      const actions = streamActionsMap.get(activeStreamRef.value.taskId)
+      if (actions) actions.stop()
       activeStreamRef.value = null
     }
   }
 
   const clearActiveStream = () => {
+    if (activeStreamRef.value) {
+      streamActionsMap.delete(activeStreamRef.value.taskId)
+    }
     activeStreamRef.value = null
+  }
+
+  const _registerStreamActions = (taskId: string, stop: () => void, retry: () => Promise<string>) => {
+    streamActionsMap.set(taskId, { stop, retry })
+  }
+
+  const _unregisterStreamActions = (taskId: string) => {
+    streamActionsMap.delete(taskId)
+  }
+
+  const getStreamActions = (taskId: string) => {
+    return streamActionsMap.get(taskId) ?? null
   }
 
   return {
@@ -509,6 +530,9 @@ export function useGlobalAIState() {
     getActiveStream,
     activeStream,
     stopActiveStream,
-    clearActiveStream
+    clearActiveStream,
+    _registerStreamActions,
+    _unregisterStreamActions,
+    getStreamActions
   }
 }

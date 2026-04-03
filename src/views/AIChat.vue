@@ -134,7 +134,7 @@
             <div class="message">
               <div
                 class="message-avatar"
-                :style="{ background: msg.role === 'user' ? 'var(--gradient-primary)' : currentAgent?.gradient }"
+                :style="{ background: msg.role === 'user' ? 'var(--color-solid)' : currentAgent?.gradient }"
               >
                 <el-icon :size="16">
                   <User v-if="msg.role === 'user'" />
@@ -262,13 +262,13 @@
           </div>
         </template>
         <div
-          v-if="streamState.isQueued"
+          v-if="isQueued"
           class="queue-notice"
         >
           <el-icon class="queue-icon">
             <Clock />
           </el-icon>
-          <span>请求排队中，前方还有 {{ streamState.queuePosition }} 个任务...</span>
+          <span>请求排队中，前方还有 {{ queuePosition }} 个任务...</span>
         </div>
 
         <!-- 错误提示 -->
@@ -290,12 +290,12 @@
           </div>
           <div class="error-actions">
             <el-button
-              v-if="streamState.canRetry"
+              v-if="canRetry"
               type="primary"
               size="small"
               @click="handleRetry"
             >
-              重试 ({{ streamState.retryCount }}/{{ streamState.maxRetries }})
+              重试 ({{ retryCount }}/{{ maxRetries }})
             </el-button>
             <el-button
               size="small"
@@ -315,7 +315,7 @@
               v-model="inputMessage"
               class="chat-textarea"
               placeholder="输入您的问题，按 Enter 发送..."
-              :disabled="streamState.isLoading"
+              :disabled="isLoading"
               rows="1"
               @input="autoResize"
               @keydown.enter.exact.prevent="sendMessage"
@@ -326,8 +326,8 @@
             <div class="toolbar-left">
               <button 
                 class="toolbar-btn"
-                :class="{ 'is-active': enableThinking, 'is-disabled': streamState.isLoading }"
-                :disabled="streamState.isLoading"
+                :class="{ 'is-active': enableThinking, 'is-disabled': isLoading }"
+                :disabled="isLoading"
                 @click="toggleThinking"
               >
                 <el-icon :size="14">
@@ -386,7 +386,7 @@
             
             <div class="toolbar-right">
               <button
-                v-if="!streamState.isLoading"
+                v-if="!isLoading"
                 class="send-button"
                 :class="{ 'is-active': inputMessage.trim() }"
                 :disabled="!inputMessage.trim()"
@@ -397,7 +397,7 @@
                 </el-icon>
               </button>
               <button
-                v-else
+                v-else-if="stopButtonVisible"
                 class="send-button is-stop"
                 @click="stopGeneration"
               >
@@ -473,7 +473,7 @@
 </template>
 
 <script setup>
-import { ref, computed, reactive, onMounted, onUnmounted, nextTick, watch, markRaw } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick, watch, markRaw } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import {
@@ -485,12 +485,16 @@ import {
 } from '@element-plus/icons-vue'
 import { buildSystemPrompt } from '@/utils/ai-api'
 import { useAIStream } from '@/composables/useAIStream'
-import { useGlobalAIState } from '@/composables/useGlobalAIState'
+import { useActiveStream } from '@/composables/useActiveStream'
 import { renderMarkdown } from '@/utils/markdown'
 
 const router = useRouter()
-const globalAIState = useGlobalAIState()
-const msgActionsConfig = computed(() => globalAIState.getConfig().messageActions)
+const {
+  isLoading, isGenerating, isQueued, isThinking, isStreaming,
+  hasError, queuePosition, canRetry, retryCount, maxRetries,
+  waitingPhase, stopButtonVisible, msgActionsConfig, waitingText,
+  stopGeneration: stopActiveGeneration, handleRetry: retryActiveStream
+} = useActiveStream({ actions: { feedback: false } })
 
 const agents = ref([
   {
@@ -551,20 +555,9 @@ const enableThinking = ref(false)
 
 const CHAT_STATE_KEY = 'ai_chat_current_state'
 
-let currentStream = null
+const currentStream = ref(null)
 let isRestoringState = false
 let isFreshEntry = true
-
-const streamState = reactive({
-  isLoading: false,
-  isQueued: false,
-  queuePosition: 0,
-  canRetry: false,
-  retryCount: 0,
-  maxRetries: 0,
-  userScrolledUp: false,
-  waitingPhase: 'ready' as 'connecting' | 'processing' | 'ready'
-})
 
 const { scrollToBottom, handleUserScroll: handleStreamScroll } = useAIStream({
   taskId: `chat-${currentAgentId.value}`,
@@ -733,14 +726,6 @@ const autoResize = (e) => {
   textarea.style.height = Math.min(textarea.scrollHeight, 200) + 'px'
 }
 
-const isGenerating = computed(() => streamState.isLoading)
-
-const waitingText = computed(() => {
-  if (streamState.waitingPhase === 'connecting') return '正在连接...'
-  if (streamState.waitingPhase === 'processing') return 'AI 正在分析...'
-  return ''
-})
-
 const sendMessage = async () => {
   isFreshEntry = false
   
@@ -789,64 +774,50 @@ const sendMessage = async () => {
     ]
 
     // 创建新的 stream 实例
-    currentStream = useAIStream({
+    const stream = useAIStream({
       taskId: `chat-${currentAgentId.value}-${Date.now()}`,
       enableThinking: enableThinking.value,
       autoRestore: false,
       autoScroll: true,
       scrollContainer: () => messagesContainer.value
     })
-
-    const stateSyncInterval = setInterval(() => {
-      if (!currentStream) { clearInterval(stateSyncInterval); return }
-      streamState.isLoading = currentStream.isLoading.value
-      streamState.isQueued = currentStream.isQueued.value
-      streamState.queuePosition = currentStream.queuePosition.value
-      streamState.canRetry = currentStream.canRetry.value
-      streamState.retryCount = currentStream.retryCount.value
-      streamState.maxRetries = currentStream.maxRetries.value
-      streamState.waitingPhase = currentStream.waitingPhase.value
-    }, 50)
+    currentStream.value = stream
 
     let hasReasoningContent = false
 
     const pollInterval = setInterval(() => {
-      if (currentStream.content.value) {
-        messages.value[aiMsgIndex].content = currentStream.content.value
+      if (stream.content.value) {
+        messages.value[aiMsgIndex].content = stream.content.value
         messages.value[aiMsgIndex].isThinking = false
       }
-      if (enableThinking.value && currentStream.reasoning.value) {
-        if (!hasReasoningContent && currentStream.reasoning.value.length > 50) {
+      if (enableThinking.value && stream.reasoning.value) {
+        if (!hasReasoningContent && stream.reasoning.value.length > 50) {
           hasReasoningContent = true
           messages.value[aiMsgIndex].showReasoning = true
         }
-        messages.value[aiMsgIndex].reasoning = currentStream.reasoning.value
+        messages.value[aiMsgIndex].reasoning = stream.reasoning.value
       }
-      if (currentStream.content.value && currentStream.content.value.length > 100 && hasReasoningContent) {
+      if (stream.content.value && stream.content.value.length > 100 && hasReasoningContent) {
         messages.value[aiMsgIndex].showReasoning = false
       }
       
-      if (!currentStream.isStreaming.value && !currentStream.isThinking.value) {
+      if (!stream.isStreaming.value && !stream.isThinking.value) {
         clearInterval(pollInterval)
       }
     }, 100)
 
     try {
-      await currentStream.generateWithProvider(selectedProvider.value, apiMessages)
+      await stream.generateWithProvider(selectedProvider.value, apiMessages)
     } finally {
       clearInterval(pollInterval)
-      clearInterval(stateSyncInterval)
     }
-
-    streamState.isLoading = false
-    streamState.isQueued = false
 
     // 最终更新
-    if (currentStream.content.value) {
-      messages.value[aiMsgIndex].content = currentStream.content.value
+    if (stream.content.value) {
+      messages.value[aiMsgIndex].content = stream.content.value
     }
-    if (enableThinking.value && currentStream.reasoning.value) {
-      messages.value[aiMsgIndex].reasoning = currentStream.reasoning.value
+    if (enableThinking.value && stream.reasoning.value) {
+      messages.value[aiMsgIndex].reasoning = stream.reasoning.value
     }
     messages.value[aiMsgIndex].showReasoning = false
     messages.value[aiMsgIndex].isThinking = false
@@ -859,7 +830,7 @@ const sendMessage = async () => {
     }
     messages.value[aiMsgIndex].content = `抱歉，请求失败：${error.message}。您可以点击下方「重试」按钮重新发送。`
   } finally {
-    currentStream = null
+    currentStream.value = null
     saveCurrentState()
     nextTick(() => scrollToBottom())
   }
@@ -921,20 +892,15 @@ const formatTime = (timestamp) => {
 
 const handleUserScroll = () => {
   if (!messagesContainer.value) return
-  const { scrollTop, scrollHeight, clientHeight } = messagesContainer.value
-  const isAtBottom = scrollHeight - scrollTop - clientHeight < 100
-  streamState.userScrolledUp = !isAtBottom
+  if (currentStream.value) {
+    currentStream.value.handleUserScroll()
+  } else {
+    handleStreamScroll()
+  }
 }
 
 const clearError = () => {
   lastError.value = null
-}
-
-const handleRetry = async () => {
-  clearError()
-  if (currentStream) {
-    await currentStream.retry()
-  }
 }
 
 const startNewChat = () => {
@@ -952,11 +918,17 @@ const openHistory = () => {
 }
 
 const stopGeneration = () => {
-  if (currentStream) {
-    currentStream.stop()
-    currentStream = null
+  if (currentStream.value) {
+    currentStream.value.stop()
+    currentStream.value = null
   }
+  stopActiveGeneration()
   saveCurrentState()
+}
+
+const handleRetry = async () => {
+  clearError()
+  await retryActiveStream()
 }
 
 const saveConversation = () => {
@@ -1047,8 +1019,8 @@ onMounted(() => {
 onUnmounted(() => {
   saveCurrentState()
   
-  if (currentStream) {
-    currentStream.stop()
+  if (currentStream.value) {
+    currentStream.value.stop()
   }
   
   isFreshEntry = true
@@ -1107,9 +1079,9 @@ onUnmounted(() => {
 }
 
 .sidebar-toggle-btn:hover {
-  background: var(--color-primary-50);
-  border-color: var(--color-primary);
-  color: var(--color-primary);
+  background: var(--color-slate-50);
+  border-color: var(--color-slate-700);
+  color: var(--color-slate-700);
 }
 
 .agent-list {
@@ -1294,8 +1266,8 @@ onUnmounted(() => {
 }
 
 .quick-prompt-card:hover {
-  border-color: var(--color-primary);
-  background: var(--color-primary-50);
+  border-color: var(--color-slate-700);
+  background: var(--color-slate-50);
   transform: translateX(4px);
   box-shadow: 0 4px 12px rgba(30, 58, 95, 0.08);
 }
@@ -1307,7 +1279,7 @@ onUnmounted(() => {
 }
 
 .quick-prompt-card:hover .prompt-text {
-  color: var(--color-primary);
+  color: var(--color-slate-700);
 }
 
 .prompt-arrow {
@@ -1317,7 +1289,7 @@ onUnmounted(() => {
 }
 
 .quick-prompt-card:hover .prompt-arrow {
-  color: var(--color-primary);
+  color: var(--color-slate-700);
   transform: translateX(4px);
 }
 
@@ -1359,7 +1331,7 @@ onUnmounted(() => {
 }
 
 .message-wrapper.is-user .message-content {
-  background: var(--gradient-primary);
+  background: var(--color-solid);
   color: white;
   border-color: transparent;
 }
@@ -1407,7 +1379,7 @@ onUnmounted(() => {
   display: inline-block;
   width: 2px;
   height: 18px;
-  background: var(--color-primary);
+  background: var(--color-slate-700);
   margin-left: 4px;
   animation: blink 1s infinite;
   vertical-align: middle;
@@ -1429,7 +1401,7 @@ onUnmounted(() => {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--color-primary);
+  background: var(--color-slate-700);
   opacity: 0.4;
   animation: dot-bounce 1.4s ease-in-out infinite;
 }
@@ -1494,8 +1466,8 @@ onUnmounted(() => {
 }
 
 .action-btn.is-active {
-  color: var(--color-primary);
-  background: var(--color-primary-50);
+  color: var(--color-slate-700);
+  background: var(--color-slate-50);
 }
 
 .message-wrapper.is-user .action-btn.is-active {
@@ -1596,7 +1568,7 @@ onUnmounted(() => {
 }
 
 .chat-input-container:focus-within {
-  border-color: var(--color-primary);
+  border-color: var(--color-slate-700);
   box-shadow: 0 0 0 3px rgba(30, 58, 95, 0.08);
 }
 
@@ -1704,7 +1676,7 @@ onUnmounted(() => {
 }
 
 .send-button.is-active {
-  background: var(--color-primary);
+  background: var(--color-slate-700);
   color: white;
   cursor: pointer;
 }
@@ -1738,7 +1710,7 @@ onUnmounted(() => {
 }
 
 .model-option .el-icon {
-  color: var(--color-primary);
+  color: var(--color-slate-700);
 }
 
 .history-drawer :deep(.el-drawer__header) {
@@ -1799,7 +1771,7 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--color-primary);
+  color: var(--color-slate-700);
   flex-shrink: 0;
 }
 

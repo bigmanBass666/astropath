@@ -67,8 +67,8 @@ const iconSize = computed(() => {
 }
 
 .variant-primary {
-  background: var(--color-primary-100);
-  color: var(--color-primary);
+  background: var(--color-slate-100);
+  color: var(--color-slate-700);
 }
 
 .variant-success {

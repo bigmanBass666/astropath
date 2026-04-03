@@ -335,15 +335,15 @@ window.schoolDetailComponent = {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  color: var(--color-primary);
-  border-color: var(--color-primary);
+  color: var(--color-slate-700);
+  border-color: var(--color-slate-700);
   font-size: 14px;
 }
 
 .back-btn:hover {
-  background: var(--color-primary-50);
-  border-color: var(--color-primary);
-  color: var(--color-primary);
+  background: var(--color-slate-50);
+  border-color: var(--color-slate-700);
+  color: var(--color-slate-700);
 }
 
 /* 主详情卡片 */
@@ -355,7 +355,7 @@ window.schoolDetailComponent = {
 
 /* 头部信息 */
 .detail-header {
-  background: var(--gradient-primary);
+  background: var(--color-solid);
   border-radius: 16px;
   padding: 32px;
   color: white;
@@ -435,7 +435,7 @@ window.schoolDetailComponent = {
 
 .info-icon {
   font-size: 20px;
-  color: var(--color-primary);
+  color: var(--color-slate-700);
 }
 
 .school-info-list {
@@ -510,7 +510,7 @@ window.schoolDetailComponent = {
   align-items: center;
   gap: 6px;
   font-size: 13px;
-  color: var(--color-primary);
+  color: var(--color-slate-700);
 }
 
 /* 申请要求卡片 */
@@ -571,14 +571,14 @@ window.schoolDetailComponent = {
 }
 
 .primary-btn {
-  background: var(--gradient-primary);
+  background: var(--color-solid);
   border: none;
   color: white;
 }
 
 .primary-btn:hover {
   transform: scale(1.03);
-  box-shadow: var(--shadow-glow-primary);
+  box-shadow: var(--shadow-glow-accent);
 }
 
 /* 响应式设计 */

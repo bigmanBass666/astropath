@@ -362,7 +362,7 @@ const showContact = () => {
   transform: translateX(-50%) scaleX(0);
   width: 20px;
   height: 2px;
-  background: var(--color-primary);
+  background: var(--color-slate-700);
   border-radius: 1px;
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -392,8 +392,8 @@ const showContact = () => {
   flex: 1;
   overflow-x: auto;
   /* Element Plus菜单变量覆盖 */
-  --el-menu-active-color: var(--color-primary);
-  --el-menu-hover-color: var(--color-primary);
+  --el-menu-active-color: var(--color-slate-700);
+  --el-menu-hover-color: var(--color-slate-700);
   --el-menu-text-color: var(--color-text-secondary);
   /* 隐藏滚动条但保持滚动功能 */
   scrollbar-width: none; /* Firefox */
@@ -416,7 +416,7 @@ const showContact = () => {
   border-radius: 50%;
   padding: 0;
   cursor: pointer;
-  color: var(--color-primary);
+  color: var(--color-slate-700);
   transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
   flex-shrink: 0;
   box-shadow:
@@ -425,17 +425,17 @@ const showContact = () => {
 }
 
 .ai-config-btn:hover {
-  background: linear-gradient(135deg, var(--color-primary) 0%, #1E3A5F 100%);
+  background: var(--color-solid);
   border-color: transparent;
   color: white;
   transform: scale(1.08) translateY(-1px);
   box-shadow:
-    0 6px 20px rgba(30, 58, 95, 0.25),
-    0 2px 6px rgba(30, 58, 95, 0.15);
+    0 6px 20px rgba(15, 23, 42, 0.2),
+    0 2px 6px rgba(15, 23, 42, 0.12);
 }
 
 .ai-config-btn.is-active {
-  background: linear-gradient(135deg, var(--color-primary) 0%, #1E3A5F 100%);
+  background: var(--color-solid);
   border-color: transparent;
   color: white;
   box-shadow:
@@ -463,7 +463,7 @@ const showContact = () => {
 .hamburger-btn:hover {
   background: linear-gradient(135deg, rgba(30, 58, 95, 0.06) 0%, rgba(30, 58, 95, 0.03) 100%);
   border-color: rgba(30, 58, 95, 0.15);
-  color: var(--color-primary);
+  color: var(--color-slate-700);
   transform: translateY(-1px);
 }
 
@@ -740,13 +740,13 @@ const showContact = () => {
 }
 
 .mobile-menu-item:hover {
-  background: var(--color-primary-50);
-  color: var(--color-primary);
+  background: var(--color-slate-50);
+  color: var(--color-slate-700);
 }
 
 .mobile-menu-item.is-active {
-  background: var(--color-primary-50);
-  color: var(--color-primary);
+  background: var(--color-slate-50);
+  color: var(--color-slate-700);
   font-weight: 600;
 }
 
@@ -818,7 +818,7 @@ const showContact = () => {
 }
 
 .guide-section .el-icon {
-  color: var(--color-primary);
+  color: var(--color-slate-700);
   font-size: 18px;
 }
 
