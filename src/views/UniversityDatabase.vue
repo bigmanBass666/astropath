@@ -1298,7 +1298,6 @@ onUnmounted(() => {
   font-size: var(--text-2xl);
   font-weight: var(--font-bold);
   color: var(--color-slate-700);
-  font-family: var(--font-family-display);
 }
 
 .hero-stat-label {
@@ -1422,7 +1421,6 @@ onUnmounted(() => {
   color: #fff;
   background: var(--color-solid);
   border-color: transparent;
-  box-shadow: 0 2px 8px rgba(30, 58, 95, 0.2);
 }
 
 .filter-chip--sort {
@@ -1445,7 +1443,7 @@ onUnmounted(() => {
 
 .major-search-inline:focus-within {
   border-color: var(--color-slate-300);
-  box-shadow: 0 0 0 2px rgba(30, 58, 95, 0.08);
+  box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.06);
 }
 
 .search-mini-icon {
@@ -1505,7 +1503,6 @@ onUnmounted(() => {
 .view-mode-btn.is-active {
   color: #fff;
   background: var(--color-solid);
-  box-shadow: 0 1px 4px rgba(30, 58, 95, 0.15);
 }
 
 .result-count {
@@ -1552,16 +1549,15 @@ onUnmounted(() => {
 /* ========== 院校卡片 - 学术优雅风格 ========== */
 .school-card {
   background: var(--color-surface);
-  border-radius: var(--radius-2xl);
+  border-radius: var(--radius-xl);
   border: 1px solid var(--color-border-light);
   cursor: pointer;
-  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: all var(--transition-normal);
   position: relative;
   overflow: hidden;
   display: flex;
   flex-direction: column;
   box-shadow: var(--shadow-sm);
-  transform-style: preserve-3d;
   height: 100%;
   box-sizing: border-box;
 }
@@ -1575,9 +1571,9 @@ onUnmounted(() => {
 }
 
 .school-card:hover {
-  transform: translateY(-8px) rotateX(2deg);
-  box-shadow: 0 25px 50px -12px rgba(30, 58, 95, 0.15), 0 0 0 1px rgba(30, 58, 95, 0.05);
-  border-color: var(--color-slate-200);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--color-border);
 }
 
 .school-card:hover .school-card__top-bar {
@@ -1604,7 +1600,6 @@ onUnmounted(() => {
   font-size: var(--text-lg);
   color: var(--color-text-primary);
   font-weight: var(--font-semibold);
-  font-family: var(--font-family-display);
   line-height: var(--leading-tight);
   flex: 1;
 }
@@ -1619,22 +1614,22 @@ onUnmounted(() => {
 }
 
 .school-card__rank.el-tag--danger {
-  background: linear-gradient(135deg, var(--color-danger) 0%, #ef5350 100%);
+  background: var(--color-danger);
   color: white;
 }
 
 .school-card__rank.el-tag--warning {
-  background: linear-gradient(135deg, var(--color-warning) 0%, #ffb74d 100%);
+  background: var(--color-warning);
   color: white;
 }
 
 .school-card__rank.el-tag--success {
-  background: linear-gradient(135deg, var(--color-success) 0%, #66bb6a 100%);
+  background: var(--color-success);
   color: white;
 }
 
 .school-card__rank.el-tag--info {
-  background: linear-gradient(135deg, var(--color-info) 0%, #64b5f6 100%);
+  background: var(--color-info);
   color: white;
 }
 
@@ -1677,7 +1672,7 @@ onUnmounted(() => {
   gap: var(--space-4);
   margin-top: auto;
   padding: var(--space-3);
-  background: linear-gradient(135deg, var(--color-background-alt) 0%, var(--color-slate-50) 100%);
+  background: var(--color-background-alt);
   border-radius: var(--radius-lg);
   border: 1px solid var(--color-border-light);
 }
@@ -1804,17 +1799,16 @@ onUnmounted(() => {
 /* ========== 专业卡片 ========== */
 .major-card {
   background: var(--color-surface);
-  border-radius: var(--radius-2xl);
+  border-radius: var(--radius-xl);
   border: 1px solid var(--color-border-light);
   padding: var(--space-5);
   cursor: pointer;
-  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: all var(--transition-normal);
   position: relative;
   overflow: hidden;
   display: flex;
   flex-direction: column;
   box-shadow: var(--shadow-sm);
-  transform-style: preserve-3d;
   height: 100%;
   box-sizing: border-box;
 }
@@ -1828,29 +1822,29 @@ onUnmounted(() => {
 }
 
 .major-card.category-engineering .major-card__top-bar {
-  background: linear-gradient(90deg, var(--color-slate-700) 0%, var(--color-slate-700) 100%);
+  background: var(--color-slate-700);
 }
 
 .major-card.category-business .major-card__top-bar {
-  background: linear-gradient(90deg, var(--color-success) 0%, #66bb6a 100%);
+  background: var(--color-success);
 }
 
 .major-card.category-social .major-card__top-bar {
-  background: linear-gradient(90deg, var(--color-warning) 0%, #ffb74d 100%);
+  background: var(--color-warning);
 }
 
 .major-card.category-science .major-card__top-bar {
-  background: linear-gradient(90deg, var(--color-info) 0%, #64b5f6 100%);
+  background: var(--color-info);
 }
 
 .major-card.category-arts .major-card__top-bar {
-  background: linear-gradient(90deg, var(--color-danger) 0%, #ef5350 100%);
+  background: var(--color-danger);
 }
 
 .major-card:hover {
-  transform: translateY(-8px) rotateX(2deg);
-  box-shadow: 0 25px 50px -12px rgba(30, 58, 95, 0.15), 0 0 0 1px rgba(30, 58, 95, 0.05);
-  border-color: var(--color-slate-200);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--color-border);
 }
 
 .major-card:hover .major-card__top-bar {
@@ -1894,27 +1888,27 @@ onUnmounted(() => {
 }
 
 .category-tag.el-tag--primary {
-  background: var(--color-slate-50);
+  background: var(--color-slate-100);
   color: var(--color-slate-700);
 }
 
 .category-tag.el-tag--success {
-  background: #e8f5e9;
+  background: var(--color-success-bg);
   color: var(--color-success);
 }
 
 .category-tag.el-tag--warning {
-  background: #fff3e0;
+  background: var(--color-warning-bg);
   color: var(--color-warning);
 }
 
 .category-tag.el-tag--info {
-  background: #e3f2fd;
+  background: var(--color-info-bg);
   color: var(--color-info);
 }
 
 .category-tag.el-tag--danger {
-  background: #ffebee;
+  background: var(--color-danger-bg);
   color: var(--color-danger);
 }
 
@@ -1932,7 +1926,6 @@ onUnmounted(() => {
   font-size: var(--text-lg);
   font-weight: var(--font-semibold);
   color: var(--color-text-primary);
-  font-family: var(--font-family-display);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1974,7 +1967,7 @@ onUnmounted(() => {
 .major-salary {
   margin-top: auto;
   padding: var(--space-3);
-  background: linear-gradient(135deg, var(--color-background-alt) 0%, var(--color-slate-50) 100%);
+  background: var(--color-background-alt);
   border-radius: var(--radius-lg);
   display: flex;
   flex-direction: column;
@@ -2049,7 +2042,7 @@ onUnmounted(() => {
   display: flex;
   gap: var(--space-5);
   padding: var(--space-5);
-  background: linear-gradient(135deg, var(--color-slate-50) 0%, var(--color-background-alt) 100%);
+  background: var(--color-slate-50);
   border-radius: var(--radius-xl);
   margin-bottom: var(--space-6);
 }
@@ -2071,9 +2064,9 @@ onUnmounted(() => {
 
 .detail-title h2 {
   margin: 0 0 var(--space-2);
-  font-family: var(--font-family-display);
   font-size: var(--text-2xl);
   color: var(--color-text-primary);
+  font-weight: var(--font-bold);
 }
 
 .detail-subtitle {
