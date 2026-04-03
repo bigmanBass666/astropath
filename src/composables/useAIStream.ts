@@ -1,4 +1,4 @@
-import { computed, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
+import { computed, onMounted, onUnmounted, reactive, ref, watch, type ComputedRef } from 'vue'
 import { sendMessageToAI, AIError } from '@/utils/ai-api'
 import { useGlobalAIState, type AIStreamState, type ActiveStreamInfo } from './useGlobalAIState'
 
@@ -19,24 +19,24 @@ export interface UseAIStreamOptions {
 }
 
 export interface AIStreamResult {
-  state: ReturnType<typeof computed<AIStreamState>>
-  content: ReturnType<typeof computed<string>>
-  reasoning: ReturnType<typeof computed<string>>
-  error: ReturnType<typeof computed<string | null>>
-  showReasoning: ReturnType<typeof computed<boolean>>
-  isStreaming: ReturnType<typeof computed<boolean>>
-  isThinking: ReturnType<typeof computed<boolean>>
-  isConnecting: ReturnType<typeof computed<boolean>>
-  isQueued: ReturnType<typeof computed<boolean>>
-  isCompleted: ReturnType<typeof computed<boolean>>
-  hasError: ReturnType<typeof computed<boolean>>
-  hasContent: ReturnType<typeof computed<boolean>>
-  hasReasoning: ReturnType<typeof computed<boolean>>
-  isLoading: ReturnType<typeof computed<boolean>>
-  waitingPhase: ReturnType<typeof computed<'connecting' | 'processing' | 'ready'>>
-  queuePosition: ReturnType<typeof computed<number>>
-  canRetry: ReturnType<typeof computed<boolean>>
-  retryCount: ReturnType<typeof computed<number>>
+  state: ComputedRef<AIStreamState>
+  content: ComputedRef<string>
+  reasoning: ComputedRef<string>
+  error: ComputedRef<string | null>
+  showReasoning: ComputedRef<boolean>
+  isStreaming: ComputedRef<boolean>
+  isThinking: ComputedRef<boolean>
+  isConnecting: ComputedRef<boolean>
+  isQueued: ComputedRef<boolean>
+  isCompleted: ComputedRef<boolean>
+  hasError: ComputedRef<boolean>
+  hasContent: ComputedRef<boolean>
+  hasReasoning: ComputedRef<boolean>
+  isLoading: ComputedRef<boolean>
+  waitingPhase: ComputedRef<'connecting' | 'processing' | 'ready'>
+  queuePosition: ComputedRef<number>
+  canRetry: ComputedRef<boolean>
+  retryCount: ComputedRef<number>
   userScrolledUp: ReturnType<typeof ref<boolean>>
   generate: (messages: unknown[], options?: unknown) => Promise<string>
   generateWithProvider: (providerId: string, messages: unknown[], options?: unknown) => Promise<string>
@@ -54,7 +54,6 @@ export function useAIStream(options: UseAIStreamOptions): AIStreamResult {
   const {
     taskId,
     enableThinking,
-    collapseReasoningOnContent = true,
     autoRestore = true,
     autoRetry = false,
     priority = 0,
@@ -79,6 +78,10 @@ export function useAIStream(options: UseAIStreamOptions): AIStreamResult {
 
   const userScrolledUp = ref(false)
   let userScrollLocked = false
+  let lastUserScrollTime = 0
+  let scrollRafId: number | null = null
+  let rafScrollId: number | null = null
+  const SCROLL_COOLDOWN = 150
 
   const task = computed(() => globalState.getTask(taskId))
 
@@ -181,7 +184,7 @@ export function useAIStream(options: UseAIStreamOptions): AIStreamResult {
     requestOptions?: unknown
   ): Promise<string> => {
     // 默认配置
-    const defaultOpts = {
+    const defaultOpts: Record<string, any> = {
       temperature: config.defaultTemperature,
       stream: true,
       enableThinking: actualEnableThinking
@@ -194,7 +197,7 @@ export function useAIStream(options: UseAIStreamOptions): AIStreamResult {
     
     const finalOptions = {
       ...defaultOpts,
-      ...requestOptions
+      ...(requestOptions as Record<string, any>)
     }
 
     abortController = new AbortController()
@@ -212,10 +215,10 @@ export function useAIStream(options: UseAIStreamOptions): AIStreamResult {
         providerId,
         messages,
         finalOptions,
-        abortController.signal
+        abortController.signal as any
       )
 
-      for await (const chunk of stream) {
+      for await (const chunk of stream as AsyncIterable<{ type: string; content: any }>) {
         if (!globalState.isTaskActive(taskId)) break
 
         if (chunk.type === 'reasoning' && chunk.content) {
@@ -322,13 +325,11 @@ export function useAIStream(options: UseAIStreamOptions): AIStreamResult {
     globalState._registerStreamActions(taskId, stop, retry)
   }
 
-  const syncActiveStream = () => {
-    registerAsActive()
-  }
-
   const cleanupWatchers = () => {
     activeWatchers.forEach(w => w())
     activeWatchers.length = 0
+    if (scrollRafId) { cancelAnimationFrame(scrollRafId); scrollRafId = null }
+    if (rafScrollId) { cancelAnimationFrame(rafScrollId); rafScrollId = null }
   }
 
   const stop = () => {
@@ -365,31 +366,54 @@ export function useAIStream(options: UseAIStreamOptions): AIStreamResult {
     globalState.updateTask(taskId, { showReasoning: show })
   }
 
-  const scrollToBottom = (force: boolean = false) => {
-    if (!autoScroll) return
-    if (userScrollLocked && !force) return
-    
+  const doScroll = () => {
     const container = scrollContainer?.()
     if (container) {
       container.scrollTop = container.scrollHeight
     }
   }
 
+  const scrollToBottom = (force: boolean = false) => {
+    if (!autoScroll) return
+
+    if (force) {
+      if (rafScrollId) { cancelAnimationFrame(rafScrollId); rafScrollId = null }
+      doScroll()
+      return
+    }
+
+    if (userScrollLocked) return
+    if (Date.now() - lastUserScrollTime < SCROLL_COOLDOWN) return
+    if (rafScrollId) return
+
+    rafScrollId = requestAnimationFrame(() => {
+      rafScrollId = null
+      doScroll()
+    })
+  }
+
   const handleUserScroll = () => {
     const container = scrollContainer?.()
     if (!container) return
-    
-    const { scrollTop, scrollHeight, clientHeight } = container
-    const distanceFromBottom = scrollHeight - scrollTop - clientHeight
-    const isAtBottom = distanceFromBottom < 60
-    
-    if (!isAtBottom && distanceFromBottom > 80) {
-      userScrollLocked = true
-      userScrolledUp.value = true
-    } else if (isAtBottom) {
-      userScrollLocked = false
-      userScrolledUp.value = false
-    }
+
+    lastUserScrollTime = Date.now()
+
+    if (scrollRafId) return
+    scrollRafId = requestAnimationFrame(() => {
+      scrollRafId = null
+
+      const { scrollTop, scrollHeight, clientHeight } = container
+      const distanceFromBottom = scrollHeight - scrollTop - clientHeight
+      const isAtBottom = distanceFromBottom < 60
+
+      if (!isAtBottom && distanceFromBottom > 80) {
+        userScrollLocked = true
+        userScrolledUp.value = true
+      } else if (isAtBottom) {
+        userScrollLocked = false
+        userScrolledUp.value = false
+      }
+    })
   }
 
   const restore = (): boolean => {

@@ -1112,10 +1112,10 @@ onUnmounted(() => {
   inset: 0;
   pointer-events: none;
   background:
-    linear-gradient(90deg, rgba(30, 58, 95, 0.03) 1px, transparent 1px),
-    linear-gradient(rgba(30, 58, 95, 0.03) 1px, transparent 1px),
-    radial-gradient(ellipse at 25% 50%, rgba(30, 58, 95, 0.05) 0%, transparent 55%),
-    radial-gradient(ellipse at 75% 50%, rgba(184, 134, 11, 0.04) 0%, transparent 55%),
+    linear-gradient(90deg, rgba(15, 23, 42, 0.02) 1px, transparent 1px),
+    linear-gradient(rgba(15, 23, 42, 0.02) 1px, transparent 1px),
+    radial-gradient(ellipse at 25% 50%, rgba(15, 23, 42, 0.03) 0%, transparent 55%),
+    radial-gradient(ellipse at 75% 50%, rgba(217, 119, 6, 0.02) 0%, transparent 55%),
     linear-gradient(180deg, var(--color-background-alt) 0%, var(--color-surface) 100%);
   background-size: 80px 80px, 80px 80px, 100% 100%, 100% 100%, 100% 100%;
 }
@@ -1133,7 +1133,7 @@ onUnmounted(() => {
   height: 500px;
   top: -150px;
   left: -80px;
-  background: radial-gradient(circle, rgba(184, 134, 11, 0.07) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(217, 119, 6, 0.04) 0%, transparent 70%);
   animation: glow-pulse 10s ease-in-out infinite;
   pointer-events: none;
 }
@@ -1145,7 +1145,7 @@ onUnmounted(() => {
   height: 350px;
   bottom: -80px;
   right: -40px;
-  background: radial-gradient(circle, rgba(30, 58, 95, 0.06) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(15, 23, 42, 0.04) 0%, transparent 70%);
   animation: glow-pulse 12s ease-in-out infinite reverse;
   pointer-events: none;
 }
@@ -1193,18 +1193,18 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   background: #fff;
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-lg), 0 0 0 1px rgba(30, 58, 95, 0.06);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg), 0 0 0 1px rgba(15, 23, 42, 0.05);
+  transition: all var(--transition-normal);
   padding: 2px;
 }
 
 .db-hero-search:hover {
-  box-shadow: var(--shadow-xl), 0 0 0 1px rgba(30, 58, 95, 0.1);
+  box-shadow: var(--shadow-xl), 0 0 0 1px rgba(15, 23, 42, 0.08);
 }
 
 .db-hero-search:focus-within {
-  box-shadow: var(--shadow-xl), 0 0 0 3px rgba(30, 58, 95, 0.08), 0 8px 32px rgba(30, 58, 95, 0.08);
+  box-shadow: var(--shadow-xl), 0 0 0 3px rgba(15, 23, 42, 0.08);
 }
 
 .hero-search-field {
@@ -1230,7 +1230,7 @@ onUnmounted(() => {
   justify-content: center;
   padding: 10px 24px;
   margin: 4px;
-  background: linear-gradient(135deg, var(--color-solid) 0%, var(--color-solid-hover) 100%);
+  background: var(--color-solid);
   color: #fff;
   border: none;
   border-radius: var(--radius-lg);
@@ -1238,17 +1238,18 @@ onUnmounted(() => {
   font-weight: var(--font-semibold);
   cursor: pointer;
   white-space: nowrap;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all var(--transition-fast);
   letter-spacing: 0.3px;
 }
 
 .hero-search-action:hover {
+  background: var(--color-solid-hover);
   transform: translateY(-1px);
-  box-shadow: 0 4px 16px rgba(30, 58, 95, 0.35);
+  box-shadow: var(--shadow-md);
 }
 
 .hero-search-action:active {
-  transform: translateY(0) scale(0.98);
+  transform: translateY(0);
 }
 
 /* 热门标签 */
