@@ -1998,9 +1998,9 @@ function initScrollAnimations() {
 
 .essay-types-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: var(--space-6);
-  max-width: 800px;
+  max-width: 1100px;
   margin: 0 auto;
 }
 
@@ -2978,6 +2978,7 @@ function initScrollAnimations() {
   .stages-grid { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
   .overall-progress-inner { flex-direction: column; text-align: center; }
   .progress-stats { justify-content: center; }
+  .essay-types-grid { grid-template-columns: repeat(2, 1fr); max-width: 600px; }
 }
 
 @media (max-width: 768px) {
