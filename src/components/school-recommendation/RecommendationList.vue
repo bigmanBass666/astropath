@@ -70,7 +70,9 @@
       <!-- AI 调整输入区 -->
       <div class="ai-chat-input-wrapper">
         <div class="ai-input-container">
-          <el-icon class="ai-input-icon"><ChatDotRound /></el-icon>
+          <el-icon class="ai-input-icon">
+            <ChatDotRound />
+          </el-icon>
           <input
             v-model="adjustInput"
             type="text"
@@ -90,7 +92,10 @@
 
       <!-- 操作按钮组 -->
       <div class="action-buttons">
-        <button class="action-btn secondary" @click="$emit('reset')">
+        <button
+          class="action-btn secondary"
+          @click="$emit('reset')"
+        >
           <el-icon><RefreshLeft /></el-icon>
           <span>重新填写偏好</span>
         </button>
@@ -102,7 +107,10 @@
         >
           <el-icon><ScaleToOriginal /></el-icon>
           <span>对比收藏</span>
-          <span v-if="favorites.length > 0" class="btn-badge">{{ favorites.length }}</span>
+          <span
+            v-if="favorites.length > 0"
+            class="btn-badge"
+          >{{ favorites.length }}</span>
         </button>
       </div>
     </div>

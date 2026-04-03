@@ -4,17 +4,6 @@
       背景评估
     </h2>
 
-    <!-- 步骤指示器 -->
-    <el-steps
-      :active="currentStep"
-      finish-status="success"
-      class="steps-indicator"
-    >
-      <el-step title="基础信息" />
-      <el-step title="学术背景" />
-      <el-step title="实践经历" />
-    </el-steps>
-
     <!-- 步骤1：基础信息 -->
     <el-card
       v-if="currentStep === 0"
@@ -479,160 +468,188 @@
         v-if="!isLoading"
         class="report-content"
       >
-        <!-- AI深度分析区域 - 置顶显示 -->
-        <div class="ai-analysis-section ai-analysis-highlight">
-          <div class="ai-header">
-            <h4>
-              <el-icon style="margin-right: 8px;">
-                <Cpu />
-              </el-icon>
-              AI深度分析
-            </h4>
-            <el-tag
-              v-if="isAiAnalyzing"
-              type="warning"
-              effect="dark"
-            >
-              <el-icon
-                class="is-loading"
-                style="margin-right: 4px;"
-              >
-                <Loading />
-              </el-icon>
-              {{ aiContent ? '生成中...' : '思考中...' }}
-            </el-tag>
-            <el-tag
-              v-else-if="aiContent"
-              type="success"
-              effect="dark"
-            >
-              分析完成
-            </el-tag>
-            <el-tag
-              v-else-if="aiError"
-              type="danger"
-              effect="dark"
-            >
-              分析失败
-            </el-tag>
-            <el-tag
-              v-else
-              type="info"
-              effect="plain"
-            >
-              等待分析
-            </el-tag>
-          </div>
-          
-          <!-- AI思考中提示 - 只在刚开始时显示 -->
+        <!-- AI深度分析区域 - 置顶显示（最外层可折叠） -->
+        <div
+          class="ai-analysis-section ai-analysis-highlight"
+          :class="{
+            'status-analyzing': isAiAnalyzing,
+            'status-complete': aiContent && !isAiAnalyzing,
+            'status-error': aiError,
+            'status-waiting': !isAiAnalyzing && !aiContent && !aiError
+          }"
+        >
+          <!-- 外层折叠头部 -->
           <div
-            v-if="isAiAnalyzing && !aiContent && !aiReasoning"
-            class="ai-thinking"
+            class="ai-outer-header"
+            @click="toggleAiSection"
           >
-            <div class="thinking-animation">
-              <div class="thinking-dot" />
-              <div class="thinking-dot" />
-              <div class="thinking-dot" />
-            </div>
-            <p class="thinking-text">
-              AI正在启动深度分析...
-            </p>
-            <p class="thinking-tip">
-              思考型模型会先分析您的背景，再生成更有针对性的建议
-            </p>
-          </div>
-          
-          <!-- 思考过程（可折叠) - 有内容就立即显示 -->
-          <div
-            v-if="aiReasoning || (isAiAnalyzing && !aiContent)"
-            class="ai-reasoning-section"
-          >
-            <div
-              class="reasoning-header"
-              @click="toggleReasoning"
-            >
-              <div class="reasoning-title">
-                <el-icon><Cpu /></el-icon>
-                <span>思考过程</span>
+            <div class="ai-outer-title">
+              <div class="ai-outer-left">
+                <h4>
+                  <el-icon style="margin-right: 8px;">
+                    <Cpu />
+                  </el-icon>
+                  AI深度分析
+                </h4>
+              </div>
+              <div class="ai-outer-right">
                 <el-tag
                   size="small"
                   type="info"
                 >
-                  {{ showReasoning ? '点击收起' : '点击展开' }}
+                  {{ showAiSection ? '点击收起' : '点击展开' }}
                 </el-tag>
                 <el-icon
                   class="toggle-icon"
-                  :class="{ rotated: showReasoning }"
+                  :class="{ rotated: showAiSection }"
+                  style="margin-left: 8px;"
                 >
-                  <ArrowUp v-if="!showReasoning" />
+                  <ArrowUp v-if="!showAiSection" />
                   <ArrowDown v-else />
                 </el-icon>
               </div>
             </div>
+          </div>
+
+          <!-- 可折叠内容区域 -->
+          <div
+            v-show="showAiSection"
+            class="ai-section-content"
+          >
+            <!-- AI思考中提示 - 只在刚开始时显示 -->
             <div
-              v-show="showReasoning"
-              ref="reasoningContentRef"
-              class="reasoning-content"
+              v-if="isAiAnalyzing && !aiContent && !aiReasoning"
+              class="ai-thinking"
             >
-              <div class="reasoning-text">
-                {{ aiReasoning || '正在思考...' }}
+              <div class="thinking-animation">
+                <div class="thinking-dot" />
+                <div class="thinking-dot" />
+                <div class="thinking-dot" />
               </div>
-              <span
-                v-if="isAiAnalyzing && !aiContent"
-                class="typing-cursor"
-              />
+              <p class="thinking-text">
+                AI正在启动深度分析...
+              </p>
+              <p class="thinking-tip">
+                思考型模型会先分析您的背景，再生成更有针对性的建议
+              </p>
             </div>
-          </div>
-          
-          <!-- AI分析内容 -->
-          <div
-            v-if="aiContent || (isAiAnalyzing && aiContent)"
-            class="ai-content"
-          >
+
+            <!-- 思考过程（可折叠) - 有内容才显示 -->
             <div
-              class="ai-markdown"
-              v-html="renderAiContent(aiContent)"
-            />
-            <span
-              v-if="isAiAnalyzing"
-              class="typing-cursor"
-            />
-          </div>
-          
-          <!-- 错误提示 -->
-          <div
-            v-else-if="aiError"
-            class="ai-error"
-          >
-            <el-alert
-              :title="getErrorTitle(aiError.type)"
-              :description="aiError.message"
-              type="error"
-              show-icon
-              :closable="false"
-            />
-            <el-button
-              type="primary"
-              style="margin-top: 12px;"
-              @click="retryAIAnalysis"
+              v-if="aiReasoning"
+              class="ai-reasoning-section"
             >
-              重新分析
-            </el-button>
-          </div>
-          
-          <!-- 未开始分析提示 -->
-          <div
-            v-else-if="!selectedProvider"
-            class="ai-placeholder"
-          >
-            <el-empty description="未配置AI模型，无法进行深度分析">
+              <div
+                class="reasoning-header"
+                @click="toggleReasoning"
+              >
+                <div class="reasoning-title">
+                  <el-icon><Cpu /></el-icon>
+                  <span>思考过程</span>
+                  <el-tag
+                    size="small"
+                    type="info"
+                  >
+                    {{ showReasoning ? '点击收起' : '点击展开' }}
+                  </el-tag>
+                  <el-icon
+                    class="toggle-icon"
+                    :class="{ rotated: showReasoning }"
+                  >
+                    <ArrowUp v-if="!showReasoning" />
+                    <ArrowDown v-else />
+                  </el-icon>
+                </div>
+              </div>
+              <div
+                v-show="showReasoning"
+                ref="reasoningContentRef"
+                class="reasoning-content"
+              >
+                <div class="reasoning-text">
+                  {{ aiReasoning }}
+                </div>
+              </div>
+            </div>
+
+            <!-- AI分析内容（可折叠） -->
+            <div
+              v-if="aiContent || (isAiAnalyzing && aiContent)"
+              class="ai-content-section"
+            >
+              <div
+                class="ai-content-header"
+                @click="toggleAiContent"
+              >
+                <div class="ai-content-title">
+                  <el-icon><Document /></el-icon>
+                  <span>分析报告</span>
+                  <el-tag
+                    size="small"
+                    type="info"
+                  >
+                    {{ showAiContent ? '点击收起' : '点击展开' }}
+                  </el-tag>
+                  <el-icon
+                    class="toggle-icon"
+                    :class="{ rotated: showAiContent }"
+                  >
+                    <ArrowUp v-if="!showAiContent" />
+                    <ArrowDown v-else />
+                  </el-icon>
+                </div>
+              </div>
+              <div
+                v-show="showAiContent"
+                class="ai-content"
+              >
+                <!-- eslint-disable-next-line vue/no-v-html -->
+                <div
+                  class="ai-markdown"
+                  v-html="renderAiContent(aiContent)"
+                />
+                <span
+                  v-if="isAiAnalyzing"
+                  class="typing-cursor"
+                />
+              </div>
+            </div>
+
+            <!-- 错误提示 -->
+            <div
+              v-else-if="aiError"
+              class="ai-error"
+            >
+              <el-alert
+                :title="getErrorTitle(aiError.type)"
+                :description="aiError.message"
+                type="error"
+                show-icon
+                :closable="false"
+              />
               <el-button
                 type="primary"
-                @click="router.push('/ai-config')"
+                style="margin-top: 12px;"
+                @click="retryAIAnalysis"
               >
-                去配置
+                重新分析
               </el-button>
-            </el-empty>
+            </div>
+
+            <!-- 未开始分析提示 -->
+            <div
+              v-else-if="!selectedProvider"
+              class="ai-placeholder"
+            >
+              <el-empty description="未配置AI模型，无法进行深度分析">
+                <el-button
+                  type="primary"
+                  @click="router.push('/ai-config')"
+                >
+                  去配置
+                </el-button>
+              </el-empty>
+            </div>
           </div>
         </div>
 
@@ -1005,9 +1022,8 @@ import { ref, reactive, computed, onMounted, onUnmounted, nextTick, watch } from
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import * as echarts from 'echarts'
-import { marked } from 'marked'
 import { sendMessageToAI, buildAssessmentPrompt, AIError } from '@/utils/ai-api'
-import { Cpu, ArrowDown, Setting, Loading, ArrowUp } from '@element-plus/icons-vue'
+import { Cpu, ArrowDown, Setting, ArrowUp, Document } from '@element-plus/icons-vue'
 
 const router = useRouter()
 const currentStep = ref(0)
@@ -1547,6 +1563,8 @@ const aiReasoning = ref('')
 const aiError = ref(null)
 const selectedProvider = ref(null)
 const showReasoning = ref(true)
+const showAiContent = ref(true)
+const showAiSection = ref(true)
 
 const providers = computed(() => {
   const saved = localStorage.getItem('ai_providers')
@@ -1650,17 +1668,22 @@ const retryAIAnalysis = () => {
   callAIAnalysis()
 }
 
+import { renderMarkdown } from '@/utils/markdown'
+
 const renderAiContent = (content) => {
-  if (!content) return ''
-  try {
-    return marked(content)
-  } catch (e) {
-    return content
-  }
+  return renderMarkdown(content)
 }
 
 const toggleReasoning = () => {
   showReasoning.value = !showReasoning.value
+}
+
+const toggleAiContent = () => {
+  showAiContent.value = !showAiContent.value
+}
+
+const toggleAiSection = () => {
+  showAiSection.value = !showAiSection.value
 }
 
 const getErrorTitle = (errorType) => {
@@ -1834,6 +1857,10 @@ const resetForm = () => {
     aiContent.value = ''
     aiReasoning.value = ''
     aiError.value = null
+    showAiSection.value = true
+    showReasoning.value = true
+    showAiContent.value = true
+    isAiAnalyzing.value = false
     currentStep.value = 0
     practiceTab.value = 'internship'
     localStorage.removeItem('assessment_form')
@@ -1867,7 +1894,19 @@ const loadFromStorage = async () => {
       if (data.aiReasoning) {
         aiReasoning.value = data.aiReasoning
       }
-    } catch (e) {
+      if (typeof data.showReasoning === 'boolean') {
+        showReasoning.value = data.showReasoning
+      }
+      if (typeof data.showAiContent === 'boolean') {
+        showAiContent.value = data.showAiContent
+      }
+      if (typeof data.showAiSection === 'boolean') {
+        showAiSection.value = data.showAiSection
+      }
+      if (typeof data.isAiAnalyzing === 'boolean') {
+        isAiAnalyzing.value = data.isAiAnalyzing
+      }
+    } catch (_e) {
       // ignore parse errors
     }
   }
@@ -1881,7 +1920,7 @@ const loadFromStorage = async () => {
 
 // 监听表单数据和步骤变化，自动保存到 localStorage（仅在数据加载完成后生效）
 watch(
-  [form, currentStep, practiceTab, aiContent, aiReasoning],
+  [form, currentStep, practiceTab, aiContent, aiReasoning, showReasoning, showAiContent, showAiSection, isAiAnalyzing],
   () => {
     if (!isLoaded || isResetting.value) return
     const formData = {
@@ -1897,7 +1936,11 @@ watch(
       currentStep: currentStep.value,
       practiceTab: practiceTab.value,
       aiContent: aiContent.value,
-      aiReasoning: aiReasoning.value
+      aiReasoning: aiReasoning.value,
+      showReasoning: showReasoning.value,
+      showAiContent: showAiContent.value,
+      showAiSection: showAiSection.value,
+      isAiAnalyzing: isAiAnalyzing.value
     }
     localStorage.setItem('assessment_form', JSON.stringify(formData))
     if (form.basic.name || form.basic.university) {
@@ -1940,62 +1983,6 @@ onUnmounted(() => {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 20px;
-}
-
-.steps-indicator {
-  margin-bottom: 30px;
-  width: 100%;
-}
-
-/* 修复步骤指示器：确保占满整个宽度并正确显示连线 */
-:deep(.el-steps) {
-  display: flex;
-  width: 100%;
-}
-
-/* 步骤项样式 */
-:deep(.el-step) {
-  flex: 1;
-  flex-basis: auto !important;
-}
-
-/* 修复步骤连线 */
-:deep(.el-step__line) {
-  position: absolute;
-  top: 11px;
-  left: 50%;
-  right: -50%;
-  height: 2px;
-  background-color: #c0c4cc;
-  z-index: 1;
-}
-
-/* 激活状态的连线 */
-:deep(.el-step__line-inner) {
-  border-width: 1px !important;
-  border-style: solid;
-  border-color: #67c23a;
-  transition: all 0.3s;
-}
-
-/* 步骤标题样式 */
-:deep(.el-step__title) {
-  white-space: nowrap;
-  font-size: 14px;
-  font-weight: 500;
-}
-
-/* 步骤图标容器 */
-:deep(.el-step__head) {
-  position: relative;
-  z-index: 2;
-}
-
-/* 确保步骤指示器在移动端也能正常显示 */
-@media (max-width: 768px) {
-  :deep(.el-step__title) {
-    font-size: 12px;
-  }
 }
 
 .step-card {
@@ -2332,8 +2319,15 @@ onUnmounted(() => {
   margin: 30px 0;
   background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
   border-radius: 16px;
-  padding: 24px;
   border: 1px solid #e2e8f0;
+}
+
+.ai-analysis-section.ai-analysis-highlight {
+  padding: 0;
+}
+
+.ai-section-content {
+  padding: 24px;
 }
 
 /* AI分析高亮样式 - 置顶显示 */
@@ -2343,6 +2337,24 @@ onUnmounted(() => {
   border: 2px solid var(--color-primary);
   box-shadow: 0 4px 20px rgba(30, 58, 95, 0.15);
   position: relative;
+  transition: border-color 0.3s ease;
+}
+
+/* 不同状态的边框颜色 */
+.ai-analysis-highlight.status-analyzing {
+  border-color: #e6a23c;
+}
+
+.ai-analysis-highlight.status-complete {
+  border-color: var(--color-primary);
+}
+
+.ai-analysis-highlight.status-error {
+  border-color: #f56c6c;
+}
+
+.ai-analysis-highlight.status-waiting {
+  border-color: #909399;
 }
 
 .ai-analysis-highlight::before {
@@ -2352,11 +2364,32 @@ onUnmounted(() => {
   left: 24px;
   background: var(--gradient-primary);
   color: white;
-  padding: 4px 16px;
+  padding: 4px 12px;
   border-radius: 12px;
   font-size: 12px;
   font-weight: 600;
   box-shadow: 0 2px 8px rgba(30, 58, 95, 0.3);
+}
+
+/* 不同状态的标签内容 */
+.ai-analysis-highlight.status-analyzing::before {
+  content: '核心分析 · 分析中';
+  background: linear-gradient(135deg, #e6a23c 0%, #eebe77 100%);
+}
+
+.ai-analysis-highlight.status-complete::before {
+  content: '核心分析 · 完成';
+  background: var(--gradient-primary);
+}
+
+.ai-analysis-highlight.status-error::before {
+  content: '核心分析 · 失败';
+  background: linear-gradient(135deg, #f56c6c 0%, #f89898 100%);
+}
+
+.ai-analysis-highlight.status-waiting::before {
+  content: '核心分析 · 等待';
+  background: linear-gradient(135deg, #909399 0%, #b1b3b8 100%);
 }
 
 .ai-analysis-highlight .ai-header {
@@ -2598,6 +2631,79 @@ onUnmounted(() => {
   color: #64748b;
   white-space: pre-wrap;
   word-break: break-word;
+}
+
+/* AI分析内容折叠样式 */
+.ai-content-section {
+  margin: 20px 0;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.ai-content-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.2s ease;
+}
+
+.ai-content-header:hover {
+  background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+}
+
+.ai-content-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  color: #166534;
+}
+
+.ai-content-title .el-icon {
+  color: #16a34a;
+}
+
+/* 外层AI分析区域折叠头部样式 */
+.ai-outer-header {
+  cursor: pointer;
+  user-select: none;
+  padding: 16px 20px;
+  border-radius: 14px 14px 0 0;
+  transition: all 0.2s ease;
+}
+
+.ai-outer-header:hover {
+  background: rgba(30, 58, 95, 0.03);
+}
+
+.ai-outer-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ai-outer-left {
+  display: flex;
+  align-items: center;
+}
+
+.ai-outer-left h4 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1e293b;
+  display: flex;
+  align-items: center;
+}
+
+.ai-outer-right {
+  display: flex;
+  align-items: center;
 }
 
 </style>

@@ -871,41 +871,39 @@ onUnmounted(() => {
 }
 
 .cta-button {
-  background: var(--gradient-primary);
+  background: #0F172A;
   color: white;
   font-size: var(--text-lg);
-  padding: var(--space-4) var(--space-10);
+  padding: 14px 36px;
   border-radius: var(--radius-lg);
-  font-weight: var(--font-semibold);
+  font-weight: 600;
   border: none;
   white-space: nowrap;
-  transition: all var(--transition-spring);
-  box-shadow: var(--shadow-md);
+  transition: all 0.2s ease;
   min-width: 160px;
 }
 
 .cta-button:hover {
-  transform: translateY(-2px) scale(1.02);
-  box-shadow: var(--shadow-lg), var(--shadow-glow-primary);
+  background: #1E293B;
+  transform: translateY(-1px);
 }
 
 .secondary-button {
   background: transparent;
-  color: var(--color-primary);
+  color: var(--color-text-primary);
   font-size: var(--text-lg);
-  padding: var(--space-4) var(--space-10);
+  padding: 14px 36px;
   border-radius: var(--radius-lg);
-  font-weight: var(--font-semibold);
-  border: 2px solid var(--color-primary);
+  font-weight: 600;
+  border: 1.5px solid rgba(30, 58, 95, 0.2);
   white-space: nowrap;
-  transition: all var(--transition-spring);
+  transition: all 0.2s ease;
   min-width: 160px;
 }
 
 .secondary-button:hover {
-  background: var(--color-primary-50);
-  border-color: var(--color-primary-light);
-  transform: translateY(-2px);
+  border-color: var(--color-text-primary);
+  transform: translateY(-1px);
 }
 
 /* Hero统计数据 */

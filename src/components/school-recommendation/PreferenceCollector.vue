@@ -125,16 +125,97 @@
         <el-icon><MagicStick /></el-icon>
         开始智能推荐
       </el-button>
+      
+      <div
+        v-if="loading"
+        class="progress-indicator"
+      >
+        <div class="progress-bar-container">
+          <el-progress
+            :percentage="stepProgress"
+            :stroke-width="8"
+            :show-text="false"
+            class="progress-bar"
+          />
+        </div>
+        <div class="progress-steps">
+          <div
+            v-for="(stepInfo, index) in visibleSteps"
+            :key="stepInfo.step"
+            class="progress-step"
+            :class="{ 
+              'is-active': currentStep === stepInfo.step,
+              'is-completed': getStepIndex(stepInfo.step) < getStepIndex(currentStep)
+            }"
+          >
+            <div class="step-icon">
+              <el-icon v-if="getStepIndex(stepInfo.step) < getStepIndex(currentStep)">
+                <CircleCheck />
+              </el-icon>
+              <el-icon
+                v-else-if="currentStep === stepInfo.step"
+                class="is-loading"
+              >
+                <Loading />
+              </el-icon>
+              <span v-else>{{ index + 1 }}</span>
+            </div>
+            <span class="step-label">{{ stepInfo.label }}</span>
+          </div>
+        </div>
+        <p class="progress-text">
+          {{ stepLabels[currentStep as RecommendationStep] }}
+        </p>
+        
+        <!-- 流式输出显示区域 -->
+        <div
+          v-if="isStreaming && streamingContent"
+          class="streaming-content"
+        >
+          <!-- 思考过程 -->
+          <div
+            v-if="hasReasoningContent(streamingContent)"
+            class="reasoning-section"
+          >
+            <div class="streaming-label reasoning-label">
+              <el-icon class="streaming-icon">
+                <Loading />
+              </el-icon>
+              AI思考过程
+            </div>
+            <div class="streaming-text reasoning-text">
+              <pre>{{ getReasoningContent(streamingContent) }}</pre>
+            </div>
+          </div>
+          
+          <!-- 正式输出 -->
+          <div
+            v-if="hasMainContent(streamingContent)"
+            class="main-content-section"
+            :class="{ 'has-reasoning': hasReasoningContent(streamingContent) }"
+          >
+            <div class="streaming-label main-label">
+              <el-icon><Document /></el-icon>
+              生成结果
+            </div>
+            <div class="streaming-text main-text">
+              <pre>{{ getMainContent(streamingContent) }}</pre>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, computed } from 'vue'
-import { ChatDotRound, MagicStick, Trophy, Briefcase, MapLocation, Money, Reading } from '@element-plus/icons-vue'
+import { ChatDotRound, MagicStick, Trophy, Briefcase, MapLocation, Money, Reading, Loading, CircleCheck, Document } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
+import { stepLabels } from '@/composables/useAIRecommendation'
+import type { RecommendationStep } from '@/composables/useAIRecommendation'
 
-const props = defineProps({
+defineProps({
   assessment: {
     type: Object,
     default: null
@@ -150,6 +231,14 @@ const props = defineProps({
   stepProgress: {
     type: Number,
     default: 0
+  },
+  streamingContent: {
+    type: String,
+    default: ''
+  },
+  isStreaming: {
+    type: Boolean,
+    default: false
   }
 })
 
@@ -177,6 +266,52 @@ const getUniversityLabel = (university) => {
     'regular': '普通本科'
   }
   return map[university] || university || '未知院校'
+}
+
+const stepOrder: RecommendationStep[] = ['idle', 'analyzing', 'matching', 'generating', 'completed', 'error']
+
+const getStepIndex = (step: string): number => {
+  return stepOrder.indexOf(step as RecommendationStep)
+}
+
+const visibleSteps = computed(() => {
+  const steps: RecommendationStep[] = ['analyzing', 'matching', 'generating', 'completed']
+  return steps.map(step => ({
+    step,
+    label: stepLabels[step]
+  }))
+})
+
+// 检查是否有思考过程内容
+const hasReasoningContent = (content: string): boolean => {
+  if (!content) return false
+  const separatorIndex = content.indexOf('\n\n---\n\n')
+  if (separatorIndex === -1) return false
+  return separatorIndex > 0
+}
+
+// 检查是否有正式输出内容
+const hasMainContent = (content: string): boolean => {
+  if (!content) return false
+  const separatorIndex = content.indexOf('\n\n---\n\n')
+  if (separatorIndex === -1) return true // 没有分隔符，全部视为正式内容
+  return separatorIndex < content.length - 8 // 分隔符后面还有内容
+}
+
+// 获取思考过程内容
+const getReasoningContent = (content: string): string => {
+  if (!content) return ''
+  const separatorIndex = content.indexOf('\n\n---\n\n')
+  if (separatorIndex === -1) return ''
+  return content.slice(0, separatorIndex).trim()
+}
+
+// 获取正式输出内容
+const getMainContent = (content: string): string => {
+  if (!content) return ''
+  const separatorIndex = content.indexOf('\n\n---\n\n')
+  if (separatorIndex === -1) return content // 没有分隔符，返回全部
+  return content.slice(separatorIndex + 8).trim() // 8是 '\n\n---\n\n' 的长度
 }
 
 const togglePriority = (value) => {
@@ -363,8 +498,10 @@ const submitPreferences = () => {
 
 .form-actions {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
   padding-top: 10px;
+  gap: 20px;
 }
 
 .submit-btn {
@@ -383,5 +520,204 @@ const submitPreferences = () => {
 
 .submit-btn .el-icon {
   margin-right: 8px;
+}
+
+.progress-indicator {
+  width: 100%;
+  max-width: 500px;
+  padding: 24px;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  border-radius: 16px;
+  border: 1px solid #e2e8f0;
+}
+
+.progress-bar-container {
+  margin-bottom: 20px;
+}
+
+.progress-bar :deep(.el-progress-bar__outer) {
+  background-color: #cbd5e1;
+  border-radius: 4px;
+}
+
+.progress-bar :deep(.el-progress-bar__inner) {
+  background: var(--gradient-primary);
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+
+.progress-steps {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.progress-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  opacity: 0.5;
+  transition: all 0.3s ease;
+}
+
+.progress-step.is-active {
+  opacity: 1;
+}
+
+.progress-step.is-completed {
+  opacity: 0.8;
+}
+
+.step-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #cbd5e1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: #64748b;
+  transition: all 0.3s ease;
+}
+
+.progress-step.is-active .step-icon {
+  background: var(--gradient-primary);
+  color: white;
+  box-shadow: 0 4px 12px rgba(30, 58, 95, 0.3);
+}
+
+.progress-step.is-completed .step-icon {
+  background: #10b981;
+  color: white;
+}
+
+.step-icon .is-loading {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.step-label {
+  font-size: 12px;
+  color: #64748b;
+  text-align: center;
+  max-width: 80px;
+}
+
+.progress-step.is-active .step-label {
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.progress-text {
+  text-align: center;
+  margin: 0;
+  font-size: 15px;
+  color: var(--color-primary);
+  font-weight: 500;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+/* 流式输出样式 */
+.streaming-content {
+  margin-top: 20px;
+  padding: 16px;
+  background: #f8fafc;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+.streaming-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--color-primary);
+  font-weight: 500;
+  margin-bottom: 12px;
+}
+
+.streaming-icon {
+  animation: spin 1s linear infinite;
+}
+
+.streaming-text {
+  max-height: 120px;
+  overflow-y: auto;
+  background: white;
+  border-radius: 8px;
+  padding: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+.streaming-text pre {
+  margin: 0;
+  font-family: 'Consolas', 'Monaco', monospace;
+  font-size: 12px;
+  line-height: 1.6;
+  color: #334155;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.streaming-text::-webkit-scrollbar {
+  width: 4px;
+}
+
+.streaming-text::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 2px;
+}
+
+/* 思考过程样式 */
+.reasoning-section {
+  margin-bottom: 16px;
+}
+
+.reasoning-label {
+  color: #8b5cf6;
+}
+
+.reasoning-text {
+  background: linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%);
+  border-color: #d8b4fe;
+}
+
+.reasoning-text pre {
+  color: #6b21a8;
+}
+
+/* 正式输出样式 */
+.main-content-section {
+  margin-top: 16px;
+}
+
+.main-content-section.has-reasoning {
+  border-top: 1px dashed #cbd5e1;
+  padding-top: 16px;
+}
+
+.main-label {
+  color: #059669;
+}
+
+.main-text {
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  border-color: #86efac;
+}
+
+.main-text pre {
+  color: #166534;
 }
 </style>

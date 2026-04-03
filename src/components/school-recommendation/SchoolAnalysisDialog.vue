@@ -7,7 +7,7 @@
     class="analysis-dialog"
   >
     <div
-      v-if="school && analysis"
+      v-if="school && analysis && !analysisLoading"
       class="analysis-content"
     >
       <!-- 学校头部信息 -->
@@ -142,30 +142,83 @@
       </div>
     </div>
 
-    <!-- 骨架屏加载状态 -->
+    <!-- 加载状态 - 包含流式输出 -->
     <div
-      v-else-if="loading"
-      class="skeleton-loading"
+      v-else-if="analysisLoading || isStreaming"
+      class="analysis-loading"
     >
-      <div class="skeleton-header">
-        <div class="skeleton-title" />
-        <div class="skeleton-tags">
-          <div class="skeleton-tag" />
-          <div class="skeleton-tag" />
-          <div class="skeleton-tag" />
+      <!-- 学校头部骨架 -->
+      <div class="school-header">
+        <h3 class="school-name">
+          {{ school?.name || '正在分析...' }}
+        </h3>
+        <div
+          v-if="school"
+          class="school-tags"
+        >
+          <el-tag>{{ school.country }}</el-tag>
+          <el-tag type="info">
+            {{ school.ranking }}
+          </el-tag>
+          <el-tag type="success">
+            录取率 {{ school.acceptanceRate }}
+          </el-tag>
         </div>
       </div>
-      <div class="skeleton-assessment" />
-      <div class="skeleton-section">
-        <div class="skeleton-section-title" />
-        <div class="skeleton-line" />
-        <div class="skeleton-line" />
-        <div class="skeleton-line short" />
+
+      <!-- 流式输出显示区域 -->
+      <div
+        v-if="streamingContent"
+        class="streaming-content"
+      >
+        <!-- 思考过程 -->
+        <div
+          v-if="hasReasoningContent(streamingContent)"
+          class="reasoning-section"
+        >
+          <div class="streaming-label reasoning-label">
+            <el-icon class="streaming-icon">
+              <Loading />
+            </el-icon>
+            AI思考过程
+          </div>
+          <div class="streaming-text reasoning-text">
+            <pre>{{ getReasoningContent(streamingContent) }}</pre>
+          </div>
+        </div>
+
+        <!-- 正式输出 -->
+        <div
+          v-if="hasMainContent(streamingContent)"
+          class="main-content-section"
+          :class="{ 'has-reasoning': hasReasoningContent(streamingContent) }"
+        >
+          <div class="streaming-label main-label">
+            <el-icon><Document /></el-icon>
+            生成结果
+          </div>
+          <div class="streaming-text main-text">
+            <pre>{{ getMainContent(streamingContent) }}</pre>
+          </div>
+        </div>
       </div>
-      <div class="skeleton-section">
-        <div class="skeleton-section-title" />
-        <div class="skeleton-line" />
-        <div class="skeleton-line" />
+
+      <!-- 骨架屏 - 当还没有流式内容时显示 -->
+      <div
+        v-else
+        class="skeleton-loading"
+      >
+        <div class="skeleton-section">
+          <div class="skeleton-section-title" />
+          <div class="skeleton-line" />
+          <div class="skeleton-line" />
+          <div class="skeleton-line short" />
+        </div>
+        <div class="skeleton-section">
+          <div class="skeleton-section-title" />
+          <div class="skeleton-line" />
+          <div class="skeleton-line" />
+        </div>
       </div>
     </div>
 
@@ -174,6 +227,7 @@
         关闭
       </el-button>
       <el-button
+        v-if="!analysisLoading && !isStreaming"
         type="primary"
         @click="viewSchoolDetail"
       >
@@ -186,7 +240,7 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue'
-import { CircleCheck, Warning, InfoFilled, Position, ChatDotRound, View } from '@element-plus/icons-vue'
+import { CircleCheck, Warning, InfoFilled, Position, ChatDotRound, View, Loading, Document } from '@element-plus/icons-vue'
 import { schoolsData } from '@/utils/recommendationEngine'
 
 const props = defineProps({
@@ -203,6 +257,14 @@ const props = defineProps({
     default: null
   },
   loading: {
+    type: Boolean,
+    default: false
+  },
+  streamingContent: {
+    type: String,
+    default: ''
+  },
+  isStreaming: {
     type: Boolean,
     default: false
   }
@@ -223,6 +285,38 @@ const school = computed(() => {
   if (!props.recommendation) return null
   return schoolsData.find(s => s.id === props.recommendation.schoolId)
 })
+
+// 检查是否有思考过程内容
+const hasReasoningContent = (content) => {
+  if (!content) return false
+  const separatorIndex = content.indexOf('\n\n---\n\n')
+  if (separatorIndex === -1) return false
+  return separatorIndex > 0
+}
+
+// 检查是否有正式输出内容
+const hasMainContent = (content) => {
+  if (!content) return false
+  const separatorIndex = content.indexOf('\n\n---\n\n')
+  if (separatorIndex === -1) return true
+  return separatorIndex < content.length - 8
+}
+
+// 获取思考过程内容
+const getReasoningContent = (content) => {
+  if (!content) return ''
+  const separatorIndex = content.indexOf('\n\n---\n\n')
+  if (separatorIndex === -1) return ''
+  return content.slice(0, separatorIndex).trim()
+}
+
+// 获取正式输出内容
+const getMainContent = (content) => {
+  if (!content) return ''
+  const separatorIndex = content.indexOf('\n\n---\n\n')
+  if (separatorIndex === -1) return content
+  return content.slice(separatorIndex + 8).trim()
+}
 
 const getProbabilityColor = (probability) => {
   if (probability.includes('高') || probability.includes('90') || probability.includes('80')) {
@@ -454,50 +548,105 @@ watch(() => props.modelValue, (val) => {
   line-height: var(--leading-normal);
 }
 
+/* 加载状态样式 */
+.analysis-loading {
+  min-height: 300px;
+}
+
+/* 流式输出样式 */
+.streaming-content {
+  margin-top: var(--space-4);
+}
+
+.streaming-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 12px;
+}
+
+.streaming-icon {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.streaming-text {
+  max-height: 200px;
+  overflow-y: auto;
+  background: white;
+  border-radius: 8px;
+  padding: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+.streaming-text pre {
+  margin: 0;
+  font-family: 'Consolas', 'Monaco', monospace;
+  font-size: 12px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.streaming-text::-webkit-scrollbar {
+  width: 4px;
+}
+
+.streaming-text::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 2px;
+}
+
+/* 思考过程样式 */
+.reasoning-section {
+  margin-bottom: 16px;
+}
+
+.reasoning-label {
+  color: #8b5cf6;
+}
+
+.reasoning-text {
+  background: linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%);
+  border-color: #d8b4fe;
+}
+
+.reasoning-text pre {
+  color: #6b21a8;
+}
+
+/* 正式输出样式 */
+.main-content-section {
+  margin-top: 16px;
+}
+
+.main-content-section.has-reasoning {
+  border-top: 1px dashed #cbd5e1;
+  padding-top: 16px;
+}
+
+.main-label {
+  color: #059669;
+}
+
+.main-text {
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  border-color: #86efac;
+}
+
+.main-text pre {
+  color: #166534;
+}
+
 /* 骨架屏样式 */
 .skeleton-loading {
   padding: var(--space-4);
-}
-
-.skeleton-header {
-  text-align: center;
-  padding-bottom: var(--space-5);
-  border-bottom: 1px solid var(--color-border);
-  margin-bottom: var(--space-5);
-}
-
-.skeleton-title {
-  height: 28px;
-  width: 60%;
-  margin: 0 auto var(--space-3);
-  background: linear-gradient(90deg, var(--color-border-light) 25%, var(--color-border) 50%, var(--color-border-light) 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
-  border-radius: var(--radius-md);
-}
-
-.skeleton-tags {
-  display: flex;
-  justify-content: center;
-  gap: var(--space-2);
-}
-
-.skeleton-tag {
-  height: 24px;
-  width: 60px;
-  background: linear-gradient(90deg, var(--color-border-light) 25%, var(--color-border) 50%, var(--color-border-light) 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
-  border-radius: var(--radius-sm);
-}
-
-.skeleton-assessment {
-  height: 60px;
-  background: linear-gradient(90deg, var(--color-border-light) 25%, var(--color-border) 50%, var(--color-border-light) 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
-  border-radius: var(--radius-xl);
-  margin-bottom: var(--space-5);
 }
 
 .skeleton-section {

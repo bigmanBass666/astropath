@@ -85,7 +85,7 @@
       <div
         ref="messagesContainer"
         class="chat-messages"
-        @scroll="handleScroll"
+        @scroll="handleUserScroll"
       >
         <div
           v-if="messages.length === 0 && currentAgent"
@@ -104,7 +104,9 @@
               <p>{{ currentAgent.welcome }}</p>
             </div>
             <div class="quick-actions-section">
-              <p class="quick-actions-title">您可以问我：</p>
+              <p class="quick-actions-title">
+                您可以问我：
+              </p>
               <div class="quick-actions-large">
                 <div
                   v-for="(prompt, idx) in currentAgent.quickPrompts"
@@ -113,7 +115,9 @@
                   @click="useQuickPrompt(prompt)"
                 >
                   <span class="prompt-text">{{ prompt }}</span>
-                  <el-icon class="prompt-arrow"><ArrowRight /></el-icon>
+                  <el-icon class="prompt-arrow">
+                    <ArrowRight />
+                  </el-icon>
                 </div>
               </div>
             </div>
@@ -141,9 +145,11 @@
                 </el-icon>
               </div>
               <div class="message-content">
+                <!-- 思考过程 - 使用骨架结构，自定义样式 -->
                 <div
                   v-if="msg.reasoning"
                   class="message-reasoning"
+                  :class="{ 'is-thinking': msg.isThinking && !msg.content }"
                 >
                   <div
                     class="reasoning-header"
@@ -152,7 +158,15 @@
                     <el-icon :size="14">
                       <Cpu />
                     </el-icon>
-                    <span>思考过程</span>
+                    <span>{{ msg.isThinking && !msg.content ? '正在思考...' : '思考过程' }}</span>
+                    <el-tag
+                      v-if="msg.isThinking && !msg.content"
+                      size="small"
+                      type="warning"
+                      class="thinking-tag"
+                    >
+                      进行中
+                    </el-tag>
                     <el-icon
                       :size="12"
                       class="reasoning-arrow"
@@ -168,18 +182,96 @@
                     {{ msg.reasoning }}
                   </div>
                 </div>
+                
+                <!-- 正式内容 -->
                 <div class="message-text">
-                  <span v-html="renderMessage(msg.content)" />
-                  <span
-                    v-if="isGenerating && msg.role === 'assistant' && isLastMessage(msg)"
-                    class="typing-cursor"
-                  />
+                  <!-- 等待状态：渐进式指示器 -->
+                  <div
+                    v-if="isGenerating && msg.role === 'assistant' && isLastMessage(msg) && !msg.content && !msg.reasoning"
+                    class="waiting-indicator"
+                  >
+                    <div class="waiting-dots">
+                      <span class="dot" />
+                      <span class="dot" />
+                      <span class="dot" />
+                    </div>
+                    <span class="waiting-text">{{ waitingText }}</span>
+                  </div>
+                  <!-- 实际内容 -->
+                  <template v-else>
+                    <span v-html="renderMarkdown(msg.content)" />
+                    <span
+                      v-if="isGenerating && msg.role === 'assistant' && isLastMessage(msg)"
+                      class="typing-cursor"
+                    />
+                  </template>
+                </div>
+                <!-- 消息操作栏 -->
+                <div
+                  v-if="msg.content && !isGenerating"
+                  class="message-actions"
+                >
+                  <button
+                    v-if="msgActionsConfig.copy"
+                    class="action-btn"
+                    title="复制"
+                    @click="copyMessage(msg)"
+                  >
+                    <el-icon :size="13">
+                      <DocumentCopy />
+                    </el-icon>
+                  </button>
+                  <template v-if="msg.role === 'assistant'">
+                    <template v-if="msgActionsConfig.feedback">
+                    <button
+                      class="action-btn"
+                      :class="{ 'is-active': msg.feedback === 'good' }"
+                      title="有帮助"
+                      @click="setFeedback(msg, 'good')"
+                    >
+                      <el-icon :size="13">
+                        <Select />
+                      </el-icon>
+                    </button>
+                    <button
+                      class="action-btn"
+                      :class="{ 'is-active': msg.feedback === 'bad' }"
+                      title="无帮助"
+                      @click="setFeedback(msg, 'bad')"
+                    >
+                      <el-icon :size="13" style="transform: scaleY(-1)">
+                        <Select />
+                      </el-icon>
+                    </button>
+                    </template>
+                    <button
+                      v-if="msgActionsConfig.regenerate && isLastMessage(msg) && !isGenerating"
+                      class="action-btn action-regenerate"
+                      title="重新生成"
+                      @click="regenerateLastResponse()"
+                    >
+                      <el-icon :size="13">
+                        <RefreshRight />
+                      </el-icon>
+                      <span>重新生成</span>
+                    </button>
+                  </template>
                 </div>
               </div>
             </div>
           </div>
         </template>
+        <div
+          v-if="streamState.isQueued"
+          class="queue-notice"
+        >
+          <el-icon class="queue-icon">
+            <Clock />
+          </el-icon>
+          <span>请求排队中，前方还有 {{ streamState.queuePosition }} 个任务...</span>
+        </div>
 
+        <!-- 错误提示 -->
         <div
           v-if="lastError"
           class="error-banner"
@@ -192,17 +284,18 @@
               <WarningFilled />
             </el-icon>
             <div class="error-info">
-              <span class="error-title">{{ getErrorTitle(lastError.type) }}</span>
+              <span class="error-title">{{ lastError.title }}</span>
               <span class="error-desc">{{ lastError.message }}</span>
             </div>
           </div>
           <div class="error-actions">
             <el-button
+              v-if="streamState.canRetry"
               type="primary"
               size="small"
-              @click="retryLastMessage"
+              @click="handleRetry"
             >
-              重试
+              重试 ({{ streamState.retryCount }}/{{ streamState.maxRetries }})
             </el-button>
             <el-button
               size="small"
@@ -217,43 +310,45 @@
 
       <div class="input-section">
         <div class="chat-input-container">
-          <!-- 输入框主体 -->
           <div class="chat-input-wrapper">
             <textarea
               v-model="inputMessage"
               class="chat-textarea"
               placeholder="输入您的问题，按 Enter 发送..."
-              :disabled="isGenerating"
+              :disabled="streamState.isLoading"
               rows="1"
               @input="autoResize"
               @keydown.enter.exact.prevent="sendMessage"
             />
           </div>
           
-          <!-- 底部工具栏 -->
           <div class="chat-input-toolbar">
             <div class="toolbar-left">
-              <!-- 思考模式开关 -->
               <button 
                 class="toolbar-btn"
-                :class="{ 'is-active': enableThinking, 'is-disabled': isGenerating }"
-                :disabled="isGenerating"
+                :class="{ 'is-active': enableThinking, 'is-disabled': streamState.isLoading }"
+                :disabled="streamState.isLoading"
                 @click="toggleThinking"
               >
-                <el-icon :size="14"><Cpu /></el-icon>
+                <el-icon :size="14">
+                  <Cpu />
+                </el-icon>
                 <span>深度思考</span>
               </button>
               
-              <!-- 模型选择器 -->
               <el-dropdown
                 v-if="providers.length > 0"
                 trigger="click"
                 @command="(cmd) => selectedProvider = cmd"
               >
                 <button class="toolbar-btn">
-                  <el-icon :size="14"><Cpu /></el-icon>
+                  <el-icon :size="14">
+                    <Cpu />
+                  </el-icon>
                   <span class="model-name">{{ currentProviderName }}</span>
-                  <el-icon :size="12"><ArrowDown /></el-icon>
+                  <el-icon :size="12">
+                    <ArrowDown />
+                  </el-icon>
                 </button>
                 <template #dropdown>
                   <el-dropdown-menu>
@@ -265,7 +360,12 @@
                     >
                       <div class="model-option">
                         <span class="option-name">{{ p.name }}</span>
-                        <el-icon v-if="selectedProvider === p.id" :size="12"><Check /></el-icon>
+                        <el-icon
+                          v-if="selectedProvider === p.id"
+                          :size="12"
+                        >
+                          <Check />
+                        </el-icon>
                       </div>
                     </el-dropdown-item>
                   </el-dropdown-menu>
@@ -277,28 +377,33 @@
                 class="toolbar-btn"
                 @click="router.push('/ai-config')"
               >
-                <el-icon :size="14"><Setting /></el-icon>
+                <el-icon :size="14">
+                  <Setting />
+                </el-icon>
                 <span>配置模型</span>
               </button>
             </div>
             
             <div class="toolbar-right">
-              <!-- 发送/停止按钮 -->
               <button
-                v-if="!isGenerating"
+                v-if="!streamState.isLoading"
                 class="send-button"
                 :class="{ 'is-active': inputMessage.trim() }"
                 :disabled="!inputMessage.trim()"
                 @click="sendMessage"
               >
-                <el-icon :size="16"><Promotion /></el-icon>
+                <el-icon :size="16">
+                  <Promotion />
+                </el-icon>
               </button>
               <button
                 v-else
                 class="send-button is-stop"
                 @click="stopGeneration"
               >
-                <el-icon :size="16"><VideoPause /></el-icon>
+                <el-icon :size="16">
+                  <VideoPause />
+                </el-icon>
               </button>
             </div>
           </div>
@@ -368,27 +473,31 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, onUnmounted, nextTick, watch, onActivated } from 'vue'
+import { ref, computed, reactive, onMounted, onUnmounted, nextTick, watch, markRaw } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import {
   ChatLineRound, User, WarningFilled, Delete, Clock,
-  Download, Promotion, VideoPause,
-  Compass, EditPen, Collection, Document, ArrowLeft,
+  Promotion, VideoPause, ArrowLeft,
   Cpu, ArrowDown, Check, Setting, Plus,
-  School, DocumentCopy, OfficeBuilding, Stamp
+  School, DocumentCopy, OfficeBuilding, Stamp, ArrowRight,
+  Select, RefreshRight
 } from '@element-plus/icons-vue'
-import { marked } from 'marked'
-import { sendMessageToAI, buildSystemPrompt, AIError } from '@/utils/ai-api'
+import { buildSystemPrompt } from '@/utils/ai-api'
+import { useAIStream } from '@/composables/useAIStream'
+import { useGlobalAIState } from '@/composables/useGlobalAIState'
+import { renderMarkdown } from '@/utils/markdown'
 
 const router = useRouter()
+const globalAIState = useGlobalAIState()
+const msgActionsConfig = computed(() => globalAIState.getConfig().messageActions)
 
 const agents = ref([
   {
     id: 'consultant',
     name: '留学顾问',
     role: '整体规划咨询',
-    icon: School,
+    icon: markRaw(School),
     color: '#3b82f6',
     bgColor: '#dbeafe',
     welcome: '您好！我是您的留学顾问。我可以帮您制定整体的留学规划，包括背景提升、时间安排、申请策略等。请告诉我您的留学目标或任何困惑，我会为您提供专业建议。',
@@ -398,7 +507,7 @@ const agents = ref([
     id: 'essay',
     name: '文书导师',
     role: '文书写作指导',
-    icon: DocumentCopy,
+    icon: markRaw(DocumentCopy),
     color: '#f59e0b',
     bgColor: '#fef3c7',
     welcome: '您好！我是您的文书导师。我专注于帮助您撰写高质量的申请文书，包括个人陈述、简历、推荐信等。请告诉我您需要什么样的文书帮助，我会为您提供指导和建议。',
@@ -408,7 +517,7 @@ const agents = ref([
     id: 'selection',
     name: '选校专家',
     role: '院校选择建议',
-    icon: OfficeBuilding,
+    icon: markRaw(OfficeBuilding),
     color: '#10b981',
     bgColor: '#d1fae5',
     welcome: '您好！我是您的选校专家。我拥有丰富的院校数据库，可以根据您的背景和需求，为您推荐合适的学校和专业。请告诉我您的GPA、语言成绩和意向方向，我会为您制定选校策略。',
@@ -418,7 +527,7 @@ const agents = ref([
     id: 'visa',
     name: '签证助手',
     role: '签证申请指导',
-    icon: Stamp,
+    icon: markRaw(Stamp),
     color: '#8b5cf6',
     bgColor: '#ede9fe',
     welcome: '您好！我是您的签证助手。我熟悉各国签证申请流程，可以为您解答关于签证材料、面签准备、签证政策等方面的问题。请告诉我您的签证需求，我会为您提供详细指导。',
@@ -431,48 +540,59 @@ const currentAgent = computed(() => agents.value.find(a => a.id === currentAgent
 const sidebarCollapsed = ref(true)
 const selectedProvider = ref(null)
 const inputMessage = ref('')
-const isGenerating = ref(false)
-const streamingContent = ref('')
-const streamingReasoning = ref('')
-const enableThinking = ref(false)
 const messagesContainer = ref(null)
 const messages = ref([])
 const historyVisible = ref(false)
 const conversations = ref([])
 const currentConversationId = ref(null)
 const lastError = ref(null)
-const retryMessage = ref(null)
-const userScrolledUp = ref(false)
 const userData = ref(null)
+const enableThinking = ref(false)
 
 const CHAT_STATE_KEY = 'ai_chat_current_state'
 
+let currentStream = null
 let isRestoringState = false
 let isFreshEntry = true
-let abortController = null
-let isPageVisible = ref(true)
+
+const streamState = reactive({
+  isLoading: false,
+  isQueued: false,
+  queuePosition: 0,
+  canRetry: false,
+  retryCount: 0,
+  maxRetries: 0,
+  userScrolledUp: false,
+  waitingPhase: 'ready' as 'connecting' | 'processing' | 'ready'
+})
+
+const { scrollToBottom, handleUserScroll: handleStreamScroll } = useAIStream({
+  taskId: `chat-${currentAgentId.value}`,
+  enableThinking: enableThinking.value,
+  autoRestore: false,
+  autoScroll: true,
+  scrollContainer: () => messagesContainer.value,
+  onStateChange: (state) => {
+    if (state === 'error') {
+      lastError.value = { title: '请求失败', message: '请检查网络连接或重试' }
+    }
+  },
+  onQueueChange: (pos) => {
+    console.log('Queue position:', pos)
+  }
+})
 
 const loadUserData = () => {
   const saved = localStorage.getItem('assessment_form')
-  console.log('[AIChat] Raw localStorage assessment_form:', saved)
   if (saved) {
     try {
       const data = JSON.parse(saved)
-      console.log('[AIChat] Parsed localStorage data:', data)
-      if (data.form) {
-        userData.value = data.form
-      } else {
-        userData.value = data
-      }
-      console.log('[AIChat] Loaded user data:', userData.value)
-    } catch (e) {
-      console.error('[AIChat] Failed to load user data:', e)
+      userData.value = data.form || data
+    } catch (_e) {
       userData.value = null
     }
   } else {
-    console.log('[AIChat] No assessment_form found in localStorage')
     const report = localStorage.getItem('assessment_report')
-    console.log('[AIChat] Raw localStorage assessment_report:', report)
     if (report) {
       try {
         const reportData = JSON.parse(report)
@@ -481,16 +601,11 @@ const loadUserData = () => {
           academic: reportData.academic || {},
           practice: reportData.practice || {}
         }
-        console.log('[AIChat] Loaded user data from assessment_report:', userData.value)
-      } catch (e) {
-        console.error('[AIChat] Failed to load from report:', e)
+      } catch (_e) {
+        userData.value = null
       }
     }
   }
-}
-
-const toggleSidebar = () => {
-  sidebarCollapsed.value = !sidebarCollapsed.value
 }
 
 const goBack = () => {
@@ -502,54 +617,33 @@ const saveCurrentState = () => {
   const state = {
     messages: messages.value,
     currentAgentId: currentAgentId.value,
-    isGenerating: isGenerating.value,
-    streamingContent: streamingContent.value,
-    streamingReasoning: streamingReasoning.value,
     currentConversationId: currentConversationId.value,
-    enableThinking: enableThinking.value,
     savedAt: Date.now()
   }
-  console.log('[AIChat] Saving state:', state)
-  sessionStorage.setItem(CHAT_STATE_KEY, JSON.stringify(state))
+  localStorage.setItem(CHAT_STATE_KEY, JSON.stringify(state))
 }
 
 const loadCurrentState = () => {
-  const saved = sessionStorage.getItem(CHAT_STATE_KEY)
-  console.log('[AIChat] Loading state from sessionStorage:', saved)
+  const saved = localStorage.getItem(CHAT_STATE_KEY)
   if (saved) {
     try {
       const state = JSON.parse(saved)
-      console.log('[AIChat] Parsed state:', state)
       if (state.messages && state.messages.length > 0) {
         isRestoringState = true
         currentAgentId.value = state.currentAgentId || 'consultant'
         currentConversationId.value = state.currentConversationId || null
-        enableThinking.value = state.enableThinking || false
         messages.value = state.messages
-        console.log('[AIChat] Restored messages:', messages.value.length, 'agentId:', currentAgentId.value)
-        
-        // 恢复生成中的状态
-        if (state.isGenerating) {
-          streamingContent.value = state.streamingContent || ''
-          streamingReasoning.value = state.streamingReasoning || ''
-          // 标记为生成中，但不自动继续，等待用户操作或页面可见性恢复
-          isGenerating.value = true
-          console.log('[AIChat] Restored generating state, content:', streamingContent.value)
-        }
         isRestoringState = false
-        
-        // 恢复后滚动到底部
         nextTick(() => scrollToBottom(true))
       }
-    } catch (e) {
-      console.error('Failed to load chat state:', e)
+    } catch (_e) {
       isRestoringState = false
     }
   }
 }
 
 const clearCurrentState = () => {
-  sessionStorage.removeItem(CHAT_STATE_KEY)
+  localStorage.removeItem(CHAT_STATE_KEY)
 }
 
 const groupedConversations = computed(() => {
@@ -633,12 +727,19 @@ const useQuickPrompt = (prompt) => {
   sendMessage()
 }
 
-// textarea 自动调整高度
 const autoResize = (e) => {
   const textarea = e.target
   textarea.style.height = 'auto'
   textarea.style.height = Math.min(textarea.scrollHeight, 200) + 'px'
 }
+
+const isGenerating = computed(() => streamState.isLoading)
+
+const waitingText = computed(() => {
+  if (streamState.waitingPhase === 'connecting') return '正在连接...'
+  if (streamState.waitingPhase === 'processing') return 'AI 正在分析...'
+  return ''
+})
 
 const sendMessage = async () => {
   isFreshEntry = false
@@ -658,177 +759,110 @@ const sendMessage = async () => {
     id: Date.now(),
     role: 'user',
     content: inputMessage.value,
-    timestamp: new Date().getTime()
+    timestamp: Date.now()
   }
   messages.value.push(userMsg)
-  const currentMessage = inputMessage.value
   inputMessage.value = ''
 
-  isGenerating.value = true
-  streamingContent.value = ''
-  streamingReasoning.value = ''
-  userScrolledUp.value = false
   clearError()
-  await nextTick(() => scrollToBottom(true))
+  scrollToBottom(true)
+  
+  const aiMsg = {
+    id: Date.now() + 1,
+    role: 'assistant',
+    content: '',
+    reasoning: '',
+    showReasoning: false,
+    isThinking: enableThinking.value,
+    timestamp: Date.now()
+  }
+  messages.value.push(aiMsg)
+  const aiMsgIndex = messages.value.length - 1
 
   try {
     const systemPrompt = buildSystemPrompt(currentAgentId.value, userData.value)
-    console.log('[AIChat] Generated system prompt:', systemPrompt)
     const apiMessages = [
       { role: 'system', content: systemPrompt },
-      ...messages.value.filter(m => m.role === 'user' || m.role === 'assistant')
+      ...messages.value
+        .filter(m => m.role === 'user' || m.role === 'assistant')
         .map(m => ({ role: m.role, content: m.content }))
     ]
 
-    const aiMsgId = Date.now() + 1
-    const aiMsg = {
-      id: aiMsgId,
-      role: 'assistant',
-      content: '',
-      reasoning: '',
-      showReasoning: enableThinking.value,
-      timestamp: new Date().getTime()
-    }
-    messages.value.push(aiMsg)
-    const aiMsgIndex = messages.value.length - 1
+    // 创建新的 stream 实例
+    currentStream = useAIStream({
+      taskId: `chat-${currentAgentId.value}-${Date.now()}`,
+      enableThinking: enableThinking.value,
+      autoRestore: false,
+      autoScroll: true,
+      scrollContainer: () => messagesContainer.value
+    })
 
-    const requestOptions = {
-      temperature: 0.7,
-      maxTokens: 128000,  // GLM-4.7-Flash 最大支持 128K tokens 输出
-      stream: true,
-      enableThinking: enableThinking.value
-    }
-    console.log('[AIChat] Sending request with options:', requestOptions, 'enableThinking:', enableThinking.value)
-    
-    // 创建新的 AbortController
-    abortController = new AbortController()
-    
-    const stream = await sendMessageToAI(selectedProvider.value, apiMessages, requestOptions, abortController.signal)
+    const stateSyncInterval = setInterval(() => {
+      if (!currentStream) { clearInterval(stateSyncInterval); return }
+      streamState.isLoading = currentStream.isLoading.value
+      streamState.isQueued = currentStream.isQueued.value
+      streamState.queuePosition = currentStream.queuePosition.value
+      streamState.canRetry = currentStream.canRetry.value
+      streamState.retryCount = currentStream.retryCount.value
+      streamState.maxRetries = currentStream.maxRetries.value
+      streamState.waitingPhase = currentStream.waitingPhase.value
+    }, 50)
 
-    console.log('[AIChat] Got stream, starting to read...')
-    let chunkCount = 0
-    let hasReceivedContent = false
-    for await (const chunk of stream) {
-      chunkCount++
-      console.log('[AIChat] Chunk', chunkCount, chunk)
-      if (!isGenerating.value) break
-      if (chunk.type === 'reasoning' && enableThinking.value) {
-        streamingReasoning.value += chunk.content
-        messages.value[aiMsgIndex].reasoning = streamingReasoning.value
-      } else if (chunk.type === 'content') {
-        // 第一次收到正式内容时，折叠思考过程
-        if (!hasReceivedContent && messages.value[aiMsgIndex].reasoning) {
-          hasReceivedContent = true
-          messages.value[aiMsgIndex].showReasoning = false
+    let hasReasoningContent = false
+
+    const pollInterval = setInterval(() => {
+      if (currentStream.content.value) {
+        messages.value[aiMsgIndex].content = currentStream.content.value
+        messages.value[aiMsgIndex].isThinking = false
+      }
+      if (enableThinking.value && currentStream.reasoning.value) {
+        if (!hasReasoningContent && currentStream.reasoning.value.length > 50) {
+          hasReasoningContent = true
+          messages.value[aiMsgIndex].showReasoning = true
         }
-        streamingContent.value += chunk.content
-        messages.value[aiMsgIndex].content = streamingContent.value
+        messages.value[aiMsgIndex].reasoning = currentStream.reasoning.value
       }
-      if (chunkCount % 3 === 0) {
-        await nextTick()
-        scrollToBottom()
+      if (currentStream.content.value && currentStream.content.value.length > 100 && hasReasoningContent) {
+        messages.value[aiMsgIndex].showReasoning = false
       }
-    }
-    // 最终更新
-    await nextTick()
-    scrollToBottom()
-    console.log('[AIChat] Stream finished, total chunks:', chunkCount)
+      
+      if (!currentStream.isStreaming.value && !currentStream.isThinking.value) {
+        clearInterval(pollInterval)
+      }
+    }, 100)
 
-    streamingContent.value = ''
-    streamingReasoning.value = ''
+    try {
+      await currentStream.generateWithProvider(selectedProvider.value, apiMessages)
+    } finally {
+      clearInterval(pollInterval)
+      clearInterval(stateSyncInterval)
+    }
+
+    streamState.isLoading = false
+    streamState.isQueued = false
+
+    // 最终更新
+    if (currentStream.content.value) {
+      messages.value[aiMsgIndex].content = currentStream.content.value
+    }
+    if (enableThinking.value && currentStream.reasoning.value) {
+      messages.value[aiMsgIndex].reasoning = currentStream.reasoning.value
+    }
+    messages.value[aiMsgIndex].showReasoning = false
+    messages.value[aiMsgIndex].isThinking = false
+    
     saveCurrentState()
   } catch (error) {
-    if (error instanceof AIError) {
-      lastError.value = {
-        type: error.type,
-        message: error.message,
-        canRetry: true
-      }
-      retryMessage.value = currentMessage
-
-      ElMessage.error({
-        message: getErrorTitle(error.type),
-        duration: 5000
-      })
-    } else {
-      lastError.value = {
-        type: 'unknown',
-        message: error.message,
-        canRetry: true
-      }
-      retryMessage.value = currentMessage
-      ElMessage.error(`请求失败: ${error.message}`)
+    lastError.value = {
+      title: '请求失败',
+      message: error.message || '请检查网络连接或重试'
     }
-
-    const errorMsg = {
-      id: Date.now() + 1,
-      role: 'assistant',
-      content: `抱歉，请求失败：${getErrorTitle(lastError.value.type)} - ${lastError.value.message}。您可以点击下方「重试」按钮重新发送，或检查配置后重试。`,
-      timestamp: new Date().getTime()
-    }
-    messages.value.push(errorMsg)
+    messages.value[aiMsgIndex].content = `抱歉，请求失败：${error.message}。您可以点击下方「重试」按钮重新发送。`
   } finally {
-    isGenerating.value = false
-    streamingContent.value = ''
-    streamingReasoning.value = ''
-    abortController = null
+    currentStream = null
     saveCurrentState()
-    await nextTick(() => scrollToBottom())
+    nextTick(() => scrollToBottom())
   }
-}
-
-// 将内容分割成小块用于流式显示
-const splitIntoDisplayChunks = (text) => {
-  if (!text || text.length <= 3) return [text || '']
-  
-  const chunks = []
-  let currentChunk = ''
-  
-  for (let i = 0; i < text.length; i++) {
-    const char = text[i]
-    currentChunk += char
-    
-    // 在标点符号或一定长度后分割
-    const shouldSplit = 
-      char === '。' || 
-      char === '，' || 
-      char === '、' || 
-      char === '；' || 
-      char === '：' || 
-      char === '！' || 
-      char === '？' || 
-      char === '.' || 
-      char === ',' || 
-      char === ' ' || 
-      char === '\n' ||
-      currentChunk.length >= 8
-    
-    if (shouldSplit && currentChunk.length > 0) {
-      chunks.push(currentChunk)
-      currentChunk = ''
-    }
-  }
-  
-  if (currentChunk.length > 0) {
-    chunks.push(currentChunk)
-  }
-  
-  return chunks.length > 0 ? chunks : [text]
-}
-
-const renderMessage = (content) => {
-  if (!content) return ''
-  try {
-    return marked(content)
-  } catch (e) {
-    console.error('[AIChat] Failed to render message:', e)
-    return content
-  }
-}
-
-const getSenderName = (msg) => {
-  if (msg.role === 'user') return '您'
-  return currentAgent.value?.name || 'AI助手'
 }
 
 const isLastMessage = (msg) => {
@@ -836,56 +870,70 @@ const isLastMessage = (msg) => {
   return lastMsg && lastMsg.id === msg.id
 }
 
+const copyMessage = async (msg) => {
+  try {
+    await navigator.clipboard.writeText(msg.content)
+    ElMessage.success('已复制到剪贴板')
+  } catch (_e) {
+    const textarea = document.createElement('textarea')
+    textarea.value = msg.content
+    document.body.appendChild(textarea)
+    textarea.select()
+    document.execCommand('copy')
+    document.body.removeChild(textarea)
+    ElMessage.success('已复制到剪贴板')
+  }
+}
+
+const setFeedback = (msg, type) => {
+  if (msg.feedback === type) {
+    msg.feedback = null
+  } else {
+    msg.feedback = type
+    ElMessage.success(type === 'good' ? '感谢您的反馈 👍' : '我们会继续改进 🙏')
+  }
+  saveCurrentState()
+}
+
+let lastUserMessageForRegen = null
+const regenerateLastResponse = async () => {
+  const assistantMsgs = messages.value.filter(m => m.role === 'assistant')
+  if (assistantMsgs.length === 0) return
+
+  const lastAssistantMsg = assistantMsgs[assistantMsgs.length - 1]
+  const lastUserMsgIdx = messages.value.findLastIndex(m => m.role === 'user')
+
+  if (lastUserMsgIdx < 0) return
+
+  lastUserMessageForRegen = messages.value[lastUserMsgIdx].content
+
+  messages.value.pop()
+  saveCurrentState()
+
+  inputMessage.value = lastUserMessageForRegen
+  await sendMessage()
+}
+
 const formatTime = (timestamp) => {
   const date = new Date(timestamp)
   return date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
 }
 
-const scrollToBottom = (force = false) => {
-  if (messagesContainer.value && (!userScrolledUp.value || force)) {
-    messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight
-  }
-}
-
-const handleScroll = () => {
+const handleUserScroll = () => {
   if (!messagesContainer.value) return
   const { scrollTop, scrollHeight, clientHeight } = messagesContainer.value
   const isAtBottom = scrollHeight - scrollTop - clientHeight < 100
-  userScrolledUp.value = !isAtBottom
-}
-
-const getErrorTitle = (errorType) => {
-  const titles = {
-    network: '网络连接失败',
-    auth: '认证失败',
-    config: '配置问题',
-    unsupported: '不支持的提供商',
-    api: '服务请求失败'
-  }
-  return titles[errorType] || '发生错误'
+  streamState.userScrolledUp = !isAtBottom
 }
 
 const clearError = () => {
   lastError.value = null
-  retryMessage.value = null
 }
 
-const retryLastMessage = async () => {
-  if (retryMessage.value) {
-    const message = retryMessage.value
-    clearError()
-    inputMessage.value = message
-    await sendMessage()
-  }
-}
-
-const clearChat = () => {
-  if (confirm('确定清空当前对话？')) {
-    messages.value = []
-    streamingContent.value = ''
-    clearError()
-    currentConversationId.value = null
-    clearCurrentState()
+const handleRetry = async () => {
+  clearError()
+  if (currentStream) {
+    await currentStream.retry()
   }
 }
 
@@ -903,71 +951,32 @@ const openHistory = () => {
   historyVisible.value = true
 }
 
-const exportConversation = () => {
-  if (messages.value.length === 0) {
-    ElMessage.warning('当前对话为空，无法导出')
-    return
-  }
-
-  const agentName = currentAgent.value?.name || 'AI对话'
-  const dateStr = new Date().toLocaleString('zh-CN')
-  let textContent = `=== ${agentName} 对话记录 ===\n`
-  textContent += `导出时间: ${dateStr}\n`
-  textContent += `对话轮次: ${messages.value.length} 条消息\n`
-  textContent += '='.repeat(50) + '\n\n'
-
-  messages.value.forEach(msg => {
-    const time = formatTime(msg.timestamp)
-    const role = msg.role === 'user' ? '您' : agentName
-    textContent += `[${time}] ${role}:\n${msg.content}\n\n`
-  })
-
-  const blob = new Blob(['\ufeff' + textContent], { type: 'text/plain;charset=utf-8' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = `对话记录_${agentName}_${new Date().toISOString().slice(0,10)}.txt`
-  document.body.appendChild(a)
-  a.click()
-  document.body.removeChild(a)
-  URL.revokeObjectURL(url)
-
-  ElMessage.success('对话记录已导出')
-}
-
 const stopGeneration = () => {
-  // 中止正在进行的请求
-  if (abortController) {
-    abortController.abort()
-    abortController = null
+  if (currentStream) {
+    currentStream.stop()
+    currentStream = null
   }
-  isGenerating.value = false
-  streamingContent.value = ''
-  streamingReasoning.value = ''
   saveCurrentState()
 }
 
 const saveConversation = () => {
   if (messages.value.length > 0) {
-    const lastMsg = messages.value[messages.value.length - 1]
-    if (lastMsg) {
-      const existingIdx = conversations.value.findIndex(c => c.id === currentConversationId.value)
-      const conv = {
-        id: currentConversationId.value || Date.now(),
-        title: messages.value[0].content.substring(0, 30) + '...',
-        createdAt: currentConversationId.value ? getConversationById(currentConversationId.value)?.createdAt || Date.now() : Date.now(),
-        agentId: currentAgentId.value,
-        messages: JSON.parse(JSON.stringify(messages.value))
-      }
-
-      if (existingIdx >= 0) {
-        conversations.value[existingIdx] = conv
-      } else {
-        conversations.value.unshift(conv)
-      }
-
-      localStorage.setItem('conversations', JSON.stringify(conversations.value))
+    const existingIdx = conversations.value.findIndex(c => c.id === currentConversationId.value)
+    const conv = {
+      id: currentConversationId.value || Date.now(),
+      title: messages.value[0].content.substring(0, 30) + '...',
+      createdAt: currentConversationId.value ? getConversationById(currentConversationId.value)?.createdAt || Date.now() : Date.now(),
+      agentId: currentAgentId.value,
+      messages: JSON.parse(JSON.stringify(messages.value))
     }
+
+    if (existingIdx >= 0) {
+      conversations.value[existingIdx] = conv
+    } else {
+      conversations.value.unshift(conv)
+    }
+
+    localStorage.setItem('conversations', JSON.stringify(conversations.value))
   }
 }
 
@@ -1018,34 +1027,10 @@ watch(currentAgentId, () => {
   saveCurrentState()
 })
 
-// 页面可见性变化处理
-const handleVisibilityChange = () => {
-  const wasHidden = !isPageVisible.value
-  isPageVisible.value = document.visibilityState === 'visible'
-  
-  console.log('[AIChat] Visibility changed:', document.visibilityState, 'wasHidden:', wasHidden)
-  
-  if (isPageVisible.value && wasHidden) {
-    // 页面从隐藏变为可见
-    console.log('[AIChat] Page became visible, current generating state:', isGenerating.value)
-    
-    // 如果正在生成中，确保状态是最新的
-    if (isGenerating.value) {
-      // 强制保存当前状态
-      saveCurrentState()
-      // 滚动到底部显示最新内容
-      nextTick(() => scrollToBottom(true))
-    }
-  } else if (!isPageVisible.value) {
-    // 页面即将隐藏，保存当前状态
-    console.log('[AIChat] Page hidden, saving state')
-    saveCurrentState()
-  }
-}
-
 onMounted(() => {
   loadProviders()
   loadUserData()
+  
   const saved = localStorage.getItem('conversations')
   if (saved) {
     conversations.value = JSON.parse(saved)
@@ -1057,21 +1042,13 @@ onMounted(() => {
   }
 
   loadCurrentState()
-  
-  // 监听页面可见性变化
-  document.addEventListener('visibilitychange', handleVisibilityChange)
 })
 
 onUnmounted(() => {
-  // 页面卸载前保存状态（不清除）
   saveCurrentState()
   
-  // 移除事件监听
-  document.removeEventListener('visibilitychange', handleVisibilityChange)
-  
-  // 中止正在进行的请求
-  if (abortController) {
-    abortController.abort()
+  if (currentStream) {
+    currentStream.stop()
   }
   
   isFreshEntry = true
@@ -1114,15 +1091,6 @@ onUnmounted(() => {
   min-height: 64px;
 }
 
-.sidebar.is-collapsed .sidebar-header {
-  padding: 16px 12px;
-  justify-content: center;
-}
-
-.sidebar-brand {
-  display: none;
-}
-
 .sidebar-toggle-btn {
   display: flex;
   align-items: center;
@@ -1142,21 +1110,6 @@ onUnmounted(() => {
   background: var(--color-primary-50);
   border-color: var(--color-primary);
   color: var(--color-primary);
-}
-
-.sidebar-title {
-  font-size: 16px;
-  font-weight: 600;
-  color: #1e293b;
-  margin: 0 0 4px 0;
-  white-space: nowrap;
-}
-
-.sidebar-subtitle {
-  font-size: 12px;
-  color: #64748b;
-  margin: 0;
-  white-space: nowrap;
 }
 
 .agent-list {
@@ -1190,10 +1143,6 @@ onUnmounted(() => {
   justify-content: center;
   flex-shrink: 0;
   transition: all 0.2s ease;
-}
-
-.agent-info {
-  display: none;
 }
 
 .main-chat {
@@ -1464,9 +1413,127 @@ onUnmounted(() => {
   vertical-align: middle;
 }
 
+.waiting-indicator {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 0;
+}
+
+.waiting-dots {
+  display: flex;
+  gap: 4px;
+}
+
+.waiting-dots .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  opacity: 0.4;
+  animation: dot-bounce 1.4s ease-in-out infinite;
+}
+
+.waiting-dots .dot:nth-child(1) { animation-delay: 0s; }
+.waiting-dots .dot:nth-child(2) { animation-delay: 0.16s; }
+.waiting-dots .dot:nth-child(3) { animation-delay: 0.32s; }
+
+@keyframes dot-bounce {
+  0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+  40% { transform: scale(1); opacity: 1; }
+}
+
+.waiting-text {
+  font-size: 13px;
+  color: #94a3b8;
+}
+
+.message-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(0, 0, 0, 0.04);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.message-content:hover .message-actions {
+  opacity: 1;
+}
+
+.message-wrapper.is-user .message-actions {
+  justify-content: flex-end;
+  border-top-color: rgba(255, 255, 255, 0.15);
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: #94a3b8;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.action-btn:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: #475569;
+}
+
+.message-wrapper.is-user .action-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+}
+
+.action-btn.is-active {
+  color: var(--color-primary);
+  background: var(--color-primary-50);
+}
+
+.message-wrapper.is-user .action-btn.is-active {
+  color: white;
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.action-regenerate {
+  margin-left: 4px;
+  padding-left: 10px;
+  border-left: 1px solid rgba(0, 0, 0, 0.08);
+}
+
 @keyframes blink {
   0%, 50% { opacity: 1; }
   51%, 100% { opacity: 0; }
+}
+
+.queue-notice {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: #fffbeb;
+  border: 1px solid #fcd34d;
+  border-radius: 10px;
+  margin-bottom: 16px;
+  font-size: 13px;
+  color: #92400e;
+}
+
+.queue-icon {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
 }
 
 .error-banner {
@@ -1520,7 +1587,6 @@ onUnmounted(() => {
   background: #ffffff;
 }
 
-/* 新的聊天输入框容器 */
 .chat-input-container {
   background: #f9fafb;
   border: 1px solid #e5e7eb;
@@ -1534,7 +1600,6 @@ onUnmounted(() => {
   box-shadow: 0 0 0 3px rgba(30, 58, 95, 0.08);
 }
 
-/* 输入框区域 */
 .chat-input-wrapper {
   padding: 14px 16px;
   background: #ffffff;
@@ -1563,7 +1628,6 @@ onUnmounted(() => {
   cursor: not-allowed;
 }
 
-/* 底部工具栏 */
 .chat-input-toolbar {
   display: flex;
   align-items: center;
@@ -1584,7 +1648,6 @@ onUnmounted(() => {
   align-items: center;
 }
 
-/* 工具栏按钮 */
 .toolbar-btn {
   display: flex;
   align-items: center;
@@ -1626,7 +1689,6 @@ onUnmounted(() => {
   white-space: nowrap;
 }
 
-/* 发送按钮 */
 .send-button {
   display: flex;
   align-items: center;
@@ -1678,8 +1740,6 @@ onUnmounted(() => {
 .model-option .el-icon {
   color: var(--color-primary);
 }
-
-
 
 .history-drawer :deep(.el-drawer__header) {
   margin-bottom: 16px;
@@ -1765,14 +1825,28 @@ onUnmounted(() => {
   color: #909399;
 }
 
-
-
 .message-reasoning {
   margin-bottom: 12px;
   background: linear-gradient(135deg, #fef3c7 0%, #fffbeb 100%);
   border: 1px solid #fcd34d;
   border-radius: 10px;
   overflow: hidden;
+}
+
+.message-reasoning.is-thinking {
+  background: linear-gradient(135deg, #dbeafe 0%, #eff6ff 100%);
+  border-color: #60a5fa;
+  animation: pulse-border 2s ease-in-out infinite;
+}
+
+@keyframes pulse-border {
+  0%, 100% { border-color: #60a5fa; }
+  50% { border-color: #3b82f6; }
+}
+
+.thinking-tag {
+  margin-left: 8px;
+  animation: pulse 1.5s ease-in-out infinite;
 }
 
 .reasoning-header {
@@ -1812,32 +1886,6 @@ onUnmounted(() => {
   padding-top: 12px;
 }
 
-.thinking-loading {
-  margin-bottom: 12px;
-  background: linear-gradient(135deg, #fef3c7 0%, #fffbeb 100%);
-  border: 1px solid #fcd34d;
-  border-radius: 10px;
-  padding: 16px;
-}
-
-.thinking-loading-header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 14px;
-  font-weight: 500;
-  color: #d97706;
-}
-
-.thinking-icon {
-  animation: pulse 1.5s ease-in-out infinite;
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.5; transform: scale(0.95); }
-}
-
 @media (max-width: 768px) {
   .sidebar {
     display: none;
@@ -1859,22 +1907,8 @@ onUnmounted(() => {
     font-size: 28px;
   }
 
-  .welcome-icon-large {
-    width: 80px;
-    height: 80px;
-    border-radius: 24px;
-  }
-
-  .welcome-desc {
-    padding: 20px;
-  }
-
   .quick-actions-large {
     flex-direction: column;
-  }
-
-  .quick-prompt-large {
-    width: 100%;
   }
 }
 </style>

@@ -34,6 +34,10 @@
         <PreferenceCollector
           :assessment="assessment"
           :loading="loading"
+          :current-step="recommendationStep"
+          :step-progress="recommendationProgress"
+          :streaming-content="streamingContent"
+          :is-streaming="isStreaming"
           @submit="handlePreferenceSubmit"
         />
       </el-card>
@@ -62,6 +66,8 @@
       :recommendation="selectedRecommendation"
       :analysis="currentAnalysis"
       :loading="analysisLoading"
+      :streaming-content="analysisStreamingContent"
+      :is-streaming="isAnalysisStreaming"
       @view-detail="viewSchoolDetail"
     />
 
@@ -135,7 +141,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import PreferenceCollector from '@/components/school-recommendation/PreferenceCollector.vue'
@@ -145,7 +151,20 @@ import { useAIRecommendation } from '@/composables/useAIRecommendation'
 import { schoolsData } from '@/utils/recommendationEngine'
 
 const router = useRouter()
-const { loading, generateRecommendations, generateAnalysis } = useAIRecommendation()
+const {
+  loading,
+  currentStep: recommendationStep,
+  stepProgress: recommendationProgress,
+  streamingContent,
+  isStreaming,
+  generateRecommendations,
+  generateAnalysis,
+  // 分析相关
+  analysisLoading,
+  analysisStreamingContent,
+  isAnalysisStreaming,
+  globalState
+} = useAIRecommendation()
 
 // 状态
 const hasAssessment = ref(false)
@@ -156,11 +175,35 @@ const summary = ref('')
 const favorites = ref([])
 const userPreference = ref(null)
 
+// 恢复全局状态
+const restoreGlobalState = () => {
+  // 检查是否有进行中的推荐
+  if (globalState.hasOngoingRecommendation()) {
+    // 恢复到生成中的状态
+    currentStep.value = 'preference'
+    userPreference.value = globalState.state.preference
+    ElMessage.info('正在恢复之前的推荐进度...')
+    return true
+  }
+  
+  // 检查是否有已完成的推荐
+  if (globalState.state.currentStep === 'completed' && globalState.state.recommendations.length > 0) {
+    recommendations.value = globalState.state.recommendations
+    summary.value = globalState.state.summary
+    userPreference.value = globalState.state.preference
+    currentStep.value = 'recommendation'
+    return true
+  }
+  
+  return false
+}
+
 // 分析对话框状态
 const analysisVisible = ref(false)
 const selectedRecommendation = ref(null)
 const currentAnalysis = ref(null)
-const analysisLoading = ref(false)
+// 使用全局状态中的 loading，不再使用本地 ref
+// const analysisLoading = ref(false) // 已移除，使用 analysisLoading computed
 
 // 对比对话框状态
 const compareVisible = ref(false)
@@ -192,7 +235,7 @@ const generateAssessmentHash = (assessmentData) => {
   }
   try {
     return btoa(encodeURIComponent(JSON.stringify(keyData)))
-  } catch (e) {
+  } catch (_e) {
     return JSON.stringify(keyData)
   }
 }
@@ -235,20 +278,41 @@ const handlePreferenceSubmit = async (preference) => {
 const showAnalysis = async (recommendation) => {
   selectedRecommendation.value = recommendation
   analysisVisible.value = true
-  analysisLoading.value = true
   currentAnalysis.value = null
-  
+
   const providers = JSON.parse(localStorage.getItem('ai_providers') || '[]')
   const defaultProvider = providers.length > 0 ? providers[0].id : null
-  
+
   if (!defaultProvider) {
-    analysisLoading.value = false
     return
   }
-  
-  const analysis = await generateAnalysis(assessment.value, recommendation.schoolId, defaultProvider)
+
+  // 检查是否有进行中的分析（可能是用户离开页面后返回）
+  const ongoingSchoolId = globalState.getOngoingAnalysisSchoolId()
+  if (ongoingSchoolId === recommendation.schoolId) {
+    // 恢复进行中的分析状态
+    ElMessage.info('正在恢复之前的分析进度...')
+    // currentAnalysis 会在流式完成后自动更新
+    return
+  }
+
+  // 检查是否有已完成的分析缓存
+  if (globalState.isAnalysisStateValid(recommendation.schoolId) && globalState.state.schoolAnalysis.analysis) {
+    currentAnalysis.value = globalState.state.schoolAnalysis.analysis
+    return
+  }
+
+  // 开始新的分析
+  const analysis = await generateAnalysis(
+    assessment.value,
+    recommendation.schoolId,
+    defaultProvider,
+    (streamContent) => {
+      // 流式更新回调 - 可以在这里添加额外的UI更新逻辑
+      console.log('Analysis streaming:', streamContent.substring(0, 100) + '...')
+    }
+  )
   currentAnalysis.value = analysis
-  analysisLoading.value = false
 }
 
 // 收藏操作
@@ -296,18 +360,24 @@ const openCompareDialog = () => {
 
 // 处理调整请求
 const handleAdjustRequest = async (message) => {
+  if (!userPreference.value) {
+    ElMessage.warning('请先完成偏好设置')
+    return
+  }
+  
   ElMessage.info(`AI正在理解你的需求："${message}"`)
   
-  // 这里可以实现更复杂的对话式调整逻辑
-  // 目前简单地重新生成推荐
-  if (userPreference.value) {
-    // 将调整请求添加到特殊要求中
+  try {
     const adjustedPreference = {
       ...userPreference.value,
       specialRequirements: `${userPreference.value.specialRequirements || ''}; ${message}`
     }
     
     await handlePreferenceSubmit(adjustedPreference)
+    ElMessage.success('推荐已更新！')
+  } catch (error) {
+    console.error('调整推荐失败:', error)
+    ElMessage.error('调整推荐失败，请重试')
   }
 }
 
@@ -338,38 +408,54 @@ const checkAssessment = () => {
   }
 }
 
+// 监听全局分析状态变化 - 当流式完成后更新 currentAnalysis
+watch(() => globalState.state.schoolAnalysis, (newState) => {
+  // 如果分析完成且有结果，更新 currentAnalysis
+  if (newState.currentStep === 'completed' && newState.analysis && selectedRecommendation.value) {
+    if (newState.schoolId === selectedRecommendation.value.schoolId) {
+      currentAnalysis.value = newState.analysis
+    }
+  }
+}, { deep: true })
+
 // 初始化
 onMounted(() => {
   checkAssessment()
-  
+
   // 加载收藏
   const savedFavorites = localStorage.getItem('school_favorites')
   if (savedFavorites) {
     favorites.value = JSON.parse(savedFavorites)
   }
-  
-  // 加载之前的推荐
-  const savedRecommendations = localStorage.getItem('school_recommendations')
-  if (savedRecommendations) {
-    const data = JSON.parse(savedRecommendations)
-    // 检查是否有推荐数据
-    if (data.recommendations && data.recommendations.length > 0) {
-      // 检查是否在24小时内
-      const isWithin24Hours = Date.now() - data.timestamp < 24 * 60 * 60 * 1000
-      
-      // 如果有评估数据，检查评估是否变化；如果没有评估数据，直接恢复推荐
-      const currentHash = generateAssessmentHash(assessment.value)
-      const isAssessmentUnchanged = !currentHash || data.assessmentHash === currentHash
-      
-      if (isWithin24Hours && isAssessmentUnchanged) {
-        recommendations.value = data.recommendations
-        summary.value = data.summary
-        userPreference.value = data.preference
-        currentStep.value = 'recommendation'
-      } else if (!isAssessmentUnchanged) {
-        localStorage.removeItem('school_recommendations')
-        currentStep.value = 'preference'
-        ElMessage.info('检测到背景信息已更新，请重新生成院校推荐')
+
+  // 首先尝试恢复全局状态（进行中的推荐）
+  const restored = restoreGlobalState()
+
+  // 如果没有恢复全局状态，再尝试从 localStorage 加载
+  if (!restored) {
+    // 加载之前的推荐
+    const savedRecommendations = localStorage.getItem('school_recommendations')
+    if (savedRecommendations) {
+      const data = JSON.parse(savedRecommendations)
+      // 检查是否有推荐数据
+      if (data.recommendations && data.recommendations.length > 0) {
+        // 检查是否在24小时内
+        const isWithin24Hours = Date.now() - data.timestamp < 24 * 60 * 60 * 1000
+
+        // 如果有评估数据，检查评估是否变化；如果没有评估数据，直接恢复推荐
+        const currentHash = generateAssessmentHash(assessment.value)
+        const isAssessmentUnchanged = !currentHash || data.assessmentHash === currentHash
+
+        if (isWithin24Hours && isAssessmentUnchanged) {
+          recommendations.value = data.recommendations
+          summary.value = data.summary
+          userPreference.value = data.preference
+          currentStep.value = 'recommendation'
+        } else if (!isAssessmentUnchanged) {
+          localStorage.removeItem('school_recommendations')
+          currentStep.value = 'preference'
+          ElMessage.info('检测到背景信息已更新，请重新生成院校推荐')
+        }
       }
     }
   }

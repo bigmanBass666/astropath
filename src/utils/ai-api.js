@@ -3,6 +3,17 @@
  * 支持多provider切换：OpenAI、Anthropic、国内供应商、其他
  */
 
+const EMPTY_USER_GUIDANCE_PROMPT = `【⚠️ 重要：用户尚未填写背景信息】
+
+用户还没有在系统中填写个人背景信息（GPA、院校、语言成绩等），所以你目前无法提供个性化的选校建议或评估。
+
+【你应该这样做】
+1. 友好地告知用户你目前还没有他们的背景信息
+2. 引导用户先去「留学评估」页面填写基本信息（这是系统功能，填写后你会自动获得数据）
+3. 如果用户想直接聊，可以在对话中主动收集关键信息：GPA、本科院校（985/211/双非）、语言成绩（雅思/托福）、意向国家和专业
+4. 不要说"我无法查看您的简历"这类话——你本来就没有这个能力，这会让用户困惑
+5. 保持友好、专业的语气，像一个真正的顾问在接待新客户`
+
 // 自定义错误类
 export class AIError extends Error {
   constructor(type, message, details = null) {
@@ -131,29 +142,30 @@ function buildRequestBody(provider, messages, options) {
 
   // 思考模式特殊处理
   if (options.enableThinking) {
-    // 根据不同 provider 类型设置思考模式参数
     if (provider.type === 'anthropic') {
-      // Anthropic 使用 thinking 字段
       // (anthropic 类型在下面单独处理)
     } else if (provider.type === 'domestic' || provider.type === 'other') {
-      // 智谱 AI GLM-4 系列使用 thinking 对象参数
       baseBody.thinking = {
         type: 'enabled'
       }
     } else {
-      // OpenAI 兼容接口
       baseBody.enable_thinking = true
     }
     
-    // DeepSeek 思考模式需要设置更大的思考空间
     if (provider.type === 'deepseek' || provider.model?.toLowerCase().includes('deepseek')) {
       baseBody.max_thinking_tokens = 8000
     }
     
-    // 思考模式需要更大的 max_tokens 空间
-    // 智谱AI GLM-4.7 默认 max_tokens 是 65536
     if (!baseBody.max_tokens) {
-      baseBody.max_tokens = 8192  // 为思考过程和回复内容预留足够空间
+      baseBody.max_tokens = 8192
+    }
+  } else {
+    if (provider.type === 'domestic' || provider.type === 'other') {
+      baseBody.thinking = {
+        type: 'disabled'
+      }
+    } else if (provider.type !== 'anthropic') {
+      baseBody.do_sample = true
     }
   }
   
@@ -174,6 +186,8 @@ function buildRequestBody(provider, messages, options) {
     }
     if (options.enableThinking) {
       anthropicBody.thinking = { type: 'enabled', budget_tokens: 16000 }
+    } else {
+      anthropicBody.thinking = { type: 'disabled' }
     }
     return anthropicBody
   }
@@ -451,6 +465,10 @@ ${basePrompt}
 
 【重要】请根据上述用户背景信息，提供个性化的建议和回答。如果用户的问题涉及选校、申请策略等，请结合他们的GPA、院校背景、语言成绩等具体情况进行推荐。`
     }
+  } else {
+    basePrompt = `${EMPTY_USER_GUIDANCE_PROMPT}
+
+${basePrompt}`
   }
 
   return basePrompt
@@ -498,7 +516,7 @@ function formatUserInfoForPrompt(userData) {
   return parts.length > 0 ? parts.join('\n') : null
 }
 
-// 生成评估报告提示词
+// 生成评估报告提示词 - AI驱动的客观评估
 export function buildAssessmentPrompt(formData, scores) {
   const researchDetails = formData.academic.research.length > 0 
     ? formData.academic.research.map(r => `${r.name}（${r.role}，${r.duration}）`).join('、')
@@ -510,7 +528,17 @@ export function buildAssessmentPrompt(formData, scores) {
     ? formData.practice.competitions.map(c => `${c.name}（${c.level}-${c.award}）`).join('、')
     : '无'
 
-  return `你是一位资深的留学申请顾问，拥有丰富的申请评估经验。请基于以下用户背景信息，生成一份专业、详细、有针对性的竞争力评估报告。
+  const universityTierText = formData.basic.university === '985' ? '985院校' : 
+                             formData.basic.university === '211' ? '211院校' : 
+                             formData.basic.university === 'overseas' ? '海外院校' : '普通本科'
+
+  return `你是一位资深的留学申请顾问，拥有15年申请评估经验。请基于用户真实背景，生成一份**客观、严谨、真实**的竞争力评估报告。
+
+【核心原则 - 必须严格遵守】
+1. **客观评估**：宁可保守不可乐观，不要给用户不切实际的期望
+2. **明确差距**：必须指出用户背景与目标院校的真实差距
+3. **风险提示**：诚实告知申请风险，不要回避问题
+4. **切实建议**：给出具体可行的提升方案，而非泛泛而谈
 
 【重要】请直接输出最终的评估报告，不要输出你的思考过程、分析步骤或任何中间推理内容。直接以"# 留学申请竞争力评估报告"开头，输出完整的报告内容。
 
@@ -521,7 +549,7 @@ export function buildAssessmentPrompt(formData, scores) {
 **基础信息：**
 - 姓名：${formData.basic.name || '未填写'}
 - 年龄：${formData.basic.age}岁
-- 在读院校：${formData.basic.university === '985' ? '985院校' : formData.basic.university === '211' ? '211院校' : formData.basic.university === 'overseas' ? '海外院校' : '普通本科'}
+- 在读院校：${universityTierText}
 - GPA：${formData.basic.gpa.toFixed(1)}/4.0
 - 语言成绩：${formData.basic.language || '未填写'}
 
@@ -551,37 +579,62 @@ export function buildAssessmentPrompt(formData, scores) {
 请生成一份详细的评估报告，包含以下内容（使用Markdown格式）：
 
 ### 1. 综合竞争力评价
-用2-3句话概括您的整体竞争力水平，指出您最突出的优势和需要改进的方面。
+用2-3句话概括您的整体竞争力水平，**必须指出**您最突出的优势和**需要改进的方面**。如果背景较弱，要诚实说明。
 
 ### 2. 各维度详细分析
 
 **学术背景分析：**
-- 院校背景和GPA的竞争力评估
-- 针对目标院校的学术要求差距分析
+- 院校背景和GPA的竞争力评估（需对比目标院校要求）
+- **明确指出**与目标院校的学术要求差距
+- 如果GPA较低，需说明对申请的影响
 
 **语言能力分析：**
 - 当前语言成绩的竞争力
 - 是否需要重考或提升的建议
+- **明确指出**语言成绩是否达标
 
 **科研经历分析：**
 - 科研经历的含金量评估
+- 如果科研经历不足，需说明对研究型项目申请的影响
 - 如何在申请中突出科研亮点
 
 **实践背景分析：**
 - 实习、竞赛、志愿服务的综合评价
 - 这些经历对申请的加分作用
+- 如果实践经历不足，需诚实说明
 
 ### 3. 改进建议
-列出3-5条具体、可操作的改进建议，帮助您在申请前提升竞争力。
+列出3-5条**具体、可操作**的改进建议，帮助您在申请前提升竞争力。
+- 每条建议需说明**为什么重要**和**如何执行**
+- 如果背景较弱，需给出**紧急提升方案**
 
 ### 4. 选校方向建议
-根据您的背景，推荐申请方向：
-- 冲刺院校类型（建议2-3所）
-- 匹配院校类型（建议3-5所）
-- 保底院校类型（建议2-3所）
+根据您的背景，**客观**推荐申请方向：
+
+**冲刺院校**（录取概率15-35%）：
+- 说明为什么是冲刺（主要差距是什么）
+- 建议1-2所类型
+
+**匹配院校**（录取概率40-65%）：
+- 说明为什么是匹配（符合哪些条件）
+- 建议3-4所类型
+
+**保底院校**（录取概率75%+）：
+- 说明为什么是保底（优势在哪里）
+- 建议2-3所类型
+
+【严格约束】
+- 如果GPA低于3.5，不建议推荐QS前30作为匹配院校
+- 如果无科研经历，不建议推荐研究型强校作为匹配院校
+- 如果院校背景是普通本科，申请顶尖名校需明确标注为冲刺
+- 每类院校必须给出录取概率区间和差距分析
+
+### 5. 风险提示与应对
+- 列出申请过程中可能面临的主要风险
+- 针对每个风险给出应对策略
 
 注意：
-- 分析要具体、有针对性，避免泛泛而谈
-- 建议要切实可行，考虑时间成本
-- 如果某些信息未填写，请合理推断或给出通用建议`
+- 分析要客观真实，避免过度乐观
+- 如果背景较弱，要诚实告知并给出切实可行的提升路径
+- 录取概率预估要有依据，参考学校实际录取难度`
 }

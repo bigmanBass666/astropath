@@ -296,10 +296,14 @@ const showContact = () => {
 }
 
 .app-header {
-  background: var(--color-surface);
-  padding: 0 20px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  border-bottom: 1px solid var(--color-border);
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  padding: 0 24px;
+  box-shadow:
+    0 1px 2px rgba(30, 58, 95, 0.04),
+    0 4px 16px rgba(30, 58, 95, 0.04);
+  border-bottom: 1px solid rgba(30, 58, 95, 0.06);
   position: sticky;
   top: 0;
   z-index: 9999;
@@ -336,7 +340,7 @@ const showContact = () => {
 }
 
 .nav-item {
-  padding: 0 16px;
+  padding: 0 18px;
   height: 60px;
   display: flex;
   align-items: center;
@@ -344,22 +348,42 @@ const showContact = () => {
   text-decoration: none;
   font-size: 14px;
   font-weight: 500;
-  border-bottom: 2px solid transparent;
-  transition: all 0.2s ease;
+  letter-spacing: 0.2px;
+  border-bottom: none;
+  transition: color 0.25s ease;
+  position: relative;
+}
+
+.nav-item::after {
+  content: '';
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%) scaleX(0);
+  width: 20px;
+  height: 2px;
+  background: var(--color-primary);
+  border-radius: 1px;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .nav-item:hover {
-  background: var(--color-primary-50);
-  color: var(--color-primary);
-  border-bottom-color: var(--color-primary-300);
+  color: var(--color-text-primary);
+}
+
+.nav-item:hover::after {
+  transform: translateX(-50%) scaleX(1);
 }
 
 .nav-item.is-active,
 .nav-item.router-link-active {
-  background: var(--color-primary-50);
-  color: var(--color-primary);
-  border-bottom: 3px solid var(--color-primary);
+  color: var(--color-text-primary);
   font-weight: 600;
+}
+
+.nav-item.is-active::after,
+.nav-item.router-link-active::after {
+  transform: translateX(-50%) scaleX(1);
 }
 
 .nav-menu {
@@ -387,50 +411,60 @@ const showContact = () => {
   justify-content: center;
   width: 40px;
   height: 40px;
-  background: linear-gradient(135deg, var(--color-primary-100) 0%, var(--color-primary-50) 100%);
-  border: 2px solid var(--color-primary-200);
+  background: linear-gradient(135deg, rgba(240, 244, 248, 0.9) 0%, rgba(232, 238, 245, 0.9) 100%);
+  border: 1.5px solid rgba(30, 58, 95, 0.12);
   border-radius: 50%;
   padding: 0;
   cursor: pointer;
   color: var(--color-primary);
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
   flex-shrink: 0;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow:
+    inset 0 1px 2px rgba(255, 255, 255, 0.8),
+    0 2px 6px rgba(30, 58, 95, 0.06);
 }
 
 .ai-config-btn:hover {
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-600) 100%);
-  border-color: var(--color-primary);
+  background: linear-gradient(135deg, var(--color-primary) 0%, #1E3A5F 100%);
+  border-color: transparent;
   color: white;
-  transform: scale(1.05);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transform: scale(1.08) translateY(-1px);
+  box-shadow:
+    0 6px 20px rgba(30, 58, 95, 0.25),
+    0 2px 6px rgba(30, 58, 95, 0.15);
 }
 
-/* AI配置按钮 - active状态 */
 .ai-config-btn.is-active {
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-600) 100%);
-  border-color: var(--color-primary);
+  background: linear-gradient(135deg, var(--color-primary) 0%, #1E3A5F 100%);
+  border-color: transparent;
   color: white;
-  box-shadow: 0 0 0 3px var(--color-primary-200), 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow:
+    0 0 0 3px rgba(30, 58, 95, 0.12),
+    0 6px 20px rgba(30, 58, 95, 0.25),
+    0 2px 6px rgba(30, 58, 95, 0.15);
 }
 
 /* 汉堡菜单按钮 */
 .hamburger-btn {
   display: none;
-  background: transparent;
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
+  background: linear-gradient(135deg, rgba(240, 244, 248, 0.9) 0%, rgba(232, 238, 245, 0.9) 100%);
+  border: 1.5px solid rgba(30, 58, 95, 0.1);
+  border-radius: var(--radius-lg);
   padding: 8px;
   cursor: pointer;
   color: var(--color-text-secondary);
-  transition: all 0.2s;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
   flex-shrink: 0;
+  box-shadow:
+    inset 0 1px 2px rgba(255, 255, 255, 0.8),
+    0 2px 6px rgba(30, 58, 95, 0.04);
 }
 
 .hamburger-btn:hover {
-  background: var(--color-primary-50);
-  border-color: var(--color-primary);
+  background: linear-gradient(135deg, rgba(30, 58, 95, 0.06) 0%, rgba(30, 58, 95, 0.03) 100%);
+  border-color: rgba(30, 58, 95, 0.15);
   color: var(--color-primary);
+  transform: translateY(-1px);
 }
 
 /* 响应式布局 */
@@ -458,20 +492,19 @@ const showContact = () => {
 
 .nav-menu :deep(.el-menu-item) {
   color: var(--color-text-secondary);
-  border-bottom: 2px solid transparent;
-  padding: 0 12px;  /* 减少水平内边距以容纳更多菜单项 */
+  border-bottom: none;
+  padding: 0 12px;
+  letter-spacing: 0.2px;
 }
 
 .nav-menu :deep(.el-menu-item:hover) {
-  background: var(--color-primary-50);
-  color: var(--color-primary);
-  border-bottom-color: var(--color-primary-300);
+  background: transparent;
+  color: var(--color-text-primary);
 }
 
 .nav-menu :deep(.el-menu-item.is-active) {
-  background: var(--color-primary-50) !important;
-  color: var(--color-primary) !important;
-  border-bottom: 3px solid var(--color-primary);
+  background: transparent !important;
+  color: var(--color-text-primary) !important;
   font-weight: 600;
 }
 

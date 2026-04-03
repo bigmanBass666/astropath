@@ -5,27 +5,27 @@ export const schoolsData = [
     country: '美国',
     major: 'Computer Science',
     ranking: 'QS #1',
-    deadline: '2025-01-01',
+    deadline: '2025-12-15',
     tuition: '$57,590',
     acceptanceRate: '3.9%',
-    requirements: ['GPA 3.8+ (录取者平均)', 'TOEFL 100+ / IELTS 7.0+', '科研经历优先', '推荐信3封'],
+    requirements: ['GPA 3.5+ (竞争性) / 3.8+ (录取者平均)', 'TOEFL 100+ / IELTS 7.5+', '科研经历强烈建议', '推荐信3封', 'GRE可选(部分专业)'],
     website: 'https://mit.edu',
     description: '世界顶尖理工科大学，在科学和技术领域处于领导地位，培养了大量诺贝尔奖得主。',
     type: '私立大学',
     students: '约11,500人',
     image: '',
     sources: {
-      ranking: { url: 'https://www.qs.com/insights/articles/rankings-released-qs-world-university-rankings-2025/', label: 'QS 2025排名' },
-      tuition: { url: 'https://catalog.mit.edu/mit/graduate-education/costs/', label: 'MIT官网' },
-      acceptance: { url: 'https://www.collegetuitioncompare.com/edu/166027/harvard-university/', label: 'College Tuition Compare' },
+      ranking: { url: 'https://www.topuniversities.com/world-university-rankings', label: 'QS 2025排名' },
+      tuition: { url: 'https://catalog.mit.edu/mit/graduate-education/costs/', label: 'MIT官网学费' },
+      acceptance: { url: 'https://oge.mit.edu/graduate-admissions/applications/procedures/', label: 'MIT研究生招生' },
       requirements: { url: 'https://www.nomadcredit.com/usa-university/massachusetts-institute-of-technology/admissions', label: 'MIT招生要求' }
     },
     admissionCriteria: {
-      minGPA: 3.8,
-      preferredGPA: 3.9,
-      languageRequirements: { toefl: 100, ielts: 7.0 },
+      minGPA: 3.5,
+      preferredGPA: 3.8,
+      languageRequirements: { toefl: 100, ielts: 7.5 },
       universityTier: ['985', 'overseas'],
-      researchWeight: 0.4,
+      researchWeight: 0.45,
       averageScoreMin: 90,
       acceptanceRateNum: 0.039,
       competitiveness: 'extreme'
@@ -39,27 +39,27 @@ export const schoolsData = [
     ranking: 'QS #2',
     deadline: '2025-01-15',
     tuition: '£40,000',
-    acceptanceRate: '15%',
-    requirements: ['GPA 3.7+ / 均分85+', 'IELTS 7.0 (单项不低于6.5)', '相关专业背景', '个人陈述'],
+    acceptanceRate: '16.8%',
+    requirements: ['GPA 3.6+ (985/211) / 3.8+ (双非)', 'IELTS 6.5 (单项≥6.0) / TOEFL 92 (单项≥20)', '相关专业背景', '个人陈述', '推荐信2封'],
     website: 'https://imperial.ac.uk',
     description: '世界顶尖理工科大学，专注于科学、工程、医学和商业领域的研究与教学。',
     type: '公立大学',
     students: '约20,000人',
     image: '',
     sources: {
-      ranking: { url: 'https://www.qs.com/insights/articles/rankings-released-qs-world-university-rankings-2025/', label: 'QS 2025排名' },
-      tuition: { url: 'https://www.imperial.ac.uk/study/fees-and-funding/undergraduate/tuition-fees/', label: '帝国理工官网' },
-      acceptance: { url: 'https://collegedunia.com/uk/university/835-imperial-college-london-london/acceptance-rate', label: 'Collegedunia' },
+      ranking: { url: 'https://www.topuniversities.com/world-university-rankings', label: 'QS 2025排名' },
+      tuition: { url: 'https://www.imperial.ac.uk/study/fees-and-funding/tuition-fees/', label: '帝国理工官网学费' },
+      acceptance: { url: 'https://unischolars.com/universities/uk/imperial-college-london/admission', label: 'UniScholars录取率' },
       requirements: { url: 'https://www.imperial.ac.uk/study/apply/postgraduate-doctoral/entry-requirements/', label: '帝国理工招生要求' }
     },
     admissionCriteria: {
-      minGPA: 3.5,
-      preferredGPA: 3.7,
-      languageRequirements: { toefl: 95, ielts: 7.0 },
+      minGPA: 3.6,
+      preferredGPA: 3.8,
+      languageRequirements: { toefl: 92, ielts: 6.5 },
       universityTier: ['985', '211', 'overseas'],
       researchWeight: 0.3,
       averageScoreMin: 85,
-      acceptanceRateNum: 0.15,
+      acceptanceRateNum: 0.168,
       competitiveness: 'very_high'
     }
   },
@@ -72,25 +72,25 @@ export const schoolsData = [
     deadline: '2025-01-15',
     tuition: '£35,000',
     acceptanceRate: '18%',
-    requirements: ['一等荣誉学位 / GPA 3.7+', 'IELTS 7.5 (单项不低于7.0)', '学术推荐信', '可能需要面试'],
+    requirements: ['一等荣誉学位 / GPA 3.7+', 'IELTS 7.5 (单项≥7.0) / TOEFL 100+', '学术推荐信3封', '可能需要面试', '写作样本(部分专业)'],
     website: 'https://ox.ac.uk',
     description: '英语世界最古老的大学，享有卓越的学术声誉，培养了大量世界领袖和诺贝尔奖得主。',
     type: '公立大学',
     students: '约24,000人',
     image: '',
     sources: {
-      ranking: { url: 'https://www.qs.com/insights/articles/rankings-released-qs-world-university-rankings-2025/', label: 'QS 2025排名' },
-      tuition: { url: 'https://www.ox.ac.uk/node/688', label: '牛津大学官网' },
-      acceptance: { url: 'https://oxbridgeapplications.com/blog/tuition-fees-at-oxford-and-cambridge/', label: 'Oxbridge Applications' },
-      requirements: { url: 'https://www.ox.ac.uk/admissions/graduate/applying-to-oxford', label: '牛津招生要求' }
+      ranking: { url: 'https://www.topuniversities.com/world-university-rankings', label: 'QS 2025排名' },
+      tuition: { url: 'https://www.ox.ac.uk/admissions/graduate/fees-and-funding', label: '牛津官网学费' },
+      acceptance: { url: 'https://www.ox.ac.uk/admissions/graduate/applying-to-oxford', label: '牛津招生官网' },
+      requirements: { url: 'https://www.ox.ac.uk/admissions/graduate/international-applicants/international-qualifications', label: '牛津国际生要求' }
     },
     admissionCriteria: {
-      minGPA: 3.6,
-      preferredGPA: 3.8,
+      minGPA: 3.7,
+      preferredGPA: 3.9,
       languageRequirements: { toefl: 100, ielts: 7.5 },
       universityTier: ['985', '211', 'overseas'],
       researchWeight: 0.35,
-      averageScoreMin: 85,
+      averageScoreMin: 90,
       acceptanceRateNum: 0.18,
       competitiveness: 'very_high'
     }
@@ -101,27 +101,27 @@ export const schoolsData = [
     country: '美国',
     major: 'Computer Science',
     ranking: 'QS #4',
-    deadline: '2025-01-01',
+    deadline: '2025-12-01',
     tuition: '$54,269',
     acceptanceRate: '3.6%',
-    requirements: ['GPA 3.8+ (录取者平均)', 'TOEFL 100+ / IELTS 7.5+', '科研经历', '推荐信3封'],
+    requirements: ['GPA 3.5+ (建议) / 3.7+ (录取者平均)', 'TOEFL 100+ / IELTS 7.5+', '科研经历强烈建议', '推荐信3封', 'GRE可选(部分专业)'],
     website: 'https://harvard.edu',
     description: '世界顶尖研究型大学，拥有卓越的学术资源和悠久的历史传统，培养了大量杰出人才。',
     type: '私立大学',
     students: '约31,000人',
     image: '',
     sources: {
-      ranking: { url: 'https://www.qs.com/insights/articles/rankings-released-qs-world-university-rankings-2025/', label: 'QS 2025排名' },
-      tuition: { url: 'https://www.collegetuitioncompare.com/edu/166027/harvard-university/', label: 'College Tuition Compare' },
-      acceptance: { url: 'https://www.univstats.com/colleges/harvard-university/admission/', label: 'UnivStats' },
-      requirements: { url: 'https://www.collegetuitioncompare.com/edu/166027/harvard-university/', label: '哈佛招生信息' }
+      ranking: { url: 'https://www.topuniversities.com/world-university-rankings', label: 'QS 2025排名' },
+      tuition: { url: 'https://www.collegetuitioncompare.com/edu/166027/harvard-university/', label: '哈佛学费信息' },
+      acceptance: { url: 'https://www.nomadcredit.com/usa-university/harvard-university/admissions', label: '哈佛招生信息' },
+      requirements: { url: 'https://seas.harvard.edu/prospective-students/prospective-graduate-students', label: '哈佛工程研究生招生' }
     },
     admissionCriteria: {
-      minGPA: 3.8,
-      preferredGPA: 3.9,
+      minGPA: 3.5,
+      preferredGPA: 3.8,
       languageRequirements: { toefl: 100, ielts: 7.5 },
       universityTier: ['985', 'overseas'],
-      researchWeight: 0.35,
+      researchWeight: 0.4,
       averageScoreMin: 90,
       acceptanceRateNum: 0.036,
       competitiveness: 'extreme'
@@ -136,22 +136,22 @@ export const schoolsData = [
     deadline: '2025-01-20',
     tuition: '£34,000',
     acceptanceRate: '19%',
-    requirements: ['二等一荣誉学位 / GPA 3.5+', 'IELTS 7.5 (单项不低于7.0)', '学术推荐信', '可能需要面试'],
+    requirements: ['二等一荣誉学位 / GPA 3.5+ (985) / 3.8+ (其他)', 'IELTS 7.0 / TOEFL 100', '学术推荐信2封', '可能需要面试', '写作样本(部分专业)'],
     website: 'https://cam.ac.uk',
     description: '世界顶尖的研究型大学，培养了大量诺贝尔奖得主，在科学研究领域享有盛誉。',
     type: '公立大学',
     students: '约23,000人',
     image: '',
     sources: {
-      ranking: { url: 'https://www.qs.com/insights/articles/rankings-released-qs-world-university-rankings-2025/', label: 'QS 2025排名' },
-      tuition: { url: 'https://www.undergraduate.study.cam.ac.uk/international-students/international-fees-and-costs', label: '剑桥大学官网' },
-      acceptance: { url: 'https://oxbridgeapplications.com/blog/tuition-fees-at-oxford-and-cambridge/', label: 'Oxbridge Applications' },
-      requirements: { url: 'https://www.graduate.study.cam.ac.uk/application-procedure/entry-requirements', label: '剑桥招生要求' }
+      ranking: { url: 'https://www.topuniversities.com/world-university-rankings', label: 'QS 2025排名' },
+      tuition: { url: 'https://www.graduate.study.cam.ac.uk/finance/fees', label: '剑桥官网学费' },
+      acceptance: { url: 'https://www.graduate.study.cam.ac.uk/application-procedure/entry-requirements', label: '剑桥招生要求' },
+      requirements: { url: 'http://m.163.com/dy/article/KA5JHO9A05387120.html', label: '剑桥中国院校List' }
     },
     admissionCriteria: {
       minGPA: 3.5,
-      preferredGPA: 3.7,
-      languageRequirements: { toefl: 100, ielts: 7.5 },
+      preferredGPA: 3.8,
+      languageRequirements: { toefl: 100, ielts: 7.0 },
       universityTier: ['985', '211', 'overseas'],
       researchWeight: 0.3,
       averageScoreMin: 85,
@@ -165,27 +165,27 @@ export const schoolsData = [
     country: '美国',
     major: 'AI',
     ranking: 'QS #6',
-    deadline: '2025-01-02',
+    deadline: '2025-12-01',
     tuition: '$61,878',
     acceptanceRate: '3.6%',
-    requirements: ['GPA 3.8+ (录取者平均)', 'TOEFL 100+ / IELTS 7.0+', '创新项目经历', '推荐信3封'],
+    requirements: ['GPA 3.7+ (录取者平均)', 'TOEFL 100+ / IELTS 7.0+', '创新项目/科研经历', '推荐信3封', 'GRE可选'],
     website: 'https://stanford.edu',
     description: '位于硅谷中心，以创新和技术领先全球，是创业者和科技人才的摇篮。',
     type: '私立大学',
     students: '约17,000人',
     image: '',
     sources: {
-      ranking: { url: 'https://www.qs.com/insights/articles/rankings-released-qs-world-university-rankings-2025/', label: 'QS 2025排名' },
-      tuition: { url: 'https://studentservices.stanford.edu/tuition-rates/2024-2025-graduate-and-professional-tuition-rates', label: '斯坦福官网' },
-      acceptance: { url: 'https://www.collegetuitioncompare.com/amp/edu/243744/stanford-university/admission', label: 'College Tuition Compare' },
-      requirements: { url: 'https://admissions.stanford.edu/apply/', label: '斯坦福招生要求' }
+      ranking: { url: 'https://www.topuniversities.com/world-university-rankings', label: 'QS 2025排名' },
+      tuition: { url: 'https://studentservices.stanford.edu/tuition-rates', label: '斯坦福官网学费' },
+      acceptance: { url: 'https://zollege.in/usa/college/161395-stanford-university-stanford/admission', label: 'Stanford招生信息' },
+      requirements: { url: 'https://gradadmissions.stanford.edu/apply/eligibility', label: '斯坦福研究生招生' }
     },
     admissionCriteria: {
-      minGPA: 3.7,
+      minGPA: 3.5,
       preferredGPA: 3.9,
       languageRequirements: { toefl: 100, ielts: 7.0 },
       universityTier: ['985', 'overseas'],
-      researchWeight: 0.35,
+      researchWeight: 0.4,
       averageScoreMin: 88,
       acceptanceRateNum: 0.036,
       competitiveness: 'extreme'
@@ -264,20 +264,20 @@ export const schoolsData = [
     deadline: '2025-01-26',
     tuition: '£32,000',
     acceptanceRate: '16%',
-    requirements: ['GPA 3.3+ / 均分80+', 'IELTS 7.0 (单项不低于6.5)', '相关专业背景', '个人陈述'],
+    requirements: ['GPA 3.3+ (二等一学位) / 均分80+', 'IELTS 7.0 (单项≥6.5) / TOEFL 92+', '相关专业背景', '个人陈述', '推荐信2封'],
     website: 'https://ucl.ac.uk',
     description: '伦敦大学联盟旗舰校，研究实力雄厚，在多个学科领域位居世界前列。',
     type: '公立大学',
     students: '约45,000人',
     image: '',
     sources: {
-      ranking: { url: 'https://www.qs.com/insights/articles/rankings-released-qs-world-university-rankings-2025/', label: 'QS 2025排名' },
-      tuition: { url: 'http://www.ucl.ac.uk/students/fees-and-funding/pay-your-fees/fee-schedules/2024-2025/undergraduate-fees-2024-2025', label: 'UCL官网' },
-      acceptance: { url: 'https://collegedunia.com/uk/university/846-university-college-london-london/acceptance-rate', label: 'Collegedunia' },
-      requirements: { url: 'https://www.ucl.ac.uk/prospective-students/graduate/apply-international-student', label: 'UCL招生要求' }
+      ranking: { url: 'https://www.topuniversities.com/world-university-rankings', label: 'QS 2025排名' },
+      tuition: { url: 'https://www.ucl.ac.uk/students/fees-and-funding', label: 'UCL官网学费' },
+      acceptance: { url: 'https://www.ucl.ac.uk/prospective-students/graduate/entry-requirements', label: 'UCL招生要求' },
+      requirements: { url: 'https://www.ucl.ac.uk/prospective-students/international/singapore', label: 'UCL国际生要求' }
     },
     admissionCriteria: {
-      minGPA: 3.2,
+      minGPA: 3.3,
       preferredGPA: 3.5,
       languageRequirements: { toefl: 92, ielts: 7.0 },
       universityTier: ['985', '211', 'regular', 'overseas'],
@@ -293,20 +293,20 @@ export const schoolsData = [
     country: '美国',
     major: 'Physics',
     ranking: 'QS #10',
-    deadline: '2025-01-01',
+    deadline: '2025-12-01',
     tuition: '$60,864',
     acceptanceRate: '2.6%',
-    requirements: ['GPA 3.9+ (录取者接近满分)', 'TOEFL 100+ / IELTS 7.5+', '科研经历必需', '推荐信3封'],
+    requirements: ['GPA 3.8+ (录取者接近满分)', 'TOEFL 100+ / IELTS 7.5+', '科研经历必需', '推荐信3封', 'GRE可选'],
     website: 'https://caltech.edu',
     description: '世界顶尖理工科学院，专注于前沿科学研究，师生比例极低。',
     type: '私立大学',
     students: '约2,400人',
     image: '',
     sources: {
-      ranking: { url: 'https://www.qs.com/insights/articles/rankings-released-qs-world-university-rankings-2025/', label: 'QS 2025排名' },
-      tuition: { url: 'https://www.collegetuitioncompare.com/amp/edu/110404/california-institute-of-technology/', label: 'College Tuition Compare' },
-      acceptance: { url: 'https://www.collegetuitioncompare.com/amp/edu/110404/california-institute-of-technology/admission/', label: 'College Tuition Compare' },
-      requirements: { url: 'https://www.collegeadvisor.com/how-to-get-into/how-to-get-into-caltech-guide/', label: 'College Advisor' }
+      ranking: { url: 'https://www.topuniversities.com/world-university-rankings', label: 'QS 2025排名' },
+      tuition: { url: 'https://www.finaid.caltech.edu/cost', label: 'Caltech官网学费' },
+      acceptance: { url: 'https://www.gradoffice.caltech.edu/admissions', label: 'Caltech研究生招生' },
+      requirements: { url: 'https://www.gradoffice.caltech.edu/admissions/requirements', label: 'Caltech招生要求' }
     },
     admissionCriteria: {
       minGPA: 3.8,
@@ -325,24 +325,24 @@ export const schoolsData = [
     country: '美国',
     major: 'Business',
     ranking: 'QS #11',
-    deadline: '2025-01-05',
+    deadline: '2025-12-01',
     tuition: '$60,000',
     acceptanceRate: '5%',
-    requirements: ['GPA 3.7+ (录取者平均)', 'GMAT 700+ / GRE 320+', 'TOEFL 100+ / IELTS 7.5+', '领导力经历'],
+    requirements: ['GPA 3.5+ (建议) / 3.7+ (录取者平均)', 'GMAT 700+ / GRE 320+', 'TOEFL 100+ / IELTS 7.5+', '领导力经历', '推荐信2-3封'],
     website: 'https://upenn.edu',
     description: '常春藤盟校之一，沃顿商学院享誉全球，在商业和法学领域领先。',
     type: '私立大学',
     students: '约28,000人',
     image: '',
     sources: {
-      ranking: { url: 'https://www.qs.com/insights/articles/rankings-released-qs-world-university-rankings-2025/', label: 'QS 2025排名' },
-      tuition: { url: 'https://www.sofi.com/university-of-pennsylvania-tuition-fees/', label: 'SoFi' },
+      ranking: { url: 'https://www.topuniversities.com/world-university-rankings', label: 'QS 2025排名' },
+      tuition: { url: 'https://www.sfs.upenn.edu/tuition-fees', label: 'UPenn官网学费' },
       acceptance: { url: 'https://www.upenn.edu/about/facts', label: 'UPenn官网' },
       requirements: { url: 'https://admissions.upenn.edu/how-to-apply', label: 'UPenn招生要求' }
     },
     admissionCriteria: {
       minGPA: 3.5,
-      preferredGPA: 3.7,
+      preferredGPA: 3.8,
       languageRequirements: { toefl: 100, ielts: 7.5 },
       universityTier: ['985', '211', 'overseas'],
       researchWeight: 0.25,
@@ -1818,25 +1818,37 @@ function parseLanguageScore(languageStr) {
   return { type: null, score: 0 }
 }
 
+// ============================================================
+// 以下匹配算法仅作为AI推荐的补充参考
+// 最终推荐决策由AI根据用户背景和学校要求进行智能判断
+// ============================================================
+
 function calculateGPAScore(userGPA, schoolCriteria) {
-  const { minGPA, preferredGPA } = schoolCriteria
+  const { minGPA, preferredGPA, competitiveness } = schoolCriteria
   
-  if (userGPA >= preferredGPA) {
-    return 100
-  } else if (userGPA >= minGPA) {
+  // 如果低于最低要求，根据竞争程度给予较低分数
+  if (userGPA < minGPA) {
+    const gap = minGPA - userGPA
+    // 竞争越激烈，低于要求的惩罚越重
+    if (competitiveness === 'extreme') {
+      return Math.max(5, 20 - gap * 40)
+    } else if (competitiveness === 'very_high') {
+      return Math.max(10, 25 - gap * 35)
+    } else if (competitiveness === 'high') {
+      return Math.max(15, 30 - gap * 30)
+    }
+    return Math.max(20, 35 - gap * 25)
+  }
+  
+  // 达到最低要求但低于偏好GPA
+  if (userGPA < preferredGPA) {
     const range = preferredGPA - minGPA
     const position = userGPA - minGPA
-    return 70 + (position / range) * 30
-  } else {
-    const gap = minGPA - userGPA
-    if (gap <= 0.3) {
-      return 50 - gap * 30
-    } else if (gap <= 0.5) {
-      return 35 - (gap - 0.3) * 50
-    } else {
-      return Math.max(5, 25 - (gap - 0.5) * 20)
-    }
+    return 50 + (position / range) * 35
   }
+  
+  // 达到或超过偏好GPA
+  return 100
 }
 
 function calculateLanguageScore(userLanguage, schoolCriteria) {
@@ -1844,102 +1856,127 @@ function calculateLanguageScore(userLanguage, schoolCriteria) {
   const { languageRequirements } = schoolCriteria
   
   if (!userLang.type) {
-    return 40
+    return 30  // 未填写语言成绩，给予较低分数
   }
   
   if (userLang.type === 'ielts') {
     const required = languageRequirements.ielts
     if (userLang.score >= required + 0.5) return 100
-    if (userLang.score >= required) return 85
-    if (userLang.score >= required - 0.5) return 60
-    if (userLang.score >= required - 1.0) return 40
+    if (userLang.score >= required) return 80
+    if (userLang.score >= required - 0.5) return 50
     return 20
   }
   
   if (userLang.type === 'toefl') {
     const required = languageRequirements.toefl
     if (userLang.score >= required + 10) return 100
-    if (userLang.score >= required) return 85
-    if (userLang.score >= required - 10) return 60
-    if (userLang.score >= required - 20) return 40
+    if (userLang.score >= required) return 80
+    if (userLang.score >= required - 10) return 50
     return 20
   }
   
-  return 40
+  return 30
 }
 
 function calculateUniversityTierScore(userUniversity, schoolCriteria) {
   const { universityTier, competitiveness } = schoolCriteria
   
+  // 完全匹配
   if (universityTier.includes(userUniversity)) {
     return 100
   }
   
-  const tierScores = {
-    '985': { '985': 100, '211': 85, 'overseas': 90, 'regular': 70 },
-    '211': { '985': 100, '211': 100, 'overseas': 95, 'regular': 75 },
-    'overseas': { '985': 95, '211': 90, 'overseas': 100, 'regular': 70 },
-    'regular': { '985': 100, '211': 100, 'overseas': 100, 'regular': 100 }
+  // 不匹配时，根据竞争程度和用户院校背景给予分数
+  // 竞争激烈的学校对院校背景要求更严格
+  if (competitiveness === 'extreme') {
+    if (userUniversity === 'regular') return 15
+    if (userUniversity === '211') return 50
+    return 70
   }
   
-  const baseScore = tierScores[userUniversity]?.[userUniversity] || 60
-  
-  if (competitiveness === 'extreme' && userUniversity === 'regular') {
-    return Math.max(10, baseScore - 40)
-  }
-  if (competitiveness === 'very_high' && userUniversity === 'regular') {
-    return Math.max(25, baseScore - 25)
+  if (competitiveness === 'very_high') {
+    if (userUniversity === 'regular') return 25
+    if (userUniversity === '211') return 60
+    return 75
   }
   
-  return baseScore
+  if (competitiveness === 'high') {
+    if (userUniversity === 'regular') return 40
+    if (userUniversity === '211') return 70
+    return 80
+  }
+  
+  // 竞争程度较低的学校，院校背景影响较小
+  if (userUniversity === 'regular') return 60
+  if (userUniversity === '211') return 80
+  return 85
 }
 
 function calculateAverageScoreScore(userAvgScore, schoolCriteria) {
   const { averageScoreMin } = schoolCriteria
   
   if (userAvgScore >= averageScoreMin + 10) return 100
-  if (userAvgScore >= averageScoreMin + 5) return 90
-  if (userAvgScore >= averageScoreMin) return 75
-  if (userAvgScore >= averageScoreMin - 5) return 55
-  if (userAvgScore >= averageScoreMin - 10) return 35
-  return 15
+  if (userAvgScore >= averageScoreMin + 5) return 85
+  if (userAvgScore >= averageScoreMin) return 70
+  if (userAvgScore >= averageScoreMin - 5) return 45
+  if (userAvgScore >= averageScoreMin - 10) return 25
+  return 10
 }
 
 function calculateResearchScore(researchCount, schoolCriteria) {
   const { researchWeight, competitiveness } = schoolCriteria
   
+  // 如果学校不看重科研
   if (researchWeight <= 0.1) {
-    return 70 + Math.min(researchCount * 10, 30)
+    return 60 + Math.min(researchCount * 10, 40)
   }
   
+  // 研究型学校对科研要求更高
   const requiredResearch = competitiveness === 'extreme' ? 3 : 
                           competitiveness === 'very_high' ? 2 : 1
   
   if (researchCount >= requiredResearch + 2) return 100
-  if (researchCount >= requiredResearch + 1) return 90
-  if (researchCount >= requiredResearch) return 75
-  if (researchCount >= requiredResearch - 1) return 50
-  return 30
+  if (researchCount >= requiredResearch + 1) return 85
+  if (researchCount >= requiredResearch) return 70
+  if (researchCount >= requiredResearch - 1) return 40
+  return 20
 }
 
 function calculatePracticeScore(practiceCount) {
   if (practiceCount >= 5) return 100
-  if (practiceCount >= 3) return 80
-  if (practiceCount >= 2) return 65
-  if (practiceCount >= 1) return 50
-  return 35
+  if (practiceCount >= 3) return 75
+  if (practiceCount >= 2) return 55
+  if (practiceCount >= 1) return 40
+  return 25
 }
 
-function determineCategory(matchScore, competitiveness) {
-  if (competitiveness === 'extreme' || competitiveness === 'very_high') {
-    if (matchScore >= 85) return 'reach'
-    if (matchScore >= 65) return 'match'
-    return 'safe'
+function determineCategory(matchScore, competitiveness, userProfile, school) {
+  // 基于匹配分数和竞争程度初步分类
+  // 注意：这只是初步参考，AI会根据实际情况调整
+  
+  const criteria = school.admissionCriteria
+  
+  // 如果GPA低于最低要求，强制为冲刺
+  if (userProfile.gpa < criteria.minGPA) {
+    return 'reach'
   }
   
-  if (matchScore >= 80) return 'reach'
+  // 如果院校背景不在偏好列表且竞争激烈，倾向于冲刺
+  if ((competitiveness === 'extreme' || competitiveness === 'very_high') &&
+      !criteria.universityTier.includes(userProfile.university)) {
+    return 'reach'
+  }
+  
+  // 根据匹配分数分类
+  if (competitiveness === 'extreme' || competitiveness === 'very_high') {
+    if (matchScore >= 80) return 'match'
+    if (matchScore >= 60) return 'reach'
+    return 'reach'
+  }
+  
+  if (matchScore >= 75) return 'safe'
   if (matchScore >= 55) return 'match'
-  return 'safe'
+  return 'reach'
 }
 
 export function calculateMatchScore(userProfile, school) {
@@ -1955,7 +1992,8 @@ export function calculateMatchScore(userProfile, school) {
         averageScore: 50,
         research: 50,
         practice: 50
-      }
+      },
+      isAIEvaluated: true  // 标记需要AI评估
     }
   }
   
@@ -1966,6 +2004,7 @@ export function calculateMatchScore(userProfile, school) {
   const researchScore = calculateResearchScore(userProfile.researchCount || 0, criteria)
   const practiceScore = calculatePracticeScore(userProfile.practiceCount || 0)
   
+  // 权重分配
   const weights = {
     gpa: 0.25,
     language: 0.15,
@@ -1986,7 +2025,7 @@ export function calculateMatchScore(userProfile, school) {
      practiceScore * weights.practice) / totalWeight
   )
   
-  const category = determineCategory(matchScore, criteria.competitiveness)
+  const category = determineCategory(matchScore, criteria.competitiveness, userProfile, school)
   
   return {
     match: Math.min(99, Math.max(5, matchScore)),
@@ -1998,7 +2037,8 @@ export function calculateMatchScore(userProfile, school) {
       averageScore: Math.round(avgScoreScore),
       research: Math.round(researchScore),
       practice: Math.round(practiceScore)
-    }
+    },
+    isAIEvaluated: true  // 标记这只是初步参考，需要AI最终评估
   }
 }
 
