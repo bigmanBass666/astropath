@@ -1998,9 +1998,9 @@ function initScrollAnimations() {
 
 .essay-types-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-columns: repeat(2, 1fr);
   gap: var(--space-6);
-  max-width: 1000px;
+  max-width: 800px;
   margin: 0 auto;
 }
 
