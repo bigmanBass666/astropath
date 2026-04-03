@@ -6,8 +6,9 @@ marked.setOptions({
   gfm: true
 })
 
-export function renderMarkdown(content: string): string {
-  if (!content) return ''
+export function renderMarkdown(content: unknown): string {
+  if (content == null || typeof content !== 'string') return ''
+  if (content.trim() === '') return ''
   
   try {
     const rawHtml = marked(content) as string

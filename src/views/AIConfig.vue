@@ -1,130 +1,148 @@
 <template>
-  <div class="ai-config-page">
-    <div class="page-header">
-      <h2 class="section-title">AI 配置管理</h2>
-      <p class="section-desc">管理 AI 供应商连接配置，支持多供应商切换与连接测试</p>
-    </div>
-
-    <div class="config-card">
-      <div class="card-header">
-        <div class="card-header-left">
-          <span class="card-title">AI 供应商配置</span>
+  <div class="page-root">
+    <section class="hero-full">
+      <div class="hero-inner">
+        <div class="hero-content">
+          <h1 class="hero-title">AI 配置管理</h1>
+          <p class="hero-desc">管理 AI 供应商连接配置，支持多供应商切换与连接测试</p>
         </div>
-        <button
-          class="btn btn-primary btn-sm"
-          @click="testAllConnections"
-        >
-          测试全部连接
-        </button>
-      </div>
-
-      <div class="table-container">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>供应商名称</th>
-              <th>类型</th>
-              <th>Base URL</th>
-              <th>API Key</th>
-              <th>模型名称</th>
-              <th>状态</th>
-              <th>操作</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr
-              v-for="(provider, index) in providers"
-              :key="provider.id"
-            >
-              <td class="cell-name">{{ provider.name }}</td>
-              <td>
-                <span class="badge badge-type">{{ provider.type }}</span>
-              </td>
-              <td class="cell-url" :title="provider.baseUrl">{{ provider.baseUrl }}</td>
-              <td class="cell-key">{{ '*'.repeat(provider.apiKey?.length || 0) }}</td>
-              <td class="cell-model" :title="provider.model">{{ provider.model }}</td>
-              <td>
-                <span
-                  v-if="provider.status === 'testing'"
-                  class="badge badge-status badge-testing"
-                >
-                  测试中
-                </span>
-                <span
-                  v-else-if="provider.status === 'connected'"
-                  class="badge badge-status badge-connected"
-                >
-                  已连接
-                </span>
-                <span
-                  v-else-if="provider.status === 'error'"
-                  class="badge badge-status badge-error"
-                >
-                  连接失败
-                </span>
-                <span
-                  v-else
-                  class="badge badge-status badge-untested"
-                >
-                  未测试
-                </span>
-              </td>
-              <td class="cell-actions">
-                <button
-                  class="btn btn-ghost btn-xs"
-                  @click="editProvider(index)"
-                >
-                  编辑
-                </button>
-                <button
-                  class="btn btn-ghost-danger btn-xs"
-                  @click="removeProvider(index)"
-                >
-                  删除
-                </button>
-                <button
-                  class="btn btn-primary btn-xs"
-                  @click="testConnection(index)"
-                >
-                  测试
-                </button>
-              </td>
-            </tr>
-            <tr v-if="providers.length === 0">
-              <td colspan="7">
-                <div class="empty-state">
-                  <div class="empty-state-icon">⚙️</div>
-                  <div class="empty-state-title">暂无供应商配置</div>
-                  <div class="empty-state-desc">请在下方添加您的第一个 AI 供应商配置</div>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <div class="warning-banner">
-        <div class="warning-icon">!</div>
-        <div class="warning-content">
-          <div class="warning-title">当前使用的是开发者个人测试 API Key（智谱 GLM-4.7-Flash）</div>
-          <p class="warning-text">
-            本 Key 为个人账号提供，仅用于比赛演示和体验，<strong>请勿用于其他用途或频繁调用</strong>。如需长期使用，请在下方「自定义配置」中填入您自己的 API Key。
-          </p>
+        <div class="hero-stats">
+          <div class="stat-mini">
+            <span class="stat-value">{{ providers.length }}</span>
+            <span class="stat-label">已配置</span>
+          </div>
+          <div class="stat-mini">
+            <span class="stat-value">{{ connectedCount }}</span>
+            <span class="stat-label">已连接</span>
+          </div>
+          <div class="stat-mini">
+            <span class="stat-value stat-value-warning">{{ errorCount }}</span>
+            <span class="stat-label">异常</span>
+          </div>
         </div>
       </div>
+    </section>
 
-      <div class="divider" />
+    <main class="main-content">
+      <section class="config-section data-full">
+        <div class="section-header">
+          <div class="section-header-text">
+            <h2 class="section-title">AI 供应商配置</h2>
+            <p class="section-subtitle">配置和管理您的 AI 模型接入点</p>
+          </div>
+          <button
+            class="btn btn-primary btn-sm"
+            @click="testAllConnections"
+          >
+            测试全部连接
+          </button>
+        </div>
 
-      <div class="form-section">
-        <h3 class="form-section-title">自定义配置</h3>
+        <div class="table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>供应商名称</th>
+                <th>类型</th>
+                <th>Base URL</th>
+                <th>API Key</th>
+                <th>模型名称</th>
+                <th>状态</th>
+                <th class="col-actions">操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="(provider, index) in providers"
+                :key="provider.id"
+              >
+                <td class="cell-name">{{ provider.name }}</td>
+                <td>
+                  <span class="badge badge-type">{{ provider.type }}</span>
+                </td>
+                <td class="cell-mono" :title="provider.baseUrl">{{ provider.baseUrl }}</td>
+                <td class="cell-key">{{ '*'.repeat(provider.apiKey?.length || 0) }}</td>
+                <td class="cell-mono" :title="provider.model">{{ provider.model }}</td>
+                <td>
+                  <span
+                    v-if="provider.status === 'testing'"
+                    class="badge badge-testing"
+                  >测试中</span>
+                  <span
+                    v-else-if="provider.status === 'connected'"
+                    class="badge badge-connected"
+                  >已连接</span>
+                  <span
+                    v-else-if="provider.status === 'error'"
+                    class="badge badge-error"
+                  >连接失败</span>
+                  <span
+                    v-else
+                    class="badge badge-untested"
+                  >未测试</span>
+                </td>
+                <td class="cell-actions">
+                  <button
+                    class="btn btn-ghost btn-xs"
+                    @click="editProvider(index)"
+                  >编辑</button>
+                  <button
+                    class="btn btn-ghost-danger btn-xs"
+                    @click="removeProvider(index)"
+                  >删除</button>
+                  <button
+                    class="btn btn-primary btn-xs"
+                    :disabled="provider.status === 'testing'"
+                    @click="testConnection(index)"
+                  >{{ provider.status === 'testing' ? '测试中...' : '测试' }}</button>
+                </td>
+              </tr>
+              <tr v-if="providers.length === 0">
+                <td colspan="7">
+                  <div class="empty-state">
+                    <svg class="empty-icon" viewBox="0 0 48 48" fill="none">
+                      <circle cx="24" cy="24" r="20" stroke="currentColor" stroke-width="2" opacity=".3"/>
+                      <path d="M24 14v16m0 0l-6-6m6 6l6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity=".4"/>
+                    </svg>
+                    <p class="empty-title">暂无供应商配置</p>
+                    <p class="empty-desc">请在下方添加您的第一个 AI 供应商配置</p>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="warning-banner">
+          <div class="warning-mark">!</div>
+          <div class="warning-body">
+            <p class="warning-head">当前使用的是开发者个人测试 API Key（智谱 GLM-4.7-Flash）</p>
+            <p class="warning-detail">
+              本 Key 为个人账号提供，仅用于比赛演示和体验，<strong>请勿用于其他用途或频繁调用</strong>。如需长期使用，请在下方「自定义配置」中填入您自己的 API Key。
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <div class="section-divider" />
+
+      <section class="config-section form-section form-comfortable">
+        <div class="section-header">
+          <div class="section-header-text">
+            <h2 class="section-title">自定义配置</h2>
+            <p class="section-subtitle">添加新的 AI 供应商</p>
+          </div>
+        </div>
+
         <form
-          class="config-form"
+          class="provider-form"
           @submit.prevent="addProvider"
         >
-          <div class="form-grid">
+          <div class="form-row">
             <div class="form-field">
-              <label class="form-label">供应商名称</label>
+              <label class="form-label" for="prov-name">供应商名称</label>
               <input
+                id="prov-name"
                 v-model="newProvider.name"
                 type="text"
                 class="form-input"
@@ -132,118 +150,128 @@
               />
             </div>
             <div class="form-field">
-              <label class="form-label">类型</label>
-              <select
+              <label class="form-label" for="prov-type">类型</label>
+              <CustomSelect
+                id="prov-type"
                 v-model="newProvider.type"
-                class="form-select"
-              >
-                <option value="">选择类型</option>
-                <option value="openai">OpenAI</option>
-                <option value="anthropic">Anthropic</option>
-                <option value="domestic">国内供应商</option>
-                <option value="other">其他</option>
-              </select>
-            </div>
-            <div class="form-field form-field-wide">
-              <label class="form-label">Base URL</label>
-              <input
-                v-model="newProvider.baseUrl"
-                type="text"
-                class="form-input"
-                placeholder="https://api.openai.com/v1"
-              />
-            </div>
-            <div class="form-field form-field-wide">
-              <label class="form-label">API Key</label>
-              <input
-                v-model="newProvider.apiKey"
-                type="password"
-                class="form-input"
-                placeholder="sk-..."
-              />
-            </div>
-            <div class="form-field form-field-wide">
-              <label class="form-label">模型名称</label>
-              <input
-                v-model="newProvider.model"
-                type="text"
-                class="form-input"
-                placeholder="gpt-4, glm-4-flash 等"
+                :options="typeOptions"
+                placeholder="选择类型"
               />
             </div>
           </div>
-          <div class="form-actions">
+          <div class="form-field">
+            <label class="form-label" for="prov-url">Base URL</label>
+            <input
+              id="prov-url"
+              v-model="newProvider.baseUrl"
+              type="text"
+              class="form-input"
+              placeholder="https://api.openai.com/v1"
+            />
+          </div>
+          <div class="form-field">
+            <label class="form-label" for="prov-key">API Key</label>
+            <input
+              id="prov-key"
+              v-model="newProvider.apiKey"
+              type="password"
+              class="form-input"
+              placeholder="sk-..."
+            />
+          </div>
+          <div class="form-field">
+            <label class="form-label" for="prov-model">模型名称</label>
+            <input
+              id="prov-model"
+              v-model="newProvider.model"
+              type="text"
+              class="form-input"
+              placeholder="gpt-4, glm-4-flash 等"
+            />
+          </div>
+          <div class="form-footer">
             <button
               type="submit"
               class="btn btn-primary"
-            >
-              保存配置
-            </button>
+            >保存配置</button>
           </div>
         </form>
+      </section>
+    </main>
+
+    <Teleport to="body">
+      <div
+        v-if="toast.visible"
+        class="toast-notification"
+        :class="'toast-' + toast.type"
+      >
+        <span class="toast-icon">{{ toastIcons[toast.type] }}</span>
+        <span class="toast-message">{{ toast.message }}</span>
       </div>
-    </div>
+    </Teleport>
 
     <Teleport to="body">
       <div
         v-if="editVisible"
-        class="modal-overlay"
+        class="modal-backdrop"
         @click.self="editVisible = false"
       >
-        <div class="modal-content">
-          <div class="modal-header">
-            <h3 class="modal-title">编辑供应商</h3>
+        <div
+          class="modal-panel"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="modal-heading"
+        >
+          <header class="modal-head">
+            <h3 id="modal-heading" class="modal-heading">编辑供应商</h3>
             <button
-              class="modal-close"
+              class="btn-icon"
+              aria-label="关闭"
               @click="editVisible = false"
-            >
-              ✕
-            </button>
-          </div>
+            >✕</button>
+          </header>
           <div class="modal-body">
-            <form
-              class="config-form"
-              @submit.prevent="saveEdit"
-            >
+            <form @submit.prevent="saveEdit">
               <div class="form-field">
-                <label class="form-label">供应商名称</label>
+                <label class="form-label" for="edit-name">供应商名称</label>
                 <input
+                  id="edit-name"
                   v-model="editingProvider.name"
                   type="text"
                   class="form-input"
                 />
               </div>
               <div class="form-field">
-                <label class="form-label">类型</label>
-                <select
+                <label class="form-label" for="edit-type">类型</label>
+                <CustomSelect
+                  id="edit-type"
                   v-model="editingProvider.type"
-                  class="form-select"
-                >
-                  <option value="openai">OpenAI</option>
-                  <option value="anthropic">Anthropic</option>
-                  <option value="domestic">国内供应商</option>
-                  <option value="other">其他</option>
-                </select>
+                  :options="typeOptions"
+                  placeholder="选择类型"
+                />
               </div>
               <div class="form-field">
-                <label class="form-label">Base URL</label>
+                <label class="form-label" for="edit-url">Base URL</label>
                 <input
+                  id="edit-url"
                   v-model="editingProvider.baseUrl"
                   type="text"
                   class="form-input"
                 />
               </div>
               <div class="form-field">
-                <label class="form-label">API Key</label>
+                <label class="form-label" for="edit-key">API Key</label>
                 <input
+                  id="edit-key"
                   v-model="editingProvider.apiKey"
                   type="password"
                   class="form-input"
                 />
               </div>
               <div class="form-field">
-                <label class="form-label">模型名称</label>
+                <label class="form-label" for="edit-model">模型名称</label>
                 <input
+                  id="edit-model"
                   v-model="editingProvider.model"
                   type="text"
                   class="form-input"
@@ -251,20 +279,16 @@
               </div>
             </form>
           </div>
-          <div class="modal-footer">
+          <footer class="modal-foot">
             <button
               class="btn btn-secondary"
               @click="editVisible = false"
-            >
-              取消
-            </button>
+            >取消</button>
             <button
               class="btn btn-primary"
               @click="saveEdit"
-            >
-              保存
-            </button>
-          </div>
+            >保存</button>
+          </footer>
         </div>
       </div>
     </Teleport>
@@ -272,8 +296,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import { ElMessage } from 'element-plus'
+import { ref, computed, reactive, onMounted, onUnmounted } from 'vue'
 import { testProviderConnection } from '@/utils/ai-api'
 
 const providers = ref([])
@@ -288,8 +311,52 @@ const editVisible = ref(false)
 const editingProvider = ref({})
 const editingIndex = ref(-1)
 
+const typeOptions = [
+  { value: 'openai', label: 'OpenAI' },
+  { value: 'anthropic', label: 'Anthropic' },
+  { value: 'domestic', label: '国内供应商' },
+  { value: 'other', label: '其他' }
+]
+
+const connectedCount = computed(() =>
+  providers.value.filter(p => p.status === 'connected').length
+)
+
+const errorCount = computed(() =>
+  providers.value.filter(p => p.status === 'error').length
+)
+
+const toast = reactive({
+  visible: false,
+  message: '',
+  type: 'info'
+})
+
+const toastIcons = {
+  success: '✓',
+  error: '✕',
+  warning: '!',
+  info: 'ℹ'
+}
+
+let toastTimer = null
+
+function showToast(message, type = 'info', duration = 3000) {
+  if (toastTimer) clearTimeout(toastTimer)
+  toast.message = message
+  toast.type = type
+  toast.visible = true
+  toastTimer = setTimeout(() => {
+    toast.visible = false
+  }, duration)
+}
+
 onMounted(() => {
   loadProviders()
+})
+
+onUnmounted(() => {
+  if (toastTimer) clearTimeout(toastTimer)
 })
 
 const loadProviders = () => {
@@ -308,7 +375,7 @@ const saveProviders = () => {
 
 const addProvider = () => {
   if (!newProvider.value.name || !newProvider.value.baseUrl || !newProvider.value.apiKey) {
-    ElMessage.warning('请填写完整信息')
+    showToast('请填写完整信息', 'warning')
     return
   }
   providers.value.push({
@@ -317,14 +384,14 @@ const addProvider = () => {
     id: Date.now()
   })
   saveProviders()
-  ElMessage.success('配置已保存')
+  showToast('配置已保存', 'success')
   newProvider.value = { name: '', type: '', baseUrl: '', apiKey: '', model: '' }
 }
 
 const addZhipuPreset = () => {
   const existing = providers.value.find(p => p.name === '智谱 GLM-4.7-Flash（推荐）')
   if (existing) {
-    ElMessage.info('智谱配置已存在')
+    showToast('智谱配置已存在', 'info')
     return
   }
   providers.value.push({
@@ -338,13 +405,13 @@ const addZhipuPreset = () => {
     supportsThinking: true
   })
   saveProviders()
-  ElMessage.success('已添加智谱 GLM-4.7-Flash 配置（支持思考模式），请点击"测试"验证连接')
+  showToast('已添加智谱 GLM-4.7-Flash 配置（支持思考模式），请点击"测试"验证连接', 'success')
 }
 
 const removeProvider = (index) => {
   providers.value.splice(index, 1)
   saveProviders()
-  ElMessage.success('已删除')
+  showToast('已删除', 'success')
 }
 
 const testConnection = async (index) => {
@@ -354,16 +421,17 @@ const testConnection = async (index) => {
 
   try {
     const result = await testProviderConnection(provider.id)
-    if (result.success) {
+    if (result && result.success) {
       provider.status = 'connected'
-      ElMessage.success(`${provider.name} 连接成功`)
+      showToast(`${provider.name} 连接成功`, 'success')
     } else {
       provider.status = 'error'
-      ElMessage.error(`${provider.name} 连接失败: ${result.error}`)
+      const errMsg = result?.error || '未知错误'
+      showToast(`${provider.name} 连接失败: ${errMsg}`, 'error')
     }
-  } catch (error) {
+  } catch (err) {
     provider.status = 'error'
-    ElMessage.error(`${provider.name} 连接失败: ${error.message}`)
+    showToast(`${provider.name} 连接失败: ${err.message}`, 'error')
   }
   saveProviders()
 }
@@ -382,84 +450,261 @@ const saveEdit = () => {
   providers.value[editingIndex.value] = { ...editingProvider.value }
   saveProviders()
   editVisible.value = false
-  ElMessage.success('配置已更新')
+  showToast('配置已更新', 'success')
+}
+</script>
+
+<script>
+import { h, Transition } from 'vue'
+
+function ChevronIcon(cls) {
+  return h('svg', {
+    class: cls,
+    width: 12,
+    height: 12,
+    viewBox: '0 0 12 12',
+    fill: 'none'
+  }, [
+    h('path', {
+      d: 'M3 5L6 8L9 5',
+      stroke: 'currentColor',
+      'stroke-width': 1.5,
+      'stroke-linecap': 'round',
+      'stroke-linejoin': 'round'
+    })
+  ])
+}
+
+export default {
+  components: {
+    CustomSelect: {
+      props: {
+        modelValue: { type: [String, Number], default: '' },
+        options: { type: Array, required: true },
+        placeholder: { type: String, default: '请选择' }
+      },
+      emits: ['update:modelValue'],
+      data() {
+        return { open: false }
+      },
+      computed: {
+        selectedLabel() {
+          const opt = this.options.find(o => o.value === this.modelValue)
+          return opt ? opt.label : ''
+        }
+      },
+      mounted() {
+        document.addEventListener('click', this.closeOnClickOutside)
+      },
+      beforeUnmount() {
+        document.removeEventListener('click', this.closeOnClickOutside)
+      },
+      methods: {
+        toggle() {
+          this.open = !this.open
+        },
+        select(option) {
+          this.$emit('update:modelValue', option.value)
+          this.open = false
+        },
+        closeOnClickOutside(e) {
+          if (this.open && !this.$el.contains(e.target)) {
+            this.open = false
+          }
+        }
+      },
+      render() {
+        const isActive = (val) => val === this.modelValue
+        return h('div', {
+          class: ['custom-select', { 'custom-select--open': this.open }]
+        }, [
+          h('button', {
+            type: 'button',
+            class: 'custom-select-trigger',
+            onClick: (e) => { e.preventDefault(); this.toggle() },
+            'aria-expanded': this.open
+          }, [
+            h('span', {
+              class: ['custom-select-value', { 'custom-select-placeholder': !this.modelValue }]
+            }, this.selectedLabel || this.placeholder),
+            ChevronIcon(['custom-select-arrow', { 'custom-select-arrow--rotate': this.open }])
+          ]),
+          h(Transition, { name: 'select-dropdown' }, () => {
+            if (!this.open) return null
+            return h('ul', {
+              class: 'custom-select-dropdown',
+              role: 'listbox'
+            }, this.options.map(opt =>
+              h('li', {
+                key: opt.value,
+                class: ['custom-select-option', { 'custom-select-option--active': isActive(opt.value) }],
+                role: 'option',
+                'aria-selected': isActive(opt.value),
+                onClick: () => this.select(opt)
+              }, opt.label)
+            ))
+          })
+        ])
+      }
+    }
+  }
 }
 </script>
 
 <style scoped>
-.ai-config-page {
-  max-width: 1200px;
+.page-root {
+  width: 100%;
+  min-height: 100vh;
+  background: var(--color-slate-50);
+}
+
+.hero-full {
+  width: 100%;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.hero-inner {
+  max-width: 1440px;
   margin: 0 auto;
-  padding: var(--space-10);
+  padding: 0 var(--space-10);
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-8);
+  padding-top: var(--space-12);
+  padding-bottom: var(--space-12);
 }
 
-.page-header {
-  margin-bottom: var(--space-10);
+.hero-content {
+  flex: 1;
+  min-width: 0;
 }
 
-.section-title {
-  font-size: var(--text-3xl);
+.hero-title {
+  font-size: var(--text-4xl);
   font-weight: var(--font-bold);
   color: var(--color-text-primary);
-  letter-spacing: -0.5px;
+  letter-spacing: -1px;
   line-height: var(--leading-tight);
-  margin: 0 0 var(--space-4) 0;
-  position: relative;
-  display: inline-block;
+  margin: 0 0 var(--space-3) 0;
 }
 
-.section-title::after {
+.hero-title::after {
   content: '';
-  position: absolute;
-  left: 0;
-  bottom: -6px;
+  display: block;
   width: 48px;
   height: 3px;
   background: var(--color-solid);
   border-radius: 2px;
+  margin-top: var(--space-4);
 }
 
-.section-desc {
+.hero-desc {
   font-size: var(--text-base);
   color: var(--color-text-secondary);
-  margin: var(--space-5) 0 0 0;
   line-height: var(--leading-normal);
+  margin: var(--space-4) 0 0 0;
 }
 
-.config-card {
-  background: var(--color-surface);
+.hero-stats {
+  display: flex;
+  gap: var(--space-6);
+  flex-shrink: 0;
+}
+
+.stat-mini {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-4) var(--space-6);
+  background: var(--color-surface-muted);
   border-radius: var(--radius-xl);
   border: 1px solid var(--color-border-light);
-  box-shadow: var(--shadow-sm);
-  padding: var(--space-8);
-  transition: box-shadow var(--transition-normal), border-color var(--transition-normal);
+  min-width: 72px;
 }
 
-.card-header {
+.stat-value {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-bold);
+  color: var(--color-solid);
+  line-height: 1;
+  letter-spacing: -0.5px;
+}
+
+.stat-value-warning {
+  color: var(--color-danger);
+}
+
+.stat-label {
+  font-size: var(--text-xs);
+  font-weight: var(--font-medium);
+  color: var(--color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.main-content {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 var(--space-10);
+  padding-top: var(--space-10);
+  padding-bottom: var(--space-16);
+}
+
+.config-section {
+  margin-bottom: var(--space-8);
+}
+
+.data-full {
+  max-width: 1600px;
+  margin-left: calc(-1 * var(--space-10));
+  margin-right: calc(-1 * var(--space-10));
+  padding-left: var(--space-10);
+  padding-right: var(--space-10);
+}
+
+.form-comfortable {
+  max-width: 960px;
+}
+
+.form-section {
+  padding-top: var(--space-10);
+}
+
+.section-header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
+  gap: var(--space-4);
   margin-bottom: var(--space-6);
-  padding-bottom: var(--space-4);
-  border-bottom: 1px solid var(--color-border-light);
 }
 
-.card-header-left {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
+.section-header-text {
+  min-width: 0;
 }
 
-.card-title {
+.section-title {
   font-size: var(--text-xl);
   font-weight: var(--font-semibold);
   color: var(--color-text-primary);
+  margin: 0 0 var(--space-1) 0;
+  line-height: var(--leading-tight);
 }
 
-.table-container {
-  overflow-x: auto;
-  border-radius: var(--radius-lg);
+.section-subtitle {
+  font-size: var(--text-sm);
+  color: var(--color-text-tertiary);
+  margin: 0;
+  line-height: var(--leading-normal);
+}
+
+.table-wrapper {
+  background: var(--color-surface);
+  border-radius: var(--radius-xl);
   border: 1px solid var(--color-border);
+  overflow-x: auto;
 }
 
 .data-table {
@@ -479,13 +724,13 @@ const saveEdit = () => {
   text-transform: uppercase;
   letter-spacing: 0.5px;
   text-align: left;
-  padding: var(--space-3) var(--space-4);
+  padding: var(--space-3) var(--space-5);
   border-bottom: 1px solid var(--color-border);
   white-space: nowrap;
 }
 
 .data-table td {
-  padding: var(--space-3) var(--space-4);
+  padding: var(--space-3) var(--space-5);
   color: var(--color-text-primary);
   border-bottom: 1px solid var(--color-border-light);
   vertical-align: middle;
@@ -503,14 +748,19 @@ const saveEdit = () => {
   background: var(--color-slate-50);
 }
 
-.cell-name {
-  font-weight: var(--font-medium);
-  color: var(--color-text-primary);
-  max-width: 180px;
+.col-actions {
+  width: 180px;
 }
 
-.cell-url,
-.cell-model {
+.cell-name {
+  font-weight: var(--font-medium);
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cell-mono {
   max-width: 220px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -534,22 +784,19 @@ const saveEdit = () => {
 .badge {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   padding: 2px 10px;
   border-radius: var(--radius-full);
   font-size: var(--text-xs);
   font-weight: var(--font-medium);
   letter-spacing: 0.25px;
   line-height: 1.6;
+  white-space: nowrap;
 }
 
 .badge-type {
   background: var(--color-slate-100);
   color: var(--color-slate-700);
-}
-
-.badge-status {
-  min-width: 60px;
-  justify-content: center;
 }
 
 .badge-testing {
@@ -589,6 +836,12 @@ const saveEdit = () => {
   outline-offset: 2px;
 }
 
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
 .btn-primary {
   background: var(--color-solid);
   color: var(--color-text-inverse);
@@ -600,13 +853,13 @@ const saveEdit = () => {
   box-shadow: var(--shadow-sm);
 }
 
-.btn-primary:hover {
+.btn-primary:hover:not(:disabled) {
   background: var(--color-solid-hover);
   transform: translateY(-1px);
   box-shadow: var(--shadow-md);
 }
 
-.btn-primary:active {
+.btn-primary:active:not(:disabled) {
   transform: translateY(0);
 }
 
@@ -671,17 +924,37 @@ const saveEdit = () => {
   border-radius: var(--radius-md);
 }
 
+.btn-icon {
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--color-text-muted);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-size: var(--text-base);
+  transition: all var(--transition-fast);
+}
+
+.btn-icon:hover {
+  background: var(--color-slate-100);
+  color: var(--color-text-primary);
+}
+
 .warning-banner {
   display: flex;
   gap: var(--space-4);
   margin-top: var(--space-6);
-  padding: var(--space-4) var(--space-5);
+  padding: var(--space-5) var(--space-6);
   background: var(--color-warning-bg);
   border-radius: var(--radius-lg);
   border-left: 3px solid var(--color-warning);
 }
 
-.warning-icon {
+.warning-mark {
   flex-shrink: 0;
   width: 24px;
   height: 24px;
@@ -696,65 +969,51 @@ const saveEdit = () => {
   margin-top: 2px;
 }
 
-.warning-content {
+.warning-body {
   flex: 1;
   min-width: 0;
 }
 
-.warning-title {
+.warning-head {
   font-size: var(--text-sm);
   font-weight: var(--font-semibold);
   color: var(--color-text-primary);
-  margin-bottom: var(--space-1);
+  margin: 0 0 var(--space-1) 0;
 }
 
-.warning-text {
+.warning-detail {
   font-size: var(--text-sm);
   color: var(--color-warning);
   line-height: var(--leading-normal);
   margin: 0;
 }
 
-.warning-text strong {
+.warning-detail strong {
   color: var(--color-text-primary);
   font-weight: var(--font-semibold);
 }
 
-.divider {
+.section-divider {
   height: 1px;
   background: var(--color-divider);
-  margin: var(--space-8) 0 var(--space-8);
+  margin: 0 var(--space-10);
 }
 
-.form-section {
-  margin-top: var(--space-2);
-}
-
-.form-section-title {
-  font-size: var(--text-lg);
-  font-weight: var(--font-semibold);
-  color: var(--color-text-primary);
-  margin: 0 0 var(--space-6) 0;
-}
-
-.config-form {
+.provider-form {
   max-width: 600px;
 }
 
-.form-grid {
+.form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: var(--space-5);
-}
-
-.form-field-wide {
-  grid-column: 1 / -1;
 }
 
 .form-field {
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
+  margin-bottom: var(--space-5);
 }
 
 .form-label {
@@ -763,8 +1022,7 @@ const saveEdit = () => {
   color: var(--color-text-secondary);
 }
 
-.form-input,
-.form-select {
+.form-input {
   width: 100%;
   padding: 10px 14px;
   border: 1px solid var(--color-border);
@@ -778,27 +1036,17 @@ const saveEdit = () => {
   box-sizing: border-box;
 }
 
-.form-input:focus,
-.form-select:focus {
+.form-input:focus {
   outline: none;
   border-color: var(--color-solid);
   box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.08);
 }
 
-.form-input::placeholder,
-.form-select::placeholder {
+.form-input::placeholder {
   color: var(--color-text-muted);
 }
 
-.form-select {
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2394A3B8' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 12px center;
-  padding-right: 36px;
-}
-
-.form-actions {
+.form-footer {
   margin-top: var(--space-6);
   display: flex;
   gap: var(--space-3);
@@ -813,26 +1061,88 @@ const saveEdit = () => {
   text-align: center;
 }
 
-.empty-state-icon {
-  font-size: 40px;
+.empty-icon {
+  width: 48px;
+  height: 48px;
+  color: var(--color-slate-300);
   margin-bottom: var(--space-4);
-  opacity: 0.6;
 }
 
-.empty-state-title {
+.empty-title {
   font-size: var(--text-lg);
   font-weight: var(--font-semibold);
   color: var(--color-text-primary);
-  margin-bottom: var(--space-2);
+  margin: 0 0 var(--space-2) 0;
 }
 
-.empty-state-desc {
+.empty-desc {
   font-size: var(--text-sm);
   color: var(--color-text-secondary);
+  margin: 0;
   max-width: 320px;
 }
 
-.modal-overlay {
+.toast-notification {
+  position: fixed;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 12px 20px;
+  border-radius: var(--radius-lg);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  box-shadow: var(--shadow-lg);
+  animation: toast-in 250ms ease;
+  pointer-events: auto;
+}
+
+@keyframes toast-in {
+  from { opacity: 0; transform: translateX(-50%) translateY(-12px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+.toast-success {
+  background: var(--color-success);
+  color: white;
+}
+
+.toast-error {
+  background: var(--color-danger);
+  color: white;
+}
+
+.toast-warning {
+  background: var(--color-warning);
+  color: white;
+}
+
+.toast-info {
+  background: var(--color-solid);
+  color: white;
+}
+
+.toast-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.25);
+  font-size: var(--text-xs);
+  font-weight: var(--font-bold);
+  flex-shrink: 0;
+}
+
+.toast-message {
+  white-space: nowrap;
+}
+
+.modal-backdrop {
   position: fixed;
   inset: 0;
   background: rgba(15, 23, 42, 0.4);
@@ -842,15 +1152,15 @@ const saveEdit = () => {
   align-items: center;
   justify-content: center;
   padding: var(--space-4);
-  animation: modal-fade-in 200ms ease;
+  animation: fade-in 200ms ease;
 }
 
-@keyframes modal-fade-in {
+@keyframes fade-in {
   from { opacity: 0; }
   to { opacity: 1; }
 }
 
-.modal-content {
+.modal-panel {
   background: var(--color-surface);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-2xl);
@@ -858,15 +1168,15 @@ const saveEdit = () => {
   width: 100%;
   max-height: 85vh;
   overflow-y: auto;
-  animation: modal-slide-up 250ms ease;
+  animation: slide-up 250ms ease;
 }
 
-@keyframes modal-slide-up {
+@keyframes slide-up {
   from { opacity: 0; transform: translateY(16px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
-.modal-header {
+.modal-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -874,31 +1184,11 @@ const saveEdit = () => {
   border-bottom: 1px solid var(--color-border-light);
 }
 
-.modal-title {
+.modal-heading {
   font-size: var(--text-lg);
   font-weight: var(--font-semibold);
   color: var(--color-text-primary);
   margin: 0;
-}
-
-.modal-close {
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-  background: transparent;
-  color: var(--color-text-muted);
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  font-size: var(--text-base);
-  transition: all var(--transition-fast);
-}
-
-.modal-close:hover {
-  background: var(--color-slate-100);
-  color: var(--color-text-primary);
 }
 
 .modal-body {
@@ -913,7 +1203,7 @@ const saveEdit = () => {
   margin-bottom: 0;
 }
 
-.modal-footer {
+.modal-foot {
   display: flex;
   align-items: center;
   justify-content: flex-end;
@@ -922,20 +1212,226 @@ const saveEdit = () => {
   border-top: 1px solid var(--color-border-light);
 }
 
-@media (max-width: 768px) {
-  .ai-config-page {
-    padding: var(--space-5);
+:deep(.custom-select) {
+  position: relative;
+  width: 100%;
+}
+
+:deep(.custom-select-trigger) {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: 10px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: var(--text-base);
+  font-family: var(--font-family-base);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  text-align: left;
+  transition: all var(--transition-fast);
+  min-height: 44px;
+  box-sizing: border-box;
+}
+
+:deep(.custom-select-trigger:focus) {
+  outline: none;
+  border-color: var(--color-solid);
+  box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.08);
+}
+
+:deep(.custom-select--open .custom-select-trigger) {
+  border-color: var(--color-solid);
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.08);
+}
+
+:deep(.custom-select-value) {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:deep(.custom-select-placeholder) {
+  color: var(--color-text-muted);
+}
+
+:deep(.custom-select-arrow) {
+  flex-shrink: 0;
+  color: var(--color-text-muted);
+  transition: transform var(--transition-fast);
+}
+
+:deep(.custom-select-arrow--rotate) {
+  transform: rotate(180deg);
+}
+
+:deep(.custom-select-dropdown) {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  margin-top: -1px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-solid);
+  border-top: none;
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  list-style: none;
+  padding: var(--space-2) 0;
+  margin: 0;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+:deep(.custom-select-option) {
+  padding: 10px 14px;
+  font-size: var(--text-base);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+  list-style: none;
+}
+
+:deep(.custom-select-option:hover) {
+  background: var(--color-slate-50);
+}
+
+:deep(.custom-select-option--active) {
+  color: var(--color-solid);
+  font-weight: var(--font-semibold);
+  background: rgba(15, 23, 42, 0.04);
+}
+
+.select-dropdown-enter-active {
+  animation: dropdown-in 150ms ease;
+}
+
+.select-dropdown-leave-active {
+  animation: dropdown-out 100ms ease;
+}
+
+@keyframes dropdown-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes dropdown-out {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(-4px); }
+}
+
+@media (min-width: 1600px) {
+  .hero-inner {
+    max-width: 1760px;
   }
 
-  .section-title {
+  .main-content {
+    max-width: 1760px;
+  }
+
+  .data-full {
+    max-width: 1760px;
+  }
+
+  .table-wrapper {
+    border-radius: var(--radius-xl);
+  }
+}
+
+@media (min-width: 1200px) and (max-width: 1599px) {
+  .hero-inner {
+    max-width: 1360px;
+  }
+
+  .main-content {
+    max-width: 1360px;
+  }
+
+  .data-full {
+    max-width: 1360px;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1199px) {
+  .hero-inner {
+    padding: var(--space-10) 0;
+  }
+
+  .hero-inner,
+  .main-content {
+    max-width: 100%;
+  }
+
+  .data-full {
+    max-width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  .main-content {
+    padding-top: var(--space-8);
+    padding-bottom: var(--space-12);
+  }
+
+  .page-hero-flex {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-6);
+  }
+
+  .hero-stats {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .stat-mini {
+    flex: 1;
+    max-width: 120px;
+  }
+}
+
+@media (max-width: 767px) {
+  .hero-inner {
+    padding: var(--space-8) var(--space-5);
+  }
+
+  .hero-title {
     font-size: var(--text-2xl);
   }
 
-  .config-card {
-    padding: var(--space-5);
+  .hero-stats {
+    gap: var(--space-3);
   }
 
-  .form-grid {
+  .stat-mini {
+    padding: var(--space-3) var(--space-4);
+    min-width: 56px;
+  }
+
+  .stat-value {
+    font-size: var(--text-xl);
+  }
+
+  .main-content {
+    padding: 0 var(--space-5);
+    padding-top: var(--space-6);
+    padding-bottom: var(--space-10);
+  }
+
+  .section-header {
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  .form-row {
     grid-template-columns: 1fr;
   }
 
@@ -944,24 +1440,63 @@ const saveEdit = () => {
     padding: var(--space-2) var(--space-3);
   }
 
+  .col-actions {
+    width: auto;
+    min-width: 140px;
+  }
+
   .cell-actions {
     display: flex;
     flex-wrap: wrap;
     gap: var(--space-1);
   }
 
-  .modal-content {
+  .modal-panel {
     max-width: 100%;
     max-height: 90vh;
+    border-radius: var(--radius-lg);
   }
 
-  .modal-header,
-  .modal-footer {
+  .modal-head,
+  .modal-foot {
     padding: var(--space-4) var(--space-5);
   }
 
   .modal-body {
     padding: var(--space-5);
+  }
+
+  .warning-banner {
+    flex-direction: column;
+    gap: var(--space-3);
+    padding: var(--space-4);
+  }
+
+  .section-divider {
+    margin: 0 var(--space-5);
+  }
+
+  .toast-notification {
+    left: 16px;
+    right: 16px;
+    transform: none;
+  }
+
+  .toast-message {
+    white-space: normal;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .modal-backdrop,
+  .modal-panel,
+  .toast-notification {
+    animation: none;
+  }
+
+  .select-dropdown-enter-active,
+  .select-dropdown-leave-active {
+    animation: none;
   }
 }
 </style>

@@ -10,6 +10,7 @@ import './styles/index.css'
 import './styles/variables.css'
 import './styles/animations.css'
 import './styles/utilities.css'
+import './styles/atmosphere.css'
 
 // 路由配置
 const routes = [

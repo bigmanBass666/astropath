@@ -1,760 +1,926 @@
 <template>
   <div class="assessment-page">
-    <h2 class="page-title">
-      背景评估
-    </h2>
-
-    <!-- 步骤1：基础信息 -->
-    <el-card
-      v-if="currentStep === 0"
-      class="step-card"
-    >
-      <template #header>
-        <span>学生基础信息</span>
-      </template>
-      <el-form
-        ref="basicFormRef"
-        :model="form.basic"
-        :rules="basicRules"
-        label-width="120px"
-      >
-        <el-form-item
-          label="姓名"
-          prop="name"
-        >
-          <el-input
-            v-model="form.basic.name"
-            placeholder="请输入姓名"
-          />
-        </el-form-item>
-        <el-form-item
-          label="年龄"
-          prop="age"
-        >
-          <el-input-number
-            v-model="form.basic.age"
-            :min="16"
-            :max="50"
-          />
-        </el-form-item>
-        <el-form-item
-          label="在读院校"
-          prop="university"
-        >
-          <el-select
-            v-model="form.basic.university"
-            placeholder="请选择或输入"
-          >
-            <el-option
-              label="985院校"
-              value="985"
-            />
-            <el-option
-              label="211院校"
-              value="211"
-            />
-            <el-option
-              label="普通本科"
-              value="regular"
-            />
-            <el-option
-              label="海外院校"
-              value="overseas"
-            />
-          </el-select>
-        </el-form-item>
-        <el-form-item
-          label="GPA"
-          prop="gpa"
-        >
-          <el-slider
-            v-model="form.basic.gpa"
-            :min="0"
-            :max="4"
-            :step="0.1"
-            show-stops
-          />
-          <span class="gpa-display">当前GPA: {{ form.basic.gpa.toFixed(1) }}</span>
-        </el-form-item>
-        <el-form-item
-          label="语言成绩"
-          prop="language"
-        >
-          <el-input
-            v-model="form.basic.language"
-            placeholder="如：雅思7.0 / 托福100"
-          />
-        </el-form-item>
-      </el-form>
-      <div class="step-actions">
-        <el-button
-          type="primary"
-          @click="nextStep"
-        >
-          下一步
-        </el-button>
-      </div>
-    </el-card>
-
-    <!-- 步骤2：学术背景 -->
-    <el-card
-      v-if="currentStep === 1"
-      class="step-card"
-    >
-      <template #header>
-        <span>学术背景</span>
-      </template>
-      <el-form
-        :model="form.academic"
-        label-width="120px"
-      >
-        <el-form-item label="学历层次">
-          <el-radio-group v-model="form.academic.degree">
-            <el-radio-button label="本科" />
-            <el-radio-button label="硕士" />
-            <el-radio-button label="博士" />
-          </el-radio-group>
-        </el-form-item>
-        <el-form-item label="专业方向">
-          <el-checkbox-group v-model="form.academic.majors">
-            <el-checkbox-button label="理工" />
-            <el-checkbox-button label="商科" />
-            <el-checkbox-button label="人文" />
-            <el-checkbox-button label="社科" />
-            <el-checkbox-button label="艺术" />
-          </el-checkbox-group>
-        </el-form-item>
-        <el-form-item label="均分">
-          <el-input-number
-            v-model="form.academic.averageScore"
-            :min="0"
-            :max="100"
-          />
-          <span class="score-display">/ 100</span>
-        </el-form-item>
-        <el-form-item label="科研经历">
-          <el-button
-            type="primary"
-            @click="openResearchDialog"
-          >
-            + 添加科研经历
-          </el-button>
-          <div
-            v-if="form.academic.research.length === 0"
-            class="empty-tip"
-            style="margin-left: 10px; display: inline-block; vertical-align: middle;"
-          >
-            暂无科研经历，点击按钮添加
+    <!-- Premium Hero -->
+    <div class="page-hero">
+      <div class="hero-bg-pattern" />
+      <div class="hero-glow hero-glow-1" />
+      <div class="hero-glow hero-glow-2" />
+      <div class="hero-inner">
+        <div class="hero-top">
+          <div class="hero-text-group">
+            <p class="hero-overline">ASTROPATH ASSESSMENT</p>
+            <h1 class="hero-title">背景评估</h1>
+            <p class="hero-subtitle">AI 智能解析背景，为你生成专属留学路线图</p>
+            <div class="hero-accent-line" />
           </div>
-          <div
-            v-for="(item, index) in form.academic.research"
-            :key="index"
-            class="list-item"
-          >
-            <div class="item-content">
-              <strong>{{ item.name }}</strong>
-              <span class="item-role">{{ item.role }}</span>
-              <span class="item-duration">{{ item.duration }}</span>
+          <div class="step-indicator-group">
+            <div class="step-dots">
               <span
-                v-if="item.achievements"
-                class="item-achievements"
-              >{{ item.achievements }}</span>
-            </div>
-            <div class="item-actions">
-              <el-button
-                type="primary"
-                size="small"
-                @click="editResearch(index)"
-              >
-                编辑
-              </el-button>
-              <el-button
-                type="danger"
-                size="small"
-                @click="removeResearch(index)"
-              >
-                删除
-              </el-button>
-            </div>
-          </div>
-        </el-form-item>
-      </el-form>
-      <div class="step-actions">
-        <el-button @click="prevStep">
-          上一步
-        </el-button>
-        <el-button
-          type="primary"
-          @click="nextStep"
-        >
-          下一步
-        </el-button>
-      </div>
-    </el-card>
-
-    <!-- 步骤3：实践经历 -->
-    <el-card
-      v-if="currentStep === 2"
-      class="step-card"
-    >
-      <template #header>
-        <span>实践经历</span>
-      </template>
-
-      <!-- Tab 标签页 -->
-      <el-tabs
-        v-model="practiceTab"
-        class="practice-tabs"
-      >
-        <!-- 实习经历 Tab -->
-        <el-tab-pane
-          label="实习经历"
-          name="internship"
-        >
-          <div class="tab-header">
-            <el-button
-              type="primary"
-              @click="openInternshipDialog"
-            >
-              + 添加实习经历
-            </el-button>
-            <div
-              v-if="form.practice.internships.length === 0"
-              class="empty-tip"
-            >
-              暂无实习经历，点击按钮添加
-            </div>
-            <div
-              v-for="(item, index) in form.practice.internships"
-              :key="'int-'+index"
-              class="list-item enhanced"
-            >
-              <div class="item-content">
-                <div class="item-header">
-                  <strong>{{ item.company }}</strong>
-                  <el-tag
-                    size="small"
-                    type="primary"
-                  >
-                    {{ item.position }}
-                  </el-tag>
-                </div>
-                <div class="item-meta">
-                  <span class="item-duration"><i class="el-icon-time" /> {{ item.duration }}</span>
-                  <span
-                    v-if="item.description"
-                    class="item-desc"
-                  >{{ item.description }}</span>
-                </div>
-              </div>
-              <div class="item-actions">
-                <el-button
-                  type="primary"
-                  size="small"
-                  plain
-                  @click="editInternship(index)"
-                >
-                  编辑
-                </el-button>
-                <el-button
-                  type="danger"
-                  size="small"
-                  plain
-                  @click="deleteInternship(index)"
-                >
-                  删除
-                </el-button>
-              </div>
-            </div>
-          </div>
-        </el-tab-pane>
-
-        <!-- 竞赛获奖 Tab -->
-        <el-tab-pane
-          label="竞赛获奖"
-          name="competition"
-        >
-          <div class="tab-header">
-            <el-button
-              type="primary"
-              @click="openCompetitionDialog"
-            >
-              + 添加竞赛获奖
-            </el-button>
-            <div
-              v-if="form.practice.competitions.length === 0"
-              class="empty-tip"
-            >
-              暂无竞赛记录，点击按钮添加
-            </div>
-            <div
-              v-for="(item, index) in form.practice.competitions"
-              :key="'comp-'+index"
-              class="list-item enhanced"
-            >
-              <div class="item-content">
-                <div class="item-header">
-                  <strong>{{ item.name }}</strong>
-                  <el-tag
-                    size="small"
-                    :type="getAwardLevelType(item.level)"
-                  >
-                    {{ item.level }}
-                  </el-tag>
-                </div>
-                <div class="item-meta">
-                  <span class="item-award"><i class="el-icon-medal" /> {{ item.award }}</span>
-                  <span
-                    v-if="item.time"
-                    class="item-time"
-                  >{{ item.time }}</span>
-                </div>
-              </div>
-              <div class="item-actions">
-                <el-button
-                  type="primary"
-                  size="small"
-                  plain
-                  @click="editCompetition(index)"
-                >
-                  编辑
-                </el-button>
-                <el-button
-                  type="danger"
-                  size="small"
-                  plain
-                  @click="deleteCompetition(index)"
-                >
-                  删除
-                </el-button>
-              </div>
-            </div>
-          </div>
-        </el-tab-pane>
-
-        <!-- 志愿服务 Tab -->
-        <el-tab-pane
-          label="志愿服务"
-          name="volunteer"
-        >
-          <div class="tab-header">
-            <el-button
-              type="primary"
-              @click="openVolunteerDialog"
-            >
-              + 添加志愿服务
-            </el-button>
-            <div
-              v-if="form.practice.volunteers.length === 0"
-              class="empty-tip"
-            >
-              暂无志愿服务记录，点击按钮添加
-            </div>
-            <div
-              v-for="(item, index) in form.practice.volunteers"
-              :key="'vol-'+index"
-              class="list-item enhanced"
-            >
-              <div class="item-content">
-                <div class="item-header">
-                  <strong>{{ item.organization }}</strong>
-                  <el-tag
-                    size="small"
-                    type="success"
-                  >
-                    {{ item.role }}
-                  </el-tag>
-                </div>
-                <div class="item-meta">
-                  <span class="item-duration"><i class="el-icon-time" /> {{ item.duration }}</span>
-                  <span
-                    v-if="item.description"
-                    class="item-desc"
-                  >{{ item.description }}</span>
-                </div>
-              </div>
-              <div class="item-actions">
-                <el-button
-                  type="primary"
-                  size="small"
-                  plain
-                  @click="editVolunteer(index)"
-                >
-                  编辑
-                </el-button>
-                <el-button
-                  type="danger"
-                  size="small"
-                  plain
-                  @click="deleteVolunteer(index)"
-                >
-                  删除
-                </el-button>
-              </div>
-            </div>
-          </div>
-        </el-tab-pane>
-      </el-tabs>
-
-      <div class="step-actions">
-        <el-button @click="prevStep">
-          上一步
-        </el-button>
-        <el-dropdown
-          v-if="providers.length > 0"
-          trigger="click"
-          class="model-dropdown"
-          @command="(cmd) => selectedProvider = cmd"
-        >
-          <el-button>
-            <el-icon style="margin-right: 6px;">
-              <Cpu />
-            </el-icon>
-            {{ currentProviderName }}
-            <el-icon class="el-icon--right">
-              <ArrowDown />
-            </el-icon>
-          </el-button>
-          <template #dropdown>
-            <el-dropdown-menu>
-              <el-dropdown-item
-                v-for="p in providers"
-                :key="p.id"
-                :command="p.id"
-                :class="{ 'is-active': selectedProvider === p.id }"
-              >
-                {{ p.name }}
-              </el-dropdown-item>
-            </el-dropdown-menu>
-          </template>
-        </el-dropdown>
-        <el-button
-          v-else
-          type="warning"
-          @click="router.push('/ai-config')"
-        >
-          <el-icon style="margin-right: 6px;">
-            <Setting />
-          </el-icon>
-          配置AI模型
-        </el-button>
-        <el-button
-          type="primary"
-          :loading="isLoading"
-          @click="generateReport"
-        >
-          生成评估报告
-        </el-button>
-      </div>
-    </el-card>
-
-    <!-- 评估报告 -->
-    <el-card
-      v-if="currentStep === 3"
-      class="result-card"
-    >
-      <!-- 加载动画 -->
-      <div
-        v-if="isLoading"
-        class="loading-container"
-      >
-        <el-loading
-          :fullscreen="true"
-          tip="正在生成评估报告..."
-        />
-      </div>
-
-      <div
-        v-if="!isLoading"
-        class="report-content"
-      >
-        <!-- AI深度分析区域 - 置顶显示（最外层可折叠） -->
-        <div
-          class="ai-analysis-section ai-analysis-highlight"
-          :class="{
-            'status-analyzing': isAiAnalyzing,
-            'status-complete': aiContent && !isAiAnalyzing,
-            'status-error': aiError,
-            'status-waiting': !isAiAnalyzing && !aiContent && !aiError
-          }"
-        >
-          <!-- 外层折叠头部 -->
-          <div
-            class="ai-outer-header"
-            @click="toggleAiSection"
-          >
-            <div class="ai-outer-title">
-              <div class="ai-outer-left">
-                <h4>
-                  <el-icon style="margin-right: 8px;">
-                    <Cpu />
-                  </el-icon>
-                  AI深度分析
-                </h4>
-              </div>
-              <div class="ai-outer-right">
-                <el-tag
-                  size="small"
-                  type="info"
-                >
-                  {{ showAiSection ? '点击收起' : '点击展开' }}
-                </el-tag>
-                <el-icon
-                  class="toggle-icon"
-                  :class="{ rotated: showAiSection }"
-                  style="margin-left: 8px;"
-                >
-                  <ArrowUp v-if="!showAiSection" />
-                  <ArrowDown v-else />
-                </el-icon>
-              </div>
-            </div>
-          </div>
-
-          <!-- 可折叠内容区域 -->
-          <div
-            v-show="showAiSection"
-            class="ai-section-content"
-          >
-            <!-- AI思考中提示 - 只在刚开始时显示 -->
-            <div
-              v-if="isAiAnalyzing && !aiContent && !aiReasoning"
-              class="ai-thinking"
-            >
-              <div class="thinking-animation">
-                <div class="thinking-dot" />
-                <div class="thinking-dot" />
-                <div class="thinking-dot" />
-              </div>
-              <p class="thinking-text">
-                AI正在启动深度分析...
-              </p>
-              <p class="thinking-tip">
-                思考型模型会先分析您的背景，再生成更有针对性的建议
-              </p>
-            </div>
-
-            <!-- 思考过程（可折叠) - 有内容才显示 -->
-            <div
-              v-if="aiReasoning"
-              class="ai-reasoning-section"
-            >
-              <div
-                class="reasoning-header"
-                @click="toggleReasoning"
-              >
-                <div class="reasoning-title">
-                  <el-icon><Cpu /></el-icon>
-                  <span>思考过程</span>
-                  <el-tag
-                    size="small"
-                    type="info"
-                  >
-                    {{ showReasoning ? '点击收起' : '点击展开' }}
-                  </el-tag>
-                  <el-icon
-                    class="toggle-icon"
-                    :class="{ rotated: showReasoning }"
-                  >
-                    <ArrowUp v-if="!showReasoning" />
-                    <ArrowDown v-else />
-                  </el-icon>
-                </div>
-              </div>
-              <div
-                v-show="showReasoning"
-                ref="reasoningContentRef"
-                class="reasoning-content"
-              >
-                <div class="reasoning-text">
-                  {{ aiReasoning }}
-                </div>
-              </div>
-            </div>
-
-            <!-- AI分析内容（可折叠） -->
-            <div
-              v-if="aiContent || (isAiAnalyzing && aiContent)"
-              class="ai-content-section"
-            >
-              <div
-                class="ai-content-header"
-                @click="toggleAiContent"
-              >
-                <div class="ai-content-title">
-                  <el-icon><Document /></el-icon>
-                  <span>分析报告</span>
-                  <el-tag
-                    size="small"
-                    type="info"
-                  >
-                    {{ showAiContent ? '点击收起' : '点击展开' }}
-                  </el-tag>
-                  <el-icon
-                    class="toggle-icon"
-                    :class="{ rotated: showAiContent }"
-                  >
-                    <ArrowUp v-if="!showAiContent" />
-                    <ArrowDown v-else />
-                  </el-icon>
-                </div>
-              </div>
-              <div
-                v-show="showAiContent"
-                class="ai-content"
-              >
-                <!-- eslint-disable-next-line vue/no-v-html -->
-                <div
-                  class="ai-markdown"
-                  v-html="renderAiContent(aiContent)"
-                />
-                <span
-                  v-if="isAiAnalyzing"
-                  class="typing-cursor"
-                />
-              </div>
-            </div>
-
-            <!-- 错误提示 -->
-            <div
-              v-else-if="aiError"
-              class="ai-error"
-            >
-              <el-alert
-                :title="getErrorTitle(aiError.type)"
-                :description="aiError.message"
-                type="error"
-                show-icon
-                :closable="false"
+                v-for="(step, index) in steps"
+                :key="'dot-'+index"
+                class="step-dot"
+                :class="{ active: index === currentStep, done: index < currentStep }"
               />
-              <el-button
-                type="primary"
-                style="margin-top: 12px;"
-                @click="retryAIAnalysis"
-              >
-                重新分析
-              </el-button>
             </div>
-
-            <!-- 未开始分析提示 -->
-            <div
-              v-else-if="!selectedProvider"
-              class="ai-placeholder"
-            >
-              <el-empty description="未配置AI模型，无法进行深度分析">
-                <el-button
-                  type="primary"
-                  @click="router.push('/ai-config')"
-                >
-                  去配置
-                </el-button>
-              </el-empty>
-            </div>
+            <span class="step-label-text">
+              {{ steps[currentStep]?.label }} · Step {{ currentStep + 1 }}/{{ totalSteps }}
+            </span>
           </div>
         </div>
-
-        <!-- 评分概览 -->
-        <div class="score-overview">
-          <el-rate
-            v-model="overallScore"
-            disabled
-            :max="5"
+        <div class="progress-bar-track">
+          <div
+            class="progress-bar-fill"
+            :style="{ width: progressPercent + '%' }"
           />
-          <span class="score-text">竞争力总分: {{ overallScore.toFixed(1) }}/5.0</span>
-        </div>
-
-        <!-- GPA评级和语言成绩分析 -->
-        <div class="analysis-section">
-          <el-row :gutter="20">
-            <el-col :span="12">
-              <div class="analysis-card">
-                <h4><i class="el-icon-school" /> GPA 评级</h4>
-                <div class="gpa-analysis">
-                  <span class="gpa-value">GPA: {{ form.basic.gpa.toFixed(1) }}</span>
-                  <span
-                    class="gpa-grade"
-                    :class="getGpaGradeClass(form.basic.gpa)"
-                  >{{ getGpaGrade(form.basic.gpa) }}</span>
-                </div>
-                <p class="analysis-detail">
-                  {{ getGpaComment(form.basic.gpa, form.basic.university) }}
-                </p>
-              </div>
-            </el-col>
-            <el-col :span="12">
-              <div class="analysis-card">
-                <h4><i class="el-icon-chat-line-round" /> 语言成绩分析</h4>
-                <div class="language-analysis">
-                  <span class="lang-text">{{ form.basic.language || '未填写' }}</span>
-                  <span
-                    class="lang-level"
-                    :class="getLanguageScoreClass()"
-                  >{{ getLanguageLevel() }}</span>
-                </div>
-                <p class="analysis-detail">
-                  {{ getLanguageComment() }}
-                </p>
-              </div>
-            </el-col>
-          </el-row>
-        </div>
-
-        <div
-          ref="radarRef"
-          class="radar-chart"
-          style="height: 400px;"
-        />
-        
-
-        
-        <div class="report-details">
-          <h4>详细分析</h4>
-          <ul>
-            <li>
-              <strong>学术能力：</strong>{{ academicScore.toFixed(1) }}/5
-              <span class="score-comment">{{ getAcademicComment() }}</span>
-            </li>
-            <li>
-              <strong>语言能力：</strong>{{ languageScore.toFixed(1) }}/5
-              <span class="score-comment">{{ getLanguageComment() }}</span>
-            </li>
-            <li>
-              <strong>科研经历：</strong>{{ researchScore.toFixed(1) }}/5
-              <span class="score-comment">{{ getResearchComment() }}</span>
-            </li>
-            <li>
-              <strong>实践背景：</strong>{{ practiceScore.toFixed(1) }}/5
-              <span class="score-comment">{{ getPracticeComment() }}</span>
-            </li>
-          </ul>
         </div>
       </div>
-      <div
-        v-if="!isLoading"
-        class="step-actions"
-      >
-        <el-button
-          type="primary"
-          @click="saveReport"
+    </div>
+
+    <!-- Main Content: Step Sidebar + Form Area -->
+    <div class="main-body">
+      <!-- Step Sidebar - Timeline -->
+      <aside class="step-sidebar">
+        <div class="sidebar-header">
+          <span class="sidebar-title">评估流程</span>
+          <span class="sidebar-progress">{{ currentStep + 1 }}/{{ totalSteps }}</span>
+        </div>
+        <div class="timeline-track">
+          <div
+            class="timeline-line"
+            :style="{ height: timelineProgress + '%' }"
+          />
+          <div
+            v-for="(step, index) in steps"
+            :key="index"
+            class="timeline-node"
+            :class="{
+              completed: index < currentStep,
+              current: index === currentStep,
+              pending: index > currentStep
+            }"
+            @click="jumpToStep(index)"
+          >
+            <div class="node-marker">
+              <span class="node-icon">
+                <template v-if="index < currentStep">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                </template>
+                <template v-else>{{ index + 1 }}</template>
+              </span>
+              <div v-if="index === currentStep" class="node-pulse" />
+            </div>
+            <span class="node-label">{{ step.label }}</span>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Form Content -->
+      <div class="form-area">
+        <!-- Step 0: 基本信息 -->
+        <section
+          v-show="currentStep === 0"
+          key="step-0"
+          class="form-section"
         >
-          保存评估结果
-        </el-button>
-        <el-button @click="resetForm">
-          重新填写
-        </el-button>
+          <h2 class="form-section-title">学生基础信息</h2>
+          <el-form
+            ref="basicFormRef"
+            :model="form.basic"
+            :rules="basicRules"
+            label-position="top"
+            class="assessment-form"
+          >
+            <div class="form-row">
+              <el-form-item
+                label="姓名"
+                prop="name"
+              >
+                <el-input
+                  v-model="form.basic.name"
+                  placeholder="请输入姓名"
+                />
+              </el-form-item>
+              <el-form-item
+                label="年龄"
+                prop="age"
+              >
+                <el-input-number
+                  v-model="form.basic.age"
+                  :min="16"
+                  :max="50"
+                  controls-position="right"
+                  style="width: 100%"
+                />
+              </el-form-item>
+            </div>
+            <el-form-item
+              label="在读院校"
+              prop="university"
+            >
+              <el-select
+                v-model="form.basic.university"
+                placeholder="请选择院校类型"
+                style="width: 100%"
+              >
+                <el-option
+                  label="985院校"
+                  value="985"
+                />
+                <el-option
+                  label="211院校"
+                  value="211"
+                />
+                <el-option
+                  label="普通本科"
+                  value="regular"
+                />
+                <el-option
+                  label="海外院校"
+                  value="overseas"
+                />
+              </el-select>
+            </el-form-item>
+            <el-form-item
+              label="GPA"
+              prop="gpa"
+            >
+              <div class="gpa-slider-wrap">
+                <el-slider
+                  v-model="form.basic.gpa"
+                  :min="0"
+                  :max="4"
+                  :step="0.1"
+                  show-stops
+                  :show-tooltip="true"
+                />
+                <span class="gpa-display">{{ form.basic.gpa.toFixed(1) }}</span>
+              </div>
+            </el-form-item>
+            <el-form-item
+              label="语言成绩"
+              prop="language"
+            >
+              <el-input
+                v-model="form.basic.language"
+                placeholder="如：雅思7.0 / 托福100"
+              />
+            </el-form-item>
+          </el-form>
+          <div class="form-actions">
+            <button
+              class="btn-primary"
+              @click="nextStep"
+            >
+              下一步
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              ><path d="M5 12h14M12 5l7 7-7 7" /></svg>
+            </button>
+          </div>
+        </section>
+
+        <!-- Step 1: 学术背景 -->
+        <section
+          v-show="currentStep === 1"
+          class="form-section"
+        >
+          <h2 class="form-section-title">学术背景</h2>
+          <el-form
+            :model="form.academic"
+            label-position="top"
+            class="assessment-form"
+          >
+            <el-form-item label="学历层次">
+              <el-radio-group v-model="form.academic.degree">
+                <el-radio-button label="本科" />
+                <el-radio-button label="硕士" />
+                <el-radio-button label="博士" />
+              </el-radio-group>
+            </el-form-item>
+            <el-form-item label="专业方向（可多选）">
+              <el-checkbox-group v-model="form.academic.majors">
+                <el-checkbox-button label="理工" />
+                <el-checkbox-button label="商科" />
+                <el-checkbox-button label="人文" />
+                <el-checkbox-button label="社科" />
+                <el-checkbox-button label="艺术" />
+              </el-checkbox-group>
+            </el-form-item>
+            <div class="form-row">
+              <el-form-item label="均分">
+                <el-input-number
+                  v-model="form.academic.averageScore"
+                  :min="0"
+                  :max="100"
+                  controls-position="right"
+                  style="width: 100%"
+                />
+                <span class="score-suffix">/ 100</span>
+              </el-form-item>
+            </div>
+            <el-form-item label="科研经历">
+              <div class="list-header">
+                <button
+                  class="btn-secondary btn-sm"
+                  @click="openResearchDialog"
+                >
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  ><path d="M12 5v14M5 12h14" /></svg>
+                  添加科研经历
+                </button>
+              </div>
+              <div
+                v-if="form.academic.research.length === 0"
+                class="empty-hint"
+              >
+                暂无科研经历，点击上方按钮添加
+              </div>
+              <div
+                v-for="(item, index) in form.academic.research"
+                :key="index"
+                class="list-card"
+              >
+                <div class="list-card-body">
+                  <strong>{{ item.name }}</strong>
+                  <span class="list-meta">{{ item.role }} · {{ item.duration }}</span>
+                  <p
+                    v-if="item.achievements"
+                    class="list-desc"
+                  >{{ item.achievements }}</p>
+                </div>
+                <div class="list-card-actions">
+                  <button
+                    class="btn-ghost btn-sm"
+                    @click="editResearch(index)"
+                  >编辑</button>
+                  <button
+                    class="btn-ghost btn-sm btn-danger"
+                    @click="removeResearch(index)"
+                  >删除</button>
+                </div>
+              </div>
+            </el-form-item>
+          </el-form>
+          <div class="form-actions">
+            <button
+              class="btn-secondary"
+              @click="prevStep"
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              ><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
+              上一步
+            </button>
+            <button
+              class="btn-primary"
+              @click="nextStep"
+            >
+              下一步
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              ><path d="M5 12h14M12 5l7 7-7 7" /></svg>
+            </button>
+          </div>
+        </section>
+
+        <!-- Step 2: 实践经历 -->
+        <section
+          v-show="currentStep === 2"
+          class="form-section"
+        >
+          <h2 class="form-section-title">实践经历</h2>
+          <el-tabs
+            v-model="practiceTab"
+            class="practice-tabs"
+          >
+            <el-tab-pane
+              label="实习经历"
+              name="internship"
+            >
+              <div class="tab-toolbar">
+                <button
+                  class="btn-secondary btn-sm"
+                  @click="openInternshipDialog"
+                >
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  ><path d="M12 5v14M5 12h14" /></svg>
+                  添加实习经历
+                </button>
+              </div>
+              <div
+                v-if="form.practice.internships.length === 0"
+                class="empty-hint"
+              >
+                暂无实习经历，点击上方按钮添加
+              </div>
+              <div
+                v-for="(item, index) in form.practice.internships"
+                :key="'int-'+index"
+                class="list-card"
+              >
+                <div class="list-card-body">
+                  <div class="list-card-header">
+                    <strong>{{ item.company }}</strong>
+                    <span class="tag-inline">{{ item.position }}</span>
+                  </div>
+                  <div class="list-meta">
+                    <span>{{ item.duration }}</span>
+                    <span
+                      v-if="item.description"
+                      class="list-desc"
+                    >{{ item.description }}</span>
+                  </div>
+                </div>
+                <div class="list-card-actions">
+                  <button
+                    class="btn-ghost btn-sm"
+                    @click="editInternship(index)"
+                  >编辑</button>
+                  <button
+                    class="btn-ghost btn-sm btn-danger"
+                    @click="deleteInternship(index)"
+                  >删除</button>
+                </div>
+              </div>
+            </el-tab-pane>
+
+            <el-tab-pane
+              label="竞赛获奖"
+              name="competition"
+            >
+              <div class="tab-toolbar">
+                <button
+                  class="btn-secondary btn-sm"
+                  @click="openCompetitionDialog"
+                >
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  ><path d="M12 5v14M5 12h14" /></svg>
+                  添加竞赛获奖
+                </button>
+              </div>
+              <div
+                v-if="form.practice.competitions.length === 0"
+                class="empty-hint"
+              >
+                暂无竞赛记录，点击上方按钮添加
+              </div>
+              <div
+                v-for="(item, index) in form.practice.competitions"
+                :key="'comp-'+index"
+                class="list-card"
+              >
+                <div class="list-card-body">
+                  <div class="list-card-header">
+                    <strong>{{ item.name }}</strong>
+                    <span
+                      class="tag-inline"
+                      :class="'tag-' + getAwardLevelType(item.level)"
+                    >{{ item.level }}</span>
+                  </div>
+                  <div class="list-meta">
+                    <span>🏆 {{ item.award }}</span>
+                    <span v-if="item.time">{{ item.time }}</span>
+                  </div>
+                </div>
+                <div class="list-card-actions">
+                  <button
+                    class="btn-ghost btn-sm"
+                    @click="editCompetition(index)"
+                  >编辑</button>
+                  <button
+                    class="btn-ghost btn-sm btn-danger"
+                    @click="deleteCompetition(index)"
+                  >删除</button>
+                </div>
+              </div>
+            </el-tab-pane>
+
+            <el-tab-pane
+              label="志愿服务"
+              name="volunteer"
+            >
+              <div class="tab-toolbar">
+                <button
+                  class="btn-secondary btn-sm"
+                  @click="openVolunteerDialog"
+                >
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  ><path d="M12 5v14M5 12h14" /></svg>
+                  添加志愿服务
+                </button>
+              </div>
+              <div
+                v-if="form.practice.volunteers.length === 0"
+                class="empty-hint"
+              >
+                暂无志愿服务记录，点击上方按钮添加
+              </div>
+              <div
+                v-for="(item, index) in form.practice.volunteers"
+                :key="'vol-'+index"
+                class="list-card"
+              >
+                <div class="list-card-body">
+                  <div class="list-card-header">
+                    <strong>{{ item.organization }}</strong>
+                    <span class="tag-inline tag-success">{{ item.role }}</span>
+                  </div>
+                  <div class="list-meta">
+                    <span>{{ item.duration }}</span>
+                    <span
+                      v-if="item.description"
+                      class="list-desc"
+                    >{{ item.description }}</span>
+                  </div>
+                </div>
+                <div class="list-card-actions">
+                  <button
+                    class="btn-ghost btn-sm"
+                    @click="editVolunteer(index)"
+                  >编辑</button>
+                  <button
+                    class="btn-ghost btn-sm btn-danger"
+                    @click="deleteVolunteer(index)"
+                  >删除</button>
+                </div>
+              </div>
+            </el-tab-pane>
+          </el-tabs>
+          <div class="form-actions">
+            <button
+              class="btn-secondary"
+              @click="prevStep"
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              ><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
+              上一步
+            </button>
+            <div class="actions-right">
+              <div
+                v-if="providers.length > 0"
+                class="provider-selector"
+              >
+                <el-dropdown
+                  trigger="click"
+                  @command="(cmd) => selectedProvider = cmd"
+                >
+                  <button class="btn-outline btn-sm">
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    ><rect x="4" y="4" width="16" height="16" rx="2" /><path d="M9 9h6v6H9z" /></svg>
+                    {{ currentProviderName }}
+                    <svg
+                      width="12"
+                      height="12"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                    ><path d="M6 9l6 6 6-6" /></svg>
+                  </button>
+                  <template #dropdown>
+                    <el-dropdown-menu>
+                      <el-dropdown-item
+                        v-for="p in providers"
+                        :key="p.id"
+                        :command="p.id"
+                        :class="{ 'is-active': selectedProvider === p.id }"
+                      >
+                        {{ p.name }}
+                      </el-dropdown-item>
+                    </el-dropdown-menu>
+                  </template>
+                </el-dropdown>
+              </div>
+              <button
+                v-else
+                class="btn-accent btn-sm"
+                @click="router.push('/ai-config')"
+              >
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                ><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z" /></svg>
+                配置AI模型
+              </button>
+              <button
+                class="btn-primary"
+                :disabled="aiStream.isLoading"
+                @click="generateReport"
+              >
+                <svg
+                  v-if="!aiStream.isLoading"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                ><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" /></svg>
+                <span v-if="aiStream.isLoading">生成中...</span>
+                <span v-else>生成评估报告</span>
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Step 3: 评估报告 -->
+        <section
+          v-show="currentStep === 3"
+          class="form-section report-section"
+        >
+          <div
+            v-if="aiStream.isConnecting && !aiStream.hasContent"
+            class="report-loading"
+          >
+            <div class="loading-spinner" />
+            <p>{{ activeStream.waitingText || '正在连接 AI 服务...' }}</p>
+          </div>
+
+          <template v-if="!aiStream.isConnecting || aiStream.hasContent">
+            <!-- AI深度分析区域 -->
+            <div
+              class="ai-analysis-block"
+              :class="{
+                'status-analyzing': aiStream.isLoading,
+                'status-complete': aiStream.content && !aiStream.isLoading,
+                'status-error': aiStream.error,
+                'status-waiting': !aiStream.isLoading && !aiStream.content && !aiStream.error
+              }"
+            >
+              <div
+                class="ai-block-header"
+                @click="showAiSection = !showAiSection"
+              >
+                <div class="ai-block-left">
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  ><rect x="4" y="4" width="16" height="16" rx="2" /><path d="M9 9h6v6H9z" /></svg>
+                  <span>AI 深度分析</span>
+                </div>
+                <div class="ai-block-right">
+                  <span class="status-tag">{{ showAiSection ? '收起' : '展开' }}</span>
+                  <svg
+                    class="chevron-icon"
+                    :class="{ rotated: showAiSection }"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  ><path d="M18 15l-6-6-6 6" /></svg>
+                </div>
+              </div>
+
+              <div
+                v-show="showAiSection"
+                class="ai-block-body"
+              >
+                <div
+                  v-if="aiStream.isThinking && !aiStream.content && !aiStream.reasoning"
+                  class="ai-thinking"
+                >
+                  <div class="thinking-dots">
+                    <span /><span /><span />
+                  </div>
+                  <p class="thinking-text">AI 正在启动深度分析...</p>
+                  <p class="thinking-sub">思考型模型会先分析您的背景，再生成更有针对性的建议</p>
+                  <button
+                    v-if="activeStream.stopButtonVisible"
+                    class="btn-ghost btn-sm"
+                    style="margin-top: 16px"
+                    @click="stopAIAnalysis"
+                  >停止生成</button>
+                </div>
+
+                <div
+                  v-if="aiStream.reasoning"
+                  class="reasoning-block"
+                >
+                  <div
+                    class="reasoning-head"
+                    @click="showReasoning = !showReasoning"
+                  >
+                    <span>
+                      <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <rect x="4" y="4" width="16" height="16" rx="2" />
+                        <path d="M9 9h6v6H9z" />
+                      </svg> 思考过程</span>
+                    <span class="status-tag sm">{{ showReasoning ? '收起' : '展开' }}</span>
+                  </div>
+                  <div
+                    v-show="showReasoning"
+                    ref="reasoningContentRef"
+                    class="reasoning-body"
+                    @scroll="aiStream.handleUserScroll"
+                  >
+                    {{ aiStream.reasoning }}
+                  </div>
+                </div>
+
+                <div
+                  v-if="aiStream.content || (aiStream.isLoading && aiStream.content)"
+                  class="content-block"
+                >
+                  <div
+                    class="content-head"
+                    @click="showAiContent = !showAiContent"
+                  >
+                    <span>
+                      <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                        <polyline points="14 2 14 8 20 8" />
+                      </svg> 分析报告</span>
+                    <div style="display:flex;align-items:center;gap:8px">
+                      <button
+                        v-if="aiStream.isLoading && activeStream.stopButtonVisible"
+                        class="btn-ghost btn-sm"
+                        style="padding:2px 10px;font-size:11px;background:var(--color-danger-bg);color:var(--color-danger)"
+                        @click.stop="stopAIAnalysis"
+                      >停止</button>
+                      <span class="status-tag sm">{{ showAiContent ? '收起' : '展开' }}</span>
+                    </div>
+                  </div>
+                  <div
+                    v-show="showAiContent"
+                    class="content-body"
+                  >
+                    <div
+                      class="ai-markdown"
+                      v-html="renderAiContent(aiStream.content)"
+                    />
+                    <span
+                      v-if="aiStream.isStreaming"
+                      class="typing-cursor"
+                    />
+                  </div>
+                </div>
+
+                <div
+                  v-else-if="aiStream.error"
+                  class="error-block"
+                >
+                  <p class="error-title">分析失败</p>
+                  <p class="error-msg">{{ aiStream.error }}</p>
+                  <button
+                    v-if="activeStream.canRetry"
+                    class="btn-primary btn-sm"
+                    @click="retryAIAnalysis"
+                  >重新分析</button>
+                </div>
+
+                <div
+                  v-else-if="!selectedProvider"
+                  class="placeholder-block"
+                >
+                  <p>未配置 AI 模型，无法进行深度分析</p>
+                  <button
+                    class="btn-primary btn-sm"
+                    @click="router.push('/ai-config')"
+                  >去配置</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- 评分概览 -->
+            <div class="score-overview">
+              <div class="score-value">{{ overallScore.toFixed(1) }}</div>
+              <div class="score-label">竞争力总分 / 5.0</div>
+              <div class="score-bar-track">
+                <div
+                  class="score-bar-fill"
+                  :style="{ width: (overallScore / 5 * 100) + '%' }"
+                />
+              </div>
+            </div>
+
+            <!-- GPA & 语言分析卡片 -->
+            <div class="analysis-grid">
+              <div class="analysis-card">
+                <div class="analysis-card-header">
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  ><path d="M22 10v6M2 10l10-5 10 5-10 5z" /><path d="M6 12v5c3 3 9 3 12 0v-5" /></svg>
+                  <span>GPA 评级</span>
+                </div>
+                <div class="analysis-card-body">
+                  <div class="analysis-stat">
+                    <span class="stat-num">{{ form.basic.gpa.toFixed(1) }}</span>
+                    <span
+                      class="stat-grade"
+                      :class="getGpaGradeClass(form.basic.gpa)"
+                    >{{ getGpaGrade(form.basic.gpa) }}</span>
+                  </div>
+                  <p class="analysis-note">{{ getGpaComment(form.basic.gpa, form.basic.university) }}</p>
+                </div>
+              </div>
+              <div class="analysis-card">
+                <div class="analysis-card-header">
+                  <svg
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  ><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" /></svg>
+                  <span>语言成绩分析</span>
+                </div>
+                <div class="analysis-card-body">
+                  <div class="analysis-stat">
+                    <span class="stat-num">{{ form.basic.language || '未填写' }}</span>
+                    <span
+                      class="stat-grade"
+                      :class="getLanguageScoreClass()"
+                    >{{ getLanguageLevel() }}</span>
+                  </div>
+                  <p class="analysis-note">{{ getLanguageComment() }}</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- 雷达图 -->
+            <div
+              ref="radarRef"
+              class="radar-chart"
+            />
+
+            <!-- 详细分析列表 -->
+            <div class="detail-list">
+              <h3 class="detail-title">详细分析</h3>
+              <div
+                v-for="item in detailItems"
+                :key="item.key"
+                class="detail-item"
+              >
+                <div class="detail-label">{{ item.label }}</div>
+                <div class="detail-score">
+                  <span class="score-num">{{ item.score.toFixed(1) }}</span>
+                  <span class="score-max">/5</span>
+                </div>
+                <div class="detail-bar-track">
+                  <div
+                    class="detail-bar-fill"
+                    :style="{ width: (item.score / 5 * 100) + '%' }"
+                  />
+                </div>
+                <p class="detail-comment">{{ item.comment }}</p>
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button
+                class="btn-primary"
+                @click="saveReport"
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                ><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" /><polyline points="17 21 17 13 7 13 7 21" /><polyline points="7 3 7 8 15 8" /></svg>
+                保存评估结果
+              </button>
+              <button
+                class="btn-ghost"
+                @click="resetForm"
+              >重新填写</button>
+            </div>
+          </template>
+        </section>
       </div>
-    </el-card>
-    <!-- 科研经历模态框 -->
+    </div>
+
+    <!-- Dialogs -->
     <el-dialog
       v-model="researchDialogVisible"
       :title="isEditingResearch ? '编辑科研经历' : '添加科研经历'"
-      width="500px"
+      width="520px"
+      :close-on-click-modal="false"
     >
       <el-form
         ref="researchFormRef"
         :model="currentResearch"
         :rules="researchRules"
-        label-width="100px"
+        label-position="top"
+        class="dialog-form"
       >
         <el-form-item
           label="项目名称"
@@ -796,29 +962,29 @@
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="closeResearchDialog">
-          取消
-        </el-button>
-        <el-button
-          type="primary"
+        <button
+          class="btn-ghost"
+          @click="closeResearchDialog"
+        >取消</button>
+        <button
+          class="btn-primary"
           @click="saveResearch"
-        >
-          保存
-        </el-button>
+        >保存</button>
       </template>
     </el-dialog>
 
-    <!-- 实习经历模态框 -->
     <el-dialog
       v-model="internshipDialogVisible"
       :title="isEditingInternship ? '编辑实习经历' : '添加实习经历'"
-      width="500px"
+      width="520px"
+      :close-on-click-modal="false"
     >
       <el-form
         ref="internshipFormRef"
         :model="currentInternship"
         :rules="internshipRules"
-        label-width="100px"
+        label-position="top"
+        class="dialog-form"
       >
         <el-form-item
           label="公司名称"
@@ -860,29 +1026,29 @@
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="closeInternshipDialog">
-          取消
-        </el-button>
-        <el-button
-          type="primary"
+        <button
+          class="btn-ghost"
+          @click="closeInternshipDialog"
+        >取消</button>
+        <button
+          class="btn-primary"
           @click="saveInternship"
-        >
-          保存
-        </el-button>
+        >保存</button>
       </template>
     </el-dialog>
 
-    <!-- 竞赛获奖模态框 -->
     <el-dialog
       v-model="competitionDialogVisible"
       :title="isEditingCompetition ? '编辑竞赛记录' : '添加竞赛获奖'"
-      width="500px"
+      width="520px"
+      :close-on-click-modal="false"
     >
       <el-form
         ref="competitionFormRef"
         :model="currentCompetition"
         :rules="competitionRules"
-        label-width="100px"
+        label-position="top"
+        class="dialog-form"
       >
         <el-form-item
           label="竞赛名称"
@@ -900,6 +1066,7 @@
           <el-select
             v-model="currentCompetition.level"
             placeholder="请选择级别"
+            style="width: 100%"
           >
             <el-option
               label="国家级"
@@ -939,29 +1106,29 @@
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="closeCompetitionDialog">
-          取消
-        </el-button>
-        <el-button
-          type="primary"
+        <button
+          class="btn-ghost"
+          @click="closeCompetitionDialog"
+        >取消</button>
+        <button
+          class="btn-primary"
           @click="saveCompetition"
-        >
-          保存
-        </el-button>
+        >保存</button>
       </template>
     </el-dialog>
 
-    <!-- 志愿服务模态框 -->
     <el-dialog
       v-model="volunteerDialogVisible"
       :title="isEditingVolunteer ? '编辑志愿服务' : '添加志愿服务'"
-      width="500px"
+      width="520px"
+      :close-on-click-modal="false"
     >
       <el-form
         ref="volunteerFormRef"
         :model="currentVolunteer"
         :rules="volunteerRules"
-        label-width="100px"
+        label-position="top"
+        class="dialog-form"
       >
         <el-form-item
           label="组织名称"
@@ -1003,15 +1170,14 @@
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="closeVolunteerDialog">
-          取消
-        </el-button>
-        <el-button
-          type="primary"
+        <button
+          class="btn-ghost"
+          @click="closeVolunteerDialog"
+        >取消</button>
+        <button
+          class="btn-primary"
           @click="saveVolunteer"
-        >
-          保存
-        </el-button>
+        >保存</button>
       </template>
     </el-dialog>
   </div>
@@ -1022,8 +1188,10 @@ import { ref, reactive, computed, onMounted, onUnmounted, nextTick, watch } from
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import * as echarts from 'echarts'
-import { sendMessageToAI, buildAssessmentPrompt, AIError } from '@/utils/ai-api'
-import { Cpu, ArrowDown, Setting, ArrowUp, Document } from '@element-plus/icons-vue'
+import { buildAssessmentPrompt } from '@/utils/ai-api'
+import { renderMarkdown } from '@/utils/markdown'
+import { useAIStream } from '@/composables/useAIStream'
+import { useActiveStream } from '@/composables/useActiveStream'
 
 const router = useRouter()
 const currentStep = ref(0)
@@ -1033,25 +1201,31 @@ const radarRef = ref(null)
 const reasoningContentRef = ref(null)
 let radarChart = null
 
-// 科研经历模态框
+const steps = [
+  { label: '基本信息' },
+  { label: '学术背景' },
+  { label: '实践经历' },
+  { label: '评估报告' }
+]
+const totalSteps = computed(() => steps.length)
+const progressPercent = computed(() => ((currentStep.value) / (totalSteps.value - 1)) * 100)
+const timelineProgress = computed(() => (currentStep.value / (totalSteps.value - 1)) * 100)
+
 const researchDialogVisible = ref(false)
 const isEditingResearch = ref(false)
 const editingResearchIndex = ref(-1)
 const researchFormRef = ref(null)
 
-// 实习经历模态框
 const internshipDialogVisible = ref(false)
 const isEditingInternship = ref(false)
 const editingInternshipIndex = ref(-1)
 const internshipFormRef = ref(null)
 
-// 竞赛获奖模态框
 const competitionDialogVisible = ref(false)
 const isEditingCompetition = ref(false)
 const editingCompetitionIndex = ref(-1)
 const competitionFormRef = ref(null)
 
-// 志愿服务模态框
 const volunteerDialogVisible = ref(false)
 const isEditingVolunteer = ref(false)
 const editingVolunteerIndex = ref(-1)
@@ -1069,11 +1243,22 @@ const researchRules = {
   duration: [{ required: true, message: '请输入项目时长', trigger: 'blur' }]
 }
 
-// 实习表单规则和数据
 const internshipRules = {
   company: [{ required: true, message: '请输入公司名称', trigger: 'blur' }],
   position: [{ required: true, message: '请输入职位名称', trigger: 'blur' }],
   duration: [{ required: true, message: '请输入实习时长', trigger: 'blur' }]
+}
+
+const competitionRules = {
+  name: [{ required: true, message: '请输入竞赛名称', trigger: 'blur' }],
+  level: [{ required: true, message: '请选择竞赛级别', trigger: 'change' }],
+  award: [{ required: true, message: '请输入获奖情况', trigger: 'blur' }]
+}
+
+const volunteerRules = {
+  organization: [{ required: true, message: '请输入服务组织名称', trigger: 'blur' }],
+  role: [{ required: true, message: '请输入志愿岗位', trigger: 'blur' }],
+  duration: [{ required: true, message: '请输入服务时长', trigger: 'blur' }]
 }
 
 const currentInternship = reactive({
@@ -1083,26 +1268,12 @@ const currentInternship = reactive({
   description: ''
 })
 
-// 竞赛表单规则和数据
-const competitionRules = {
-  name: [{ required: true, message: '请输入竞赛名称', trigger: 'blur' }],
-  level: [{ required: true, message: '请选择竞赛级别', trigger: 'change' }],
-  award: [{ required: true, message: '请输入获奖情况', trigger: 'blur' }]
-}
-
 const currentCompetition = reactive({
   name: '',
   level: '国家级',
   award: '',
   time: ''
 })
-
-// 志愿服务表单规则和数据
-const volunteerRules = {
-  organization: [{ required: true, message: '请输入服务组织名称', trigger: 'blur' }],
-  role: [{ required: true, message: '请输入志愿岗位', trigger: 'blur' }],
-  duration: [{ required: true, message: '请输入服务时长', trigger: 'blur' }]
-}
 
 const currentVolunteer = reactive({
   organization: '',
@@ -1132,7 +1303,6 @@ const form = reactive({
   }
 })
 
-// 科研经历模态表单
 const currentResearch = reactive({
   name: '',
   role: '',
@@ -1140,7 +1310,6 @@ const currentResearch = reactive({
   achievements: ''
 })
 
-// 计算各维度分数
 const overallScore = computed(() => {
   const scores = [academicScore.value, languageScore.value, researchScore.value, practiceScore.value]
   return scores.reduce((a, b) => a + b, 0) / scores.length
@@ -1170,6 +1339,17 @@ const practiceScore = computed(() => {
   return Math.min(total * 1.2, 5)
 })
 
+const detailItems = computed(() => [
+  { key: 'academic', label: '学术能力', score: academicScore.value, comment: getAcademicComment() },
+  { key: 'language', label: '语言能力', score: languageScore.value, comment: getLanguageComment() },
+  { key: 'research', label: '科研经历', score: researchScore.value, comment: getResearchComment() },
+  { key: 'practice', label: '实践背景', score: practiceScore.value, comment: getPracticeComment() }
+])
+
+const jumpToStep = (index) => {
+  if (index <= currentStep.value) currentStep.value = index
+}
+
 const nextStep = async () => {
   if (currentStep.value === 0) {
     if (basicFormRef.value) {
@@ -1192,7 +1372,6 @@ const prevStep = () => {
   if (currentStep.value > 0) currentStep.value--
 }
 
-// 科研经历管理
 const openResearchDialog = () => {
   isEditingResearch.value = false
   editingResearchIndex.value = -1
@@ -1215,7 +1394,6 @@ const saveResearch = async () => {
   await researchFormRef.value.validate((valid) => {
     if (valid) {
       if (isEditingResearch.value) {
-        // 编辑模式：更新现有记录
         const index = editingResearchIndex.value
         form.academic.research[index] = {
           ...form.academic.research[index],
@@ -1226,7 +1404,6 @@ const saveResearch = async () => {
         }
         ElMessage.success('科研经历已更新')
       } else {
-        // 新增模式：添加新记录
         form.academic.research.push({
           name: currentResearch.name,
           role: currentResearch.role,
@@ -1263,7 +1440,6 @@ const removeResearch = (index) => {
   }).catch(() => {})
 }
 
-// 实习经历管理
 const openInternshipDialog = () => {
   isEditingInternship.value = false
   editingInternshipIndex.value = -1
@@ -1332,7 +1508,6 @@ const deleteInternship = (index) => {
   }).catch(() => {})
 }
 
-// 竞赛获奖管理
 const openCompetitionDialog = () => {
   isEditingCompetition.value = false
   editingCompetitionIndex.value = -1
@@ -1401,7 +1576,6 @@ const deleteCompetition = (index) => {
   }).catch(() => {})
 }
 
-// 志愿服务管理
 const openVolunteerDialog = () => {
   isEditingVolunteer.value = false
   editingVolunteerIndex.value = -1
@@ -1427,7 +1601,7 @@ const saveVolunteer = async () => {
         const index = editingVolunteerIndex.value
         form.practice.volunteers[index] = {
           ...form.practice.volunteers[index],
-            organization: currentVolunteer.organization,
+          organization: currentVolunteer.organization,
           role: currentVolunteer.role,
           duration: currentVolunteer.duration,
           description: currentVolunteer.description
@@ -1470,18 +1644,11 @@ const deleteVolunteer = (index) => {
   }).catch(() => {})
 }
 
-// 获取竞赛级别标签类型
 const getAwardLevelType = (level) => {
-  const types = {
-    '国家级': 'danger',
-    '省级': 'warning',
-    '校级': 'primary',
-    '其他': 'info'
-  }
+  const types = { '国家级': 'danger', '省级': 'warning', '校级': 'primary', '其他': 'info' }
   return types[level] || 'info'
 }
 
-// GPA 评级
 const getGpaGrade = (gpa) => {
   if (gpa >= 3.8) return '优秀'
   if (gpa >= 3.5) return '良好'
@@ -1506,7 +1673,6 @@ const getGpaComment = (gpa, university) => {
   return `您的GPA相对较低，需要重点突出其他优势或考虑提升路径。`
 }
 
-// 语言成绩分析
 const getLanguageLevel = () => {
   const lang = form.basic.language
   if (!lang) return '未评估'
@@ -1532,7 +1698,6 @@ const getLanguageComment = () => {
   return '当前语言成绩可能不足，建议备考或考虑语言课程。'
 }
 
-// 各维度评语
 const getAcademicComment = () => {
   const score = academicScore.value
   if (score >= 4) return '学术背景非常优秀，申请优势明显。'
@@ -1556,15 +1721,23 @@ const getPracticeComment = () => {
   return '实践经历空白，强烈建议补充。'
 }
 
-const isLoading = ref(false)
-const isAiAnalyzing = ref(false)
-const aiContent = ref('')
-const aiReasoning = ref('')
-const aiError = ref(null)
+const aiStream = useAIStream({
+  taskId: 'assessment-analysis',
+  enableThinking: true,
+  autoScroll: true,
+  autoRestore: false,
+  scrollContainer: () => reasoningContentRef.value,
+  onComplete: (_content, _reasoning) => {
+    showAiSection.value = true
+    showAiContent.value = true
+  }
+})
+
+const activeStream = useActiveStream({ actions: { feedback: false }, taskId: 'assessment-analysis' })
+
+aiStream.reset()
+
 const selectedProvider = ref(null)
-const showReasoning = ref(true)
-const showAiContent = ref(true)
-const showAiSection = ref(true)
 
 const providers = computed(() => {
   const saved = localStorage.getItem('ai_providers')
@@ -1586,126 +1759,62 @@ const loadProviders = () => {
   }
 }
 
+const showReasoning = ref(true)
+const showAiContent = ref(true)
+const showAiSection = ref(true)
+
 const generateReport = async () => {
-  isLoading.value = true
-  aiContent.value = ''
-  aiError.value = null
-  
+  aiStream.reset()
   await new Promise(resolve => setTimeout(resolve, 500))
-  isLoading.value = false
   currentStep.value = 3
-  
+
   await nextTick()
   renderRadarChart()
-  
+
   if (selectedProvider.value) {
     await callAIAnalysis()
   }
 }
 
 const callAIAnalysis = async () => {
-  isAiAnalyzing.value = true
-  aiContent.value = ''
-  aiReasoning.value = ''
-  aiError.value = null
-  
+  const scores = {
+    overall: overallScore.value,
+    academic: academicScore.value,
+    language: languageScore.value,
+    research: researchScore.value,
+    practice: practiceScore.value
+  }
+
+  const prompt = buildAssessmentPrompt(form, scores)
+
+  const messages = [
+    { role: 'user', content: prompt }
+  ]
+
   try {
-    const scores = {
-      overall: overallScore.value,
-      academic: academicScore.value,
-      language: languageScore.value,
-      research: researchScore.value,
-      practice: practiceScore.value
-    }
-    
-    const prompt = buildAssessmentPrompt(form, scores)
-    
-    const messages = [
-      { role: 'user', content: prompt }
-    ]
-    
-    const stream = await sendMessageToAI(selectedProvider.value, messages, {
-      temperature: 0.7,
-      stream: true,
-      enableThinking: true
-    })
-    
-    for await (const chunk of stream) {
-      if (!isAiAnalyzing.value) break
-      if (chunk.type === 'reasoning') {
-        aiReasoning.value += chunk.content
-        await nextTick(() => {
-          if (reasoningContentRef.value) {
-            reasoningContentRef.value.scrollTop = reasoningContentRef.value.scrollHeight
-          }
-        })
-      } else if (chunk.type === 'content') {
-        if (!aiContent.value && showReasoning.value) {
-          showReasoning.value = false
-        }
-        aiContent.value += chunk.content
-      }
-    }
-  } catch (error) {
-    console.error('AI analysis error:', error)
-    if (error instanceof AIError) {
-      aiError.value = {
-        type: error.type,
-        message: error.message
-      }
-    } else {
-      aiError.value = {
-        type: 'unknown',
-        message: error.message
-      }
-    }
-  } finally {
-    isAiAnalyzing.value = false
+    await aiStream.generateWithProvider(selectedProvider.value, messages)
+  } catch (_e) {
   }
 }
 
 const retryAIAnalysis = () => {
-  callAIAnalysis()
+  activeStream.handleRetry()
 }
 
-import { renderMarkdown } from '@/utils/markdown'
+const stopAIAnalysis = () => {
+  aiStream.stop()
+  activeStream.stopGeneration()
+}
 
 const renderAiContent = (content) => {
+  if (!content || typeof content !== 'string') return ''
   return renderMarkdown(content)
-}
-
-const toggleReasoning = () => {
-  showReasoning.value = !showReasoning.value
-}
-
-const toggleAiContent = () => {
-  showAiContent.value = !showAiContent.value
-}
-
-const toggleAiSection = () => {
-  showAiSection.value = !showAiSection.value
-}
-
-const getErrorTitle = (errorType) => {
-  const titles = {
-    network: '网络连接失败',
-    auth: 'API认证失败',
-    config: '配置问题',
-    unsupported: '不支持的提供商',
-    api: '服务请求失败'
-  }
-  return titles[errorType] || '发生错误'
 }
 
 const renderRadarChart = () => {
   if (!radarRef.value) return
+  if (radarChart) radarChart.dispose()
 
-  // 如果已存在图表实例，先销毁
-  if (radarChart) {
-    radarChart.dispose()
-  }
-
-  // 初始化新图表
   radarChart = echarts.init(radarRef.value)
 
   const chartData = [
@@ -1723,8 +1832,8 @@ const renderRadarChart = () => {
       top: 0,
       textStyle: {
         fontSize: 16,
-        fontWeight: 'bold',
-        color: '#303133',
+        fontWeight: 700,
+        color: 'var(--color-text-primary)',
         lineHeight: 24
       }
     },
@@ -1733,24 +1842,22 @@ const renderRadarChart = () => {
       formatter: (params) => {
         const data = params.value
         const indicators = ['学术能力', '语言能力', '科研经历', '实践背景', '综合实力']
-        let html = '<div style="font-weight:bold;margin-bottom:5px;">各维度得分</div>'
+        let html = '<div style="font-weight:600;margin-bottom:6px;">各维度得分</div>'
         indicators.forEach((name, index) => {
-          html += `<div style="display:flex;justify-content:space-between;gap:15px;">
-            <span>${name}:</span>
-            <span style="font-weight:bold;color:var(--color-slate-700);">${data[index].toFixed(1)}/5.0</span>
+          html += `<div style="display:flex;justify-content:space-between;gap:16px;font-size:13px;">
+            <span>${name}</span>
+            <span style="font-weight:600;color:var(--color-solid);">${data[index].toFixed(1)}/5.0</span>
           </div>`
         })
         return html
       },
-      backgroundColor: 'rgba(255, 255, 255, 0.95)',
-      borderColor: 'var(--color-slate-700)',
+      backgroundColor: 'var(--color-surface)',
+      borderColor: 'var(--color-border)',
       borderWidth: 1,
-      textStyle: {
-        color: '#303133',
-        fontSize: 12
-      },
-      padding: [10, 15],
-      extraCssText: 'box-shadow: 0 2px 12px rgba(0,0,0,0.15);border-radius:8px;'
+      borderRadius: 8,
+      textStyle: { color: 'var(--color-text-primary)', fontSize: 12 },
+      padding: [10, 14],
+      extraCssText: 'box-shadow: var(--shadow-lg);'
     },
     radar: {
       indicator: [
@@ -1766,25 +1873,17 @@ const renderRadarChart = () => {
       splitArea: {
         show: true,
         areaStyle: {
-          color: ['rgba(30, 58, 95, 0.1)', 'rgba(30, 58, 95, 0.15)',
-                 'rgba(30, 58, 95, 0.2)', 'rgba(30, 58, 95, 0.25)',
-                 'rgba(30, 58, 95, 0.3)']
+          color: ['var(--color-slate-50)', 'rgba(241,245,249,0.6)',
+                 'rgba(226,232,240,0.5)', 'rgba(203,213,225,0.4)',
+                 'rgba(148,163,184,0.3)']
         }
       },
-      splitLine: {
-        lineStyle: {
-          color: 'rgba(102, 126, 234, 0.3)'
-        }
-      },
-      axisLine: {
-        lineStyle: {
-          color: 'rgba(102, 126, 234, 0.3)'
-        }
-      },
+      splitLine: { lineStyle: { color: 'var(--color-border)' } },
+      axisLine: { lineStyle: { color: 'var(--color-border)' } },
       axisName: {
-        color: '#606266',
+        color: 'var(--color-text-secondary)',
         fontSize: 13,
-        fontWeight: 'bold',
+        fontWeight: 600,
         padding: [3, 5]
       }
     },
@@ -1794,30 +1893,22 @@ const renderRadarChart = () => {
       data: [{
         value: chartData,
         name: '当前评估',
-        areaStyle: {
-          color: 'rgba(102, 126, 234, 0.35)'
-        },
-        lineStyle: {
-          width: 2,
-          color: 'rgb(102, 126, 234)'
-        },
+        areaStyle: { color: 'rgba(15, 23, 42, 0.12)' },
+        lineStyle: { width: 2, color: 'var(--color-solid)' },
         itemStyle: {
-          color: 'rgb(102, 126, 234)',
+          color: 'var(--color-solid)',
           borderWidth: 2,
           borderColor: '#fff'
         }
       }],
-      animationDuration: 1000,
+      animationDuration: 800,
       animationEasing: 'cubicOut'
     }]
   })
 }
 
-// 窗口大小变化时重新调整图表尺寸
 const handleResize = () => {
-  if (radarChart) {
-    radarChart.resize()
-  }
+  if (radarChart) radarChart.resize()
 }
 
 const saveReport = () => {
@@ -1854,17 +1945,13 @@ const resetForm = () => {
     form.practice.internships = []
     form.practice.competitions = []
     form.practice.volunteers = []
-    aiContent.value = ''
-    aiReasoning.value = ''
-    aiError.value = null
+    aiStream.reset()
     showAiSection.value = true
     showReasoning.value = true
     showAiContent.value = true
-    isAiAnalyzing.value = false
     currentStep.value = 0
     practiceTab.value = 'internship'
     localStorage.removeItem('assessment_form')
-    // setTimeout 延迟到下一个事件循环，确保 watch 已在 isResetting=true 时执行完毕
     setTimeout(() => { isResetting.value = false }, 0)
   }).catch(() => {})
 }
@@ -1879,48 +1966,26 @@ const loadFromStorage = async () => {
       const data = JSON.parse(saved)
       if (data.form) {
         Object.assign(form.basic, data.form.basic || {})
-        Object.assign(form.academic, data.form.academic || {})
-        Object.assign(form.practice, data.form.practice || {})
+        Object.assign(form.academic, data.academic || {})
+        Object.assign(form.practice, data.practice || {})
       }
-      if (typeof data.currentStep === 'number') {
-        currentStep.value = data.currentStep
-      }
-      if (data.practiceTab) {
-        practiceTab.value = data.practiceTab
-      }
-      if (data.aiContent) {
-        aiContent.value = data.aiContent
-      }
-      if (data.aiReasoning) {
-        aiReasoning.value = data.aiReasoning
-      }
-      if (typeof data.showReasoning === 'boolean') {
-        showReasoning.value = data.showReasoning
-      }
-      if (typeof data.showAiContent === 'boolean') {
-        showAiContent.value = data.showAiContent
-      }
-      if (typeof data.showAiSection === 'boolean') {
-        showAiSection.value = data.showAiSection
-      }
-      if (typeof data.isAiAnalyzing === 'boolean') {
-        isAiAnalyzing.value = data.isAiAnalyzing
-      }
-    } catch (_e) {
-      // ignore parse errors
-    }
+      if (typeof data.currentStep === 'number') currentStep.value = data.currentStep
+      if (data.practiceTab) practiceTab.value = data.practiceTab
+      if (typeof data.showReasoning === 'boolean') showReasoning.value = data.showReasoning
+      if (typeof data.showAiContent === 'boolean') showAiContent.value = data.showAiContent
+      if (typeof data.showAiSection === 'boolean') showAiSection.value = data.showAiSection
+    } catch (_e) {}
   }
   isLoaded = true
-  
+
   if (currentStep.value === 3) {
     await nextTick()
     renderRadarChart()
   }
 }
 
-// 监听表单数据和步骤变化，自动保存到 localStorage（仅在数据加载完成后生效）
 watch(
-  [form, currentStep, practiceTab, aiContent, aiReasoning, showReasoning, showAiContent, showAiSection, isAiAnalyzing],
+  [form, currentStep, practiceTab, showReasoning, showAiContent, showAiSection],
   () => {
     if (!isLoaded || isResetting.value) return
     const formData = {
@@ -1935,12 +2000,9 @@ watch(
       },
       currentStep: currentStep.value,
       practiceTab: practiceTab.value,
-      aiContent: aiContent.value,
-      aiReasoning: aiReasoning.value,
       showReasoning: showReasoning.value,
       showAiContent: showAiContent.value,
-      showAiSection: showAiSection.value,
-      isAiAnalyzing: isAiAnalyzing.value
+      showAiSection: showAiSection.value
     }
     localStorage.setItem('assessment_form', JSON.stringify(formData))
     if (form.basic.name || form.basic.university) {
@@ -1961,14 +2023,12 @@ watch(
   { deep: true }
 )
 
-// 组件挂载时添加窗口resize监听并恢复数据
 onMounted(() => {
   window.addEventListener('resize', handleResize)
   loadFromStorage()
   loadProviders()
 })
 
-// 组件卸载时清理
 onUnmounted(() => {
   window.removeEventListener('resize', handleResize)
   if (radarChart) {
@@ -1979,485 +2039,1452 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+/* ====== 🎨 AstroPath Assessment — Premium Design System ====== */
+
+/* ====== Page Container ====== */
 .assessment-page {
-  max-width: 1200px;
+  width: 100%;
+  min-height: 100vh;
+  background: #FFFFFF;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* ====== Premium Hero ====== */
+.page-hero {
+  position: relative;
+  width: 100%;
+  padding: 80px 48px 48px;
+  background: linear-gradient(180deg, #F8FAFC 0%, #FFFFFF 100%);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.6);
+  overflow: hidden;
+}
+
+.hero-bg-pattern {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle at 1px 1px, rgba(15, 23, 42, 0.03) 1px, transparent 0);
+  background-size: 32px 32px;
+  pointer-events: none;
+}
+
+.hero-glow {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+  opacity: 0.4;
+}
+
+.hero-glow-1 {
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(217, 119, 6, 0.08), transparent 70%);
+  top: -120px;
+  right: 10%;
+  animation: glow-drift-1 12s ease-in-out infinite alternate;
+}
+
+.hero-glow-2 {
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(15, 23, 42, 0.04), transparent 70%);
+  bottom: -80px;
+  left: 5%;
+  animation: glow-drift-2 15s ease-in-out infinite alternate-reverse;
+}
+
+@keyframes glow-drift-1 {
+  0% { transform: translate(0, 0); }
+  100% { transform: translate(30px, -20px); }
+}
+
+@keyframes glow-drift-2 {
+  0% { transform: translate(0, 0); }
+  100% { transform: translate(-20px, 15px); }
+}
+
+.hero-inner {
+  max-width: 1100px;
   margin: 0 auto;
-  padding: 0 20px;
+  position: relative;
+  z-index: 1;
 }
 
-.step-card {
-  margin-bottom: 20px;
-}
-
-/* 修复 el-radio-button 的 active 状态样式 - 仅选中项 */
-:deep(.el-radio-button.is-active .el-radio-button__inner) {
-  background-color: var(--color-slate-700) !important;
-  border-color: var(--color-slate-700) !important;
-  color: #fff !important;
-  box-shadow: -1px 0 0 0 var(--color-slate-700) !important;
-}
-
-/* 修复 el-checkbox-button 的 active 状态样式 - 仅选中项 */
-:deep(.el-checkbox-button.is-checked .el-checkbox-button__inner) {
-  background-color: var(--color-slate-700) !important;
-  border-color: var(--color-slate-700) !important;
-  color: #fff !important;
-  box-shadow: -1px 0 0 0 var(--color-slate-700) !important;
-}
-
-/* 未选中的 radio button 和 checkbox button 样式 - 白色背景 */
-:deep(.el-radio-button:not(.is-active) .el-radio-button__inner),
-:deep(.el-checkbox-button:not(.is-checked) .el-checkbox-button__inner) {
-  background-color: #fff !important;
-  color: #606266 !important;
-}
-
-/* 修复 el-radio-button 和 el-checkbox-button 的 hover 状态 */
-:deep(.el-radio-button:not(.is-active) .el-radio-button__inner:hover),
-:deep(.el-checkbox-button:not(.is-checked) .el-checkbox-button__inner:hover) {
-  color: var(--color-slate-700) !important;
-}
-
-/* 修复 el-radio-button 和 el-checkbox-button 的 focus 状态 */
-:deep(.el-radio-button:focus:not(.is-focus):not(:active):not(.is-disabled) .el-radio-button__inner),
-:deep(.el-checkbox-button:focus:not(.is-focus):not(:active):not(.is-disabled) .el-checkbox-button__inner) {
-  box-shadow: 0 0 2px 2px rgba(30, 58, 95, 0.3) !important;
-}
-
-/* 使用 flexbox 确保按钮在容器内水平居中 */
-.step-actions {
-  margin-top: 30px;
+.hero-top {
   display: flex;
-  justify-content: center;
-  gap: 20px;
-  flex-wrap: wrap;
-}
-
-/* 统一样式：防止文字换行 + 最小宽度 + 统一高度 */
-.step-actions .el-button {
-  white-space: nowrap;
-  min-width: 100px;
-  height: 36px;
-  padding: 0 24px;
-}
-
-/* 对话框底部按钮：右对齐，间距适当（使用 deep 选择器穿透 teleport） */
-:deep(.el-dialog__footer) {
-  display: flex !important;
-  justify-content: flex-end;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-/* 对话框按钮统一样式 */
-:deep(.el-dialog__footer .el-button) {
-  white-space: nowrap;
-  min-width: 80px;
-  height: 36px;
-  padding: 0 20px;
-}
-
-/* 列表项操作按钮区域 */
-.item-actions {
-  display: flex;
-  gap: 12px;
-  flex-shrink: 0;
-  flex-wrap: nowrap;
-}
-
-/* 列表项操作按钮样式 */
-.item-actions .el-button {
-  white-space: nowrap;
-  min-width: 60px;
-  height: 32px;
-  padding: 0 12px;
-}
-
-.gpa-display {
-  margin-left: 10px;
-  color: var(--color-slate-700);
-  font-weight: bold;
-}
-
-.empty-tip {
-  color: #909399;
-  font-size: 14px;
-  margin-top: 10px;
-}
-
-.list-item {
-  display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: space-between;
-  padding: 10px;
-  background: #f5f7fa;
-  margin: 5px 0;
-  border-radius: 6px;
+  gap: 40px;
 }
 
-/* 报告标题样式 */
-.report-summary {
-  text-align: center;
-  margin-bottom: 30px;
-  padding: 20px 0;
+.hero-text-group {
+  max-width: 520px;
 }
 
-.report-summary h3 {
-  margin: 0 0 10px 0;
-  font-size: 20px;
-  color: #303133;
+.hero-overline {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--color-text-tertiary);
+  margin: 0 0 16px 0;
+  font-family: var(--font-family-mono);
 }
 
-.report-summary p {
-  margin: 0;
-  color: #606266;
-  font-size: 14px;
+.hero-title {
+  font-size: 42px;
+  font-weight: 800;
+  color: var(--color-solid);
+  letter-spacing: -1.5px;
+  line-height: 1.1;
+  margin: 0 0 16px 0;
+  font-family: var(--font-family-base);
 }
 
-.score-overview {
-  text-align: center;
-  margin-bottom: 30px;
-}
-
-.score-text {
-  display: block;
-  margin-top: 10px;
-  font-size: 18px;
-  color: var(--color-slate-700);
-  font-weight: bold;
-}
-
-/* 加载动画 */
-.loading-container {
-  text-align: center;
-  padding: 60px 0;
-}
-
-/* 分析区域 */
-.analysis-section {
-  margin: 30px 0;
-}
-
-.analysis-card {
-  background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
-  border-radius: 12px;
-  padding: 20px;
-  margin-bottom: 20px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-}
-
-.analysis-card h4 {
-  margin: 0 0 15px 0;
-  color: var(--color-slate-700);
+.hero-subtitle {
   font-size: 16px;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+  margin: 0 0 20px 0;
+  font-weight: 400;
+}
+
+.hero-accent-line {
+  width: 48px;
+  height: 3px;
+  background: linear-gradient(90deg, var(--color-accent), var(--color-accent-light));
+  border-radius: 2px;
+  position: relative;
+}
+
+.hero-accent-line::after {
+  content: '';
+  position: absolute;
+  right: -4px;
+  top: -3px;
+  width: 10px;
+  height: 10px;
+  background: var(--color-accent-light);
+  border-radius: 50%;
+  opacity: 0.5;
+}
+
+/* Step Indicator Group (right side of hero) */
+.step-indicator-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 20px 24px;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  border-radius: 16px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 4px 12px rgba(0, 0, 0, 0.03);
+  flex-shrink: 0;
+}
+
+.step-dots {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.analysis-card h4 i {
-  font-size: 18px;
+.step-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-slate-200);
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-.gpa-analysis, .language-analysis {
+.step-dot.active {
+  width: 28px;
+  border-radius: 4px;
+  background: var(--color-solid);
+  box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.1);
+}
+
+.step-dot.done {
+  background: var(--color-solid);
+}
+
+.step-label-text {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  letter-spacing: 0.3px;
+}
+
+/* Progress Bar */
+.progress-bar-track {
+  width: 100%;
+  max-width: 480px;
+  height: 3px;
+  background: var(--color-slate-100);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-top: 36px;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-solid), var(--color-slate-700));
+  border-radius: 2px;
+  transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+}
+
+.progress-bar-fill::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 8px;
+  height: 8px;
+  background: var(--color-solid);
+  border-radius: 50%;
+  box-shadow: 0 0 8px rgba(15, 23, 42, 0.25);
+}
+
+/* ====== Main Body ====== */
+.main-body {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 48px 48px 80px;
+  display: flex;
+  gap: 56px;
+  align-items: flex-start;
+}
+
+/* ====== Timeline Sidebar ====== */
+.step-sidebar {
+  width: 200px;
+  flex-shrink: 0;
+  position: sticky;
+  top: calc(64px + 24px);
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  padding: 0 4px;
+}
+
+.sidebar-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--color-text-tertiary);
+  font-family: var(--font-family-mono);
+}
+
+.sidebar-progress {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-solid);
+  font-variant-numeric: tabular-nums;
+  font-family: var(--font-family-mono);
+}
+
+.timeline-track {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding-left: 4px;
+}
+
+.timeline-line {
+  position: absolute;
+  left: 17px;
+  top: 24px;
+  width: 2px;
+  background: linear-gradient(180deg, var(--color-solid), var(--color-slate-300));
+  border-radius: 1px;
+  transition: height 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  z-index: 0;
+}
+
+.timeline-node {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 8px 14px 0;
+  cursor: pointer;
+  position: relative;
+  z-index: 1;
+  transition: all 0.25s ease;
+  border-radius: 10px;
+  margin-left: -8px;
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+.timeline-node:hover:not(.pending) {
+  background: rgba(248, 250, 252, 0.8);
+}
+
+.timeline-node.pending {
+  cursor: default;
+  opacity: 0.5;
+}
+
+.node-marker {
+  position: relative;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.node-icon {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-size: 13px;
+  font-weight: 700;
+  background: var(--color-slate-100);
+  color: var(--color-text-tertiary);
+  transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  position: relative;
+  z-index: 2;
+}
+
+.timeline-node.completed .node-icon {
+  background: var(--color-solid);
+  color: white;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.2);
+}
+
+.timeline-node.current .node-icon {
+  background: var(--color-solid);
+  color: white;
+  box-shadow: 0 0 0 4px rgba(15, 23, 42, 0.1), 0 4px 12px rgba(15, 23, 42, 0.15);
+  transform: scale(1.08);
+}
+
+.node-pulse {
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  background: var(--color-solid);
+  opacity: 0;
+  animation: node-pulse-ring 2s ease-out infinite;
+  z-index: 1;
+}
+
+@keyframes node-pulse-ring {
+  0% { transform: scale(1); opacity: 0.3; }
+  100% { transform: scale(1.8); opacity: 0; }
+}
+
+.node-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text-tertiary);
+  transition: all 0.25s ease;
+  line-height: 1.4;
+}
+
+.timeline-node.current .node-label {
+  color: var(--color-solid);
+  font-weight: 650;
+}
+
+.timeline-node.completed .node-label {
+  color: var(--color-text-secondary);
+}
+
+/* ====== Form Area ====== */
+.form-area {
+  flex: 1;
+  min-width: 0;
+  max-width: 640px;
+}
+
+.form-section {
+  animation: section-enter 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.form-section:nth-child(1) { animation-delay: 0ms; }
+
+@keyframes section-enter {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.form-section-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 0 0 28px 0;
+  letter-spacing: -0.4px;
+  position: relative;
+  display: inline-block;
+}
+
+.form-section-title::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  width: 32px;
+  height: 2.5px;
+  background: var(--color-accent);
+  border-radius: 2px;
+}
+
+.assessment-form {
+  margin-bottom: 28px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+/* GPA Slider */
+.gpa-slider-wrap {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 16px 20px;
+  background: var(--color-background-alt);
+  border-radius: 12px;
+  border: 1px solid var(--color-border-light);
+  transition: border-color 0.2s ease;
+}
+
+.gpa-slider-wrap:hover {
+  border-color: var(--color-border);
+}
+
+.gpa-display {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--color-solid);
+  min-width: 56px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -1px;
+}
+
+.score-suffix {
+  font-size: 13px;
+  color: var(--color-text-tertiary);
+  margin-left: 4px;
+}
+
+/* ====== Buttons ====== */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 28px;
+  background: var(--color-solid);
+  color: var(--color-text-inverse);
+  font-size: 14px;
+  font-weight: 600;
+  border: none;
+  border-radius: 10px;
+  min-height: 46px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06), 0 4px 12px rgba(15, 23, 42, 0.08);
+  white-space: nowrap;
+  font-family: inherit;
+  letter-spacing: -0.2px;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.btn-primary:hover:not(:disabled)::before {
+  opacity: 1;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--color-solid-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08), 0 8px 24px rgba(15, 23, 42, 0.12);
+}
+
+.btn-primary:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+.btn-primary:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: transparent;
+  color: var(--color-text-primary);
+  font-size: 14px;
+  font-weight: 600;
+  border: 1.5px solid var(--color-border);
+  border-radius: 10px;
+  min-height: 46px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+  white-space: nowrap;
+  font-family: inherit;
+  letter-spacing: -0.2px;
+}
+
+.btn-secondary:hover {
+  border-color: var(--color-solid);
+  color: var(--color-solid);
+  background: rgba(15, 23, 42, 0.02);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.btn-secondary:active {
+  transform: translateY(0);
+}
+
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  border: none;
+  border-radius: 8px;
+  min-height: 36px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  white-space: nowrap;
+  font-family: inherit;
+}
+
+.btn-ghost:hover {
+  background: var(--color-slate-100);
+  color: var(--color-text-primary);
+}
+
+.btn-ghost.btn-danger {
+  color: var(--color-danger);
+}
+
+.btn-ghost.btn-danger:hover {
+  background: var(--color-danger-bg);
+}
+
+.btn-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  min-height: 36px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  white-space: nowrap;
+  font-family: inherit;
+}
+
+.btn-outline:hover {
+  border-color: var(--color-solid);
+  color: var(--color-solid);
+  background: rgba(15, 23, 42, 0.02);
+}
+
+.btn-accent {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 18px;
+  background: linear-gradient(135deg, var(--color-accent), var(--color-accent-light));
+  color: white;
+  font-size: 13px;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  min-height: 36px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+  box-shadow: 0 2px 8px rgba(217, 119, 6, 0.2);
+  white-space: nowrap;
+  font-family: inherit;
+}
+
+.btn-accent:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(217, 119, 6, 0.3);
+  filter: brightness(1.05);
+}
+
+.btn-sm {
+  padding: 7px 14px;
+  min-height: 33px;
+  font-size: 12px;
+  border-radius: 7px;
+}
+
+/* ====== Form Actions ====== */
+.form-actions {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 10px;
+  margin-top: 36px;
+  padding-top: 24px;
+  border-top: 1px solid var(--color-border-light);
 }
 
-.gpa-value, .lang-text {
-  font-size: 20px;
-  font-weight: bold;
-  color: #303133;
-}
-
-.gpa-grade, .lang-level {
-  font-size: 18px;
-  font-weight: bold;
-  padding: 4px 12px;
-  border-radius: 20px;
-}
-
-.grade-excellent { background: #f0f9eb; color: #67c23a; }
-.grade-good { background: var(--color-slate-50); color: var(--color-slate-700); }
-.grade-medium { background: #fdf6ec; color: #e6a23c; }
-.grade-pass { background: #fef0f0; color: #f56c6c; }
-.grade-low { background: #fef0f0; color: #f56c6c; }
-
-.score-excellent { background: #f0f9eb; color: #67c23a; }
-.score-good { background: var(--color-slate-50); color: var(--color-slate-700); }
-.score-low { background: #fef0f0; color: #f56c6c; }
-
-.analysis-detail {
-  margin: 0;
-  color: #606266;
-  font-size: 14px;
-  line-height: 1.6;
-}
-
-.score-comment {
-  display: block;
-  margin-top: 5px;
-  font-size: 13px;
-  color: #909399;
-  font-weight: normal;
-}
-
-/* 详细分析区域样式 */
-.report-details {
-  margin-top: 30px;
-  padding: 20px;
-  background: #f5f7fa;
-  border-radius: 12px;
-}
-
-.report-details h4 {
-  margin: 0 0 15px 0;
-  color: #303133;
-  font-size: 16px;
-  font-weight: 600;
-}
-
-.report-details ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.report-details li {
-  padding: 12px 16px;
-  margin-bottom: 10px;
-  background: #fff;
-  border-radius: 8px;
-  border-left: 4px solid var(--color-slate-700);
-  font-size: 14px;
-  color: #303133;
-  line-height: 1.6;
-}
-
-.report-details li:last-child {
-  margin-bottom: 0;
-}
-
-.report-details li strong {
-  color: var(--color-slate-700);
-  font-weight: 600;
-}
-
-/* 雷达图容器样式 */
-.radar-chart {
-  margin: 20px 0;
-  background: #fff;
-  border-radius: 12px;
-  padding-top: 20px;
-}
-
-.practice-tabs {
-  margin-top: 10px;
-}
-
-.tab-header {
-  margin-bottom: 20px;
-}
-
-.tab-header .el-button {
-  margin-bottom: 15px;
-}
-
-.tab-content {
-  min-height: 200px;
-}
-
-.list-item.enhanced {
-  padding: 15px;
-  background: #f5f7fa;
-  margin: 10px 0;
-  border-radius: 8px;
-  border-left: 4px solid var(--color-slate-700);
-  transition: all 0.3s ease;
-}
-
-.list-item.enhanced:hover {
-  background: var(--color-slate-50);
-  transform: translateX(5px);
-}
-
-.item-header {
+.actions-right {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 8px;
-}
-
-.item-meta {
-  display: flex;
   flex-wrap: wrap;
-  gap: 15px;
+}
+
+.provider-selector {
+  display: flex;
   align-items: center;
+}
+
+/* ====== List Cards ====== */
+.list-header {
+  margin-bottom: 16px;
+}
+
+.tab-toolbar {
+  margin-bottom: 16px;
+}
+
+.empty-hint {
   font-size: 13px;
-  color: #606266;
-}
-
-.item-meta i {
-  margin-right: 4px;
-}
-
-.item-desc {
-  flex: 1;
-  min-width: 200px;
-  color: #909399;
-  line-height: 1.5;
-}
-
-.el-tag {
-  font-size: 12px;
-}
-
-/* AI分析区域样式 */
-.ai-analysis-section {
-  margin: 30px 0;
-  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-  border-radius: 16px;
-  border: 1px solid #e2e8f0;
-}
-
-.ai-analysis-section.ai-analysis-highlight {
-  padding: 0;
-}
-
-.ai-section-content {
-  padding: 24px;
-}
-
-/* AI分析高亮样式 - 置顶显示 */
-.ai-analysis-highlight {
-  margin: 0 0 30px 0;
-  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-  border: 2px solid var(--color-slate-700);
-  box-shadow: 0 4px 20px rgba(30, 58, 95, 0.15);
-  position: relative;
-  transition: border-color 0.3s ease;
-}
-
-/* 不同状态的边框颜色 */
-.ai-analysis-highlight.status-analyzing {
-  border-color: #e6a23c;
-}
-
-.ai-analysis-highlight.status-complete {
-  border-color: var(--color-slate-700);
-}
-
-.ai-analysis-highlight.status-error {
-  border-color: #f56c6c;
-}
-
-.ai-analysis-highlight.status-waiting {
-  border-color: #909399;
-}
-
-.ai-analysis-highlight::before {
-  content: '核心分析';
-  position: absolute;
-  top: -12px;
-  left: 24px;
-  background: var(--color-solid);
-  color: white;
-  padding: 4px 12px;
+  color: var(--color-text-tertiary);
+  padding: 28px 20px;
+  text-align: center;
+  background: linear-gradient(135deg, var(--color-background-alt), var(--color-surface));
   border-radius: 12px;
-  font-size: 12px;
-  font-weight: 600;
-  box-shadow: 0 2px 8px rgba(30, 58, 95, 0.3);
+  border: 1px dashed var(--color-border);
+  letter-spacing: 0.2px;
 }
 
-/* 不同状态的标签内容 */
-.ai-analysis-highlight.status-analyzing::before {
-  content: '核心分析 · 分析中';
-  background: linear-gradient(135deg, #e6a23c 0%, #eebe77 100%);
-}
-
-.ai-analysis-highlight.status-complete::before {
-  content: '核心分析 · 完成';
-  background: var(--color-solid);
-}
-
-.ai-analysis-highlight.status-error::before {
-  content: '核心分析 · 失败';
-  background: linear-gradient(135deg, #f56c6c 0%, #f89898 100%);
-}
-
-.ai-analysis-highlight.status-waiting::before {
-  content: '核心分析 · 等待';
-  background: linear-gradient(135deg, #909399 0%, #b1b3b8 100%);
-}
-
-.ai-analysis-highlight .ai-header {
-  padding-top: 8px;
-}
-
-.ai-header {
+.list-card {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 20px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid #e2e8f0;
+  padding: 16px 20px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-light);
+  border-radius: 12px;
+  margin-bottom: 10px;
+  transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+  position: relative;
+  overflow: hidden;
 }
 
-.ai-header h4 {
-  margin: 0;
-  font-size: 18px;
-  font-weight: 600;
-  color: #1e293b;
+.list-card::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: transparent;
+  transition: background 0.25s ease;
+  border-radius: 0 2px 2px 0;
+}
+
+.list-card:hover {
+  border-color: var(--color-border);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
+  transform: translateY(-2px);
+}
+
+.list-card:hover::before {
+  background: var(--color-accent);
+}
+
+.list-card-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.list-card-header {
   display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+.list-card-header strong {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  letter-spacing: -0.2px;
+}
+
+.tag-inline {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 6px;
+  background: var(--color-slate-100);
+  color: var(--color-slate-700);
+  white-space: nowrap;
+  letter-spacing: 0.3px;
+}
+
+.tag-inline.tag-danger {
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
+}
+
+.tag-inline.tag-warning {
+  background: var(--color-warning-bg);
+  color: var(--color-warning);
+}
+
+.tag-inline.tag-success {
+  background: var(--color-success-bg);
+  color: var(--color-success);
+}
+
+.list-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--color-text-tertiary);
   align-items: center;
 }
 
-.ai-header h4 .el-icon {
-  color: var(--color-slate-700);
+.list-desc {
+  color: var(--color-text-muted);
+  font-style: italic;
 }
 
-.ai-content {
-  background: #ffffff;
-  border-radius: 12px;
+.list-card-actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+  margin-left: 16px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.list-card:hover .list-card-actions {
+  opacity: 1;
+}
+
+/* ====== Practice Tabs ====== */
+.practice-tabs {
+  margin-top: 0;
+}
+
+/* ====== Report Section ====== */
+.report-section {
+  padding-bottom: 40px;
+}
+
+.report-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 72px 32px;
+  gap: 20px;
+}
+
+.loading-spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid var(--color-slate-200);
+  border-top-color: var(--color-solid);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.report-loading p {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  margin: 0;
+  letter-spacing: 0.2px;
+}
+
+/* ====== AI Analysis Block ====== */
+.ai-analysis-block {
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  overflow: hidden;
+  margin-bottom: 28px;
+  transition: all 0.35s ease;
+  background: var(--color-surface);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.ai-analysis-block.status-analyzing {
+  border-color: var(--color-warning);
+  box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.06), 0 4px 16px rgba(217, 119, 6, 0.08);
+}
+
+.ai-analysis-block.status-complete {
+  border-color: var(--color-solid);
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+}
+
+.ai-analysis-block.status-error {
+  border-color: var(--color-danger);
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.06);
+}
+
+.ai-analysis-block.status-waiting {
+  border-color: var(--color-border);
+}
+
+.ai-block-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  cursor: pointer;
+  user-select: none;
+  background: linear-gradient(135deg, var(--color-surface-muted), var(--color-surface));
+  transition: background 0.2s ease;
+  border-bottom: 1px solid transparent;
+}
+
+.ai-block-header:hover {
+  background: var(--color-slate-50);
+}
+
+.ai-block-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+  font-weight: 650;
+  color: var(--color-text-primary);
+  letter-spacing: -0.2px;
+}
+
+.ai-block-left svg {
+  color: var(--color-solid);
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+
+.ai-block-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.status-tag {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-tertiary);
+  padding: 3px 10px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  letter-spacing: 0.3px;
+}
+
+.status-tag.sm {
+  font-size: 10px;
+  padding: 2px 8px;
+}
+
+.chevron-icon {
+  color: var(--color-text-tertiary);
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.chevron-icon.rotated {
+  transform: rotate(180deg);
+}
+
+.ai-block-body {
   padding: 24px;
-  border: 1px solid #e2e8f0;
-  min-height: 200px;
 }
 
+/* Thinking */
+.ai-thinking {
+  text-align: center;
+  padding: 44px 28px;
+  background: linear-gradient(135deg, var(--color-accent-subtle), rgba(254, 243, 199, 0.4));
+  border-radius: 12px;
+  border: 1px solid rgba(217, 119, 6, 0.1);
+}
+
+.thinking-dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.thinking-dots span {
+  width: 10px;
+  height: 10px;
+  background: var(--color-accent);
+  border-radius: 50%;
+  opacity: 0.4;
+  animation: dot-pulse 1.4s ease-in-out infinite;
+}
+
+.thinking-dots span:nth-child(1) { animation-delay: -0.32s; }
+.thinking-dots span:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes dot-pulse {
+  0%, 80%, 100% { opacity: 0.4; transform: scale(0.85); }
+  40% { opacity: 1; transform: scale(1.15); }
+}
+
+.thinking-text {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-accent);
+  margin: 0 0 6px 0;
+  letter-spacing: -0.2px;
+}
+
+.thinking-sub {
+  font-size: 13px;
+  color: var(--color-accent);
+  opacity: 0.65;
+  margin: 0;
+}
+
+/* Reasoning Block */
+.reasoning-block {
+  border: 1px solid var(--color-border-light);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 16px;
+  background: var(--color-surface);
+}
+
+.reasoning-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  cursor: pointer;
+  background: var(--color-info-bg);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-info);
+  transition: background 0.2s ease;
+  user-select: none;
+}
+
+.reasoning-head:hover {
+  background: var(--color-slate-100);
+}
+
+.reasoning-head span:first-child {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.reasoning-body {
+  padding: 16px;
+  background: var(--color-surface-muted);
+  border-top: 1px solid var(--color-border-light);
+  max-height: 380px;
+  overflow-y: auto;
+  font-size: 13px;
+  line-height: 1.75;
+  color: var(--color-text-secondary);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.reasoning-body::-webkit-scrollbar {
+  width: 4px;
+}
+
+.reasoning-body::-webkit-scrollbar-thumb {
+  background: var(--color-slate-300);
+  border-radius: 2px;
+}
+
+/* Content Block */
+.content-block {
+  border: 1px solid var(--color-border-light);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--color-surface);
+}
+
+.content-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  cursor: pointer;
+  background: var(--color-success-bg);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-success);
+  transition: background 0.2s ease;
+  user-select: none;
+}
+
+.content-head:hover {
+  background: #d1fae5;
+}
+
+.content-head span:first-child {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.content-body {
+  padding: 24px;
+  background: var(--color-surface);
+  border-top: 1px solid var(--color-border-light);
+  min-height: 200px;
+  position: relative;
+}
+
+/* Error / Placeholder */
+.error-block {
+  text-align: center;
+  padding: 36px 24px;
+}
+
+.error-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-danger);
+  margin: 0 0 8px 0;
+}
+
+.error-msg {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  margin: 0 0 18px 0;
+}
+
+.placeholder-block {
+  text-align: center;
+  padding: 36px 24px;
+}
+
+.placeholder-block p {
+  font-size: 13px;
+  color: var(--color-text-tertiary);
+  margin: 0 0 16px 0;
+}
+
+/* ====== Score Overview — Premium Card ====== */
+.score-overview {
+  text-align: center;
+  padding: 40px 32px;
+  background: linear-gradient(145deg, var(--color-surface), var(--color-background-alt));
+  border: 1px solid var(--color-border-light);
+  border-radius: 20px;
+  margin-bottom: 28px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.score-overview::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--color-accent), transparent);
+  opacity: 0.6;
+}
+
+.score-value {
+  font-size: 52px;
+  font-weight: 800;
+  color: var(--color-solid);
+  letter-spacing: -2px;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  position: relative;
+  display: inline-block;
+}
+
+.score-value::after {
+  content: '/5.0';
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--color-text-tertiary);
+  letter-spacing: 0;
+  margin-left: 4px;
+  vertical-align: super;
+}
+
+.score-label {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  margin-top: 10px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+}
+
+.score-bar-track {
+  width: 160px;
+  height: 4px;
+  background: var(--color-slate-100);
+  border-radius: 2px;
+  margin: 20px auto 0;
+  overflow: hidden;
+}
+
+.score-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-solid), var(--color-slate-700));
+  border-radius: 2px;
+  transition: width 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+  position: relative;
+}
+
+.score-bar-fill::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%) translateX(50%);
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-solid);
+  box-shadow: 0 0 8px rgba(15, 23, 42, 0.2);
+}
+
+/* ====== Analysis Grid ====== */
+.analysis-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 28px;
+}
+
+.analysis-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-light);
+  border-radius: 16px;
+  padding: 24px;
+  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.analysis-card::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--color-solid), transparent);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.analysis-card:hover {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.07), 0 2px 6px rgba(0, 0, 0, 0.04);
+  border-color: var(--color-border);
+  transform: translateY(-3px);
+}
+
+.analysis-card:hover::after {
+  opacity: 1;
+}
+
+.analysis-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  margin-bottom: 18px;
+  letter-spacing: 0.2px;
+}
+
+.analysis-card-header svg {
+  color: var(--color-text-tertiary);
+  flex-shrink: 0;
+  opacity: 0.6;
+}
+
+.analysis-stat {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.stat-num {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--color-text-primary);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.8px;
+}
+
+.stat-grade {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 3px 12px;
+  border-radius: 6px;
+  letter-spacing: 0.3px;
+}
+
+.grade-excellent { background: var(--color-success-bg); color: var(--color-success); }
+.grade-good { background: var(--color-slate-100); color: var(--color-slate-700); }
+.grade-medium { background: var(--color-warning-bg); color: var(--color-warning); }
+.grade-pass { background: var(--color-danger-bg); color: var(--color-danger); }
+.grade-low { background: var(--color-danger-bg); color: var(--color-danger); }
+
+.score-excellent { background: var(--color-success-bg); color: var(--color-success); }
+.score-good { background: var(--color-slate-100); color: var(--color-slate-700); }
+.score-low { background: var(--color-danger-bg); color: var(--color-danger); }
+
+.analysis-note {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  line-height: 1.65;
+  margin: 0;
+}
+
+/* ====== Radar Chart ====== */
+.radar-chart {
+  height: 380px;
+  background: linear-gradient(145deg, var(--color-surface), var(--color-background-alt));
+  border: 1px solid var(--color-border-light);
+  border-radius: 20px;
+  padding: 20px;
+  margin-bottom: 28px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  position: relative;
+  overflow: hidden;
+}
+
+.radar-chart::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--color-border), transparent);
+}
+
+/* ====== Detail List ====== */
+.detail-list {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-light);
+  border-radius: 16px;
+  padding: 28px;
+  margin-bottom: 28px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.detail-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 0 0 22px 0;
+  letter-spacing: -0.3px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.detail-item {
+  padding: 18px 20px;
+  margin-bottom: 12px;
+  background: linear-gradient(135deg, var(--color-background-alt), var(--color-surface));
+  border-radius: 12px;
+  border-left: 3px solid var(--color-solid);
+  transition: all 0.25s ease;
+}
+
+.detail-item:last-child {
+  margin-bottom: 0;
+}
+
+.detail-item:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transform: translateX(3px);
+}
+
+.detail-label {
+  font-size: 13px;
+  font-weight: 650;
+  color: var(--color-text-primary);
+  margin-bottom: 8px;
+  letter-spacing: -0.1px;
+}
+
+.detail-score {
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+  margin-bottom: 8px;
+}
+
+.score-num {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--color-solid);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.8px;
+}
+
+.score-max {
+  font-size: 13px;
+  color: var(--color-text-tertiary);
+  font-weight: 500;
+}
+
+.detail-bar-track {
+  width: 100%;
+  height: 5px;
+  background: var(--color-slate-100);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.detail-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-solid), var(--color-slate-600));
+  border-radius: 3px;
+  transition: width 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+  position: relative;
+}
+
+.detail-bar-fill::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-solid);
+  box-shadow: 0 0 6px rgba(15, 23, 42, 0.2);
+}
+
+.detail-comment {
+  font-size: 12px;
+  color: var(--color-text-tertiary);
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* ====== Markdown Content ====== */
 .ai-markdown {
   line-height: 1.8;
-  color: #334155;
+  color: var(--color-text-primary);
 }
 
 .ai-markdown :deep(h1) {
-  font-size: 22px;
-  font-weight: 700;
-  color: #1e293b;
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--color-text-primary);
   margin: 0 0 16px 0;
   padding-bottom: 12px;
-  border-bottom: 2px solid #e2e8f0;
+  border-bottom: 2px solid var(--color-border);
+  letter-spacing: -0.4px;
 }
 
 .ai-markdown :deep(h2) {
-  font-size: 20px;
-  font-weight: 600;
-  color: #1e293b;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--color-text-primary);
   margin: 24px 0 12px 0;
+  letter-spacing: -0.3px;
+  position: relative;
+  padding-left: 14px;
+}
+
+.ai-markdown :deep(h2)::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 4px;
+  bottom: 4px;
+  width: 3px;
+  background: var(--color-accent);
+  border-radius: 2px;
 }
 
 .ai-markdown :deep(h3) {
-  font-size: 18px;
-  font-weight: 600;
-  color: #334155;
+  font-size: 15px;
+  font-weight: 650;
+  color: var(--color-text-secondary);
   margin: 20px 0 10px 0;
+  letter-spacing: -0.2px;
 }
 
 .ai-markdown :deep(h4) {
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 600;
-  color: #475569;
+  color: var(--color-text-secondary);
   margin: 16px 0 8px 0;
 }
 
@@ -2468,44 +3495,52 @@ onUnmounted(() => {
 
 .ai-markdown :deep(ul), .ai-markdown :deep(ol) {
   margin: 12px 0;
-  padding-left: 24px;
+  padding-left: 22px;
 }
 
 .ai-markdown :deep(li) {
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   line-height: 1.7;
 }
 
+.ai-markdown :deep(li::marker) {
+  color: var(--color-slate-400);
+}
+
 .ai-markdown :deep(strong) {
-  color: #1e293b;
-  font-weight: 600;
+  color: var(--color-text-primary);
+  font-weight: 700;
 }
 
 .ai-markdown :deep(code) {
-  background: #f1f5f9;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-family: monospace;
-  font-size: 14px;
+  background: var(--color-slate-100);
+  padding: 2px 7px;
+  border-radius: 5px;
+  font-family: var(--font-family-mono);
+  font-size: 12px;
   color: var(--color-slate-700);
+  border: 1px solid var(--color-border-light);
 }
 
 .ai-markdown :deep(blockquote) {
-  border-left: 4px solid var(--color-slate-700);
-  padding-left: 16px;
+  border-left: 3px solid var(--color-solid);
+  padding: 12px 18px;
   margin: 16px 0;
-  color: #64748b;
+  color: var(--color-text-secondary);
   font-style: italic;
+  background: var(--color-background-alt);
+  border-radius: 0 8px 8px 0;
+  font-size: 14px;
 }
 
 .typing-cursor {
   display: inline-block;
   width: 2px;
   height: 18px;
-  background: var(--color-slate-700);
+  background: var(--color-solid);
   margin-left: 4px;
-  animation: blink 1s infinite;
   vertical-align: middle;
+  animation: blink 1s steps(1) infinite;
 }
 
 @keyframes blink {
@@ -2513,197 +3548,403 @@ onUnmounted(() => {
   51%, 100% { opacity: 0; }
 }
 
-.ai-error {
-  padding: 20px;
-  text-align: center;
+/* ====== Element Plus Overrides — Premium Edition ====== */
+
+/* Input & Textarea */
+:deep(.el-input__wrapper),
+:deep(.el-textarea__inner) {
+  border-radius: 10px !important;
+  padding: 4px 14px !important;
+  transition: all 0.2s cubic-bezier(0.22, 1, 0.36, 1) !important;
+  box-shadow: 0 0 0 1px var(--color-border-light) inset !important;
+  background: var(--color-surface) !important;
 }
 
-.ai-placeholder {
-  padding: 40px 20px;
-  text-align: center;
+:deep(.el-input__wrapper:hover),
+:deep(.el-textarea__inner:hover) {
+  box-shadow: 0 0 0 1px var(--color-border) inset !important;
 }
 
-.ai-thinking {
-  text-align: center;
-  padding: 40px 20px;
-  background: linear-gradient(135deg, #fef3c7 0%, #fffbeb 100%);
-  border-radius: 12px;
-  margin: 20px 0;
+:deep(.el-input__wrapper:focus-within),
+:deep(.el-textarea__inner:focus) {
+  box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.08), 0 0 0 1px var(--color-solid) inset !important;
 }
 
-.thinking-animation {
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-  margin-bottom: 16px;
+:deep(.el-input__inner) {
+  font-size: 14px !important;
 }
 
-.thinking-dot {
-  width: 12px;
-  height: 12px;
-  background: #f59e0b;
-  border-radius: 50%;
-  animation: thinking-bounce 1.4s ease-in-out infinite;
+:deep(.el-form-item__label) {
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  color: var(--color-text-secondary) !important;
+  padding-bottom: 8px !important;
+  letter-spacing: 0.2px !important;
 }
 
-.thinking-dot:nth-child(1) { animation-delay: -0.32s; }
-.thinking-dot:nth-child(2) { animation-delay: -0.16s; }
-.thinking-dot:nth-child(3) { animation-delay: 0s; }
-
-@keyframes thinking-bounce {
-  0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
-  40% { transform: scale(1.2); opacity: 1; }
+/* Select */
+:deep(.el-select .el-input__wrapper) {
+  border-radius: 10px !important;
 }
 
-.thinking-text {
-  font-size: 16px;
-  font-weight: 600;
-  color: #92400e;
-  margin: 0 0 8px 0;
+:deep(.el-select-dropdown) {
+  border-radius: 12px !important;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1) !important;
+  border: 1px solid var(--color-border-light) !important;
 }
 
-.thinking-tip {
-  font-size: 14px;
-  color: #b45309;
-  margin: 0;
-  opacity: 0.8;
+/* Slider */
+:deep(.el-slider__runway) {
+  height: 6px !important;
+  border-radius: 3px !important;
+  background: var(--color-slate-100) !important;
 }
 
-.model-dropdown {
-  margin: 0 12px;
+:deep(.el-slider__bar) {
+  height: 6px !important;
+  border-radius: 3px !important;
+  background: linear-gradient(90deg, var(--color-solid), var(--color-slate-700)) !important;
 }
 
-/* 思考过程样式 */
-.ai-reasoning-section {
-  margin: 20px 0;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
+:deep(.el-slider__button) {
+  width: 18px !important;
+  height: 18px !important;
+  border: 3px solid var(--color-solid) !important;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.2) !important;
+}
+
+/* Radio Button */
+:deep(.el-radio-button.is-active .el-radio-button__inner) {
+  background-color: var(--color-solid) !important;
+  border-color: var(--color-solid) !important;
+  color: #fff !important;
+  box-shadow: -1px 0 0 0 var(--color-solid) !important;
+  font-weight: 600 !important;
+}
+
+:deep(.el-radio-button:not(.is-active) .el-radio-button__inner) {
+  background-color: var(--color-surface) !important;
+  color: var(--color-text-secondary) !important;
+  border-color: var(--color-border) !important;
+  font-weight: 500 !important;
+}
+
+:deep(.el-radio-button:not(.is-active) .el-radio-button__inner:hover) {
+  color: var(--color-solid) !important;
+  border-color: var(--color-solid) !important;
+}
+
+:deep(.el-radio-button__inner) {
+  border-radius: 8px !important;
+  padding: 8px 20px !important;
+}
+
+/* Checkbox Button */
+:deep(.el-checkbox-button.is-checked .el-checkbox-button__inner) {
+  background-color: var(--color-solid) !important;
+  border-color: var(--color-solid) !important;
+  color: #fff !important;
+  box-shadow: -1px 0 0 0 var(--color-solid) !important;
+  font-weight: 600 !important;
+}
+
+:deep(.el-checkbox-button:not(.is-checked) .el-checkbox-button__inner) {
+  background-color: var(--color-surface) !important;
+  color: var(--color-text-secondary) !important;
+  border-color: var(--color-border) !important;
+  font-weight: 500 !important;
+}
+
+:deep(.el-checkbox-button:not(.is-checked) .el-checkbox-button__inner:hover) {
+  color: var(--color-solid) !important;
+  border-color: var(--color-solid) !important;
+}
+
+:deep(.el-checkbox-button__inner) {
+  border-radius: 8px !important;
+  padding: 8px 18px !important;
+}
+
+/* Focus ring for radio/checkbox */
+:deep(.el-radio-button:focus:not(.is-focus):not(:active):not(.is-disabled) .el-radio-button__inner),
+:deep(.el-checkbox-button:focus:not(.is-focus):not(:active):not(.is-disabled) .el-checkbox-button__inner) {
+  box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.08) !important;
+}
+
+/* Number input */
+:deep(.el-input-number) {
+  width: 100%;
+}
+
+:deep(.el-input-number .el-input__inner) {
+  text-align: left !important;
+}
+
+/* Dialog overrides */
+:deep(.el-dialog) {
+  border-radius: 20px !important;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.12), 0 1px 3px rgba(0, 0, 0, 0.06) !important;
+  border: 1px solid var(--color-border-light) !important;
   overflow: hidden;
 }
 
-.reasoning-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 16px;
-  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2ff 100%);
-  cursor: pointer;
-  user-select: none;
-  transition: all 0.2s ease;
+:deep(.el-dialog__header) {
+  padding: 24px 28px 16px !important;
+  border-bottom: 1px solid var(--color-border-light);
+  margin-right: 0 !important;
 }
 
-.reasoning-header:hover {
-  background: linear-gradient(135deg, #e0f2ff 0%, #d4e5ff 100%);
+:deep(.el-dialog__title) {
+  font-size: 17px !important;
+  font-weight: 700 !important;
+  color: var(--color-text-primary) !important;
+  letter-spacing: -0.3px !important;
 }
 
-.reasoning-title {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-weight: 600;
-  color: var(--color-slate-700);
+:deep(.el-dialog__body) {
+  padding: 24px 28px !important;
 }
 
-.reasoning-title .el-icon {
-  color: var(--color-slate-700);
+:deep(.el-dialog__footer) {
+  padding: 16px 28px 24px !important;
+  border-top: 1px solid var(--color-border-light);
+  display: flex !important;
+  justify-content: flex-end !important;
+  gap: 10px !important;
 }
 
-.toggle-icon {
-  color: var(--color-slate-700);
-  transition: transform 0.3s ease;
+/* Tabs override */
+:deep(.el-tabs__header) {
+  margin-bottom: 20px !important;
 }
 
-.toggle-icon.rotated {
-  transform: rotate(180deg);
+:deep(.el-tabs__item) {
+  font-size: 13px !important;
+  font-weight: 550 !important;
+  color: var(--color-text-tertiary) !important;
+  transition: all 0.2s ease !important;
+  padding: 0 18px !important;
+  height: 40px !important;
+  line-height: 40px !important;
 }
 
-.reasoning-content {
-  padding: 16px;
-  background: #fafafa;
-  border-top: 1px solid #e2e8f0;
-  max-height: 400px;
-  overflow-y: auto;
+:deep(.el-tabs__item.is-active) {
+  color: var(--color-solid) !important;
+  font-weight: 700 !important;
 }
 
-.reasoning-text {
-  font-size: 14px;
-  line-height: 1.8;
-  color: #64748b;
-  white-space: pre-wrap;
-  word-break: break-word;
+:deep(.el-tabs__active-bar) {
+  background-color: var(--color-solid) !important;
+  height: 2.5px !important;
+  border-radius: 2px !important;
 }
 
-/* AI分析内容折叠样式 */
-.ai-content-section {
-  margin: 20px 0;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  overflow: hidden;
+:deep(.el-tabs__nav-wrap::after) {
+  background-color: var(--color-border) !important;
 }
 
-.ai-content-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 16px;
-  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
-  cursor: pointer;
-  user-select: none;
-  transition: all 0.2s ease;
+/* Dropdown override */
+:deep(.el-dropdown-menu__item.is-active) {
+  color: var(--color-solid) !important;
+  background-color: var(--color-slate-50) !important;
+  font-weight: 600 !important;
 }
 
-.ai-content-header:hover {
-  background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+:deep(.el-dropdown-menu) {
+  border-radius: 12px !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08) !important;
+  border: 1px solid var(--color-border-light) !important;
+  padding: 6px !important;
 }
 
-.ai-content-title {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-weight: 600;
-  color: #166534;
+:deep(.el-dropdown-menu__item) {
+  border-radius: 8px !important;
+  padding: 8px 14px !important;
+  margin: 2px 0 !important;
 }
 
-.ai-content-title .el-icon {
-  color: #16a34a;
+/* ====== Responsive Design ====== */
+@media (max-width: 960px) {
+  .page-hero {
+    padding: 56px 28px 36px;
+  }
+
+  .hero-title {
+    font-size: 32px;
+  }
+
+  .hero-subtitle {
+    font-size: 14px;
+  }
+
+  .hero-top {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 28px;
+  }
+
+  .step-indicator-group {
+    flex-direction: row;
+    width: 100%;
+    justify-content: space-between;
+    padding: 14px 20px;
+  }
+
+  .main-body {
+    flex-direction: column;
+    padding: 36px 28px 60px;
+    gap: 36px;
+  }
+
+  .step-sidebar {
+    width: 100%;
+    position: static;
+  }
+
+  .timeline-track {
+    flex-direction: row;
+    gap: 0;
+  }
+
+  .timeline-line {
+    display: none;
+  }
+
+  .timeline-node {
+    flex: 1;
+    flex-direction: column;
+    align-items: center;
+    padding: 12px 4px;
+    gap: 8px;
+    text-align: center;
+  }
+
+  .node-marker {
+    order: -1;
+  }
+
+  .node-label {
+    font-size: 12px;
+  }
+
+  .form-area {
+    max-width: 100%;
+  }
+
+  .analysis-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .score-overview {
+    padding: 32px 24px;
+  }
+
+  .score-value {
+    font-size: 42px;
+  }
 }
 
-/* 外层AI分析区域折叠头部样式 */
-.ai-outer-header {
-  cursor: pointer;
-  user-select: none;
-  padding: 16px 20px;
-  border-radius: 14px 14px 0 0;
-  transition: all 0.2s ease;
-}
+@media (max-width: 640px) {
+  .page-hero {
+    padding: 40px 20px 28px;
+  }
 
-.ai-outer-header:hover {
-  background: rgba(30, 58, 95, 0.03);
-}
+  .hero-title {
+    font-size: 26px;
+  }
 
-.ai-outer-title {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
+  .hero-overline {
+    font-size: 10px;
+  }
 
-.ai-outer-left {
-  display: flex;
-  align-items: center;
-}
+  .hero-inner {
+    max-width: 100%;
+  }
 
-.ai-outer-left h4 {
-  margin: 0;
-  font-size: 18px;
-  font-weight: 600;
-  color: #1e293b;
-  display: flex;
-  align-items: center;
-}
+  .main-body {
+    padding: 24px 20px 48px;
+  }
 
-.ai-outer-right {
-  display: flex;
-  align-items: center;
-}
+  .step-indicator-group {
+    padding: 10px 16px;
+  }
 
+  .step-dots {
+    gap: 6px;
+  }
+
+  .step-dot.active {
+    width: 22px;
+  }
+
+  .step-label-text {
+    font-size: 11px;
+  }
+
+  .timeline-node {
+    padding: 8px 2px;
+  }
+
+  .node-icon {
+    width: 30px;
+    height: 30px;
+    font-size: 12px;
+  }
+
+  .form-section-title {
+    font-size: 19px;
+  }
+
+  .form-actions {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .actions-right {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .actions-right .btn-primary,
+  .actions-right .btn-secondary,
+  .actions-right .btn-outline,
+  .actions-right .btn-accent {
+    flex: 1;
+  }
+
+  .list-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .list-card-actions {
+    margin-left: 0;
+    width: 100%;
+    justify-content: flex-end;
+    opacity: 1;
+  }
+
+  .detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .gpa-slider-wrap {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .gpa-display {
+    text-align: left;
+  }
+
+  .progress-bar-track {
+    margin-top: 24px;
+  }
+}
 </style>

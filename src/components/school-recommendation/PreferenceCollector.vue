@@ -2,15 +2,13 @@
   <div class="preference-collector">
     <div class="ai-avatar-section">
       <div class="ai-avatar">
-        <el-icon :size="48">
+        <el-icon :size="40">
           <ChatDotRound />
         </el-icon>
       </div>
       <div class="ai-welcome">
-        <h3>🤖 AI选校助手</h3>
-        <p class="ai-greeting">
-          你好！我是你的专属选校顾问。
-        </p>
+        <h3>AI 选校助手</h3>
+        <p class="ai-greeting">你好！我是你的专属选校顾问。</p>
       </div>
     </div>
 
@@ -18,31 +16,19 @@
       v-if="assessment"
       class="background-summary"
     >
-      <p class="summary-text">
-        我已经了解了你的背景：
-      </p>
+      <p class="summary-text">我已经了解了你的背景：</p>
       <div class="summary-tags">
-        <el-tag type="primary">
-          GPA: {{ assessment.basic?.gpa || 'N/A' }}
-        </el-tag>
-        <el-tag type="success">
-          {{ getUniversityLabel(assessment.basic?.university) }}
-        </el-tag>
-        <el-tag type="warning">
-          均分: {{ assessment.academic?.averageScore || 'N/A' }}
-        </el-tag>
-        <el-tag type="info">
-          {{ assessment.academic?.degree || '本科' }}
-        </el-tag>
+        <span class="summary-tag tag-primary">GPA: {{ assessment.basic?.gpa || 'N/A' }}</span>
+        <span class="summary-tag tag-success">{{ getUniversityLabel(assessment.basic?.university) }}</span>
+        <span class="summary-tag tag-warning">均分: {{ assessment.academic?.averageScore || 'N/A' }}</span>
+        <span class="summary-tag tag-info">{{ assessment.academic?.degree || '本科' }}</span>
       </div>
     </div>
 
     <div class="preference-form">
-      <p class="form-intro">
-        为了给你最合适的推荐，请告诉我：
-      </p>
+      <p class="form-intro">为了给你最合适的推荐，请告诉我：</p>
 
-      <!-- 问题1: 最看重什么 -->
+      <!-- 问题1 -->
       <div class="form-item">
         <label class="form-label">
           <span class="question-number">①</span>
@@ -57,7 +43,7 @@
             :class="{ 'is-checked': selectedPriorities.includes(option.value) }"
             @change="togglePriority(option.value)"
           >
-            <el-icon :size="16">
+            <el-icon :size="14">
               <Trophy v-if="option.icon === 'Trophy'" />
               <Reading v-else-if="option.icon === 'Reading'" />
               <Briefcase v-else-if="option.icon === 'Briefcase'" />
@@ -69,7 +55,7 @@
         </div>
       </div>
 
-      <!-- 问题2: 想避开的国家 -->
+      <!-- 问题2 -->
       <div class="form-item">
         <label class="form-label">
           <span class="question-number">②</span>
@@ -81,9 +67,7 @@
             class="country-tag"
             :class="{ 'is-checked': excludedCountries.length === 0 }"
             @change="clearExcludedCountries"
-          >
-            无
-          </el-check-tag>
+          >无</el-check-tag>
           <el-check-tag
             v-for="country in availableCountries"
             :key="country"
@@ -91,13 +75,11 @@
             class="country-tag"
             :class="{ 'is-checked': excludedCountries.includes(country) }"
             @change="toggleCountry(country)"
-          >
-            {{ country }}
-          </el-check-tag>
+          >{{ country }}</el-check-tag>
         </div>
       </div>
 
-      <!-- 问题3: 特殊要求 -->
+      <!-- 问题3 -->
       <div class="form-item">
         <label class="form-label">
           <span class="question-number">③</span>
@@ -114,59 +96,53 @@
     </div>
 
     <div class="form-actions">
-      <el-button
-        type="primary"
-        size="large"
-        :loading="loading"
-        :disabled="selectedPriorities.length === 0"
+      <button
         class="submit-btn"
+        :class="{ 'is-loading': loading }"
+        :disabled="loading || selectedPriorities.length === 0"
         @click="submitPreferences"
       >
-        <el-icon><MagicStick /></el-icon>
-        开始智能推荐
-      </el-button>
-      
+        <el-icon v-if="!loading" :size="18"><MagicStick /></el-icon>
+        <el-icon v-else :size="18" class="spin"><Loading /></el-icon>
+        {{ loading ? '生成中...' : '开始智能推荐' }}
+      </button>
+
       <div
         v-if="loading"
         class="progress-indicator"
       >
         <div class="progress-bar-container">
-          <el-progress
-            :percentage="stepProgress"
-            :stroke-width="8"
-            :show-text="false"
-            class="progress-bar"
-          />
+          <div class="progress-bar-track">
+            <div
+              class="progress-bar-fill"
+              :style="{ width: stepProgress + '%' }"
+            />
+          </div>
         </div>
         <div class="progress-steps">
           <div
             v-for="(stepInfo, index) in visibleSteps"
             :key="stepInfo.step"
             class="progress-step"
-            :class="{ 
+            :class="{
               'is-active': currentStep === stepInfo.step,
               'is-completed': getStepIndex(stepInfo.step) < getStepIndex(currentStep)
             }"
           >
             <div class="step-icon">
-              <el-icon v-if="getStepIndex(stepInfo.step) < getStepIndex(currentStep)">
-                <CircleCheck />
-              </el-icon>
+              <el-icon v-if="getStepIndex(stepInfo.step) < getStepIndex(currentStep)" :size="14"><CircleCheck /></el-icon>
               <el-icon
                 v-else-if="currentStep === stepInfo.step"
-                class="is-loading"
-              >
-                <Loading />
-              </el-icon>
+                class="spin"
+                :size="14"
+              ><Loading /></el-icon>
               <span v-else>{{ index + 1 }}</span>
             </div>
             <span class="step-label">{{ stepInfo.label }}</span>
           </div>
         </div>
-        <p class="progress-text">
-          {{ stepLabels[currentStep as RecommendationStep] }}
-        </p>
-        
+        <p class="progress-text">{{ stepLabels[currentStep as RecommendationStep] }}</p>
+
         <!-- 流式输出显示区域 -->
         <div
           v-if="isStreaming && streamingContent"
@@ -178,16 +154,14 @@
             class="reasoning-section"
           >
             <div class="streaming-label reasoning-label">
-              <el-icon class="streaming-icon">
-                <Loading />
-              </el-icon>
+              <el-icon class="streaming-icon spin" :size="13"><Loading /></el-icon>
               AI思考过程
             </div>
             <div class="streaming-text reasoning-text">
               <pre>{{ getReasoningContent(streamingContent) }}</pre>
             </div>
           </div>
-          
+
           <!-- 正式输出 -->
           <div
             v-if="hasMainContent(streamingContent)"
@@ -195,7 +169,7 @@
             :class="{ 'has-reasoning': hasReasoningContent(streamingContent) }"
           >
             <div class="streaming-label main-label">
-              <el-icon><Document /></el-icon>
+              <el-icon :size="13"><Document /></el-icon>
               生成结果
             </div>
             <div class="streaming-text main-text">
@@ -214,6 +188,7 @@ import { ChatDotRound, MagicStick, Trophy, Briefcase, MapLocation, Money, Readin
 import { ElMessage } from 'element-plus'
 import { stepLabels } from '@/composables/useAIRecommendation'
 import type { RecommendationStep } from '@/composables/useAIRecommendation'
+import { hasReasoningContent, hasMainContent, getReasoningContent, getMainContent } from '@/utils/streamParser'
 
 defineProps({
   assessment: {
@@ -282,38 +257,6 @@ const visibleSteps = computed(() => {
   }))
 })
 
-// 检查是否有思考过程内容
-const hasReasoningContent = (content: string): boolean => {
-  if (!content) return false
-  const separatorIndex = content.indexOf('\n\n---\n\n')
-  if (separatorIndex === -1) return false
-  return separatorIndex > 0
-}
-
-// 检查是否有正式输出内容
-const hasMainContent = (content: string): boolean => {
-  if (!content) return false
-  const separatorIndex = content.indexOf('\n\n---\n\n')
-  if (separatorIndex === -1) return true // 没有分隔符，全部视为正式内容
-  return separatorIndex < content.length - 8 // 分隔符后面还有内容
-}
-
-// 获取思考过程内容
-const getReasoningContent = (content: string): string => {
-  if (!content) return ''
-  const separatorIndex = content.indexOf('\n\n---\n\n')
-  if (separatorIndex === -1) return ''
-  return content.slice(0, separatorIndex).trim()
-}
-
-// 获取正式输出内容
-const getMainContent = (content: string): string => {
-  if (!content) return ''
-  const separatorIndex = content.indexOf('\n\n---\n\n')
-  if (separatorIndex === -1) return content // 没有分隔符，返回全部
-  return content.slice(separatorIndex + 8).trim() // 8是 '\n\n---\n\n' 的长度
-}
-
 const togglePriority = (value) => {
   const index = selectedPriorities.value.indexOf(value)
   if (index > -1) {
@@ -354,85 +297,103 @@ const submitPreferences = () => {
 .preference-collector {
   max-width: 700px;
   margin: 0 auto;
-  padding: 30px;
+  padding: var(--space-8);
 }
 
+/* ====== 头部 ====== */
 .ai-avatar-section {
   display: flex;
   align-items: center;
-  gap: 20px;
-  margin-bottom: 30px;
-  padding-bottom: 25px;
-  border-bottom: 1px solid #e8e8e8;
+  gap: var(--space-5);
+  margin-bottom: var(--space-8);
+  padding-bottom: var(--space-6);
+  border-bottom: 1px solid var(--color-border-light);
 }
 
 .ai-avatar {
-  width: 70px;
-  height: 70px;
-  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  border-radius: var(--radius-full);
   background: var(--color-solid);
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
-  box-shadow: 0 8px 25px rgba(30, 58, 95, 0.3);
+  box-shadow: var(--shadow-md);
 }
 
 .ai-welcome h3 {
-  margin: 0 0 8px 0;
-  font-size: 22px;
-  color: #1a1a2e;
+  margin: 0 0 var(--space-2) 0;
+  font-size: var(--text-xl);
+  font-weight: var(--font-bold);
+  color: var(--color-text-primary);
 }
 
 .ai-greeting {
   margin: 0;
-  color: #666;
-  font-size: 15px;
+  color: var(--color-text-secondary);
+  font-size: var(--text-base);
 }
 
+/* ====== 背景摘要 ====== */
 .background-summary {
   background: var(--color-slate-50);
-  border-radius: 12px;
-  padding: 20px;
-  margin-bottom: 30px;
-  border: 1px solid var(--color-slate-100);
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
+  margin-bottom: var(--space-8);
+  border: 1px solid var(--color-border-light);
 }
 
 .summary-text {
-  margin: 0 0 12px 0;
+  margin: 0 0 var(--space-4) 0;
   color: var(--color-slate-700);
-  font-weight: 500;
+  font-weight: var(--font-medium);
+  font-size: var(--text-sm);
 }
 
 .summary-tags {
   display: flex;
-  gap: 10px;
+  gap: var(--space-2);
   flex-wrap: wrap;
 }
 
+.summary-tag {
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  font-weight: var(--font-medium);
+  letter-spacing: 0.25px;
+}
+
+.tag-primary { background: var(--color-solid); color: white; }
+.tag-success { background: var(--color-success); color: white; }
+.tag-warning { background: var(--color-accent); color: white; }
+.tag-info { background: var(--color-slate-500); color: white; }
+
+/* ====== 表单区域 ====== */
 .preference-form {
-  margin-bottom: 30px;
+  margin-bottom: var(--space-8);
 }
 
 .form-intro {
-  font-size: 16px;
-  color: #333;
-  margin-bottom: 25px;
-  font-weight: 500;
+  font-size: var(--text-base);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-6);
+  font-weight: var(--font-medium);
 }
 
 .form-item {
-  margin-bottom: 28px;
+  margin-bottom: var(--space-7);
 }
 
 .form-label {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 15px;
-  font-weight: 600;
-  color: #1a1a2e;
-  margin-bottom: 14px;
+  gap: var(--space-2);
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-4);
 }
 
 .question-number {
@@ -443,40 +404,42 @@ const submitPreferences = () => {
   height: 24px;
   background: var(--color-solid);
   color: white;
-  border-radius: 50%;
-  font-size: 13px;
-  font-weight: 600;
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  flex-shrink: 0;
 }
 
 .multi-hint,
 .optional-hint {
-  font-size: 13px;
-  color: #999;
-  font-weight: normal;
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  font-weight: var(--font-normal);
 }
 
 .priority-options,
 .country-options {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .priority-tag,
 .country-tag {
-  padding: 10px 18px;
-  font-size: 14px;
-  border-radius: 20px;
-  transition: all 0.3s ease;
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--text-sm);
+  border-radius: var(--radius-full);
+  transition: all var(--transition-fast);
   cursor: pointer;
-  border: 1px solid #dcdfe6;
-  background: white;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
 }
 
 .priority-tag:hover,
 .country-tag:hover {
-  border-color: var(--color-slate-700);
-  color: var(--color-slate-700);
+  border-color: var(--color-solid);
+  color: var(--color-solid);
 }
 
 .priority-tag.is-checked,
@@ -492,109 +455,57 @@ const submitPreferences = () => {
 }
 
 .special-input :deep(.el-textarea__inner) {
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   resize: none;
+  border-color: var(--color-border);
+  font-family: var(--font-family-base);
 }
 
+.special-input :deep(.el-textarea__inner:focus) {
+  border-color: var(--color-solid);
+  box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.08);
+}
+
+/* ====== 操作区 ====== */
 .form-actions {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding-top: 10px;
-  gap: 20px;
+  padding-top: var(--space-4);
+  gap: var(--space-6);
 }
 
 .submit-btn {
-  padding: 14px 40px;
-  font-size: 16px;
-  border-radius: 25px;
-  background: var(--color-solid);
-  border: none;
-  box-shadow: 0 8px 25px rgba(30, 58, 95, 0.3);
-}
-
-.submit-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 30px rgba(30, 58, 95, 0.4);
-}
-
-.submit-btn .el-icon {
-  margin-right: 8px;
-}
-
-.progress-indicator {
-  width: 100%;
-  max-width: 500px;
-  padding: 24px;
-  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-  border-radius: 16px;
-  border: 1px solid #e2e8f0;
-}
-
-.progress-bar-container {
-  margin-bottom: 20px;
-}
-
-.progress-bar :deep(.el-progress-bar__outer) {
-  background-color: #cbd5e1;
-  border-radius: 4px;
-}
-
-.progress-bar :deep(.el-progress-bar__inner) {
-  background: var(--color-solid);
-  border-radius: 4px;
-  transition: width 0.5s ease;
-}
-
-.progress-steps {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 16px;
-}
-
-.progress-step {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  opacity: 0.5;
-  transition: all 0.3s ease;
-}
-
-.progress-step.is-active {
-  opacity: 1;
-}
-
-.progress-step.is-completed {
-  opacity: 0.8;
-}
-
-.step-icon {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: #cbd5e1;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 14px;
-  font-weight: 600;
-  color: #64748b;
-  transition: all 0.3s ease;
-}
-
-.progress-step.is-active .step-icon {
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-10);
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  border-radius: var(--radius-lg);
+  border: none;
+  min-height: 48px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
   background: var(--color-solid);
   color: white;
-  box-shadow: 0 4px 12px rgba(30, 58, 95, 0.3);
+  box-shadow: var(--shadow-md);
 }
 
-.progress-step.is-completed .step-icon {
-  background: #10b981;
-  color: white;
+.submit-btn:hover:not(:disabled) {
+  background: var(--color-solid-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-lg);
 }
 
-.step-icon .is-loading {
+.submit-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.spin {
   animation: spin 1s linear infinite;
 }
 
@@ -603,70 +514,141 @@ const submitPreferences = () => {
   to { transform: rotate(360deg); }
 }
 
+/* ====== 进度指示器 ====== */
+.progress-indicator {
+  width: 100%;
+  max-width: 520px;
+  padding: var(--space-6);
+  background: var(--color-background-alt);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--color-border-light);
+}
+
+.progress-bar-container {
+  margin-bottom: var(--space-5);
+}
+
+.progress-bar-track {
+  height: 8px;
+  background: var(--color-slate-200);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: var(--color-solid);
+  border-radius: var(--radius-full);
+  transition: width 0.5s ease;
+}
+
+.progress-steps {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: var(--space-4);
+}
+
+.progress-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  opacity: 0.45;
+  transition: all var(--transition-fast);
+}
+
+.progress-step.is-active {
+  opacity: 1;
+}
+
+.progress-step.is-completed {
+  opacity: 0.75;
+}
+
+.step-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-full);
+  background: var(--color-slate-200);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  color: var(--color-slate-500);
+  transition: all var(--transition-fast);
+}
+
+.progress-step.is-active .step-icon {
+  background: var(--color-solid);
+  color: white;
+  box-shadow: var(--shadow-sm);
+}
+
+.progress-step.is-completed .step-icon {
+  background: var(--color-success);
+  color: white;
+}
+
 .step-label {
-  font-size: 12px;
-  color: #64748b;
+  font-size: var(--text-xs);
+  color: var(--color-slate-500);
   text-align: center;
-  max-width: 80px;
+  max-width: 72px;
+  line-height: var(--leading-normal);
 }
 
 .progress-step.is-active .step-label {
-  color: var(--color-slate-700);
-  font-weight: 600;
+  color: var(--color-solid);
+  font-weight: var(--font-semibold);
 }
 
 .progress-text {
   text-align: center;
   margin: 0;
-  font-size: 15px;
+  font-size: var(--text-base);
   color: var(--color-slate-700);
-  font-weight: 500;
-  animation: pulse 2s ease-in-out infinite;
+  font-weight: var(--font-medium);
 }
 
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
-}
-
-/* 流式输出样式 */
+/* ====== 流式输出样式 ====== */
 .streaming-content {
-  margin-top: 20px;
-  padding: 16px;
-  background: #f8fafc;
-  border-radius: 12px;
-  border: 1px solid #e2e8f0;
+  margin-top: var(--space-5);
+  padding: var(--space-4);
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border-light);
 }
 
 .streaming-label {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 13px;
-  color: var(--color-slate-700);
-  font-weight: 500;
-  margin-bottom: 12px;
+  gap: var(--space-2);
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  margin-bottom: var(--space-3);
+  color: var(--color-slate-600);
 }
 
 .streaming-icon {
-  animation: spin 1s linear infinite;
+  color: var(--color-slate-500);
 }
 
 .streaming-text {
-  max-height: 120px;
+  max-height: 140px;
   overflow-y: auto;
-  background: white;
-  border-radius: 8px;
-  padding: 12px;
-  border: 1px solid #e2e8f0;
+  background: var(--color-background-alt);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border-light);
 }
 
 .streaming-text pre {
   margin: 0;
-  font-family: 'Consolas', 'Monaco', monospace;
-  font-size: 12px;
-  line-height: 1.6;
-  color: #334155;
+  font-family: var(--font-family-mono);
+  font-size: var(--text-xs);
+  line-height: var(--leading-relaxed);
+  color: var(--color-slate-700);
   white-space: pre-wrap;
   word-break: break-all;
 }
@@ -676,48 +658,47 @@ const submitPreferences = () => {
 }
 
 .streaming-text::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: var(--color-slate-300);
   border-radius: 2px;
 }
 
-/* 思考过程样式 */
+/* 思考过程 — 用 info 色系区分 */
 .reasoning-section {
-  margin-bottom: 16px;
+  margin-bottom: var(--space-4);
 }
 
 .reasoning-label {
-  color: #8b5cf6;
+  color: var(--color-info);
 }
 
 .reasoning-text {
-  background: linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%);
-  border-color: #d8b4fe;
+  border-color: var(--color-info-light);
 }
 
 .reasoning-text pre {
-  color: #6b21a8;
+  color: var(--color-slate-700);
 }
 
-/* 正式输出样式 */
+/* 正式输出 — 用 success 色系区分 */
 .main-content-section {
-  margin-top: 16px;
+  margin-top: 0;
 }
 
 .main-content-section.has-reasoning {
-  border-top: 1px dashed #cbd5e1;
-  padding-top: 16px;
+  border-top: 1px dashed var(--color-border-light);
+  padding-top: var(--space-4);
+  margin-top: var(--space-4);
 }
 
 .main-label {
-  color: #059669;
+  color: var(--color-success);
 }
 
 .main-text {
-  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
-  border-color: #86efac;
+  border-color: var(--color-success-light);
 }
 
 .main-text pre {
-  color: #166534;
+  color: var(--color-slate-800);
 }
 </style>

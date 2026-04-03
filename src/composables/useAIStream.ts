@@ -67,9 +67,8 @@ export function useAIStream(options: UseAIStreamOptions): AIStreamResult {
   } = options
 
   const globalState = useGlobalAIState()
-  const config = globalState.getConfig()
 
-  const actualEnableThinking = enableThinking ?? config.defaultEnableThinking
+  const actualEnableThinking = enableThinking ?? globalState.getConfig().defaultEnableThinking
 
   let abortController: AbortController | null = null
   let lastMessages: unknown[] = []
@@ -82,6 +81,7 @@ export function useAIStream(options: UseAIStreamOptions): AIStreamResult {
   let scrollRafId: number | null = null
   let rafScrollId: number | null = null
   const SCROLL_COOLDOWN = 150
+  const IDLE_TIMEOUT = 30000
 
   const task = computed(() => globalState.getTask(taskId))
 
@@ -92,7 +92,7 @@ export function useAIStream(options: UseAIStreamOptions): AIStreamResult {
   const showReasoning = computed<boolean>(() => task.value?.showReasoning ?? true)
   const queuePosition = computed<number>(() => task.value?.queuePosition || 0)
   const retryCount = computed<number>(() => task.value?.retryCount || 0)
-  const maxRetries = computed<number>(() => task.value?.maxRetries || config.retryAttempts)
+  const maxRetries = computed<number>(() => task.value?.maxRetries || globalState.getConfig().retryAttempts)
 
   const isStreaming = computed(() => state.value === 'streaming')
   const isThinking = computed(() => state.value === 'thinking')
@@ -183,21 +183,22 @@ export function useAIStream(options: UseAIStreamOptions): AIStreamResult {
     messages: unknown[],
     requestOptions?: unknown
   ): Promise<string> => {
-    // 默认配置
+    const runtimeConfig = globalState.getConfig()
+    
     const defaultOpts: Record<string, any> = {
-      temperature: config.defaultTemperature,
+      temperature: runtimeConfig.defaultTemperature,
       stream: true,
       enableThinking: actualEnableThinking
     }
     
-    // 如果全局配置了 maxTokens 且大于 0，才传递
-    if (config.defaultMaxTokens && config.defaultMaxTokens > 0) {
-      defaultOpts['maxTokens'] = config.defaultMaxTokens
+    if (runtimeConfig.defaultMaxTokens && runtimeConfig.defaultMaxTokens > 0) {
+      defaultOpts['maxTokens'] = runtimeConfig.defaultMaxTokens
     }
     
     const finalOptions = {
       ...defaultOpts,
-      ...(requestOptions as Record<string, any>)
+      ...(requestOptions as Record<string, any>),
+      requestTimeout: actualEnableThinking ? runtimeConfig.timeout * 2 : runtimeConfig.timeout
     }
 
     abortController = new AbortController()
@@ -218,6 +219,19 @@ export function useAIStream(options: UseAIStreamOptions): AIStreamResult {
         abortController.signal as any
       )
 
+      let idleTimer: ReturnType<typeof setTimeout> | null = null
+      const resetIdleTimer = () => {
+        if (idleTimer) clearTimeout(idleTimer)
+        idleTimer = setTimeout(() => {
+          if (abortController) {
+            abortController.abort()
+            abortController = null
+          }
+        }, IDLE_TIMEOUT)
+      }
+
+      resetIdleTimer()
+
       for await (const chunk of stream as AsyncIterable<{ type: string; content: any }>) {
         if (!globalState.isTaskActive(taskId)) break
 
@@ -226,6 +240,7 @@ export function useAIStream(options: UseAIStreamOptions): AIStreamResult {
           globalState.appendReasoning(taskId, chunk.content)
           onStream?.(fullContent, fullReasoning)
           scrollToBottom()
+          resetIdleTimer()
         } else if (chunk.type === 'content' && chunk.content) {
           if (isThinking.value) {
             globalState.startStreaming(taskId)
@@ -235,8 +250,11 @@ export function useAIStream(options: UseAIStreamOptions): AIStreamResult {
           globalState.appendContent(taskId, chunk.content, false)
           onStream?.(fullContent, fullReasoning)
           scrollToBottom()
+          resetIdleTimer()
         }
       }
+
+      if (idleTimer) { clearTimeout(idleTimer); idleTimer = null }
 
       globalState.completeTask(taskId)
       cleanupWatchers()
@@ -274,7 +292,7 @@ export function useAIStream(options: UseAIStreamOptions): AIStreamResult {
       onError?.(errorMsg)
 
       if (autoRetry && globalState.canRetry(taskId)) {
-        const delay = config.retryDelay * Math.pow(2, retryCount.value)
+        const delay = globalState.getConfig().retryDelay * Math.pow(2, retryCount.value)
         await sleep(delay)
         return executeGeneration(providerId, messages, requestOptions)
       }
@@ -353,7 +371,12 @@ export function useAIStream(options: UseAIStreamOptions): AIStreamResult {
       throw new Error('没有可重试的任务')
     }
 
-    globalState.resetTask(taskId)
+    const existingTask = globalState.getTask(taskId)
+    if (existingTask) {
+      globalState.updateTask(taskId, { state: 'idle', error: null, retryCount: existingTask.retryCount })
+    } else {
+      globalState.resetTask(taskId)
+    }
     return generateWithProvider(lastProviderId, lastMessages, lastOptions)
   }
 
@@ -438,6 +461,8 @@ export function useAIStream(options: UseAIStreamOptions): AIStreamResult {
     if (abortController) {
       abortController.abort()
     }
+    if (scrollRafId) { cancelAnimationFrame(scrollRafId); scrollRafId = null }
+    if (rafScrollId) { cancelAnimationFrame(rafScrollId); rafScrollId = null }
   })
 
   return {

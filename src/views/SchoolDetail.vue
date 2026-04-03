@@ -11,7 +11,7 @@
           @click="router.back()"
         >
           <el-icon><ArrowLeft /></el-icon>
-          返回选校推荐
+          {{ backLabel }}
         </el-button>
       </div>
 
@@ -220,6 +220,18 @@ import { getSchoolById } from '@/utils/recommendationEngine'
 const route = useRoute()
 const router = useRouter()
 const pageRoot = ref(null)
+
+const fromLabels = {
+  recommendation: '返回选校推荐',
+  database: '返回院校库',
+  timeline: '返回时间规划',
+  materials: '返回材料中心',
+  home: '返回首页'
+}
+
+const backLabel = computed(() => {
+  return fromLabels[route.query.from] || '返回'
+})
 
 const school = computed(() => {
   const id = parseInt(route.params.id)

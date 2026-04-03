@@ -1,420 +1,501 @@
 <template>
   <div class="timeline-page">
-    <h2 class="page-title">
-      时间规划与任务管理
-    </h2>
-
-    <!-- 视图切换 -->
-    <div class="view-toggle">
-      <div class="toggle-left">
-        <el-radio-group
-          v-model="currentView"
-          size="large"
-        >
-          <el-radio-button label="chart">
-            图表视图
-          </el-radio-button>
-          <el-radio-button label="timeline">
-            时间线
-          </el-radio-button>
-          <el-radio-button label="kanban">
-            任务看板
-          </el-radio-button>
-        </el-radio-group>
-        <el-select
-          v-model="mode"
-          placeholder="规划模式"
-          style="width: 150px;"
-          @change="handleModeChange"
-        >
-          <el-option
-            label="紧凑"
-            value="compact"
-          />
-          <el-option
-            label="常规"
-            value="normal"
-          />
-          <el-option
-            label="宽松"
-            value="relaxed"
-          />
-        </el-select>
+    <!-- ===== Hero 区域 ===== -->
+    <section class="hero-section">
+      <div class="container hero-content">
+        <h1 class="hero-title">
+          时间规划与任务管理
+        </h1>
+        <p class="hero-subtitle">
+          AI 智能解析背景，为你生成专属留学路线图 — 分阶段追踪每个关键节点
+        </p>
+        <div class="hero-stats">
+          <div class="stat-card">
+            <div class="stat-value">{{ totalTasks }}</div>
+            <div class="stat-label">总任务数</div>
+          </div>
+          <div class="stat-divider" />
+          <div class="stat-card">
+            <div class="stat-value stat-value-accent">{{ completedTasks }}</div>
+            <div class="stat-label">已完成</div>
+          </div>
+          <div class="stat-divider" />
+          <div class="stat-card">
+            <div class="stat-value">{{ overallProgress }}<span class="stat-suffix">%</span></div>
+            <div class="stat-label">整体进度</div>
+          </div>
+          <div class="stat-divider" />
+          <div class="stat-card">
+            <div class="stat-value stat-value-warning">{{ upcomingTasksCount }}</div>
+            <div class="stat-label">即将到期</div>
+          </div>
+        </div>
       </div>
-      <div class="toggle-right">
-        <el-button
-          type="danger"
-          :icon="Delete"
-          @click="deleteAllTasks"
-        >
-          删除所有任务
-        </el-button>
-        <el-button
-          type="warning"
-          :icon="RefreshRight"
-          @click="resetAllTasks"
-        >
-          重置所有任务
-        </el-button>
-        <el-button
-          type="primary"
-          :icon="DocumentAdd"
-          @click="generateSampleTasks"
-        >
-          生成示例任务
-        </el-button>
-      </div>
-    </div>
+    </section>
 
-    <!-- ECharts图表视图 -->
-    <div
-      v-if="currentView === 'chart'"
-      class="chart-view"
-    >
-      <el-card class="chart-card">
-        <div
-          ref="chartRef"
-          class="timeline-chart"
-        />
-      </el-card>
-    </div>
-
-    <!-- 时间线视图 -->
-    <div
-      v-else-if="currentView === 'timeline'"
-      class="timeline-view"
-    >
-      <el-card class="timeline-card">
-        <div class="timeline-layout">
-          <!-- 左侧时间线 -->
-          <div class="timeline-container">
-            <div
-              v-for="milestone in milestones"
-              :key="milestone.id"
-              class="milestone-item"
-              :class="{ 'is-overdue': isOverdue(milestone.deadline), 'is-selected': selectedMilestone?.id === milestone.id }"
-              @click="selectMilestone(milestone)"
+    <!-- ===== 主内容区 ===== -->
+    <section class="main-section">
+      <div class="data-container">
+        <!-- 工具栏 -->
+        <div class="toolbar">
+          <div class="toolbar-left">
+            <div class="view-switcher">
+              <button
+                v-for="view in viewOptions"
+                :key="view.value"
+                class="view-btn"
+                :class="{ active: currentView === view.value }"
+                @click="currentView = view.value"
+              >
+                {{ view.label }}
+              </button>
+            </div>
+            <select
+              v-model="mode"
+              class="mode-select"
+              @change="handleModeChange"
             >
-              <div class="milestone-marker">
-                <el-icon :color="getStatusColor(milestone.status)">
-                  <CircleCheck />
-                </el-icon>
-              </div>
-              <div class="milestone-content">
-                <div class="milestone-header">
-                  <h4>{{ milestone.title }}</h4>
-                  <el-tag
-                    :type="getStatusTagType(milestone.status)"
-                    size="small"
-                  >
-                    {{ getStatusLabel(milestone.status) }}
-                  </el-tag>
+              <option value="compact">
+                紧凑
+              </option>
+              <option value="normal">
+                常规
+              </option>
+              <option value="relaxed">
+                宽松
+              </option>
+            </select>
+          </div>
+          <div class="toolbar-right">
+            <button
+              class="btn btn-ghost"
+              @click="deleteAllTasks"
+            >
+              <el-icon><Delete /></el-icon>
+              删除所有任务
+            </button>
+            <button
+              class="btn btn-ghost"
+              @click="resetAllTasks"
+            >
+              <el-icon><RefreshRight /></el-icon>
+              重置所有任务
+            </button>
+            <button
+              class="btn btn-primary"
+              @click="generateSampleTasks"
+            >
+              <el-icon><DocumentAdd /></el-icon>
+              生成示例任务
+            </button>
+          </div>
+        </div>
+
+        <!-- ECharts 图表视图 -->
+        <div
+          v-if="currentView === 'chart'"
+          class="chart-area animate-on-scroll"
+        >
+          <div class="chart-card">
+            <h3 class="card-title">
+              时间规划图表
+            </h3>
+            <div
+              ref="chartRef"
+              class="chart-canvas"
+            />
+          </div>
+        </div>
+
+        <!-- 时间线视图 -->
+        <div
+          v-else-if="currentView === 'timeline'"
+          class="timeline-area animate-on-scroll"
+        >
+          <div class="timeline-card">
+            <div class="timeline-layout">
+              <!-- 左侧时间线 -->
+              <div class="timeline-container">
+                <div
+                  v-for="milestone in milestones"
+                  :key="milestone.id"
+                  class="milestone-item"
+                  :class="{
+                    'is-overdue': isOverdue(milestone.deadline),
+                    'is-selected': selectedMilestone?.id === milestone.id
+                  }"
+                  @click="selectMilestone(milestone)"
+                >
+                  <div class="milestone-marker">
+                    <el-icon :color="getStatusColor(milestone.status)">
+                      <CircleCheck />
+                    </el-icon>
+                  </div>
+                  <div class="milestone-content">
+                    <div class="milestone-header">
+                      <h4>{{ milestone.title }}</h4>
+                      <span
+                        class="status-tag"
+                        :class="'status-' + milestone.status"
+                      >
+                        {{ getStatusLabel(milestone.status) }}
+                      </span>
+                    </div>
+                    <p class="milestone-date">
+                      {{ formatDate(milestone.deadline) }}
+                    </p>
+                    <p class="milestone-desc">
+                      {{ milestone.description }}
+                    </p>
+                    <div class="milestone-progress">
+                      <div class="progress-bar">
+                        <div
+                          class="progress-fill"
+                          :style="{ width: getMilestoneProgress(milestone) + '%' }"
+                        />
+                      </div>
+                      <span class="progress-text">{{ getMilestoneProgress(milestone) }}%</span>
+                    </div>
+                  </div>
                 </div>
-                <p class="milestone-date">
-                  {{ formatDate(milestone.deadline) }}
+              </div>
+
+              <!-- 右侧详情面板 -->
+              <div
+                v-if="selectedMilestone"
+                class="detail-panel"
+              >
+                <div class="detail-header">
+                  <h3>{{ selectedMilestone.title }}</h3>
+                  <span class="detail-date">{{ formatDate(selectedMilestone.deadline) }}</span>
+                </div>
+                <p class="detail-desc">
+                  {{ selectedMilestone.description }}
                 </p>
-                <p class="milestone-desc">
-                  {{ milestone.description }}
-                </p>
+
+                <div class="detail-tasks">
+                  <div class="tasks-summary">
+                    <span class="tasks-count">
+                      任务清单 · {{ selectedMilestone.tasks.filter(t => !t.completed).length }}/{{ selectedMilestone.tasks.length }} 未完成
+                    </span>
+                  </div>
+                  <ul class="task-list">
+                    <li
+                      v-for="task in selectedMilestone.tasks"
+                      :key="task.id"
+                      class="task-item"
+                      :class="{ completed: task.completed }"
+                    >
+                      <label class="task-checkbox">
+                        <input
+                          type="checkbox"
+                          :checked="task.completed"
+                          @change="toggleTask(selectedMilestone.id, task.id)"
+                        >
+                        <span class="checkbox-custom" />
+                      </label>
+                      <span class="task-name">{{ task.title }}</span>
+                      <span
+                        v-if="isUrgent(task.deadline) && !task.completed"
+                        class="tag tag-danger"
+                      >即将到期</span>
+                      <span
+                        v-else-if="isOverdue(task.deadline) && !task.completed"
+                        class="tag tag-danger"
+                      >已逾期</span>
+                    </li>
+                  </ul>
+                  <p
+                    v-if="selectedMilestone.tasks.length === 0"
+                    class="empty-tasks"
+                  >
+                    暂无任务
+                  </p>
+                </div>
+
+                <div class="panel-actions">
+                  <button
+                    class="btn btn-secondary btn-sm"
+                    @click="showAddTaskToMilestone"
+                  >
+                    <el-icon><Plus /></el-icon>
+                    添加任务
+                  </button>
+                </div>
+              </div>
+
+              <!-- 空状态提示 -->
+              <div
+                v-else
+                class="empty-selection"
+              >
+                <div class="empty-icon">
+                  <el-icon :size="48"><CircleCheck /></el-icon>
+                </div>
+                <p class="empty-title">点击左侧里程碑查看详情</p>
+                <p class="empty-desc">选择任意阶段以查看和管理关联的任务</p>
               </div>
             </div>
           </div>
-
-          <!-- 右侧详情面板 -->
-          <div
-            v-if="selectedMilestone"
-            class="detail-panel"
-          >
-            <h3>{{ selectedMilestone.title }} - 任务详情</h3>
-            <p class="detail-date">
-              截止日期：{{ formatDate(selectedMilestone.deadline) }}
-            </p>
-            <p class="detail-desc">
-              {{ selectedMilestone.description }}
-            </p>
-
-            <div class="detail-tasks">
-              <h5>任务清单 ({{ selectedMilestone.tasks.filter(t => !t.completed).length }}/{{ selectedMilestone.tasks.length }} 未完成)</h5>
-              <ul>
-                <li
-                  v-for="task in selectedMilestone.tasks"
-                  :key="task.id"
-                  :class="{ completed: task.completed }"
-                >
-                  <el-checkbox
-                    :model-value="task.completed"
-                    @change="toggleTask(selectedMilestone.id, task.id)"
-                  />
-                  <span>{{ task.title }}</span>
-                  <el-tag
-                    v-if="isUrgent(task.deadline)"
-                    type="danger"
-                    size="small"
-                  >
-                    即将到期
-                  </el-tag>
-                  <el-tag
-                    v-else-if="isOverdue(task.deadline)"
-                    type="danger"
-                    size="small"
-                  >
-                    已逾期
-                  </el-tag>
-                </li>
-              </ul>
-              <p
-                v-if="selectedMilestone.tasks.length === 0"
-                class="empty-tasks"
-              >
-                暂无任务
-              </p>
-            </div>
-
-            <div class="panel-actions">
-              <el-button
-                size="small"
-                @click="showAddTaskToMilestone"
-              >
-                添加任务
-              </el-button>
-            </div>
-          </div>
-
-          <!-- 空状态提示 -->
-          <div
-            v-else
-            class="empty-selection"
-          >
-            <el-icon
-              :size="64"
-              color="#dcdfe6"
-            >
-              <CircleCheck />
-            </el-icon>
-            <p>点击左侧任意里程碑节点查看详情</p>
-          </div>
         </div>
-      </el-card>
-    </div>
 
-    <!-- 看板视图 -->
-    <div
-      v-else
-      class="kanban-view"
-    >
-      <div class="kanban-toolbar">
-        <el-button
-          v-if="!showOnlyUpcoming"
-          type="warning"
-          :icon="Bell"
-          @click="showUpcomingTasks"
-        >
-          查看即将到期 (7天)
-        </el-button>
-        <el-button
-          v-else
-          type="primary"
-          :icon="Back"
-          @click="showAllTasks"
-        >
-          显示全部任务
-        </el-button>
-        <span
-          v-if="upcomingTasksCount > 0 && !showOnlyUpcoming"
-          class="upcoming-count"
-        >
-          有 {{ upcomingTasksCount }} 个任务即将到期
-        </span>
-      </div>
-      <div class="kanban-board">
+        <!-- 看板视图 -->
         <div
-          v-for="column in columns"
-          :key="column.id"
-          class="kanban-column"
+          v-else
+          class="kanban-area animate-on-scroll"
         >
-          <div class="column-header">
-            <h4>{{ column.title }}</h4>
-            <span class="task-count">{{ getColumnTasks(column.id).length }}</span>
+          <div class="kanban-toolbar">
+            <div class="kanban-toolbar-left">
+              <button
+                v-if="!showOnlyUpcoming"
+                class="btn btn-outline btn-sm"
+                @click="showUpcomingTasks"
+              >
+                <el-icon><Bell /></el-icon>
+                查看即将到期 (7天)
+              </button>
+              <button
+                v-else
+                class="btn btn-secondary btn-sm"
+                @click="showAllTasks"
+              >
+                <el-icon><Back /></el-icon>
+                显示全部任务
+              </button>
+              <span
+                v-if="upcomingTasksCount > 0 && !showOnlyUpcoming"
+                class="upcoming-hint"
+              >
+                有 {{ upcomingTasksCount }} 个任务即将到期
+              </span>
+            </div>
           </div>
-          <div class="column-content">
+          <div class="kanban-board">
             <div
-              v-for="task in getColumnTasks(column.id)"
-              :key="task.id"
-              class="task-card"
-              :class="{
-                'is-urgent': isUrgent(task.deadline),
-                'is-soon': isSoon(task.deadline),
-                'is-overdue': isOverdue(task.deadline)
-              }"
-              draggable="true"
-              @dragstart="dragStart(task, column.id)"
-              @drop="drop(task, column.id)"
+              v-for="column in columns"
+              :key="column.id"
+              class="kanban-column"
             >
-              <div class="task-header">
-                <span class="task-title">{{ task.title }}</span>
-                <span class="tag-group">
-                  <el-tag
-                    v-if="isOverdue(task.deadline)"
-                    type="danger"
-                    size="small"
-                  >已逾期</el-tag>
-                  <el-tag
-                    v-else-if="task.reminderEnabled && isSoon(task.deadline)"
-                    type="warning"
-                    size="small"
-                  >即将到期</el-tag>
-                  <el-tag
-                    v-else-if="isUrgent(task.deadline)"
-                    type="warning"
-                    size="small"
-                  >紧急</el-tag>
-                  <el-tag
-                    v-if="task.reminderEnabled && !isOverdue(task.deadline)"
-                    type="info"
-                    size="small"
-                  >提醒已开</el-tag>
-                </span>
+              <div class="column-header">
+                <h4>{{ column.title }}</h4>
+                <span class="column-count">{{ getColumnTasks(column.id).length }}</span>
               </div>
-              <p class="task-milestone">
-                {{ getMilestoneTitle(task.milestoneId) }}
-              </p>
-              <p class="task-deadline">
-                <el-icon><Calendar /></el-icon>
-                {{ formatDate(task.deadline) }}
-              </p>
-              <div class="task-actions">
-                <el-button
-                  size="small"
-                  type="text"
-                  @click="editTask(task)"
+              <div class="column-content">
+                <div
+                  v-for="task in getVisibleTasks(column.id)"
+                  :key="task.id"
+                  class="task-card"
+                  :class="{
+                    'is-urgent': isUrgent(task.deadline),
+                    'is-soon': isSoon(task.deadline),
+                    'is-overdue': isOverdue(task.deadline)
+                  }"
+                  draggable="true"
+                  @dragstart="dragStart(task, column.id)"
+                  @drop="drop(task, column.id)"
+                  @dragover.prevent
                 >
-                  编辑
-                </el-button>
-                <el-button
-                  size="small"
-                  type="danger"
-                  text
-                  @click="deleteTask(task.id)"
+                  <div class="task-card-header">
+                    <span class="task-title">{{ task.title }}</span>
+                    <div class="task-tags">
+                      <span
+                        v-if="isOverdue(task.deadline)"
+                        class="tag tag-danger"
+                      >已逾期</span>
+                      <span
+                        v-else-if="task.reminderEnabled && isSoon(task.deadline)"
+                        class="tag tag-warning"
+                      >即将到期</span>
+                      <span
+                        v-else-if="isUrgent(task.deadline)"
+                        class="tag tag-warning"
+                      >紧急</span>
+                      <span
+                        v-if="task.reminderEnabled && !isOverdue(task.deadline)"
+                        class="tag tag-info"
+                      >提醒</span>
+                    </div>
+                  </div>
+                  <div class="task-card-meta">
+                    <span class="task-meta-item">{{ getMilestoneTitle(task.milestoneId) }}</span>
+                    <span class="task-meta-sep">·</span>
+                    <span class="task-meta-item"><el-icon><Calendar /></el-icon> {{ formatDate(task.deadline) }}</span>
+                  </div>
+                  <div class="task-actions">
+                    <button
+                      class="btn btn-ghost btn-xs"
+                      @click="editTask(task)"
+                    >
+                      编辑
+                    </button>
+                    <button
+                      class="btn btn-ghost btn-xs btn-danger-text"
+                      @click="deleteTask(task.id)"
+                    >
+                      删除
+                    </button>
+                  </div>
+                </div>
+                <button
+                  v-if="getHiddenCount(column.id) > 0"
+                  class="expand-btn"
+                  @click="toggleColumnExpand(column.id)"
                 >
-                  删除
-                </el-button>
+                  <el-icon><ArrowDown /></el-icon>
+                  {{ isColumnExpanded(column.id) ? '收起' : `展开剩余 ${getHiddenCount(column.id)} 个` }}
+                </button>
+                <button
+                  v-else-if="isColumnExpanded(column.id) && getColumnTasks(column.id).length > VISIBLE_TASK_COUNT"
+                  class="expand-btn expand-btn-collapse"
+                  @click="toggleColumnExpand(column.id)"
+                >
+                  <el-icon><ArrowUp /></el-icon>
+                  收起
+                </button>
+                <button
+                  class="add-task-btn"
+                  @click="showAddTask(column.id)"
+                >
+                  <el-icon><Plus /></el-icon>
+                  添加任务
+                </button>
               </div>
             </div>
-            <el-button
-              class="add-task-btn"
-              @click="showAddTask(column.id)"
-            >
-              <el-icon><Plus /></el-icon>
-              添加任务
-            </el-button>
           </div>
         </div>
       </div>
-    </div>
+    </section>
 
     <!-- 添加/编辑任务对话框 -->
-    <el-dialog
-      v-model="taskDialogVisible"
-      :title="editingTask ? '编辑任务' : '添加任务'"
-      width="500px"
-    >
-      <el-form
-        :model="taskForm"
-        label-width="100px"
-      >
-        <el-form-item label="任务标题">
-          <el-input
-            v-model="taskForm.title"
-            placeholder="请输入任务标题"
-          />
-        </el-form-item>
-        <el-form-item label="所属阶段">
-          <el-select
-            v-model="taskForm.milestoneId"
-            placeholder="选择阶段"
-          >
-            <el-option
-              v-for="m in milestones"
-              :key="m.id"
-              :label="m.title"
-              :value="m.id"
-            />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="截止日期">
-          <el-date-picker
-            v-model="taskForm.deadline"
-            type="date"
-            placeholder="选择日期"
-          />
-        </el-form-item>
-        <el-form-item label="优先级">
-          <el-radio-group v-model="taskForm.priority">
-            <el-radio-button label="low">
-              低
-            </el-radio-button>
-            <el-radio-button label="medium">
-              中
-            </el-radio-button>
-            <el-radio-button label="high">
-              高
-            </el-radio-button>
-          </el-radio-group>
-        </el-form-item>
-        <el-form-item label="任务提醒">
-          <el-checkbox v-model="taskForm.reminderEnabled">
-            启用提醒
-          </el-checkbox>
-        </el-form-item>
-        <el-form-item
-          v-if="taskForm.reminderEnabled"
-          label="提前提醒"
+    <Teleport to="body">
+      <Transition name="dialog-fade">
+        <div
+          v-if="taskDialogVisible"
+          class="modal-overlay"
+          @click.self="taskDialogVisible = false"
         >
-          <el-select
-            v-model="taskForm.reminderDays"
-            placeholder="选择天数"
-          >
-            <el-option
-              label="提前1天"
-              :value="1"
-            />
-            <el-option
-              label="提前3天"
-              :value="3"
-            />
-            <el-option
-              label="提前7天"
-              :value="7"
-            />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="描述">
-          <el-input
-            v-model="taskForm.description"
-            type="textarea"
-            :rows="3"
-          />
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <el-button @click="taskDialogVisible = false">
-          取消
-        </el-button>
-        <el-button
-          type="primary"
-          @click="saveTask"
-        >
-          保存
-        </el-button>
-      </template>
-    </el-dialog>
+          <div class="modal-content">
+            <div class="modal-header">
+              <h3>{{ editingTask ? '编辑任务' : '添加任务' }}</h3>
+              <button
+                class="modal-close"
+                @click="taskDialogVisible = false"
+              >
+                ×
+              </button>
+            </div>
+            <div class="modal-body">
+              <div class="form-group">
+                <label class="form-label">任务标题</label>
+                <input
+                  v-model="taskForm.title"
+                  type="text"
+                  class="form-input"
+                  placeholder="请输入任务标题"
+                >
+              </div>
+              <div class="form-group">
+                <label class="form-label">所属阶段</label>
+                <select
+                  v-model="taskForm.milestoneId"
+                  class="form-input form-select"
+                >
+                  <option
+                    v-for="m in milestones"
+                    :key="m.id"
+                    :value="m.id"
+                  >
+                    {{ m.title }}
+                  </option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">截止日期</label>
+                <input
+                  v-model="taskForm.deadline"
+                  type="date"
+                  class="form-input"
+                >
+              </div>
+              <div class="form-group">
+                <label class="form-label">优先级</label>
+                <div class="priority-options">
+                  <button
+                    v-for="p in priorityOptions"
+                    :key="p.value"
+                    class="priority-btn"
+                    :class="{ active: taskForm.priority === p.value }"
+                    @click="taskForm.priority = p.value"
+                  >
+                    {{ p.label }}
+                  </button>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-checkbox-label">
+                  <input
+                    v-model="taskForm.reminderEnabled"
+                    type="checkbox"
+                    class="form-checkbox"
+                  >
+                  启用提醒
+                </label>
+              </div>
+              <div
+                v-if="taskForm.reminderEnabled"
+                class="form-group"
+              >
+                <label class="form-label">提前提醒</label>
+                <select
+                  v-model="taskForm.reminderDays"
+                  class="form-input form-select"
+                >
+                  <option :value="1">
+                    提前1天
+                  </option>
+                  <option :value="3">
+                    提前3天
+                  </option>
+                  <option :value="7">
+                    提前7天
+                  </option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">描述</label>
+                <textarea
+                  v-model="taskForm.description"
+                  class="form-input form-textarea"
+                  rows="3"
+                  placeholder="可选：添加任务描述..."
+                />
+              </div>
+            </div>
+            <div class="modal-footer">
+              <button
+                class="btn btn-ghost"
+                @click="taskDialogVisible = false"
+              >
+                取消
+              </button>
+              <button
+                class="btn btn-primary"
+                @click="saveTask"
+              >
+                保存
+              </button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, reactive, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { CircleCheck, Calendar, Plus, Bell, Back, RefreshRight, DocumentAdd, Delete } from '@element-plus/icons-vue'
+import { CircleCheck, Calendar, Plus, Bell, Back, RefreshRight, DocumentAdd, Delete, ArrowDown, ArrowUp } from '@element-plus/icons-vue'
 import * as echarts from 'echarts'
 
 const currentView = ref('chart')
@@ -423,6 +504,8 @@ const taskDialogVisible = ref(false)
 const editingTask = ref(null)
 const selectedMilestone = ref(null)
 const showOnlyUpcoming = ref(false)
+const expandedColumns = ref({})
+const VISIBLE_TASK_COUNT = 8
 const notificationPermission = ref('default')
 const chartRef = ref(null)
 let chartInstance = null
@@ -436,18 +519,27 @@ const taskForm = reactive({
   reminderDays: 1
 })
 
-// localStorage 持久化相关
+const viewOptions = [
+  { label: '图表视图', value: 'chart' },
+  { label: '时间线', value: 'timeline' },
+  { label: '任务看板', value: 'kanban' }
+]
+
+const priorityOptions = [
+  { label: '低', value: 'low' },
+  { label: '中', value: 'medium' },
+  { label: '高', value: 'high' }
+]
+
 let isLoaded = false
 const isSaving = ref(false)
 
-// 模式调整因子
 const MODE_OFFSETS = {
-  compact: -30,  // 提前30天
+  compact: -30,
   normal: 0,
-  relaxed: 30   // 延后30天
+  relaxed: 30
 }
 
-// 里程碑模板定义（不含日期）
 const MILESTONE_TEMPLATES = [
   { id: 1, title: '背景提升', status: 'pending', description: '加强科研、实习、语言成绩' },
   { id: 2, title: '选校定位', status: 'pending', description: '确定目标院校和专业' },
@@ -458,7 +550,6 @@ const MILESTONE_TEMPLATES = [
   { id: 7, title: '签证办理', status: 'pending', description: '办理签证手续' }
 ]
 
-// localStorage 持久化
 const STORAGE_KEY = 'timeline_data'
 
 const loadFromStorage = () => {
@@ -503,37 +594,28 @@ const saveToStorage = () => {
   }
 }
 
-// 当前日期作为基准
 const today = new Date()
 
-// 阶段间隔天数（从上一个阶段到下一个阶段的平均间隔）
 const PHASE_INTERVALS = {
-  1: 90,   // 背景提升 -> 选���定位 (3个月)
-  2: 75,   // 选校定位 -> 文书准备 (2.5个月)
-  3: 90,   // 文书准备 -> 网申提交 (3个月)
-  4: 45,   // 网申提交 -> 面试准备 (1.5个月)
-  5: 75,   // 面试准备 -> 录取决策 (2.5个月)
-  6: 60    // 录取决策 -> 签证办理 (2个月)
+  1: 90,
+  2: 75,
+  3: 90,
+  4: 45,
+  5: 75,
+  6: 60
 }
 
-// 计算里程碑日期
 const calculateMilestoneDate = (baseDate, milestoneId) => {
   const offset = MODE_OFFSETS[mode.value]
   const date = new Date(baseDate)
-
-  // 累加之前所有阶段的间隔
   for (let i = 1; i < milestoneId; i++) {
     const interval = PHASE_INTERVALS[i] || 60
     date.setDate(date.getDate() + interval)
   }
-
-  // 应用模式偏移
   date.setDate(date.getDate() + offset)
-
   return formatDateString(date)
 }
 
-// 格式化为 YYYY-MM-DD
 const formatDateString = (date) => {
   const year = date.getFullYear()
   const month = String(date.getMonth() + 1).padStart(2, '0')
@@ -541,11 +623,8 @@ const formatDateString = (date) => {
   return `${year}-${month}-${day}`
 }
 
-// 生成里程碑列表
 const generateMilestones = () => {
-  // 基于当前日期开始
   const startDate = new Date(today)
-  // 第一个里程碑：背景提升 - 从当前日期+15天开始
   startDate.setDate(startDate.getDate() + 15)
 
   return MILESTONE_TEMPLATES.map(template => ({
@@ -604,7 +683,6 @@ const generateMilestones = () => {
 
 const milestones = ref(generateMilestones())
 
-// 任务列表（独立看板使用）
 const tasks = ref([
   { id: 1, title: '完成背景评估', milestoneId: 1, status: 'done', deadline: milestones.value[0]?.deadline || '', priority: 'high', reminderEnabled: false, reminderDays: 1 },
   { id: 2, title: '选校清单初版', milestoneId: 2, status: 'todo', deadline: milestones.value[1]?.deadline || '', priority: 'high', reminderEnabled: false, reminderDays: 1 },
@@ -617,7 +695,19 @@ const columns = [
   { id: 'done', title: '已完成' }
 ]
 
-// 基于当前日期计算状态
+const totalTasks = computed(() => {
+  return tasks.value.length
+})
+
+const completedTasks = computed(() => {
+  return tasks.value.filter(t => t.status === 'done').length
+})
+
+const overallProgress = computed(() => {
+  if (totalTasks.value === 0) return 0
+  return Math.round((completedTasks.value / totalTasks.value) * 100)
+})
+
 const isOverdue = (date) => {
   return new Date(date) < new Date(today)
 }
@@ -629,7 +719,6 @@ const isUrgent = (date) => {
   return diffDays <= 7 && diffDays > 0
 }
 
-// 3天内到期
 const isSoon = (date) => {
   const targetDate = new Date(date)
   const now = new Date()
@@ -638,19 +727,13 @@ const isSoon = (date) => {
 }
 
 const formatDate = (date) => {
-  // 格式：2025年3月15日
   const d = new Date(date)
   return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`
 }
 
 const getStatusColor = (status) => {
-  const colors = { completed: '#67c23a', 'in-progress': '#e6a23c', pending: '#909399' }
-  return colors[status] || '#909399'
-}
-
-const getStatusTagType = (status) => {
-  const types = { completed: 'success', 'in-progress': 'warning', pending: 'info' }
-  return types[status] || 'info'
+  const colors = { completed: '#059669', 'in-progress': '#D97706', pending: '#64748B' }
+  return colors[status] || '#64748B'
 }
 
 const getStatusLabel = (status) => {
@@ -663,18 +746,42 @@ const getMilestoneTitle = (id) => {
   return m ? m.title : 'Unknown'
 }
 
-// 显示即将到期任务
+const getMilestoneProgress = (milestone) => {
+  const total = milestone.tasks.length
+  if (total === 0) return 0
+  const completed = milestone.tasks.filter(t => t.completed).length
+  return Math.round((completed / total) * 100)
+}
+
 const showUpcomingTasks = () => {
   showOnlyUpcoming.value = true
   ElMessage.info('已筛选出7天内到期的任务')
 }
 
-// 显示全部任务
 const showAllTasks = () => {
   showOnlyUpcoming.value = false
 }
 
-// 浏览器通知相关
+const toggleColumnExpand = (columnId) => {
+  expandedColumns.value[columnId] = !expandedColumns.value[columnId]
+}
+
+const isColumnExpanded = (columnId) => {
+  return !!expandedColumns.value[columnId]
+}
+
+const getVisibleTasks = (columnId) => {
+  const allTasks = getColumnTasks(columnId)
+  if (isColumnExpanded(columnId)) return allTasks
+  return allTasks.slice(0, VISIBLE_TASK_COUNT)
+}
+
+const getHiddenCount = (columnId) => {
+  const allTasks = getColumnTasks(columnId)
+  const hidden = allTasks.length - VISIBLE_TASK_COUNT
+  return hidden > 0 ? hidden : 0
+}
+
 const requestNotificationPermission = async () => {
   if (!('Notification' in window)) {
     ElMessage.warning('当前浏览器不支持通知功能')
@@ -699,11 +806,8 @@ const requestNotificationPermission = async () => {
   }
 }
 
-// 发送任务提醒通知
 const sendTaskNotification = (task, daysBefore) => {
-  if (notificationPermission.value !== 'granted') {
-    return
-  }
+  if (notificationPermission.value !== 'granted') return
   const milestone = milestones.value.find(m => m.id === task.milestoneId)
   const milestoneTitle = milestone ? milestone.title : '未知阶段'
   new Notification('留学规划任务提醒', {
@@ -713,7 +817,6 @@ const sendTaskNotification = (task, daysBefore) => {
   })
 }
 
-// 检查任务提醒并发送通知
 const checkTaskReminders = () => {
   const now = new Date()
   tasks.value.forEach(task => {
@@ -721,36 +824,28 @@ const checkTaskReminders = () => {
     const deadline = new Date(task.deadline)
     const diffDays = Math.floor((deadline - now) / (1000 * 60 * 60 * 24))
     const reminderDays = task.reminderDays || 1
-    // 如果正好达到提醒天数（0表示当天提醒）
     if (diffDays === reminderDays || (diffDays === 0 && reminderDays === 0)) {
       sendTaskNotification(task, reminderDays)
     }
   })
 }
 
-// 初始化时请求通知权限
-
-// 监听数据变化自动保存到 localStorage（仅在数据加载完成后生效）
 watch([milestones, tasks, mode, currentView], () => {
   if (isLoaded && !isSaving.value) {
     saveToStorage()
   }
 }, { deep: true })
 
-onUnmounted(() => {
-  // 清理定时器（实际中不需要，页面关闭自动停止）
-})
+onUnmounted(() => {})
 
 const getColumnTasks = (columnId) => {
   let filtered = tasks.value.filter(t => t.status === columnId)
   if (showOnlyUpcoming.value) {
-    // 显示7天内到期的任务
     filtered = filtered.filter(t => isUpcoming(t.deadline))
   }
   return filtered
 }
 
-// 即将到期：7天内且未逾期
 const isUpcoming = (date) => {
   const targetDate = new Date(date)
   const now = new Date()
@@ -758,7 +853,6 @@ const isUpcoming = (date) => {
   return diffDays <= 7 && diffDays > 0
 }
 
-// 获取即将到期任务数量
 const upcomingTasksCount = computed(() => {
   return tasks.value.filter(t => t.status !== 'done' && isUpcoming(t.deadline)).length
 })
@@ -768,9 +862,7 @@ const selectMilestone = (milestone) => {
 }
 
 const handleModeChange = () => {
-  // 重新生成里程碑日期
   milestones.value = generateMilestones()
-  // 更新任务日期
   tasks.value.forEach(task => {
     const milestone = milestones.value.find(m => m.id === task.milestoneId)
     if (milestone) {
@@ -795,6 +887,7 @@ const deleteAllTasks = () => {
       milestone.tasks = []
     })
     ElMessage.success('已删除所有任务')
+    updateChart()
   }).catch(() => {})
 }
 
@@ -813,6 +906,7 @@ const resetAllTasks = () => {
     tasks.value = []
     selectedMilestone.value = milestones.value[0] || null
     ElMessage.success('已重置所有任务')
+    updateChart()
   }).catch(() => {})
 }
 
@@ -838,6 +932,7 @@ const generateSampleTasks = () => {
     })
     selectedMilestone.value = milestones.value[0] || null
     ElMessage.success(`已生成 ${tasks.value.length} 个示例任务`)
+    updateChart()
   }).catch(() => {})
 }
 
@@ -856,6 +951,7 @@ const toggleTask = (milestoneId, taskId) => {
   }
   
   ElMessage.success('任务状态已更新')
+  updateChart()
 }
 
 const dragStart = (task, fromColumn) => {
@@ -886,7 +982,6 @@ const showAddTaskToMilestone = () => {
 
 const showAddTask = (columnId) => {
   editingTask.value = null
-  // 根据列ID找到对应的里程碑
   const milestone = milestones.value.find(m => {
     const task = tasks.value.find(t => t.milestoneId === m.id)
     return task && task.status === columnId
@@ -923,10 +1018,7 @@ const saveTask = () => {
     return
   }
 
-  // 计算截止日期（如果为空则使用里程碑日期）
   const deadline = taskForm.deadline || milestones.value.find(m => m.id === taskForm.milestoneId)?.deadline || formatDateString(new Date())
-
-  // 计算提醒设置
   const reminderEnabled = taskForm.reminderEnabled
   const reminderDays = taskForm.reminderDays || 1
 
@@ -940,7 +1032,6 @@ const saveTask = () => {
       reminderEnabled,
       reminderDays
     })
-    // 同步更新里程碑中的任务
     const milestone = milestones.value.find(m => m.id === taskForm.milestoneId)
     if (milestone) {
       const mTask = milestone.tasks.find(t => t.id === editingTask.value.id)
@@ -951,6 +1042,7 @@ const saveTask = () => {
       }
     }
     ElMessage.success('任务已更新')
+    updateChart()
   } else {
     const newTask = {
       id: Date.now(),
@@ -964,13 +1056,12 @@ const saveTask = () => {
       reminderDays
     }
     tasks.value.push(newTask)
-    // 添加到里程碑
     const milestone = milestones.value.find(m => m.id === taskForm.milestoneId)
     if (milestone) {
       milestone.tasks.push({ ...newTask, completed: false })
     }
     ElMessage.success('任务已创建')
-    // 如果启用了提醒，立即检查是否需要通知
+    updateChart()
     if (reminderEnabled) {
       setTimeout(() => checkTaskReminders(), 100)
     }
@@ -984,7 +1075,6 @@ const deleteTask = (id) => {
       const idx = tasks.value.findIndex(t => t.id === id)
       if (idx > -1) {
         const task = tasks.value[idx]
-        // 从里程碑中也删除
         const milestone = milestones.value.find(m => m.id === task.milestoneId)
         if (milestone) {
           const mIdx = milestone.tasks.findIndex(t => t.id === id)
@@ -994,14 +1084,13 @@ const deleteTask = (id) => {
         }
         tasks.value.splice(idx, 1)
         ElMessage.success('任务已删除')
+        updateChart()
       }
     }).catch(() => {})
 }
 
-// ECharts图表相关
 const initChart = () => {
   if (!chartRef.value) return
-
   chartInstance = echarts.init(chartRef.value)
   updateChart()
   window.addEventListener('resize', () => {
@@ -1012,10 +1101,8 @@ const initChart = () => {
 const updateChart = () => {
   if (!chartInstance) return
 
-  // 构建数据：将里程碑和任务转换为时间线数据
   const categories = milestones.value.map(m => m.title)
 
-  // 准备每个里程碑的数据点
   const seriesData = milestones.value.map((milestone, index) => {
     const totalTasks = milestone.tasks.length
     const completedTasks = milestone.tasks.filter(t => t.completed).length
@@ -1034,14 +1121,8 @@ const updateChart = () => {
   })
 
   const option = {
-    title: {
-      text: '时间规划图表',
-      left: 'center',
-      textStyle: {
-        fontSize: 18,
-        color: '#303133'
-      }
-    },
+    color: ['#0F172A', '#64748B'],
+    animation: false,
     tooltip: {
       trigger: 'axis',
       formatter: (params) => {
@@ -1049,34 +1130,27 @@ const updateChart = () => {
         const milestone = milestones.value[data.dataIndex]
         const total = milestone.tasks.length
         const completed = milestone.tasks.filter(t => t.completed).length
-        return `
-          <strong>${milestone.title}</strong><br/>
-          截止日期：${formatDate(milestone.deadline)}<br/>
-          任务进度：${completed}/${total} (${total > 0 ? Math.round(completed/total*100) : 0}%)<br/>
-          状态：${getStatusLabel(milestone.status)}
-        `
+        return `<strong>${milestone.title}</strong><br/>截止日期：${formatDate(milestone.deadline)}<br/>任务进度：${completed}/${total} (${total > 0 ? Math.round(completed/total*100) : 0}%)<br/>状态：${getStatusLabel(milestone.status)}`
       }
     },
     grid: {
       left: '5%',
       right: '15%',
-      bottom: '10%',
-      top: '15%',
+      bottom: '12%',
+      top: '8%',
       containLabel: true
     },
     xAxis: {
       type: 'category',
       data: categories,
       axisLabel: {
-        color: '#606266',
+        color: '#475569',
         fontSize: 12,
         interval: 0,
         rotate: 0
       },
       axisLine: {
-        lineStyle: {
-          color: '#dcdfe6'
-        }
+        lineStyle: { color: '#E2E8F0' }
       }
     },
     yAxis: {
@@ -1086,17 +1160,13 @@ const updateChart = () => {
       max: 100,
       axisLabel: {
         formatter: '{value}%',
-        color: '#606266'
+        color: '#475569'
       },
       axisLine: {
-        lineStyle: {
-          color: '#dcdfe6'
-        }
+        lineStyle: { color: '#E2E8F0' }
       },
       splitLine: {
-        lineStyle: {
-          color: '#ebeef5'
-        }
+        lineStyle: { color: '#F1F5F9' }
       }
     },
     series: [
@@ -1108,11 +1178,11 @@ const updateChart = () => {
           color: (params) => {
             const status = milestones.value[params.dataIndex].status
             const colors = {
-              completed: '#67c23a',
-              'in-progress': '#e6a23c',
-              pending: '#909399'
+              completed: '#059669',
+              'in-progress': '#D97706',
+              pending: '#64748B'
             }
-            return colors[status] || '#909399'
+            return colors[status] || '#64748B'
           },
           borderRadius: [4, 4, 0, 0]
         },
@@ -1124,7 +1194,7 @@ const updateChart = () => {
             return `${m.tasks.filter(t => t.completed).length}/${m.tasks.length}`
           },
           fontSize: 12,
-          color: '#606266'
+          color: '#475569'
         }
       },
       {
@@ -1133,13 +1203,13 @@ const updateChart = () => {
         data: seriesData.map(d => d.value[1]),
         smooth: true,
         symbol: 'circle',
-        symbolSize: 12,
+        symbolSize: 10,
         lineStyle: {
-          width: 3,
-          color: 'var(--color-slate-700)'
+          width: 2,
+          color: '#475569'
         },
         itemStyle: {
-          color: 'var(--color-slate-700)',
+          color: '#0F172A',
           borderWidth: 2,
           borderColor: '#fff'
         }
@@ -1147,14 +1217,14 @@ const updateChart = () => {
     ],
     legend: {
       data: ['完成度', '状态线'],
-      bottom: 0
+      bottom: 0,
+      textStyle: { color: '#475569' }
     }
   }
 
   chartInstance.setOption(option)
 }
 
-// 监听视图切换
 watch(currentView, (newVal) => {
   if (newVal === 'chart') {
     nextTick(() => {
@@ -1163,32 +1233,21 @@ watch(currentView, (newVal) => {
   }
 })
 
-// 监听数据变化更新图表
-watch([milestones, tasks], () => {
-  if (currentView.value === 'chart' && chartInstance) {
-    updateChart()
-  }
-}, { deep: true })
-
 onMounted(() => {
-  console.log('Timeline loaded in mode:', mode.value)
-  // 从localStorage恢复数据
   loadFromStorage()
-  // 默认选中第一个里程碑
   if (milestones.value.length > 0) {
     selectedMilestone.value = milestones.value[0]
   }
-  // 请求通知权限
   requestNotificationPermission()
-  // 每小时检查一次提醒
   setInterval(checkTaskReminders, 60 * 60 * 1000)
-  // 立即检查一次
   checkTaskReminders()
-
-  // 初始化图表（如果当前是图表视图）
   if (currentView.value === 'chart') {
     initChart()
   }
+
+  nextTick(() => {
+    observeAnimations()
+  })
 })
 
 onUnmounted(() => {
@@ -1197,510 +1256,1197 @@ onUnmounted(() => {
     chartInstance?.resize()
   })
 })
+
+const observeAnimations = () => {
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('is-visible')
+      }
+    })
+  }, { threshold: 0.1 })
+
+  document.querySelectorAll('.animate-on-scroll').forEach(el => {
+    observer.observe(el)
+  })
+}
 </script>
 
 <style scoped>
+/* ==================== 页面根容器 ==================== */
 .timeline-page {
-  max-width: 1200px;
+  width: 100%;
+  min-height: 100vh;
+  background: var(--color-background);
+}
+
+/* ==================== Hero 区域 ==================== */
+.hero-section {
+  position: relative;
+  padding: var(--space-16) var(--space-10);
+  background: var(--gradient-hero);
+  overflow: hidden;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+}
+
+.hero-title {
+  font-size: var(--text-4xl);
+  font-weight: var(--font-bold);
+  color: var(--color-text-primary);
+  letter-spacing: -1px;
+  line-height: var(--leading-tight);
+  margin-bottom: var(--space-4);
+}
+
+.hero-subtitle {
+  font-size: var(--text-lg);
+  color: var(--color-text-secondary);
+  font-weight: var(--font-normal);
+  margin-bottom: var(--space-10);
+  max-width: 560px;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: var(--leading-relaxed);
+}
+
+.hero-stats {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-6);
+  flex-wrap: wrap;
+}
+
+.stat-card {
+  text-align: center;
+  padding: var(--space-4) var(--space-8);
+}
+
+.stat-value {
+  font-size: var(--text-3xl);
+  font-weight: var(--font-bold);
+  color: var(--color-solid);
+  letter-spacing: -1px;
+  line-height: 1;
+}
+
+.stat-value-accent {
+  color: var(--color-accent);
+}
+
+.stat-value-warning {
+  color: var(--color-warning);
+}
+
+.stat-suffix {
+  font-size: var(--text-lg);
+  font-weight: var(--font-medium);
+  color: var(--color-text-secondary);
+  margin-left: 2px;
+}
+
+.stat-label {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  margin-top: var(--space-2);
+  font-weight: var(--font-medium);
+}
+
+.stat-divider {
+  width: 1px;
+  height: 40px;
+  background: var(--color-border);
+}
+
+/* ==================== 主内容区 ==================== */
+.main-section {
+  padding: var(--space-10) var(--space-10) var(--space-20);
+}
+
+.data-container {
+  max-width: 1600px;
   margin: 0 auto;
 }
 
-.view-toggle {
+/* ==================== 工具栏 ==================== */
+.toolbar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
+  gap: var(--space-4);
+  margin-bottom: var(--space-8);
+  padding: var(--space-4) var(--space-6);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
   flex-wrap: wrap;
-  gap: 16px;
 }
 
-.toggle-left {
+.toolbar-left {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: var(--space-4);
 }
 
-.toggle-right {
+.toolbar-right {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
-/* 视图切换按钮默认状态 - 未选中时为白色背景 */
-.view-toggle :deep(.el-radio-button__inner) {
-  background-color: #fff;
-  color: #606266;
-  border-color: #dcdfe6;
-  transition: all 0.3s ease;
+.view-switcher {
+  display: inline-flex;
+  background: var(--color-slate-50);
+  border-radius: var(--radius-lg);
+  padding: 3px;
+  gap: 0;
 }
 
-/* 视图切换按钮 hover 状态 */
-.view-toggle :deep(.el-radio-button:hover .el-radio-button__inner) {
-  color: var(--color-slate-700);
+.view-btn {
+  padding: var(--space-2) var(--space-5);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--color-text-secondary);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
 }
 
-/* 视图切换按钮 active 状态 - 选中时为学术蓝 */
-.view-toggle :deep(.el-radio-button__original-radio:checked + .el-radio-button__inner) {
-  background-color: var(--color-slate-700);
-  border-color: var(--color-slate-700);
-  color: #fff;
-  box-shadow: 0 2px 8px rgba(30, 58, 95, 0.4);
+.view-btn:hover {
+  color: var(--color-text-primary);
+  background: var(--color-slate-100);
 }
 
-/* 修复对话框中优先级 radio button 的样式 */
-:deep(.el-radio-button.is-active .el-radio-button__inner) {
-  background-color: var(--color-slate-700) !important;
-  border-color: var(--color-slate-700) !important;
-  color: #fff !important;
-  box-shadow: -1px 0 0 0 var(--color-slate-700) !important;
+.view-btn.active {
+  background: var(--color-solid);
+  color: var(--color-text-inverse);
+  box-shadow: var(--shadow-sm);
 }
 
-/* 未选中的 radio button 样式 - 白色背景 */
-:deep(.el-radio-button:not(.is-active) .el-radio-button__inner) {
-  background-color: #fff !important;
-  color: #606266 !important;
+.mode-select {
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--color-text-secondary);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  outline: none;
+  transition: all var(--transition-fast);
+  min-height: 36px;
 }
 
-/* 未选中的 radio button hover 状态 */
-:deep(.el-radio-button:not(.is-active) .el-radio-button__inner:hover) {
-  color: var(--color-slate-700) !important;
+.mode-select:focus {
+  border-color: var(--color-solid);
+  box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.08);
 }
 
-/* 图表视图 */
-.chart-view {
-  margin-bottom: 24px;
+/* ==================== 按钮系统 ==================== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  padding: 10px 20px;
+  border-radius: var(--radius-lg);
+  border: none;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+  min-height: 40px;
+}
+
+.btn-sm {
+  padding: 6px 14px;
+  font-size: var(--text-sm);
+  min-height: 32px;
+}
+
+.btn-xs {
+  padding: 4px 10px;
+  font-size: var(--text-xs);
+  min-height: 28px;
+}
+
+.btn-primary {
+  background: var(--color-solid);
+  color: var(--color-text-inverse);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-primary:hover {
+  background: var(--color-solid-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--color-text-primary);
+  border: 1.5px solid var(--color-border);
+}
+
+.btn-secondary:hover {
+  border-color: var(--color-solid);
+  color: var(--color-solid);
+  transform: translateY(-1px);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--color-text-secondary);
+  border: none;
+}
+
+.btn-ghost:hover {
+  background: var(--color-slate-100);
+  color: var(--color-text-primary);
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border);
+}
+
+.btn-outline:hover {
+  border-color: var(--color-solid);
+  background: var(--color-slate-50);
+}
+
+.btn-danger-text:hover {
+  color: var(--color-danger);
+  background: var(--color-danger-bg);
+}
+
+/* ==================== 图表区域 ==================== */
+.chart-area {
 }
 
 .chart-card {
-  padding: 20px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-xl);
+  padding: var(--space-8);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--transition-normal);
 }
 
-.timeline-chart {
+.chart-card:hover {
+  box-shadow: var(--shadow-lg);
+}
+
+.card-title {
+  font-size: var(--text-xl);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-primary);
+  margin: 0 0 var(--space-6) 0;
+}
+
+.chart-canvas {
   width: 100%;
-  height: 400px;
+  height: 420px;
+}
+
+/* ==================== 时间线区域 ==================== */
+.timeline-area {
+  animation: fadeUp 0.5s ease forwards;
+}
+
+.timeline-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-xl);
+  padding: var(--space-8);
+  box-shadow: var(--shadow-sm);
 }
 
 .timeline-layout {
   display: grid;
-  grid-template-columns: 1fr 400px;
-  gap: 24px;
-  min-height: 500px;
+  grid-template-columns: 1fr 380px;
+  gap: var(--space-8);
+  min-height: 520px;
 }
 
-/* 左侧时间线 */
+/* 左侧时间线容器 */
 .timeline-container {
   position: relative;
-  padding-left: 30px;
+  padding-left: var(--space-8);
 }
 
 .timeline-container::before {
   content: '';
   position: absolute;
-  left: 10px;
+  left: 11px;
   top: 0;
   bottom: 0;
   width: 2px;
-  background: linear-gradient(to bottom, #dcdfe6, #dcdfe6 100%);
+  background: var(--color-border);
 }
 
+/* 里程碑项 */
 .milestone-item {
   position: relative;
-  margin-bottom: 24px;
-  padding-left: 24px;
+  margin-bottom: var(--space-6);
+  padding-left: var(--space-6);
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: transform var(--transition-fast);
 }
 
 .milestone-item:hover {
-  transform: translateX(4px);
+  transform: translateX(3px);
 }
 
 .milestone-item.is-selected .milestone-content {
-  border: 2px solid var(--color-slate-700);
-  box-shadow: 0 4px 16px rgba(30, 58, 95, 0.2);
+  border-color: var(--color-solid);
+  box-shadow: var(--shadow-lg);
 }
 
 .milestone-item.is-overdue .milestone-date {
-  color: #f56c6c;
+  color: var(--color-danger);
 }
 
 .milestone-marker {
   position: absolute;
-  left: -14px;
-  top: 12px;
+  left: calc(-1 * var(--space-8) + 3px);
+  top: 14px;
   width: 28px;
   height: 28px;
-  background: white;
-  border-radius: 50%;
+  background: var(--color-surface);
+  border-radius: var(--radius-full);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-md);
   z-index: 1;
-  transition: transform 0.2s;
+  transition: box-shadow var(--transition-fast);
 }
 
 .milestone-item:hover .milestone-marker {
-  transform: scale(1.1);
+  box-shadow: var(--shadow-lg);
 }
 
 .milestone-content {
-  background: white;
-  border-radius: 12px;
-  padding: 16px 20px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-  transition: all 0.3s;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-xl);
+  padding: var(--space-5) var(--space-6);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--transition-normal), border-color var(--transition-normal);
+}
+
+.milestone-content:hover {
+  box-shadow: var(--shadow-md);
+  border-color: var(--color-border);
 }
 
 .milestone-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
+  margin-bottom: var(--space-2);
+  gap: var(--space-3);
 }
 
 .milestone-header h4 {
   margin: 0;
-  font-size: 16px;
-  font-weight: 600;
-  color: #303133;
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-primary);
+}
+
+.status-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px;
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  font-weight: var(--font-medium);
+  letter-spacing: 0.25px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.status-completed {
+  background: var(--color-success-bg);
+  color: var(--color-success);
+}
+
+.status-in-progress {
+  background: var(--color-warning-bg);
+  color: var(--color-warning);
+}
+
+.status-pending {
+  background: var(--color-slate-100);
+  color: var(--color-slate-500);
 }
 
 .milestone-date {
-  color: var(--color-slate-700);
-  font-weight: 600;
-  margin-bottom: 8px;
-  font-size: 14px;
+  color: var(--color-text-secondary);
+  font-weight: var(--font-semibold);
+  margin-bottom: var(--space-2);
+  font-size: var(--text-sm);
 }
 
 .milestone-desc {
-  color: #606266;
-  margin: 0;
-  font-size: 13px;
-  line-height: 1.5;
+  color: var(--color-text-secondary);
+  margin: 0 0 var(--space-3) 0;
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+}
+
+.milestone-progress {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.progress-bar {
+  flex: 1;
+  height: 6px;
+  background: var(--color-slate-100);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--color-solid);
+  border-radius: var(--radius-full);
+  transition: width var(--transition-normal);
+}
+
+.progress-text {
+  font-size: var(--text-xs);
+  font-weight: var(--font-medium);
+  color: var(--color-text-tertiary);
+  min-width: 32px;
+  text-align: right;
 }
 
 /* 右侧详情面板 */
 .detail-panel {
-  background: white;
-  border-radius: 12px;
-  padding: 24px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
+  box-shadow: var(--shadow-sm);
   position: sticky;
-  top: 20px;
-  max-height: calc(100vh - 150px);
+  top: 24px;
+  max-height: calc(100vh - 160px);
   overflow-y: auto;
 }
 
-.detail-panel h3 {
-  margin: 0 0 12px 0;
-  font-size: 18px;
-  color: #303133;
-  padding-bottom: 12px;
-  border-bottom: 1px solid #ebeef5;
+.detail-header {
+  margin-bottom: var(--space-4);
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.detail-header h3 {
+  margin: 0 0 var(--space-2) 0;
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-primary);
 }
 
 .detail-date {
-  color: var(--color-slate-700);
-  font-weight: 600;
-  margin-bottom: 12px;
-  font-size: 14px;
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  font-weight: var(--font-medium);
 }
 
 .detail-desc {
-  color: #606266;
-  margin-bottom: 20px;
-  line-height: 1.6;
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-6);
+  line-height: var(--leading-relaxed);
+  font-size: var(--text-sm);
 }
 
 .detail-tasks {
-  margin-top: 16px;
+  margin-top: var(--space-4);
 }
 
-.detail-tasks h5 {
-  margin: 0 0 12px 0;
-  font-size: 14px;
-  color: #303133;
+.tasks-summary {
+  margin-bottom: var(--space-4);
 }
 
-.detail-tasks ul {
+.tasks-count {
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-primary);
+}
+
+.task-list {
   list-style: none;
   padding: 0;
   margin: 0;
 }
 
-.detail-tasks li {
+.task-item {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 0;
-  border-bottom: 1px dashed #ebeef5;
+  gap: var(--space-3);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--color-border-light);
 }
 
-.detail-tasks li:last-child {
+.task-item:last-child {
   border-bottom: none;
 }
 
-.detail-tasks li.completed span {
+.task-item.completed .task-name {
   text-decoration: line-through;
-  color: #909399;
+  color: var(--color-text-muted);
+}
+
+.task-checkbox {
+  position: relative;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.task-checkbox input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.checkbox-custom {
+  display: block;
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.task-checkbox input:checked + .checkbox-custom {
+  background: var(--color-solid);
+  border-color: var(--color-solid);
+}
+
+.checkbox-custom::after {
+  content: '';
+  position: absolute;
+  display: none;
+  width: 5px;
+  height: 9px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  top: 3px;
+  left: 6px;
+  transform: rotate(45deg);
+}
+
+.task-checkbox input:checked + .checkbox-custom::after {
+  display: block;
+}
+
+.task-name {
+  font-size: var(--text-sm);
+  color: var(--color-text-primary);
+  flex: 1;
 }
 
 .empty-tasks {
-  color: #909399;
+  color: var(--color-text-tertiary);
   text-align: center;
-  padding: 20px;
-  font-size: 14px;
+  padding: var(--space-6);
+  font-size: var(--text-sm);
 }
 
 .panel-actions {
-  margin-top: 20px;
-  padding-top: 16px;
-  border-top: 1px solid #ebeef5;
+  margin-top: var(--space-6);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border-light);
 }
 
+/* 空状态 */
 .empty-selection {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   min-height: 400px;
-  color: #909399;
-  background: rgba(255, 255, 255, 0.5);
-  border-radius: 12px;
-  border: 2px dashed #dcdfe6;
+  color: var(--color-text-tertiary);
+  background: var(--color-surface-muted);
+  border-radius: var(--radius-xl);
+  border: 2px dashed var(--color-border);
 }
 
-.empty-selection p {
-  margin-top: 16px;
-  font-size: 14px;
+.empty-icon {
+  margin-bottom: var(--space-4);
+  color: var(--color-slate-300);
 }
 
-/* 看板工具栏 */
+.empty-title {
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-2);
+}
+
+.empty-desc {
+  font-size: var(--text-sm);
+  color: var(--color-text-tertiary);
+  margin: 0;
+}
+
+/* ==================== 看板区域 ==================== */
+.kanban-area {
+  animation: fadeUp 0.5s ease forwards;
+}
+
 .kanban-toolbar {
   display: flex;
   align-items: center;
-  gap: 16px;
-  margin-bottom: 20px;
-  padding: 12px 16px;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+  padding: var(--space-3) var(--space-5);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
 }
 
-.upcoming-count {
-  color: #e6a23c;
-  font-size: 14px;
-  font-weight: 500;
+.kanban-toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
 }
 
-/* 看板布局 */
+.upcoming-hint {
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--color-warning);
+}
+
 .kanban-board {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
+  gap: var(--space-5);
 }
 
 .kanban-column {
-  background: #f5f7fa;
-  border-radius: 12px;
-  padding: 16px;
-  min-height: 400px;
+  background: var(--color-surface-muted);
+  border-radius: var(--radius-xl);
+  padding: var(--space-4) var(--space-5);
 }
 
 .column-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
-  padding-bottom: 12px;
-  border-bottom: 2px solid #e4e7ed;
+  margin-bottom: var(--space-4);
+  padding-bottom: var(--space-3);
+  border-bottom: 2px solid var(--color-border);
 }
 
 .column-header h4 {
   margin: 0;
-  font-size: 16px;
-  color: #303133;
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-primary);
+  letter-spacing: 0.3px;
 }
 
-.task-count {
-  background: var(--color-slate-700);
-  color: white;
-  padding: 2px 8px;
-  border-radius: 10px;
-  font-size: 12px;
+.column-count {
+  background: var(--color-solid);
+  color: var(--color-text-inverse);
+  padding: 2px 10px;
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  min-width: 24px;
+  text-align: center;
 }
 
 .column-content {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
-/* 任务卡片样式 */
+/* 任务卡片 */
 .task-card {
-  background: white;
-  border-radius: 8px;
-  padding: 12px 16px;
-  margin-bottom: 0;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  transition: all 0.3s;
-  border-left: 3px solid transparent;
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--color-border-light);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.25s ease, background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+  border-left: 4px solid transparent;
   cursor: grab;
+  position: relative;
+  overflow: hidden;
+}
+
+.task-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(15,23,42,0.02) 0%, transparent 60%);
+  pointer-events: none;
 }
 
 .task-card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
-  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--color-border);
+  transform: translateY(-1px);
+  background: var(--color-surface);
 }
 
 .task-card:active {
   cursor: grabbing;
+  transform: translateY(0);
+  box-shadow: var(--shadow-sm);
 }
 
-/* 3天内到期 - 黄色高亮 */
 .task-card.is-soon {
-  background: #fdf6ec;
-  border-left-color: #e6a23c;
+  background: var(--color-accent-subtle);
+  border-left-color: var(--color-accent);
+  border-color: rgba(217,119,6,0.15);
 }
 
-.task-card.is-soon .task-title {
-  color: #846d1a;
+.task-card.is-soon:hover {
+  border-color: rgba(217,119,6,0.3);
 }
 
-/* 7天内到期 - 橙色 */
 .task-card.is-urgent {
-  background: #fef0f0;
-  border-left-color: #f56c6c;
+  background: var(--color-danger-bg);
+  border-left-color: var(--color-danger);
+  border-color: rgba(239,68,68,0.15);
 }
 
-/* 已逾期 - 红色高亮 */
+.task-card.is-urgent:hover {
+  border-color: rgba(239,68,68,0.3);
+}
+
 .task-card.is-overdue {
-  background: #fef0f0;
-  border-left-color: #f56c6c;
+  background: var(--color-danger-bg);
+  border-left-color: var(--color-danger);
+  border-color: rgba(239,68,68,0.15);
 }
 
-.task-card.is-overdue .task-title {
-  color: #c0392b;
-}
-
-.task-header {
+.task-card-header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-  gap: 8px;
+  align-items: flex-start;
+  margin-bottom: var(--space-2);
+  gap: var(--space-3);
+  position: relative;
+  z-index: 1;
 }
 
 .task-title {
-  font-weight: 600;
-  font-size: 14px;
-  color: #303133;
+  font-weight: var(--font-semibold);
+  font-size: var(--text-sm);
+  color: var(--color-text-primary);
+  line-height: 1.4;
 }
 
-.tag-group {
+.task-tags {
   display: flex;
-  gap: 4px;
+  gap: var(--space-1);
   flex-wrap: wrap;
+  flex-shrink: 0;
 }
 
-.task-milestone {
-  font-size: 12px;
-  color: #909399;
-  margin: 0 0 8px 0;
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: var(--font-medium);
+  letter-spacing: 0.25px;
+  white-space: nowrap;
 }
 
-.task-deadline {
+.tag-danger {
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
+}
+
+.tag-warning {
+  background: var(--color-warning-bg);
+  color: var(--color-warning);
+}
+
+.tag-info {
+  background: var(--color-info-bg);
+  color: var(--color-info);
+}
+
+.task-card-meta {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--space-2);
   font-size: 12px;
-  color: #606266;
-  margin: 0 0 8px 0;
+  color: var(--color-text-tertiary);
+  position: relative;
+  z-index: 1;
+}
+
+.task-meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.task-meta-sep {
+  opacity: 0.35;
 }
 
 .task-actions {
   display: flex;
-  gap: 8px;
+  gap: var(--space-2);
   justify-content: flex-end;
+  padding-top: var(--space-3);
+  margin-top: var(--space-2);
+  border-top: 1px solid var(--color-border-light);
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-height 0.25s ease, opacity 0.2s ease, margin-top 0.2s ease, padding-top 0.2s ease;
+  position: relative;
+  z-index: 1;
+}
+
+.task-card:hover .task-actions {
+  max-height: 40px;
+  opacity: 1;
+}
+
+.expand-btn {
+  width: 100%;
+  border: none;
+  background: var(--color-slate-50);
+  color: var(--color-text-secondary);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  font-size: var(--text-xs);
+  font-weight: var(--font-medium);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  margin-top: var(--space-2);
+}
+
+.expand-btn:hover {
+  background: var(--color-slate-100);
+  color: var(--color-solid);
 }
 
 .add-task-btn {
   width: 100%;
-  border-style: dashed;
+  border: 2px dashed var(--color-border);
   background: transparent;
-  color: #909399;
-  padding: 12px;
+  color: var(--color-text-tertiary);
+  padding: var(--space-3);
+  border-radius: var(--radius-lg);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
 }
 
 .add-task-btn:hover {
-  background: #f5f7fa;
-  color: var(--color-slate-700);
+  border-color: var(--color-solid);
+  color: var(--color-solid);
+  background: var(--color-slate-50);
 }
 
-/* 响应式看板 */
-@media (max-width: 1024px) {
-  .kanban-board {
-    grid-template-columns: 1fr;
+/* ==================== 自定义对话框 ==================== */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-4);
+}
+
+.modal-content {
+  background: var(--color-surface);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-2xl);
+  width: 100%;
+  max-width: 520px;
+  max-height: 85vh;
+  overflow-y: auto;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-6) var(--space-6) 0;
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-primary);
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+  padding: var(--space-1);
+  line-height: 1;
+  transition: color var(--transition-fast);
+}
+
+.modal-close:hover {
+  color: var(--color-text-primary);
+}
+
+.modal-body {
+  padding: var(--space-6);
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  padding: 0 var(--space-6) var(--space-6);
+}
+
+/* 表单元素 */
+.form-group {
+  margin-bottom: var(--space-5);
+}
+
+.form-label {
+  display: block;
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-2);
+}
+
+.form-input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: var(--text-base);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  transition: all var(--transition-fast);
+  min-height: 44px;
+  outline: none;
+  box-sizing: border-box;
+  font-family: inherit;
+}
+
+.form-input:focus {
+  border-color: var(--color-solid);
+  box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.08);
+}
+
+.form-input::placeholder {
+  color: var(--color-text-muted);
+}
+
+.form-select {
+  appearance: auto;
+  cursor: pointer;
+}
+
+.form-textarea {
+  resize: vertical;
+  min-height: 80px;
+}
+
+.form-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--color-text-primary);
+  cursor: pointer;
+}
+
+.form-checkbox {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--color-solid);
+  cursor: pointer;
+}
+
+.priority-options {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.priority-btn {
+  flex: 1;
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--color-text-secondary);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.priority-btn.active {
+  background: var(--color-solid);
+  color: var(--color-text-inverse);
+  border-color: var(--color-solid);
+}
+
+.priority-btn:hover:not(.active) {
+  border-color: var(--color-solid);
+  color: var(--color-solid);
+}
+
+/* 对话框动画 */
+.dialog-fade-enter-active,
+.dialog-fade-leave-active {
+  transition: opacity 0.25s ease;
+}
+
+.dialog-fade-enter-active .modal-content,
+.dialog-fade-leave-active .modal-content {
+  transition: transform 0.25s ease;
+}
+
+.dialog-fade-enter-from,
+.dialog-fade-leave-to {
+  opacity: 0;
+}
+
+.dialog-fade-enter-from .modal-content {
+  transform: scale(0.95) translateY(10px);
+}
+
+.dialog-fade-leave-to .modal-content {
+  transform: scale(0.95) translateY(10px);
+}
+
+/* ==================== 响应式 ==================== */
+@media (max-width: 1200px) {
+  .hero-section {
+    padding: var(--space-12) var(--space-6);
   }
-}
 
-/* 响应式 */
-@media (max-width: 1024px) {
+  .main-section {
+    padding: var(--space-6);
+  }
+
   .timeline-layout {
     grid-template-columns: 1fr;
   }
 
   .detail-panel {
-    position: fixed;
-    right: 0;
-    top: 0;
-    width: 400px;
-    height: 100vh;
-    max-height: 100vh;
-    border-radius: 0;
-    z-index: 1000;
-    box-shadow: -4px 0 20px rgba(0, 0, 0, 0.15);
-    transform: translateX(100%);
-    transition: transform 0.3s;
-  }
-
-  .detail-panel.show {
-    transform: translateX(0);
+    position: static;
+    max-height: none;
   }
 }
 
 @media (max-width: 768px) {
-  .view-toggle {
+  .hero-title {
+    font-size: var(--text-3xl);
+  }
+
+  .hero-stats {
+    gap: var(--space-4);
+  }
+
+  .stat-card {
+    padding: var(--space-3) var(--space-5);
+  }
+
+  .toolbar {
     flex-direction: column;
-    gap: 12px;
     align-items: stretch;
   }
 
-  .toggle-left {
+  .toolbar-left,
+  .toolbar-right {
     flex-direction: column;
-    align-items: stretch;
+    gap: var(--space-3);
   }
 
-  .toggle-left .el-radio-group {
+  .view-switcher {
+    width: 100%;
     justify-content: center;
   }
 
-  .toggle-left .el-select {
-    align-self: center;
+  .view-btn {
+    flex: 1;
+    text-align: center;
   }
 
-  .toggle-right {
+  .toolbar-right {
+    justify-content: stretch;
+  }
+
+  .toolbar-right .btn {
+    width: 100%;
     justify-content: center;
-    flex-wrap: wrap;
   }
 
-  .milestone-content {
-    padding: 12px 16px;
+  .kanban-board {
+    grid-template-columns: 1fr;
   }
 
-  .milestone-header h4 {
-    font-size: 15px;
+  .kanban-column {
+    min-height: 280px;
+  }
+
+  .main-section {
+    padding: var(--space-5);
+  }
+}
+
+@keyframes fadeUp {
+  from {
+    transform: translateY(16px);
+  }
+  to {
+    transform: translateY(0);
   }
 }
 </style>

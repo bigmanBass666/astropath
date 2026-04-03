@@ -242,6 +242,7 @@
 import { ref, computed, watch } from 'vue'
 import { CircleCheck, Warning, InfoFilled, Position, ChatDotRound, View, Loading, Document } from '@element-plus/icons-vue'
 import { schoolsData } from '@/utils/recommendationEngine'
+import { hasReasoningContent, hasMainContent, getReasoningContent, getMainContent } from '@/utils/streamParser'
 
 const props = defineProps({
   modelValue: {
@@ -285,38 +286,6 @@ const school = computed(() => {
   if (!props.recommendation) return null
   return schoolsData.find(s => s.id === props.recommendation.schoolId)
 })
-
-// 检查是否有思考过程内容
-const hasReasoningContent = (content) => {
-  if (!content) return false
-  const separatorIndex = content.indexOf('\n\n---\n\n')
-  if (separatorIndex === -1) return false
-  return separatorIndex > 0
-}
-
-// 检查是否有正式输出内容
-const hasMainContent = (content) => {
-  if (!content) return false
-  const separatorIndex = content.indexOf('\n\n---\n\n')
-  if (separatorIndex === -1) return true
-  return separatorIndex < content.length - 8
-}
-
-// 获取思考过程内容
-const getReasoningContent = (content) => {
-  if (!content) return ''
-  const separatorIndex = content.indexOf('\n\n---\n\n')
-  if (separatorIndex === -1) return ''
-  return content.slice(0, separatorIndex).trim()
-}
-
-// 获取正式输出内容
-const getMainContent = (content) => {
-  if (!content) return ''
-  const separatorIndex = content.indexOf('\n\n---\n\n')
-  if (separatorIndex === -1) return content
-  return content.slice(separatorIndex + 8).trim()
-}
 
 const getProbabilityColor = (probability) => {
   if (probability.includes('高') || probability.includes('90') || probability.includes('80')) {
@@ -387,7 +356,7 @@ watch(() => props.modelValue, (val) => {
   padding: var(--space-4);
   margin-bottom: var(--space-5);
   text-align: center;
-  border: 1px solid var(--color-slate-100);
+  border: 1px solid var(--color-border-light);
 }
 
 .assessment-header {
@@ -449,20 +418,9 @@ watch(() => props.modelValue, (val) => {
   justify-content: center;
 }
 
-.section-icon.success {
-  background: var(--color-success);
-  color: white;
-}
-
-.section-icon.warning {
-  background: var(--color-warning);
-  color: white;
-}
-
-.section-icon.info {
-  background: var(--color-info);
-  color: white;
-}
+.section-icon.success { background: var(--color-success); color: white; }
+.section-icon.warning { background: var(--color-warning); color: white; }
+.section-icon.info { background: var(--color-info); color: white; }
 
 .analysis-list {
   margin: 0;
@@ -471,13 +429,7 @@ watch(() => props.modelValue, (val) => {
   line-height: var(--leading-relaxed);
 }
 
-.analysis-list li {
-  margin-bottom: var(--space-2);
-}
-
-.analysis-list.warning li {
-  color: var(--color-warning-dark);
-}
+.analysis-list li { margin-bottom: var(--space-2); }
 
 .follow-up-section {
   margin-top: var(--space-6);
@@ -495,8 +447,8 @@ watch(() => props.modelValue, (val) => {
 }
 
 .input-box.is-focused {
-  border-color: var(--color-slate-700);
-  box-shadow: var(--shadow-md), 0 0 0 3px var(--color-slate-100);
+  border-color: var(--color-solid);
+  box-shadow: var(--shadow-md), 0 0 0 3px rgba(15, 23, 42, 0.08);
 }
 
 .follow-up-input :deep(.el-input__wrapper) {
@@ -520,7 +472,7 @@ watch(() => props.modelValue, (val) => {
 }
 
 .follow-up-input :deep(.el-input-group__append .el-button:hover) {
-  transform: scale(1.1);
+  transform: translateY(-1px);
 }
 
 .follow-up-response {
@@ -528,15 +480,15 @@ watch(() => props.modelValue, (val) => {
   padding: var(--space-4);
   background: var(--color-slate-50);
   border-radius: var(--radius-lg);
-  border-left: 3px solid var(--color-slate-700);
+  border-left: 3px solid var(--color-solid);
 }
 
 .response-header {
   display: flex;
   align-items: center;
-  gap: var(--space-1);
+  gap: var(--space-2);
   margin-bottom: var(--space-2);
-  color: var(--color-slate-700);
+  color: var(--color-slate-600);
   font-size: var(--text-xs);
   font-weight: var(--font-semibold);
 }
@@ -548,12 +500,12 @@ watch(() => props.modelValue, (val) => {
   line-height: var(--leading-normal);
 }
 
-/* 加载状态样式 */
+/* ====== 加载状态 ====== */
 .analysis-loading {
   min-height: 300px;
 }
 
-/* 流式输出样式 */
+/* ====== 流式输出样式 ====== */
 .streaming-content {
   margin-top: var(--space-4);
 }
@@ -561,13 +513,13 @@ watch(() => props.modelValue, (val) => {
 .streaming-label {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 13px;
-  font-weight: 500;
-  margin-bottom: 12px;
+  gap: var(--space-2);
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  margin-bottom: var(--space-3);
 }
 
-.streaming-icon {
+.stream-icon {
   animation: spin 1s linear infinite;
 }
 
@@ -579,109 +531,76 @@ watch(() => props.modelValue, (val) => {
 .streaming-text {
   max-height: 200px;
   overflow-y: auto;
-  background: white;
-  border-radius: 8px;
-  padding: 12px;
-  border: 1px solid #e2e8f0;
+  background: var(--color-background-alt);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border-light);
 }
 
 .streaming-text pre {
   margin: 0;
-  font-family: 'Consolas', 'Monaco', monospace;
-  font-size: 12px;
-  line-height: 1.6;
+  font-family: var(--font-family-mono);
+  font-size: var(--text-xs);
+  line-height: var(--leading-relaxed);
   white-space: pre-wrap;
   word-break: break-all;
+  color: var(--color-slate-700);
 }
 
-.streaming-text::-webkit-scrollbar {
-  width: 4px;
-}
+.streaming-text::-webkit-scrollbar { width: 4px; }
+.streaming-text::-webkit-scrollbar-thumb { background: var(--color-slate-300); border-radius: 2px; }
 
-.streaming-text::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 2px;
-}
+/* 思考过程 — 用 info 色系区分 */
+.reasoning-section { margin-bottom: var(--space-4); }
 
-/* 思考过程样式 */
-.reasoning-section {
-  margin-bottom: 16px;
-}
-
-.reasoning-label {
-  color: #8b5cf6;
-}
+.reasoning-label { color: var(--color-info); }
 
 .reasoning-text {
-  background: linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%);
-  border-color: #d8b4fe;
+  background: var(--color-info-bg);
+  border-color: var(--color-info-light);
 }
 
-.reasoning-text pre {
-  color: #6b21a8;
-}
-
-/* 正式输出样式 */
-.main-content-section {
-  margin-top: 16px;
-}
+/* 正式输出 — 用 success 色系区分 */
+.main-content-section { margin-top: 0; }
 
 .main-content-section.has-reasoning {
-  border-top: 1px dashed #cbd5e1;
-  padding-top: 16px;
+  border-top: 1px dashed var(--color-border-light);
+  padding-top: var(--space-4);
+  margin-top: var(--space-4);
 }
 
-.main-label {
-  color: #059669;
-}
+.main-label { color: var(--color-success); }
 
 .main-text {
-  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
-  border-color: #86efac;
+  background: var(--color-success-bg);
+  border-color: var(--color-success-light);
 }
 
-.main-text pre {
-  color: #166534;
-}
-
-/* 骨架屏样式 */
-.skeleton-loading {
-  padding: var(--space-4);
-}
+/* ====== 骨架屏 (无动画，静态占位) ====== */
+.skeleton-loading { padding: var(--space-4); }
 
 .skeleton-section {
   margin-bottom: var(--space-4);
   padding: var(--space-4);
   border-radius: var(--radius-xl);
-  background: var(--color-background);
-  border: 1px solid var(--color-border);
+  background: var(--color-background-alt);
+  border: 1px solid var(--color-border-light);
 }
 
 .skeleton-section-title {
   height: 20px;
   width: 80px;
   margin-bottom: var(--space-3);
-  background: linear-gradient(90deg, var(--color-border-light) 25%, var(--color-border) 50%, var(--color-border-light) 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
+  background: var(--color-slate-200);
   border-radius: var(--radius-sm);
 }
 
 .skeleton-line {
-  height: 16px;
-  background: linear-gradient(90deg, var(--color-border-light) 25%, var(--color-border) 50%, var(--color-border-light) 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
+  height: 14px;
+  background: var(--color-slate-200);
   border-radius: var(--radius-md);
   margin-bottom: var(--space-2);
 }
 
-.skeleton-line.short {
-  width: 60%;
-}
-
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
+.skeleton-line.short { width: 60%; }
 </style>

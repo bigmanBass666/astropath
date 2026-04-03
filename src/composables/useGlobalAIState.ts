@@ -24,7 +24,6 @@ export interface MessageActionsConfig {
   regenerate: boolean
   feedback: boolean
   stopButton: boolean
-  showOnHover: boolean
 }
 
 export interface ActiveStreamInfo {
@@ -102,7 +101,7 @@ const DEFAULT_CONFIG: AIConfig = {
   maxConcurrent: 3,
   retryAttempts: 3,
   retryDelay: 1000,
-  timeout: 120000,
+  timeout: 90000,
   waitingState: {
     phases: {
       connecting: { text: '正在连接...', delay: 800 },
@@ -129,8 +128,7 @@ const DEFAULT_CONFIG: AIConfig = {
     copy: true,
     regenerate: true,
     feedback: false,
-    stopButton: true,
-    showOnHover: true
+    stopButton: true
   }
 }
 
@@ -144,7 +142,35 @@ const globalState = reactive<GlobalAIState>({
 const STATE_KEY = 'ai_stream_state_v2'
 const CONFIG_KEY = 'ai_config_v2'
 
+let saveDebounceTimer: ReturnType<typeof setTimeout> | null = null
+let isStreamingActive = false
+const MAX_COMPLETED_TASKS = 10
+
+function scheduleSave(immediate = false) {
+  if (saveDebounceTimer) clearTimeout(saveDebounceTimer)
+  if (immediate || !isStreamingActive) {
+    saveStateToStorage()
+  } else {
+    saveDebounceTimer = setTimeout(() => {
+      saveStateToStorage()
+      saveDebounceTimer = null
+    }, 500)
+  }
+}
+
+function setStreamingActive(active: boolean) {
+  isStreamingActive = active
+}
+
 function loadStateFromStorage() {
+  if (activeStreamRef.value) {
+    const taskId = activeStreamRef.value.taskId
+    const task = globalState.tasks[taskId]
+    if (!task || (task.state !== 'thinking' && task.state !== 'streaming' && task.state !== 'connecting' && task.state !== 'queued')) {
+      streamActionsMap.delete(taskId)
+      activeStreamRef.value = null
+    }
+  }
   try {
     const saved = localStorage.getItem(STATE_KEY)
     if (saved) {
@@ -245,14 +271,14 @@ export function useGlobalAIState() {
       queuePosition: 0
     }
     globalState.tasks[taskId] = task
-    saveStateToStorage()
+    scheduleSave()
     return task
   }
 
   const updateTask = (taskId: string, updates: Partial<AIStreamTask>) => {
     if (globalState.tasks[taskId]) {
       Object.assign(globalState.tasks[taskId], updates, { timestamp: Date.now() })
-      saveStateToStorage()
+      scheduleSave()
     }
   }
 
@@ -302,7 +328,7 @@ export function useGlobalAIState() {
       }
     })
     
-    saveStateToStorage()
+    scheduleSave()
     return taskId
   }
 
@@ -342,7 +368,7 @@ export function useGlobalAIState() {
         priority: 0,
         queuePosition: 0
       }
-      saveStateToStorage()
+      scheduleSave(true)
     }
   }
 
@@ -351,6 +377,7 @@ export function useGlobalAIState() {
   }
 
   const startThinking = (taskId: string) => {
+    setStreamingActive(true)
     updateTask(taskId, { state: 'thinking', showReasoning: true })
   }
 
@@ -363,7 +390,7 @@ export function useGlobalAIState() {
     if (task) {
       task.reasoning += content
       task.timestamp = Date.now()
-      saveStateToStorage()
+      scheduleSave()
     }
   }
 
@@ -375,21 +402,39 @@ export function useGlobalAIState() {
         task.showReasoning = false
       }
       task.timestamp = Date.now()
-      saveStateToStorage()
+      scheduleSave()
+    }
+  }
+
+  const cleanupOldTasks = () => {
+    const terminalStates = new Set(['completed', 'error'])
+    const terminalTaskIds = Object.keys(globalState.tasks).filter(id => 
+      terminalStates.has(globalState.tasks[id].state)
+    )
+    
+    if (terminalTaskIds.length > MAX_COMPLETED_TASKS) {
+      const toRemove = terminalTaskIds.slice(0, terminalTaskIds.length - MAX_COMPLETED_TASKS)
+      toRemove.forEach(id => delete globalState.tasks[id])
     }
   }
 
   const completeTask = (taskId: string) => {
+    setStreamingActive(false)
     updateTask(taskId, { state: 'completed', showReasoning: false })
+    cleanupOldTasks()
+    scheduleSave(true)
     releaseSlot()
   }
 
   const errorTask = (taskId: string, error: string) => {
+    setStreamingActive(false)
     const task = globalState.tasks[taskId]
     if (task) {
       task.retryCount++
     }
     updateTask(taskId, { state: 'error', error })
+    cleanupOldTasks()
+    scheduleSave(true)
     releaseSlot()
   }
 
@@ -405,19 +450,19 @@ export function useGlobalAIState() {
       globalState.queue.splice(queueIndex, 1)
     }
     delete globalState.tasks[taskId]
-    saveStateToStorage()
+    scheduleSave(true)
   }
 
   const clearAllTasks = () => {
     globalState.tasks = {}
     globalState.queue = []
     globalState.activeCount = 0
-    saveStateToStorage()
+    scheduleSave(true)
   }
 
   const setConfig = (config: Partial<AIConfig>) => {
     Object.assign(globalState.config, config)
-    saveStateToStorage()
+    scheduleSave(true)
   }
 
   const getConfig = (): AIConfig => {
@@ -426,7 +471,7 @@ export function useGlobalAIState() {
 
   const setDefaultEnableThinking = (value: boolean) => {
     globalState.config.defaultEnableThinking = value
-    saveStateToStorage()
+    scheduleSave(true)
   }
 
   const getDefaultEnableThinking = (): boolean => {
@@ -533,6 +578,7 @@ export function useGlobalAIState() {
     clearActiveStream,
     _registerStreamActions,
     _unregisterStreamActions,
-    getStreamActions
+    getStreamActions,
+    setStreamingActive
   }
 }

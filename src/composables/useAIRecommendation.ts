@@ -1,7 +1,7 @@
 import { computed } from 'vue'
-import { sendMessageToAI } from '@/utils/ai-api'
 import { schoolsData, getAllSchoolsWithMatch } from '@/utils/recommendationEngine'
 import { useGlobalRecommendationState } from './useGlobalRecommendationState'
+import { useAIStream } from './useAIStream'
 import type { UserPreference, AIRecommendation, SchoolAnalysis, AIRecommendationResponse, AIAnalysisResponse } from '@/types/recommendation'
 
 type PriorityKey = 'ranking' | 'major' | 'career' | 'location' | 'cost'
@@ -18,20 +18,52 @@ export const stepLabels: Record<RecommendationStep, string> = {
   error: '生成失败'
 }
 
-export function useAIRecommendation() {
-  // 使用全局状态
-  const globalState = useGlobalRecommendationState()
-  
-  // 本地 ref，用于兼容原有代码
-  const loading = computed(() => globalState.state.loading)
-  const error = computed(() => globalState.state.error)
-  const currentStep = computed(() => globalState.state.currentStep)
-  const streamingContent = computed(() => globalState.state.streamingContent)
-  const isStreaming = computed(() => globalState.state.isStreaming)
-  
-  const stepProgress = computed(() => globalState.state.stepProgress)
+const REC_TASK_ID = 'school-rec-main'
 
-  // 构建推荐Prompt - AI驱动的智能推荐
+export function useAIRecommendation() {
+  const globalState = useGlobalRecommendationState()
+
+  const recStream = useAIStream({
+    taskId: REC_TASK_ID,
+    enableThinking: true,
+    autoRestore: false,
+    autoRetry: false,
+    onStream(_content, reasoning) {
+      const displayContent = reasoning
+        ? reasoning + (_content ? '\n\n---\n\n' + _content : '')
+        : _content
+      globalState.updateStreamingContent(displayContent || '', true)
+    },
+    onStateChange(state) {
+      if (state === 'connecting' || state === 'thinking') {
+        globalState.updateStep('analyzing', 25)
+      } else if (state === 'streaming') {
+        globalState.updateStep('generating', 75)
+      }
+    }
+  })
+
+  const analysisStreams = new Map<number, ReturnType<typeof useAIStream>>()
+
+  const getAnalysisStream = (schoolId: number) => {
+    if (!analysisStreams.has(schoolId)) {
+      const stream = useAIStream({
+        taskId: `analysis-${schoolId}`,
+        enableThinking: true,
+        autoRestore: false,
+        autoRetry: false,
+        onStream(_content, reasoning) {
+          const displayContent = reasoning
+            ? reasoning + (_content ? '\n\n---\n\n' + _content : '')
+            : _content
+          globalState.updateAnalysisStreamingContent(displayContent || '', true)
+        }
+      })
+      analysisStreams.set(schoolId, stream)
+    }
+    return analysisStreams.get(schoolId)!
+  }
+
   const buildRecommendationPrompt = (assessment: any, preference: UserPreference): string => {
     const userProfile = {
       gpa: assessment.basic?.gpa || 3.0,
@@ -57,8 +89,8 @@ export function useAIRecommendation() {
     }
 
     const prioritiesText = preference.priorities.map((p: PriorityKey) => priorityMap[p]).join('、')
-    const excludedText = preference.excludedCountries.length > 0 
-      ? preference.excludedCountries.join('、') 
+    const excludedText = preference.excludedCountries.length > 0
+      ? preference.excludedCountries.join('、')
       : '无'
 
     const schoolsList = schoolsData.map((s: any) => ({
@@ -153,7 +185,6 @@ ${JSON.stringify(schoolsList, null, 2)}
 }`
   }
 
-  // 构建深度分析Prompt - AI驱动的客观评估
   const buildAnalysisPrompt = (assessment: any, schoolId: number): string => {
     const school = schoolsData.find((s: any) => s.id === schoolId)
     if (!school) throw new Error('School not found')
@@ -172,10 +203,10 @@ ${JSON.stringify(schoolsList, null, 2)}
       competitionDetails: assessment.practice?.competitions || []
     }
 
-    const universityTierText = userProfile.university === '985' ? '985院校' : 
-                               userProfile.university === '211' ? '211院校' : 
+    const universityTierText = userProfile.university === '985' ? '985院校' :
+                               userProfile.university === '211' ? '211院校' :
                                userProfile.university === 'overseas' ? '海外院校' : '普通本科'
-    
+
     const competitivenessText = {
       'extreme': '极高（如MIT、斯坦福等顶尖名校）',
       'very_high': '很高（如常春藤、牛剑等）',
@@ -254,76 +285,39 @@ ${JSON.stringify(schoolsList, null, 2)}
 }`
   }
 
-  // 生成推荐列表 - 流式版本
   const generateRecommendations = async (
-    assessment: any, 
+    assessment: any,
     preference: UserPreference,
     providerId: string,
     onStream?: (content: string) => void
   ): Promise<{ recommendations: AIRecommendation[], summary: string }> => {
-    // 初始化全局状态
     globalState.startRecommendation(assessment, preference, providerId)
 
     try {
       await new Promise(resolve => setTimeout(resolve, 300))
       globalState.updateStep('matching', 50)
       await new Promise(resolve => setTimeout(resolve, 300))
-      
+
       const prompt = buildRecommendationPrompt(assessment, preference)
-      
+
       const messages = [
         { role: 'user' as const, content: prompt }
       ]
 
       globalState.updateStep('generating', 75)
-      
-      // 使用流式输出，开启深度思考模式
-      const streamGenerator = await sendMessageToAI(providerId, messages, {
+
+      const fullContent = await recStream.generateWithProvider(providerId, messages, {
         temperature: 0.7,
-        stream: true,
         enableThinking: true
       })
 
-      let fullContent = ''
-      let reasoningContent = ''
-      
-      // 处理流式响应
-      for await (const chunk of streamGenerator) {
-        if (chunk.type === 'reasoning' && chunk.content) {
-          // 处理思考过程
-          reasoningContent += chunk.content
-          // 将思考过程和内容一起显示
-          const displayContent = reasoningContent + (fullContent ? '\n\n---\n\n' + fullContent : '')
-          globalState.updateStreamingContent(displayContent, true)
-          
-          // 回调通知UI更新
-          if (onStream) {
-            onStream(displayContent)
-          }
-        } else if (chunk.type === 'content' && chunk.content) {
-          fullContent += chunk.content
-          // 如果有思考过程，一起显示
-          const displayContent = reasoningContent 
-            ? reasoningContent + '\n\n---\n\n' + fullContent 
-            : fullContent
-          globalState.updateStreamingContent(displayContent, true)
-          
-          // 回调通知UI更新
-          if (onStream) {
-            onStream(displayContent)
-          }
-        }
-      }
-
-      // 最终内容只保留正式输出（不含思考过程）
       globalState.updateStreamingContent(fullContent, false)
-      
-      // 解析JSON
-      const jsonMatch = fullContent.match(/```json\s*([\s\S]*?)\s*```/) || 
+
+      const jsonMatch = fullContent.match(/```json\s*([\s\S]*?)\s*```/) ||
                        fullContent.match(/\{[\s\S]*\}/)
-      
+
       let parsed: AIRecommendationResponse
-      
+
       if (jsonMatch) {
         const jsonStr = jsonMatch[1] || jsonMatch[0]
         parsed = JSON.parse(jsonStr.trim())
@@ -331,7 +325,6 @@ ${JSON.stringify(schoolsList, null, 2)}
         throw new Error('无法解析AI响应')
       }
 
-      // 转换为AIRecommendation格式
       const recommendations: AIRecommendation[] = parsed.recommendations.map((rec: any) => {
         const school = schoolsData.find((s: any) => s.id === rec.schoolId)
         return {
@@ -345,7 +338,7 @@ ${JSON.stringify(schoolsList, null, 2)}
       })
 
       globalState.completeRecommendation(recommendations, parsed.summary)
-      
+
       return {
         recommendations,
         summary: parsed.summary
@@ -354,76 +347,39 @@ ${JSON.stringify(schoolsList, null, 2)}
       console.error('Generate recommendations error:', err)
       const errorMsg = err instanceof Error ? err.message : '生成推荐失败'
       globalState.setError(errorMsg)
-      
-      // 返回默认推荐（基于匹配度算法）
+
       return generateFallbackRecommendations(assessment)
     }
   }
 
-  // 生成深度分析 - 流式版本
   const generateAnalysis = async (
     assessment: any,
     schoolId: number,
     providerId: string,
     onStream?: (content: string) => void
   ): Promise<SchoolAnalysis> => {
-    // 初始化全局分析状态
     globalState.startAnalysis(schoolId, assessment, providerId)
 
     try {
       const prompt = buildAnalysisPrompt(assessment, schoolId)
-      
+
       const messages = [
         { role: 'user' as const, content: prompt }
       ]
 
-      // 使用流式输出，开启深度思考模式
-      const streamGenerator = await sendMessageToAI(providerId, messages, {
+      const stream = getAnalysisStream(schoolId)
+      const fullContent = await stream.generateWithProvider(providerId, messages, {
         temperature: 0.7,
-        stream: true,
         enableThinking: true
       })
 
-      let fullContent = ''
-      let reasoningContent = ''
-
-      // 处理流式响应
-      for await (const chunk of streamGenerator) {
-        if (chunk.type === 'reasoning' && chunk.content) {
-          // 处理思考过程
-          reasoningContent += chunk.content
-          // 将思考过程和内容一起显示
-          const displayContent = reasoningContent + (fullContent ? '\n\n---\n\n' + fullContent : '')
-          globalState.updateAnalysisStreamingContent(displayContent, true)
-          
-          // 回调通知UI更新
-          if (onStream) {
-            onStream(displayContent)
-          }
-        } else if (chunk.type === 'content' && chunk.content) {
-          fullContent += chunk.content
-          // 如果有思考过程，一起显示
-          const displayContent = reasoningContent 
-            ? reasoningContent + '\n\n---\n\n' + fullContent 
-            : fullContent
-          globalState.updateAnalysisStreamingContent(displayContent, true)
-          
-          // 回调通知UI更新
-          if (onStream) {
-            onStream(displayContent)
-          }
-        }
-      }
-
-      // 最终内容只保留正式输出（不含思考过程）
       globalState.updateAnalysisStreamingContent(fullContent, false)
-      
-      // 解析JSON
-      const jsonMatch = fullContent.match(/```json\s*([\s\S]*?)\s*```/) || 
+
+      const jsonMatch = fullContent.match(/```json\s*([\s\S]*?)\s*```/) ||
                        fullContent.match(/\{[\s\S]*\}/)
-      
+
       let parsed: AIAnalysisResponse
-      
+
       if (jsonMatch) {
         const jsonStr = jsonMatch[1] || jsonMatch[0]
         parsed = JSON.parse(jsonStr.trim())
@@ -445,36 +401,118 @@ ${JSON.stringify(schoolsList, null, 2)}
       console.error('Generate analysis error:', err)
       const errorMsg = err instanceof Error ? err.message : '生成分析失败'
       globalState.setAnalysisError(errorMsg)
-      
-      // 返回默认分析
+
       return generateFallbackAnalysis(assessment, schoolId)
     }
   }
 
-  // 默认推荐（当AI调用失败时使用）
+  const buildPersonalizedReason = (school: SchoolWithMatch, assessment: any): string => {
+    const criteria = school.admissionCriteria
+    if (!criteria) return `${school.name}在${school.major}领域实力突出，综合匹配度${school.match}%，值得重点考虑。`
+
+    const userGPA = assessment.basic?.gpa || 3.0
+    const userUni = assessment.basic?.university || 'regular'
+    const userLang = assessment.basic?.language || ''
+    const userAvgScore = assessment.academic?.averageScore || 75
+    const researchCount = assessment.academic?.research?.length || 0
+    const internshipCount = assessment.practice?.internships?.length || 0
+
+    const gpaGap = (userGPA - criteria.minGPA).toFixed(1)
+    const prefGap = (criteria.preferredGPA - userGPA).toFixed(1)
+    const uniMatches = criteria.universityTier.includes(userUni)
+    const rateNum = criteria.acceptanceRateNum * 100
+
+    const parts: string[] = []
+
+    const sellingPoints: Record<string, string[]> = {
+      '麻省理工学院': ['全球理工科最高殿堂', '科研资源世界顶级', '校友网络覆盖科技巨头'],
+      '帝国理工学院': ['工程与自然科学欧洲顶尖', '伦敦核心区位优势', '产业合作紧密'],
+      '牛津大学': ['英语世界最古老学府', '学院制教育体系独特', '人脉资源遍布全球'],
+      '哈佛大学': ['常春藤盟校标杆', '商科/法学全美顶尖', '校友影响力无与伦比'],
+      '剑桥大学': ['诺贝尔奖得主摇篮', '导师制教学体验', '学术氛围浓厚'],
+      '斯坦福大学': ['硅谷核心位置', '创业生态全球最佳', '科技行业就业优势显著'],
+      '苏黎世联邦理工学院': ['爱因斯坦母校', '欧洲大陆最强理工', '学费极低性价比极高'],
+      '新加坡国立大学': ['亚洲综合排名领先', '国际化程度极高', '东南亚就业门户'],
+      '伦敦大学学院': ['伦敦大学联盟旗舰', '多学科交叉研究强', '地理位置优越'],
+      '加州理工学院': ['师生比极低精英教育', '前沿科学研究圣地', '小而精的学术社区']
+    }
+
+    const卖点 = sellingPoints[school.name] || [
+      `${school.major}专业实力强劲`,
+      `${school.ranking.replace('QS #', 'QS排名')}位居前列`,
+      school.description.slice(0, 20) + (school.description.length > 20 ? '...' : '')
+    ]
+    parts.push(卖点[Math.floor(Math.random() * 卖点.length)])
+
+    if (userGPA >= criteria.preferredGPA) {
+      parts.push(`你的GPA ${userGPA} 已超过该校偏好值 ${criteria.preferredGPA}，学术背景有竞争力`)
+    } else if (userGPA >= criteria.minGPA) {
+      parts.push(`GPA ${userGPA} 达到最低要求(${criteria.minGPA})，但距离偏好值还差 ${prefGap}`)
+    } else {
+      parts.push(`GPA ${userGPA} 略低于最低要求 ${criteria.minGPA}，需在文书中重点弥补`)
+    }
+
+    if (!uniMatches && (criteria.competitiveness === 'extreme' || criteria.competitiveness === 'very_high')) {
+      const tierMap: Record<string, string> = { '985': '985院校', '211': '211院校', 'regular': '普通本科', 'overseas': '海外院校' }
+      parts.push(`${tierMap[userUni] || userUni}背景申请该校属于冲刺，需靠其他亮点补足`)
+    } else if (uniMatches) {
+      parts.push('院校背景符合该校偏好范围')
+    }
+
+    if (rateNum < 5) {
+      parts.push(`录取率仅${school.acceptanceRate}，属全球最难录取梯队`)
+    } else if (rateNum < 15) {
+      parts.push(`录取率约${school.acceptanceRate}，竞争非常激烈`)
+    } else if (rateNum < 35) {
+      parts.push(`录取率${school.acceptanceRate}，有一定竞争但可尝试`)
+    } else {
+      parts.push(`录取率${school.acceptanceRate}，相对友好`)
+    }
+
+    const tuitionNum = parseInt(school.tuition.replace(/[^0-9]/g, ''))
+    if (tuitionNum > 50000) {
+      parts.push(`年学费约${school.tuition}，需提前规划资金`)
+    } else if (tuitionNum < 5000) {
+      parts.push(`学费仅${school.tuition}，性价比极高`)
+    }
+
+    const categoryAdvice: Record<string, string> = {
+      reach: `建议作为冲刺目标，重点打磨文书和推荐信`,
+      safe: `可作为稳妥选择，录取概率较高`,
+      match: `与背景契合度较高，建议重点申请`
+    }
+    parts.push(categoryAdvice[school.category] || '')
+
+    const filtered = parts.filter(Boolean)
+    const selected = filtered.slice(0, 3 + Math.floor(Math.random() * 2))
+
+    return selected.join('。') + '。'
+  }
+
   const generateFallbackRecommendations = (assessment: any): { recommendations: AIRecommendation[], summary: string } => {
     const schoolsWithMatch = getAllSchoolsWithMatch(assessment)
-    
+
     const filtered = schoolsWithMatch.filter((s: SchoolWithMatch) => s.match && s.match > 50)
-    
+
     const sorted = filtered.sort((a: SchoolWithMatch, b: SchoolWithMatch) => (b.match || 0) - (a.match || 0)).slice(0, 8)
-    
+
     const recommendations: AIRecommendation[] = sorted.map((school: SchoolWithMatch, index: number) => ({
       schoolId: school.id,
       schoolName: school.name,
-      aiReason: `根据你的背景分析，这所学校与你的匹配度为${school.match}%。${school.category === 'reach' ? '作为冲刺目标' : school.category === 'safe' ? '作为保底选择' : '作为匹配院校'}较为合适。`,
+      aiReason: buildPersonalizedReason(school, assessment),
       matchScore: school.match || 50,
       ranking: index + 1,
       category: index < 5 ? 'core' : 'alternative'
     }))
 
-    return {
-      recommendations,
-      summary: '基于你的背景智能匹配推荐'
-    }
+    const topSchool = sorted[0]
+    const summary = topSchool
+      ? `优先推荐${topSchool.name}（${topSchool.country}，匹配度${topSchool.match}%），共筛选${sorted.length}所适配院校`
+      : '基于你的背景智能匹配推荐'
+
+    return { recommendations, summary }
   }
 
-  // 默认分析（当AI调用失败时使用）
   const generateFallbackAnalysis = (assessment: any, schoolId: number): SchoolAnalysis => {
     const school = schoolsData.find((s: any) => s.id === schoolId)
     if (!school) {
@@ -489,7 +527,7 @@ ${JSON.stringify(schoolsList, null, 2)}
 
     const userGPA = assessment.basic?.gpa || 3.0
     const gpaMatch = userGPA >= school.admissionCriteria.minGPA
-    
+
     return {
       schoolId,
       matchPoints: [
@@ -507,12 +545,18 @@ ${JSON.stringify(schoolsList, null, 2)}
         '精心打磨申请文书',
         '提前准备语言成绩'
       ],
-      admissionProbability: school.match && school.match > 80 ? '较高' : 
+      admissionProbability: school.match && school.match > 80 ? '较高' :
                            school.match && school.match > 60 ? '中等' : '较低'
     }
   }
 
-  // 分析相关的计算属性
+  const loading = computed(() => globalState.state.loading || recStream.isLoading.value)
+  const error = computed(() => globalState.state.error)
+  const currentStep = computed(() => globalState.state.currentStep)
+  const stepProgress = computed(() => globalState.state.stepProgress)
+  const streamingContent = computed(() => globalState.state.streamingContent)
+  const isStreaming = computed(() => globalState.state.isStreaming || recStream.isStreaming.value)
+
   const analysisLoading = computed(() => globalState.state.schoolAnalysis.loading)
   const analysisStreamingContent = computed(() => globalState.state.schoolAnalysis.streamingContent)
   const isAnalysisStreaming = computed(() => globalState.state.schoolAnalysis.isStreaming)
@@ -527,12 +571,14 @@ ${JSON.stringify(schoolsList, null, 2)}
     isStreaming,
     generateRecommendations,
     generateAnalysis,
-    // 分析相关
     analysisLoading,
     analysisStreamingContent,
     isAnalysisStreaming,
     currentAnalysisResult,
-    // 暴露全局状态方法
-    globalState
+    globalState,
+    stopRecommendation: () => recStream.stop(),
+    retryRecommendation: () => recStream.retry(),
+    stopAnalysis: (schoolId: number) => getAnalysisStream(schoolId).stop(),
+    recStream
   }
 }

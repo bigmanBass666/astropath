@@ -1,6 +1,6 @@
-# 智途 AstroPath 设计风格指南 v2.0
+# 智途 AstroPath 设计风格指南 v2.2
 
-> **大道至简 · 策略性装饰** — 不是"什么都没有"的贫乏极简，而是在正确的地方华丽，在其他地方极度克制。
+> **大道至简 · 全宽优先 · 策略性装饰** — 不是"什么都没有"的贫乏极简，而是在正确的地方华丽，在其他地方极度克制。全站采用全宽布局策略，充分利用屏幕空间。
 >
 > 本文档是所有页面重构的"宪法"。AI 在重构任何页面时，必须以本文档为最高依据。
 
@@ -357,27 +357,75 @@ Display 字体（衬线体）是稀缺资源，**仅在以下场景使用**：
 | ❌ 元素紧贴边缘（padding < 16px） | 廉价、局促 |
 | ❌ 所有地方间距一样 | 缺乏节奏、平淡 |
 
-### 4.3 容器宽度
+### 4.3 容器宽度（全宽优先策略）
+
+> **设计决策：全站采用全宽优先布局，充分利用屏幕空间。**
+> Hero 区域和表格/数据展示区域应尽量铺开，仅表单/阅读区保持舒适行宽。
 
 ```css
-.container {
-  max-width: 1400px;       /* 内容区最大宽度 */
-  margin: 0 auto;           /* 居中 */
-  padding: 0 var(--space-10);  /* 左右各 40px */
+/* ====== 页面根容器 — 仅左右 padding，不限制宽度 ====== */
+.page-root {
+  width: 100%;
+  padding: 0 var(--space-10);    /* 左右各 40px 呼吸空间 */
   box-sizing: border-box;
 }
 
-/* 文字密集型内容（文章、表单）可缩窄 */
-.container-narrow {
-  max-width: 800px;
+/* ====== Hero 区域 — 真正的全宽 ====== */
+.hero-full {
+  width: 100%;
+  padding: var(--space-16) var(--space-10);  /* 大量纵向留白 */
 }
 
-/* 全宽容器（表格、地图） */
-.container-full {
-  max-width: 100%;
-  padding: 0 var(--space-10);
+/* ====== 内容区域 — 宽松但不无边 ====== */
+.content-wide {
+  max-width: 1440px;             /* 一般内容区 */
+  margin: 0 auto;
+  padding: 0 var(--space-6);     /* 内部再缩一点 */
+}
+
+/* ====== 数据展示区 — 表格/图表/卡片网格，最宽 ====== */
+.data-full {
+  max-width: 1600px;             /* 数据展示可以更宽 */
+  margin: 0 auto;
+}
+
+/* ====== 表单/阅读区 — 保持舒适行宽（可读性底线）===== */
+.form-comfortable {
+  max-width: 960px;              /* 表单不铺太宽，保证填写体验 */
+  margin: 0 auto;
 }
 ```
+
+#### 容器选择决策树
+
+```
+这个页面区域用什么容器？
+│
+├─ 是 Hero / CTA 区域？
+│   └─ → hero-full（100% 全宽 + 大量纵向 padding）
+│
+├─ 是表格 / 图表 / 卡片网格？
+│   └─ → data-full（1600px，最大化信息密度）
+│
+├─ 是表单 / 纯文本阅读？
+│   └─ → form-comfortable（960px 居中，保证 45~75 字符/行）
+│
+├─ 是一般内容区（功能介绍、设置面板等）？
+│   └─ → content-wide（1440px，宽松但有序）
+│
+└─ 是 Sidebar 布局页面？（AIChat 等）
+    └─ → 不用容器，Sidebar + Main 自然分割
+```
+
+#### 各容器适用页面速查
+
+| 容器 | max-width | 适用场景 | 典型页面 |
+|------|-----------|---------|---------|
+| `hero-full` | 100% | 首屏、CTA、Footer Transition | 所有页面的 Hero |
+| `data-full` | 1600px | 表格、ECharts 图标、卡片网格 | UniversityDatabase, Timeline, AIConfig(表格区) |
+| `content-wide` | 1440px | 一般内容、详情页信息区 | SchoolDetail, MajorDetail, Materials, SchoolRecommendation |
+| `form-comfortable` | 960px | 表单填写、偏好收集 | Assessment, AIConfig(表单区), PreferenceCollector |
+| 无容器 | 100% | Sidebar 分割布局 | AIChat |
 
 ### 4.4 Section 节奏
 
@@ -1013,6 +1061,322 @@ Level 3: 装饰动画 (Decorative Animation) ⚠️ 仅限高光区
 
 **风格**：温暖但克制。用 slate-300 的柔和色调，不要过于冷冰冰。
 
+### 8.8 自定义下拉选择器 (Custom Select)
+
+> **强制要求**：禁止使用原生 `<select>` 元素。浏览器原生的下拉面板无法通过 CSS 控制样式（字体/颜色/圆角/阴影），会严重破坏设计系统一致性。
+>
+> **实现方式**：使用 `h()` 渲染函数构建内联组件（见 §14.2），或提取为独立 `.vue` 单文件组件。
+
+#### 结构规范
+
+```
+┌───────────────────────────────────────┐
+│  [占位文字 / 已选项]               ▾  │  ← 触发器 (button, 44px min-height)
+├───────────────────────────────────────┤
+│  ┌─────────────────────────────────┐ │
+│  │ ○ 选项 A                       │ │  ← 下拉面板 (ul, absolute定位)
+│  │ ● 选项 B  (active 高亮)        │ │     solid 色边框 + shadow-lg
+│  │ ○ 选项 C                       │ │     max-height: 220px 可滚动
+│  └─────────────────────────────────┘ │
+└───────────────────────────────────────┘
+```
+
+#### CSS 规范
+
+```css
+/* 触发器 — 与 form-input 保持一致的视觉语言 */
+.custom-select-trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: 10px 14px;                    /* 与 form-input 一致 */
+  border: 1px solid var(--color-border); /* 与 form-input 一致 */
+  border-radius: var(--radius-md);       /* 与 form-input 一致 */
+  font-size: var(--text-base);           /* 与 form-input 一致 */
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  min-height: 44px;                      /* 触控目标 ≥44px */
+}
+
+/* Focus 状态 — 使用极淡 solid 光晕 */
+.custom-select-trigger:focus {
+  outline: none;
+  border-color: var(--color-solid);
+  box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.08);
+}
+
+/* 展开状态 — 底部圆角归零，与下拉面板无缝衔接 */
+.custom-select--open .custom-select-trigger {
+  border-color: var(--color-solid);
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.08);
+}
+
+/* 下拉面板 — 强调交互边界 */
+.custom-select-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  margin-top: -1px;                        /* 消除与触发器的间隙 */
+  background: var(--color-surface);
+  border: 1px solid var(--color-solid);   /* solid 色 = 强调交互边界 */
+  border-top: none;
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
+  box-shadow: var(--shadow-lg);           /* 浮层阴影 */
+  list-style: none;
+  padding: var(--space-2) 0;
+  max-height: 220px;                      /* 防止过长 */
+  overflow-y: auto;
+}
+
+/* 选项项 */
+.custom-select-option {
+  padding: 10px 14px;                     /* 与触发器 padding 一致 */
+  font-size: var(--text-base);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.custom-select-option:hover {
+  background: var(--color-slate-50);      /* 极淡 hover */
+}
+
+/* 已选中项 */
+.custom-select-option--active {
+  color: var(--color-solid);              /* solid 色强调 */
+  font-weight: var(--font-semibold);
+  background: rgba(15, 23, 42, 0.04);      /* 极淡底色 */
+}
+```
+
+#### 交互规范
+
+| 行为 | 规范 |
+|------|------|
+| **打开方式** | 点击触发器 toggle |
+| **关闭方式** | ① 点击选项 ② 点击外部区域 ③ 按 Escape |
+| **箭头动画** | 展开 `rotate(180deg)`，`transition: transform 200ms` |
+| **入场动画** | 下拉面板 `translateY(-4px) → 0` + `opacity 0→1`，150ms ease |
+| **退场动画** | 反向，100ms ease |
+| **ARIA** | `aria-expanded` / `role="listbox"` / `role="option"` / `aria-selected` |
+
+#### 箭头图标规范
+
+```svg
+<!-- 12×12 viewBox, stroke-based, round caps -->
+<svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+  <path d="M3 5L6 8L9 5" 
+        stroke="currentColor" 
+        stroke-width="1.5" 
+        stroke-linecap="round" 
+        stroke-linejoin="round"/>
+</svg>
+```
+- 颜色：`currentColor`（继承 `--color-text-muted`）
+- 线宽：`1.5`
+- 线帽/线交：`round`
+
+---
+
+## 十四、Vue 工程规范
+
+> 本章补充 DESIGN_SPEC 中与 Vue SFC 架构强相关的工程约束。这些规则直接影响「代码能否正确渲染」和「样式能否生效」，是设计系统落地的技术前提。
+
+### 14.1 Scoped CSS 样式穿透 (`:deep()`)
+
+#### 问题背景
+
+Vue `<style scoped>` 会给每个选择器添加属性选择器后缀（如 `[data-v-abc123]`），确保样式只作用于当前组件的 DOM。但子组件的根元素**没有父组件的 `data-v-*` 属性**，导致父组件中针对子元素编写的样式全部失效。
+
+#### 规则
+
+| 场景 | 写法 | 示例 |
+|------|------|------|
+| **样式需要穿透到子组件内部** | **必须加 `:deep()`** | `:deep(.custom-select-trigger) { ... }` |
+| **样式只作用于当前组件 DOM** | 正常写法即可 | `.form-input { ... }` |
+| **全局样式（不受 scoped 影响）** | 用 `:global()` 或单独 `<style>` 块 | `:global(.modal-backdrop) { ... }` |
+
+#### 典型必须使用 `:deep()` 的场景
+
+1. **内联定义的子组件**（Options API `components` 内嵌套）
+2. **第三方 UI 库组件覆盖样式**
+3. **Teleport 传送内容的样式控制**
+
+```css
+/* ✅ 正确：scoped 样式穿透到 CustomSelect 子组件 */
+:deep(.custom-select-trigger) { min-height: 44px; }
+:deep(.custom-select-dropdown) { box-shadow: var(--shadow-lg); }
+
+/* ❌ 错误：子组件匹配不到这个选择器 */
+.custom-select-trigger { min-height: 44px; }  /* 永远不会生效！ */
+```
+
+### 14.2 内联组件的渲染方式选择
+
+当需要在单文件内快速定义小型可复用组件时（如 CustomSelect、Toast），有三种方式：
+
+#### 方式对比
+
+| 方式 | 语法 | 运行时依赖 | 适用场景 |
+|------|------|-----------|---------|
+| **SFC 字符串模板** | `template: \`<div>...\`` | **需要 Runtime Compiler** | ❌ 本项目不可用 |
+| **`h()` 渲染函数** | `render() { return h('div', ...) }` | **无需编译器** | ✅ 推荐：内联小型组件 |
+| **独立 .vue 文件** | `<template><div>...</div></template>` | Vite 编译时处理 | ✅ 推荐：复杂/复用组件 |
+
+#### 本项目的硬性约束
+
+```
+Vite 默认配置 → @vitejs/plugin-vue → runtime-only 模式
+                        ↓
+          不包含 Vue Template Compiler
+                        ↓
+    template: `...` 字符串不会被编译 → 组件渲染为空
+```
+
+**结论：本项目所有内联组件必须使用 `h()` 渲染函数，禁止使用 `template` 字符串。**
+
+#### `h()` 最佳实践模板
+
+```javascript
+import { h, Transition } from 'vue'
+
+export default {
+  components: {
+    MyInlineComponent: {
+      props: { modelValue: String },
+      emits: ['update:modelValue'],
+      data() { return { open: false } },
+      methods: {
+        toggle() { this.open = !this.open }
+      },
+      render() {
+        // 1. class 用数组形式支持动态类名
+        // 2. 事件用 onClick/onInput（非 @click）
+        // 3. Transition 组件包裹条件内容
+        return h('div', {
+          class: ['my-component', { 'my-component--open': this.open }]
+        }, [
+          h('button', {
+            class: 'my-trigger',
+            onClick: () => this.toggle()
+          }, this.modelValue || 'Placeholder'),
+          
+          h(Transition, { name: 'my-dropdown' }, () => {
+            if (!this.open) return null
+            return h('ul', { class: 'my-list' }, [...])
+          })
+        ])
+      }
+    }
+  }
+}
+```
+
+#### `h()` 注意事项
+
+| 要点 | 说明 |
+|------|------|
+| **class** | 用数组 `['base', { active }]` 支持动态类名；对象 `{ class: 'str' }` 只支持静态 |
+| **事件** | `onClick` / `onInput` / `onKeydown`（camelCase），不是 `@click` |
+| **v-if** | 在 render 函数中用 `if (!cond) return null` 替代 |
+| **v-for** | 用 `.map()` 替代 |
+| **Transition** | 从 vue 导入 `Transition`，用函数式子节点 `() => node \| null` |
+| **SVG** | 用嵌套 `h()` 创建 SVG 元素，属性用 camelCase（`strokeWidth` → `stroke-width`） |
+| **slot** | 内联组件一般不用 slot；如需用 `this.$slots.default?.()` |
+
+### 14.3 自定义通知系统 (Toast / Notification)
+
+> **推荐做法**：不依赖 Element Plus 的 `ElMessage`，自行实现轻量 Toast 系统。原因：
+> 1. 完全可控 DOM 层级（z-index、位置）
+> 2. 样式 100% 遵循设计系统变量
+> 3. 无外部依赖，减少 bundle 体积
+> 4. 避免 Element Plus CSS 未加载时的渲染异常
+
+#### 结构规范
+
+```html
+<!-- Teleport 到 body，脱离正常文档流 -->
+<Teleport to="body">
+  <div class="toast-notification toast-success">
+    <span class="toast-icon">✓</span>
+    <span class="toast-message">操作成功</span>
+  </div>
+</Teleport>
+```
+
+#### CSS 规范
+
+```css
+.toast-notification {
+  position: fixed;
+  top: 24px;                              /* 顶部居中悬浮 */
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;                          /* 最高层级 */
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 12px 20px;
+  border-radius: var(--radius-lg);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  box-shadow: var(--shadow-lg);
+  animation: toast-in 250ms ease;         /* 入场动画 */
+}
+
+@keyframes toast-in {
+  from { opacity: 0; transform: translateX(-50%) translateY(-12px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+```
+
+#### 四种类型配色
+
+| 类型 | 类名 | 背景色 | 图标 | 使用场景 |
+|------|------|--------|------|---------|
+| 成功 | `.toast-success` | `var(--color-success)` | ✓ | 保存/连接成功/操作确认 |
+| 错误 | `.toast-error` | `var(--color-danger)` | ✕ | 连接失败/验证错误 |
+| 警告 | `.toast-warning` | `var(--color-warning)` | ! | 缺少字段/风险提示 |
+| 信息 | `.toast-info` | `var(--color-solid)` | ℹ | 已存在/默认值提示 |
+
+#### JS 调用接口
+
+```javascript
+const toast = reactive({ visible: false, message: '', type: 'info' })
+let timer = null
+
+function showToast(message, type = 'info', duration = 3000) {
+  if (timer) clearTimeout(timer)
+  toast.message = message
+  toast.type = type
+  toast.visible = true
+  timer = setTimeout(() => { toast.visible = false }, duration)
+}
+
+// 组件卸载时清理
+onUnmounted(() => { if (timer) clearTimeout(timer) })
+```
+
+#### 移动端适配
+
+```css
+@media (max-width: 767px) {
+  .toast-notification {
+    left: 16px;
+    right: 16px;
+    transform: none;              /* 取消居中，贴边显示 */
+  }
+  .toast-message { white-space: normal; }  /* 允许换行 */
+}
+```
+
 ---
 
 ## 九、反模式清单 ⭐
@@ -1071,6 +1435,21 @@ Level 3: 装饰动画 (Decorative Animation) ⚠️ 仅限高光区
 | 26 | `backdrop-filter: blur()` 做毛玻璃（非必要场景） | 用实色背景 `var(--color-surface)` |
 | 27 | `mix-blend-mode` 做混合特效 | 不使用（除非高光区的特殊效果） |
 | 28 | `z-index: 100+` 乱用 | 定义清晰的 z-index 层级体系 |
+| 29 | 内联组件使用 `template: \`<div>...\`` 字符串 | 使用 `h()` 渲染函数或独立 `.vue` 文件（见 §14.2） |
+| 30 | 子组件样式不加 `:deep()` 穿透符 | 必须使用 `:deep(.child-class)` （见 §14.1） |
+| 31 | 原生 `<select>` / `<input type="file">` 等不可样式化元素 | 用自定义组件替换：CustomSelect / 自定义上传（见 §8.8） |
+| 32 | 依赖 Element Plus 的 `ElMessage` / `ElNotification` | 用自定义 Toast 系统（Teleport + 设计系统变量，见 §14.3） |
+
+### 9.6 Vue 工程反模式
+
+> 本章反模式直接导致**功能失效**（组件不渲染、样式丢失），比视觉层面的反模式更严重。
+
+| # | ❌ 反模式 | ✅ 正确做法 | 后果 |
+|---|----------|------------|------|
+| 33 | Options API 组件内写 `template: \`...\`` | `render() { return h('div', ...) }` | **组件渲染为空，页面元素消失** |
+| 34 | scoped 样式写 `.child-class {}` 期望穿透子组件 | `:deep(.child-class) {}` | **子组件样式全部失效，无样式的"隐形"元素** |
+| 35 | `ElMessage.success('...')` 在移除 Element Plus 组件后仍使用 | 自定义 `showToast(msg, type)` + Teleport | **Toast 不显示或样式异常** |
+| 36 | `<select>` 配合 `appearance: none` 当作"美化方案" | 完全自定义 CustomSelect 组件 | **下拉面板仍是浏览器原生渲染** |
 
 ---
 
@@ -1310,20 +1689,33 @@ Level 3: 装饰动画 (Decorative Animation) ⚠️ 仅限高光区
 
 #### 非 Sidebar 页面的主内容区
 
-如果页面没有 Sidebar（如 Assessment 表单页），主内容区的居中策略：
+如果页面没有 Sidebar（如 Assessment 表单页、AIConfig 配置页），主内容区的居中策略：
 
 ```css
+/* 一般内容页 — 宽松布局 */
 .main-content {
-  max-width: 1000px;           /* 表单类: 800~1000px */
-  margin: 0 auto;               /* 水平居中 */
-  padding: 0 var(--space-10);  /* 左右留白 */
+  max-width: 1440px;             /* content-wide 级别 */
+  margin: 0 auto;
+  padding: 0 var(--space-10);
 }
 
-/* 更窄的内容区 — 用于纯阅读/表单 */
+/* 表单/阅读区 — 保持舒适行宽 */
 .main-content-narrow {
-  max-width: 720px;
+  max-width: 960px;              /* form-comfortable 级别 */
+  margin: 0 auto;
+}
+
+/* 数据展示区 — 最宽 */
+.main-content-data {
+  max-width: 1600px;             /* data-full 级别 */
+  margin: 0 auto;
 }
 ```
+
+> **同一页面内可以混合使用不同宽度的区域。** 例如 AIConfig 页面：
+> - 页面根容器 `1440px`（content-wide）
+> - 表格区域跟随根容器或独立设为 `1560px`（data-full）
+> - 表单区域独立收窄为 `680px` 居中（form-comfortable）
 
 ### 11.3 表单页布局模式 (Form Page Layout)
 
@@ -1597,22 +1989,25 @@ Level 3: 装饰动画 (Decorative Animation) ⚠️ 仅限高光区
 #### 断点与响应式策略
 
 ```css
-/* 桌面大屏 — 充分利用空间 */
-@media (min-width: 1400px) {
+/* 超大屏 ≥ 1600px — 充分展开 */
+@media (min-width: 1600px) {
   .results-grid { grid-template-columns: repeat(3, 1fr); }
-  .container { max-width: 1400px; }
+  .content-wide { max-width: 1560px; }
+  .data-full   { max-width: 1760px; }
 }
 
-/* 标准桌面 — 主要适配区间 */
-@media (min-width: 1024px) and (max-width: 1399px) {
+/* 标准桌面大屏 1200~1599px — 主要适配区间 */
+@media (min-width: 1200px) and (max-width: 1599px) {
   .results-grid { grid-template-columns: repeat(3, 1fr); }
-  .container { max-width: 1200px; }
+  .content-wide { max-width: 1160px; }
+  .data-full   { max-width: 1360px; }
 }
 
 /* 平板 — 开始缩减 */
-@media (min-width: 768px) and (max-width: 1023px) {
+@media (min-width: 768px) and (max-width: 1199px) {
   .results-grid { grid-template-columns: repeat(2, 1fr); }
-  .container { padding: 0 var(--space-6); }
+  .content-wide,
+  .data-full   { max-width: 100%; }
   /* Sidebar 可收缩为图标模式 */
 }
 
@@ -1654,6 +2049,81 @@ Level 3: 装饰动画 (Decorative Animation) ⚠️ 仅限高光区
 **使用场景**：
 - 院校详情页：左侧 2fr 信息 + 右侧 1fr 操作面板
 - 专业详情页：左侧 1fr 基本信息 + 右侧 2fr 详细数据
+
+---
+
+### 11.6 全局页脚规范 (SiteFooter) ⭐
+
+> **本章是全局页脚的单一权威规范。** 所有非沉浸式页面（除 AI 聊天外）必须使用统一的 `SiteFooter` 组件。
+
+#### 11.6.1 页脚显示规则
+
+| 页面类型 | 路由示例 | 是否显示 SiteFooter | 原因 |
+|---------|---------|-------------------|------|
+| 首页 | `/` | ✅ 显示（组件内部渲染） | 首页自身引入 `SiteFooter` |
+| 工具页 | `/assessment`, `/timeline`, `/materials`, `/university-database` 等 | ✅ 显示（App.vue 注入） | 标准内容页面 |
+| 详情页 | `/school-detail/:id`, `/major-detail/:id` | ✅ 显示（App.vue 注入） | 标准内容页面 |
+| 配置页 | `/ai-config` | ✅ 显示（App.vue 注入） | 标准内容页面 |
+| **AI 对话** | `/ai-chat` | ❌ 不显示 | 沉浸式全屏体验，无头无尾 |
+
+**实现位置**：[App.vue](src/App.vue) 通过 `v-if="!isImmersivePage && !isHomePage"` 控制注入，首页 [Home.vue](src/views/Home.vue) 自行引入。
+
+#### 11.6.2 组件架构
+
+```
+SiteFooter.vue (src/components/common/SiteFooter.vue)
+├── 波浪过渡区域 (.footer-transition)
+│   ├── wave-layer-3 (最底层, opacity:0.3, 10s 呼吸动画)
+│   ├── wave-layer-2 (中层, opacity:0.5, 6s 反向呼吸)
+│   └── wave-layer-1 (顶层, solid 色, 8s 呼吸)
+│   └── transition-stars (12 个随机星点)
+├── 页脚主体 (.site-footer)
+│   ├── footer-glow-line (顶部动态光线, 4s 滑动渐变)
+│   ├── footer-stars (20 个背景星点, twinkle 动画)
+│   └── .container → .footer-content (grid: 1.5fr 1fr 1fr 1fr)
+│       ├── footer-brand (品牌 Logo SVG + 标题 + 描述)
+│       ├── footer-links (快速链接 × 6)
+│       ├── footer-help (帮助支持 × 3, 含 emit 事件)
+│       └── footer-contact (联系方式 + 社交链接 × 3)
+│   └── .footer-bottom (版权声明)
+```
+
+#### 11.6.3 事件接口
+
+```vue
+<!-- 父组件使用方式 -->
+<SiteFooter
+  @show-guide="handleShowGuide"
+  @show-contact="handleShowContact"
+/>
+```
+
+| 事件名 | 触发条件 | 父组件处理 |
+|--------|---------|-----------|
+| `show-guide` | 点击「使用指南」链接 | App.vue: `guideVisible = true`; Home.vue: `guideVisible = true` |
+| `show-contact` | 点击「联系我们」链接 | App.vue: `contactVisible = true` |
+
+#### 11.6.4 装饰层设计原则
+
+页脚属于 **高光区 (High-Light Zone)**，允许以下装饰元素：
+
+| 装饰元素 | 类型 | 动画 | 用途 |
+|---------|------|------|------|
+| 多层波浪过渡 | SVG path | `wave-breathe` 缩放呼吸 (6~10s) | 内容区→深色页脚的视觉缓冲 |
+| 顶部发光线 | CSS gradient | `glow-line-move` 滑动 (4s) | 品质感边界强调 |
+| 星空粒子 | 绝对定位 div | `star-twinkle` 闪烁 (2~4s) | 深色背景上的层次感 |
+| 自定义 Logo SVG | 内联 SVG | `tassel-swing` 摆动 (3s) + hover 放大脉冲 | 品牌识别度强化 |
+| 社交图标 hover | border + transform | translateY(-3px) + scale(1.2) | 交互反馈 |
+
+> **注意**：以上装饰仅限页脚（高光区）。内容区的表格、表单、卡片等仍遵循 §9 反模式清单。
+
+#### 11.6.5 响应式断点
+
+| 断点 | grid 列数 | 布局变化 |
+|------|----------|---------|
+| ≥ 993px | 4 列 (1.5fr 1fr 1fr 1fr) | 完整布局，标题下划线左对齐 |
+| 576px ~ 992px | 2 列 (1fr 1fr) | 折半显示 |
+| ≤ 576px | 1 列 | 单列居中，标题下划线居中，链接 flex 横排 |
 
 ---
 
@@ -2191,6 +2661,8 @@ Level 3: 辅助细节 (Auxiliary Details)
 - [ ] 表单元素符合 8.3 规范
 - [ Section 标题符合 8.6 规范
 - [ ] 空状态符合 8.7 规范
+- [ ] 自定义 Select 下拉组件符合 8.8 规范（禁止原生 `<select>`）
+- [ ] Toast 通知系统符合 14.3 规范（禁止依赖 ElMessage）
 
 ### 响应式
 - [ ] 移动端布局正确
@@ -2203,6 +2675,14 @@ Level 3: 辅助细节 (Auxiliary Details)
 - [ ] Focus 状态可见
 - [ ] 减弱动画已支持
 
+### Vue 工程规范 (§14)
+- [ ] 内联组件使用 `h()` 渲染函数，禁止 `template` 字符串（反模式 #33）
+- [ ] 子组件样式使用 `:deep()` 穿透符（反模式 #34）
+- [ ] 禁止原生 `<select>`，使用 CustomSelect 组件（反模式 #31, #36）
+- [ ] Toast 通知使用自定义系统 + Teleport，不依赖 ElMessage（反模式 #32, #35）
+- [ ] Toast 在 onUnmounted 时清理 timer，避免内存泄漏
+- [ ] 测试中/加载中状态按钮 disabled 防重复点击
+
 ### 视觉走查（完成设计后执行）
 - [ ] 闭眼睁眼测试：第一眼看到的是否是预期焦点？
 - [ ] 视线流动路径：标题→内容→CTA 是否顺畅？
@@ -2212,7 +2692,19 @@ Level 3: 辅助细节 (Auxiliary Details)
 
 ---
 
-**文档版本**：v2.1
-**设计哲学**：Slate + Amber 单色极简 · 策略性装饰 · 全域设计感
+**文档版本**：v2.4
+**设计哲学**：Slate + Amber 单色极简 · 全宽优先布局 · 策略性装饰 · 全域设计感 · Vue 工程约束 · 统一页脚
 **对标参考**：Apple / Stripe / Linear / Vercel
 **最后更新**：2026年4月
+
+---
+
+## 变更日志 (Changelog)
+
+| 版本 | 日期 | 核心变更 |
+|------|------|---------|
+| **v2.4** | 2026-04 | **§11.6 全局页脚规范 (SiteFooter)**（页脚统一策略：波浪过渡/发光线/星空动画/自定义Logo，组件化提取，显示规则表，事件接口，装饰层设计原则，响应式断点）<br>新增 `SiteFooter.vue` 共享组件替代旧 `app-footer` |
+| v2.3 | 2026-04 | **§8.8 自定义 Select 下拉组件规范**（禁止原生 `<select>`，含结构/CSS/交互/图标完整规范）<br>**§14 Vue 工程规范**（`:deep()` 样式穿透 / `h()` 渲染函数 vs template 字符串 / 自定义 Toast 系统）<br>**§9.6 Vue 工程反模式**（#33~#36，直接导致功能失效的工程级反模式）<br>附录 B 新增「Vue 工程规范」检查项 |
+| v2.2 | 2026-04 | 容器体系重构（全宽优先）：5 级容器体系、混合宽度布局、data-full 负 margin 突破技巧、断点系统升级为 1600/1200/768 |
+| v2.1 | 2026-04 | §11 布局设计模式 + §12 页面模板 + §13 视觉层级与动线：Page Hero、三级视觉层级、信息密度节奏、留白分组、严格对齐网格 |
+| v2.0 | 2026-04 | 基础版：色彩系统(第二章)、组件规范(第八章)、反模式清单(第九章)、页面类型分类(第十章) |

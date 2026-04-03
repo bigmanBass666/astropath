@@ -1,24 +1,30 @@
 <template>
   <div class="university-database-page">
+    <!-- 自定义 Toast 通知 -->
+    <Teleport to="body">
+      <Transition name="toast-fade">
+        <div
+          v-if="toast.visible"
+          class="toast-notification"
+          :class="'toast-' + toast.type"
+        >
+          <span class="toast-icon">{{ toastIcons[toast.type] }}</span>
+          <span class="toast-message">{{ toast.message }}</span>
+        </div>
+      </Transition>
+    </Teleport>
+
     <!-- Hero 搜索区域 -->
     <section
       ref="heroRef"
       class="db-hero"
       :class="{ 'is-visible': heroVisible }"
     >
-      <!-- 渐变叠加层 -->
-      <div class="db-hero-gradient" />
-
-      <!-- 光晕装饰 -->
-      <div class="db-hero-glow" />
+      <div class="db-hero-bg" />
 
       <div class="db-hero-content">
-        <h1 class="db-hero-title">
-          院校数据库
-        </h1>
-        <p class="db-hero-subtitle">
-          探索全球顶尖院校，找到最适合你的留学目标
-        </p>
+        <h1 class="db-hero-title">院校数据库</h1>
+        <p class="db-hero-subtitle">探索全球顶尖院校，找到最适合你的留学目标</p>
 
         <!-- Hero 搜索框 -->
         <div
@@ -40,16 +46,12 @@
         <!-- 热门搜索标签 -->
         <div class="db-hero-tags">
           <span class="tag-label">热门搜索：</span>
-          <el-tag
+          <span
             v-for="tag in hotTags"
             :key="tag"
             class="hot-tag"
-            effect="plain"
-            round
             @click="searchByTag(tag)"
-          >
-            {{ tag }}
-          </el-tag>
+          >{{ tag }}</span>
         </div>
 
         <!-- 数据统计 -->
@@ -201,13 +203,12 @@
                   <div class="school-card__body">
                     <div class="school-card__header">
                       <h3 class="school-card__title">{{ school.name }}</h3>
-                      <el-tag
-                        :type="school.rankType"
-                        size="small"
+                      <span
                         class="school-card__rank"
+                        :class="'rank-' + school.rankType"
                       >
                         {{ school.ranking }}
-                      </el-tag>
+                      </span>
                     </div>
 
                     <div class="school-card__meta">
@@ -236,15 +237,13 @@
                   </div>
 
                   <div class="school-card__footer">
-                    <el-button
-                      type="primary"
-                      size="small"
-                      plain
+                    <button
                       class="card-action-btn"
+                      :class="{ 'is-added': shortlisted.includes(school.id) }"
                       @click.stop="addToShortlist(school)"
                     >
                       {{ shortlisted.includes(school.id) ? '✓ 已在清单' : '+ 加入清单' }}
-                    </el-button>
+                    </button>
                   </div>
                 </div>
               </div>
@@ -269,13 +268,12 @@
                     <template #default="scope">
                       <div class="list-school-name">
                         <span class="name-text">{{ scope.row.name }}</span>
-                        <el-tag
-                          :type="scope.row.rankType"
-                          size="small"
+                        <span
                           class="rank-tag"
+                          :class="'rank-' + scope.row.rankType"
                         >
                           {{ scope.row.ranking }}
-                        </el-tag>
+                        </span>
                       </div>
                     </template>
                   </el-table-column>
@@ -311,20 +309,19 @@
                     fixed="right"
                   >
                     <template #default="scope">
-                      <el-button
-                        type="primary"
-                        size="small"
-                        plain
+                      <button
+                        class="table-action-btn table-action-btn--primary"
+                        :class="{ 'is-added': shortlisted.includes(scope.row.id) }"
                         @click.stop="addToShortlist(scope.row)"
                       >
                         {{ shortlisted.includes(scope.row.id) ? '已加入' : '加入清单' }}
-                      </el-button>
-                      <el-button
-                        size="small"
+                      </button>
+                      <button
+                        class="table-action-btn"
                         @click.stop="showDetail(scope.row)"
                       >
                         详情
-                      </el-button>
+                      </button>
                     </template>
                   </el-table-column>
                 </el-table>
@@ -348,10 +345,14 @@
               />
             </div>
 
-            <el-empty
+            <div
               v-else
-              description="暂无匹配的院校数据"
-            />
+              class="empty-state"
+            >
+              <div class="empty-state-icon">🔍</div>
+              <div class="empty-state-title">暂无匹配的院校</div>
+              <div class="empty-state-desc">尝试调整筛选条件或搜索其他关键词</div>
+            </div>
           </el-tab-pane>
 
           <!-- Tab 2: 专业搜索 -->
@@ -401,7 +402,7 @@
                 >博士</span>
 
                 <div class="major-search-inline">
-                  <el-icon class="search-mini-icon"><Search /></el-icon>
+                  <svg class="search-mini-icon" width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="6" cy="6" r="4.5" stroke="currentColor" stroke-width="1.5"/><path d="M9.5 9.5L12.5 12.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
                   <input
                     v-model="majorSearchKeyword"
                     placeholder="搜索专业..."
@@ -443,13 +444,12 @@
                         <span class="checkbox-text">对比</span>
                       </el-checkbox>
                     </div>
-                    <el-tag
-                      :type="getCategoryTagType(major.category)"
-                      size="small"
+                    <span
                       class="category-tag"
+                      :class="'tag-' + getCategoryTagClass(major.category)"
                     >
                       {{ major.category }}
-                    </el-tag>
+                    </span>
                   </div>
 
                   <div class="major-name">
@@ -473,15 +473,13 @@
                 </div>
 
                 <div class="major-card__footer">
-                  <el-button
-                    type="primary"
-                    size="small"
-                    text
+                  <button
                     class="detail-link"
                     @click.stop="goToMajorDetail(major)"
                   >
-                    查看详情 <el-icon class="el-icon--right"><ArrowRight /></el-icon>
-                  </el-button>
+                    查看详情
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="margin-left:4px;flex-shrink:0"><path d="M3 7H11M8 4L11 7L8 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  </button>
                 </div>
               </div>
             </div>
@@ -503,10 +501,14 @@
               />
             </div>
 
-            <el-empty
+            <div
               v-else
-              description="暂无匹配的专业数据"
-            />
+              class="empty-state"
+            >
+              <div class="empty-state-icon">📚</div>
+              <div class="empty-state-title">暂无匹配的专业</div>
+              <div class="empty-state-desc">尝试调整筛选条件或搜索其他关键词</div>
+            </div>
 
             <!-- 对比操作栏 -->
             <div
@@ -516,15 +518,18 @@
               <div class="compare-info">
                 已选择 <strong>{{ selectedMajors.length }}</strong> 个专业进行对比
               </div>
-              <el-button
-                type="primary"
+              <button
+                class="compare-btn compare-btn--primary"
                 @click="showCompare"
               >
                 开始对比
-              </el-button>
-              <el-button @click="clearSelection">
+              </button>
+              <button
+                class="compare-btn"
+                @click="clearSelection"
+              >
                 清空选择
-              </el-button>
+              </button>
             </div>
 
             <!-- 专业对比对话框 -->
@@ -575,129 +580,13 @@
       </div>
     </section>
 
-    <!-- 详情对话框 -->
-    <el-dialog
-      v-model="detailVisible"
-      :title="currentSchool?.name"
-      width="70%"
-      class="school-detail-dialog"
-    >
-      <div
-        v-if="currentSchool"
-        class="school-detail"
-      >
-        <div class="detail-header">
-          <img
-            v-if="currentSchool.image"
-            :src="currentSchool.image"
-            class="school-image"
-          >
-          <div class="detail-title">
-            <h2>{{ currentSchool.name }}</h2>
-            <p class="detail-subtitle">
-              {{ currentSchool.country }} | {{ currentSchool.ranking }}
-            </p>
-          </div>
-        </div>
-
-        <el-descriptions
-          :column="2"
-          border
-        >
-          <el-descriptions-item label="国家">
-            {{ currentSchool.country }}
-          </el-descriptions-item>
-          <el-descriptions-item label="排名">
-            <span>{{ currentSchool.ranking }}</span>
-            <sup
-              v-if="currentSchool.sources?.ranking"
-              class="source-sup"
-              @click.stop="openSource(currentSchool.sources.ranking.url)"
-            >[{{ currentSchool.sources.ranking.label }}]</sup>
-          </el-descriptions-item>
-          <el-descriptions-item label="热门专业">
-            {{ currentSchool.major }}
-          </el-descriptions-item>
-          <el-descriptions-item label="学费">
-            <span>{{ currentSchool.tuition }}</span>
-            <sup
-              v-if="currentSchool.sources?.tuition"
-              class="source-sup"
-              @click.stop="openSource(currentSchool.sources.tuition.url)"
-            >[{{ currentSchool.sources.tuition.label }}]</sup>
-          </el-descriptions-item>
-          <el-descriptions-item label="录取率">
-            <span>{{ currentSchool.acceptanceRate }}</span>
-            <sup
-              v-if="currentSchool.sources?.accept"
-              class="source-sup"
-              @click.stop="openSource(currentSchool.sources.accept.url)"
-            >[{{ currentSchool.sources.accept.label }}]</sup>
-          </el-descriptions-item>
-          <el-descriptions-item label="学校类型">
-            {{ currentSchool.type || '综合大学' }}
-          </el-descriptions-item>
-          <el-descriptions-item label="学生人数">
-            {{ currentSchool.students || 'N/A' }}
-          </el-descriptions-item>
-        </el-descriptions>
-
-        <div class="description-section">
-          <h4>学校简介</h4>
-          <p>{{ currentSchool.description || '暂无简介信息' }}</p>
-        </div>
-
-        <div class="requirements-section">
-          <h4>
-            申请要求
-            <sup
-              v-if="currentSchool.sources?.requirements"
-              class="source-sup"
-              @click.stop="openSource(currentSchool.sources.requirements.url)"
-            >[{{ currentSchool.sources.requirements.label }}]</sup>
-          </h4>
-          <ul>
-            <li
-              v-for="(req, idx) in currentSchool.requirements"
-              :key="idx"
-            >
-              {{ req }}
-            </li>
-          </ul>
-        </div>
-
-        <div class="detail-actions">
-          <el-button
-            type="primary"
-            @click="addToShortlist(currentSchool)"
-          >
-            {{ shortlisted.includes(currentSchool.id) ? '已在清单中' : '加入选校清单' }}
-          </el-button>
-          <el-button
-            type="success"
-            plain
-            @click="goToApply(currentSchool)"
-          >
-            开始申请
-          </el-button>
-          <el-button
-            type="info"
-            plain
-            @click="visitWebsite(currentSchool.website)"
-          >
-            访问官网
-          </el-button>
-        </div>
-      </div>
-    </el-dialog>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted, reactive } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { ElMessage } from 'element-plus'
-import { Search, List, Grid, ArrowRight } from '@element-plus/icons-vue'
+import { List, Grid } from '@element-plus/icons-vue'
 import { majorsData } from '@/data/majors'
 import { schoolsData } from '@/data/schools'
 
@@ -721,8 +610,6 @@ const currentSchoolPage = ref(1)
 const schoolPageSize = ref(12)
 const currentMajorPage = ref(1)
 const majorPageSize = ref(12)
-const detailVisible = ref(false)
-const currentSchool = ref(null)
 const shortlisted = ref([])
 
 const majorSearchKeyword = ref('')
@@ -734,6 +621,31 @@ const majorsToCompare = ref([])
 const compareTableData = ref([])
 
 const hotTags = ['计算机科学', '商科', '人工智能', '医学', '工程学', '法学']
+
+const toastIcons = {
+  success: '✓',
+  error: '✕',
+  warning: '!',
+  info: 'ℹ'
+}
+
+const toast = reactive({
+  visible: false,
+  message: '',
+  type: 'info'
+})
+
+let toastTimer = null
+
+function showToast(message, type = 'info', duration = 3000) {
+  if (toastTimer) clearTimeout(toastTimer)
+  toast.message = message
+  toast.type = type
+  toast.visible = true
+  toastTimer = setTimeout(() => {
+    toast.visible = false
+  }, duration)
+}
 
 const allSchools = ref(schoolsData.map(school => ({
   ...school,
@@ -790,15 +702,15 @@ const filteredMajors = computed(() => {
   return totalMajors.value.slice(start, end)
 })
 
-const getCategoryTagType = (category) => {
-  const types = {
+function getCategoryTagClass(category) {
+  const map = {
     '工科': 'primary',
     '商科': 'success',
     '社科': 'warning',
     '理科': 'info',
     '文科': 'danger'
   }
-  return types[category] || 'info'
+  return map[category] || 'info'
 }
 
 const getCategoryClass = (category) => {
@@ -876,7 +788,7 @@ const handleHeroSearch = () => {
   searchKeyword.value = heroSearchKeyword.value
   activeTab.value = 'schools'
   currentSchoolPage.value = 1
-  ElMessage.success(`找到 ${totalSchools.value.length} 所学校`)
+  showToast(`找到 ${totalSchools.value.length} 所学校`, 'success')
 }
 
 const searchByTag = (tag) => {
@@ -884,12 +796,7 @@ const searchByTag = (tag) => {
   searchKeyword.value = tag
   activeTab.value = 'schools'
   currentSchoolPage.value = 1
-  ElMessage.success(`按「${tag}」搜索，找到 ${totalSchools.value.length} 所学校`)
-}
-
-const search = () => {
-  currentSchoolPage.value = 1
-  ElMessage.success(`找到 ${totalSchools.value.length} 所学校`)
+  showToast(`按「${tag}」搜索，找到 ${totalSchools.value.length} 所学校`, 'success')
 }
 
 const resetFilters = () => {
@@ -905,27 +812,15 @@ const toggleRankFilter = (val) => {
   filterRankRange.value = filterRankRange.value === val ? '' : val
 }
 
-const searchMajors = () => {
-  currentMajorPage.value = 1
-  ElMessage.success(`找到 ${totalMajors.value.length} 个专业`)
-}
-
-const resetMajorFilters = () => {
-  majorSearchKeyword.value = ''
-  filterDegreeType.value = ''
-  filterCategory.value = ''
-  currentMajorPage.value = 1
+const clearSelection = () => {
+  selectedMajors.value = []
+  showToast('已清空选择', 'info')
 }
 
 const showCompare = () => {
   majorsToCompare.value = allMajors.value.filter(m => selectedMajors.value.includes(m.id))
   buildCompareTableData()
   compareVisible.value = true
-}
-
-const clearSelection = () => {
-  selectedMajors.value = []
-  ElMessage.info('已清空选择')
 }
 
 const buildCompareTableData = () => {
@@ -956,8 +851,7 @@ const buildCompareTableData = () => {
 }
 
 const showDetail = (school) => {
-  currentSchool.value = school
-  detailVisible.value = true
+  router.push('/school-detail/' + school.id + '?from=database')
 }
 
 const goToMajorDetail = (major) => {
@@ -969,29 +863,11 @@ const addToShortlist = (school) => {
   if (idx > -1) {
     shortlisted.value.splice(idx, 1)
     localStorage.setItem('school_favorites', JSON.stringify(shortlisted.value))
-    ElMessage.success(`已将 ${school.name} 从选校清单移除`)
+    showToast(`已将 ${school.name} 从选校清单移除`, 'info')
   } else {
     shortlisted.value.push(school.id)
     localStorage.setItem('school_favorites', JSON.stringify(shortlisted.value))
-    ElMessage.success(`已将 ${school.name} 加入选校清单`)
-  }
-}
-
-const goToApply = (_school) => {
-  router.push('/materials')
-}
-
-const visitWebsite = (url) => {
-  if (url) {
-    window.open(url, '_blank')
-  } else {
-    ElMessage.warning('暂无官网链接')
-  }
-}
-
-const openSource = (url) => {
-  if (url) {
-    window.open(url, '_blank')
+    showToast(`已将 ${school.name} 加入选校清单`, 'success')
   }
 }
 
@@ -1081,6 +957,7 @@ onMounted(() => {
 onUnmounted(() => {
   heroObserver?.disconnect()
   contentObserver?.disconnect()
+  if (toastTimer) clearTimeout(toastTimer)
 })
 </script>
 
@@ -1092,14 +969,80 @@ onUnmounted(() => {
   background: var(--color-background);
 }
 
+/* ========== Toast 通知系统 ========== */
+.toast-notification {
+  position: fixed;
+  top: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 12px 20px;
+  border-radius: var(--radius-lg);
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  box-shadow: var(--shadow-lg);
+  pointer-events: auto;
+}
+
+.toast-success {
+  background: var(--color-solid);
+  color: var(--color-text-inverse);
+}
+
+.toast-error {
+  background: var(--color-danger);
+  color: white;
+}
+
+.toast-warning {
+  background: var(--color-warning);
+  color: white;
+}
+
+.toast-info {
+  background: var(--color-solid);
+  color: var(--color-text-inverse);
+}
+
+.toast-icon {
+  flex-shrink: 0;
+  font-weight: 700;
+  font-size: var(--text-base);
+}
+
+.toast-message {
+  line-height: 1.4;
+}
+
+.toast-fade-enter-active {
+  transition: opacity 250ms ease, transform 250ms ease;
+}
+
+.toast-fade-leave-active {
+  transition: opacity 150ms ease, transform 150ms ease;
+}
+
+.toast-fade-enter-from {
+  opacity: 0;
+  transform: translateX(-50%) translateY(-12px);
+}
+
+.toast-fade-leave-to {
+  opacity: 0;
+  transform: translateX(-50%) translateY(-8px);
+}
+
 /* ========== Hero 搜索区域 ========== */
 .db-hero {
   position: relative;
   overflow: hidden;
   padding: var(--space-16) var(--space-10) var(--space-12);
   opacity: 0;
-  transform: translateY(30px);
-  transition: opacity 0.8s ease, transform 0.8s ease;
+  transform: translateY(24px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
 }
 
 .db-hero.is-visible {
@@ -1107,76 +1050,43 @@ onUnmounted(() => {
   transform: translateY(0);
 }
 
-.db-hero-gradient {
+.db-hero-bg {
   position: absolute;
   inset: 0;
   pointer-events: none;
   background:
-    linear-gradient(90deg, rgba(15, 23, 42, 0.02) 1px, transparent 1px),
-    linear-gradient(rgba(15, 23, 42, 0.02) 1px, transparent 1px),
-    radial-gradient(ellipse at 25% 50%, rgba(15, 23, 42, 0.03) 0%, transparent 55%),
-    radial-gradient(ellipse at 75% 50%, rgba(217, 119, 6, 0.02) 0%, transparent 55%),
+    linear-gradient(90deg, rgba(15, 23, 42, 0.015) 1px, transparent 1px),
+    linear-gradient(rgba(15, 23, 42, 0.015) 1px, transparent 1px),
     linear-gradient(180deg, var(--color-background-alt) 0%, var(--color-surface) 100%);
-  background-size: 80px 80px, 80px 80px, 100% 100%, 100% 100%, 100% 100%;
-}
-
-.db-hero-glow {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-}
-
-.db-hero-glow::before {
-  content: '';
-  position: absolute;
-  width: 500px;
-  height: 500px;
-  top: -150px;
-  left: -80px;
-  background: radial-gradient(circle, rgba(217, 119, 6, 0.04) 0%, transparent 70%);
-  animation: glow-pulse 10s ease-in-out infinite;
-  pointer-events: none;
-}
-
-.db-hero-glow::after {
-  content: '';
-  position: absolute;
-  width: 350px;
-  height: 350px;
-  bottom: -80px;
-  right: -40px;
-  background: radial-gradient(circle, rgba(15, 23, 42, 0.04) 0%, transparent 70%);
-  animation: glow-pulse 12s ease-in-out infinite reverse;
-  pointer-events: none;
+  background-size: 80px 80px, 80px 80px, 100% 100%;
 }
 
 .db-hero-content {
   position: relative;
   z-index: 2;
-  max-width: 800px;
+  max-width: 720px;
   margin: 0 auto;
   text-align: center;
 }
 
 .db-hero-title {
-  font-family: var(--font-family-display);
+  font-family: var(--font-family-base);
   font-size: var(--text-4xl);
   font-weight: var(--font-bold);
   color: var(--color-text-primary);
   margin: 0 0 var(--space-3);
   line-height: var(--leading-tight);
-  position: relative;
-  display: inline-block;
+  letter-spacing: -1px;
 }
 
 .db-hero-title::after {
   content: '';
   display: block;
-  width: 60px;
-  height: 4px;
+  width: 48px;
+  height: 3px;
   background: var(--color-solid);
   margin: var(--space-4) auto 0;
-  border-radius: var(--radius-sm);
+  border-radius: 2px;
 }
 
 .db-hero-subtitle {
@@ -1192,15 +1102,15 @@ onUnmounted(() => {
   margin: 0 auto var(--space-6);
   display: flex;
   align-items: center;
-  background: #fff;
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-lg), 0 0 0 1px rgba(15, 23, 42, 0.05);
+  background: var(--color-surface);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg), 0 0 0 1px var(--color-border-light);
   transition: all var(--transition-normal);
   padding: 2px;
 }
 
 .db-hero-search:hover {
-  box-shadow: var(--shadow-xl), 0 0 0 1px rgba(15, 23, 42, 0.08);
+  box-shadow: var(--shadow-xl), 0 0 0 1px var(--color-border);
 }
 
 .db-hero-search:focus-within {
@@ -1231,7 +1141,7 @@ onUnmounted(() => {
   padding: 10px 24px;
   margin: 4px;
   background: var(--color-solid);
-  color: #fff;
+  color: var(--color-text-inverse);
   border: none;
   border-radius: var(--radius-lg);
   font-size: var(--text-sm);
@@ -1269,14 +1179,23 @@ onUnmounted(() => {
 }
 
 .hot-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 14px;
+  font-size: var(--text-xs);
+  font-weight: var(--font-medium);
+  color: var(--color-text-secondary);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-full);
   cursor: pointer;
   transition: all var(--transition-fast);
-  font-size: var(--text-xs);
+  user-select: none;
 }
 
 .hot-tag:hover {
   color: var(--color-slate-700);
-  border-color: var(--color-slate-700);
+  border-color: var(--color-slate-200);
   background: var(--color-slate-50);
   transform: translateY(-1px);
 }
@@ -1315,8 +1234,8 @@ onUnmounted(() => {
 /* ========== 主内容区域 ========== */
 .db-content {
   opacity: 0;
-  transform: translateY(40px);
-  transition: opacity 0.8s ease, transform 0.8s ease;
+  transform: translateY(32px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
 }
 
 .db-content.is-visible {
@@ -1325,7 +1244,7 @@ onUnmounted(() => {
 }
 
 .db-container {
-  max-width: 1400px;
+  max-width: 1600px;
   margin: 0 auto;
   padding: 0 var(--space-10);
   box-sizing: border-box;
@@ -1360,7 +1279,7 @@ onUnmounted(() => {
 }
 
 .database-tabs :deep(.el-tabs__item.is-active) {
-  color: var(--color-slate-700);
+  color: var(--color-solid);
   font-weight: var(--font-semibold);
 }
 
@@ -1418,7 +1337,7 @@ onUnmounted(() => {
 }
 
 .filter-chip.is-active {
-  color: #fff;
+  color: var(--color-text-inverse);
   background: var(--color-solid);
   border-color: transparent;
 }
@@ -1448,7 +1367,6 @@ onUnmounted(() => {
 
 .search-mini-icon {
   color: var(--color-text-tertiary);
-  font-size: 13px;
   flex-shrink: 0;
 }
 
@@ -1478,7 +1396,7 @@ onUnmounted(() => {
   display: flex;
   gap: 2px;
   padding: 2px;
-  background: var(--color-background);
+  background: var(--color-background-alt);
   border-radius: var(--radius-lg);
   border: 1px solid var(--color-border-light);
 }
@@ -1501,7 +1419,7 @@ onUnmounted(() => {
 }
 
 .view-mode-btn.is-active {
-  color: #fff;
+  color: var(--color-text-inverse);
   background: var(--color-solid);
 }
 
@@ -1513,7 +1431,7 @@ onUnmounted(() => {
 /* ========== 过渡动画 ========== */
 .fade-enter-active,
 .fade-leave-active {
-  transition: opacity 0.3s ease;
+  transition: opacity 0.25s ease;
 }
 
 .fade-enter-from,
@@ -1542,11 +1460,17 @@ onUnmounted(() => {
 
 @media (min-width: 1200px) {
   .schools-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1440px) {
+  .schools-grid {
     grid-template-columns: repeat(4, 1fr);
   }
 }
 
-/* ========== 院校卡片 - 学术优雅风格 ========== */
+/* ========== 院校卡片 ========== */
 .school-card {
   background: var(--color-surface);
   border-radius: var(--radius-xl);
@@ -1564,10 +1488,12 @@ onUnmounted(() => {
 
 .school-card__top-bar {
   position: absolute;
-  top: 0; left: 0; right: 0;
+  top: 0;
+  left: 0;
+  right: 0;
   height: 3px;
   background: var(--color-solid);
-  transition: height 0.3s ease;
+  transition: height 0.25s ease;
 }
 
 .school-card:hover {
@@ -1609,28 +1535,24 @@ onUnmounted(() => {
   font-weight: var(--font-semibold);
   padding: 2px 8px;
   border-radius: var(--radius-full);
-  border: none;
   flex-shrink: 0;
+  color: white;
 }
 
-.school-card__rank.el-tag--danger {
+.school-card__rank.rank-danger {
   background: var(--color-danger);
-  color: white;
 }
 
-.school-card__rank.el-tag--warning {
-  background: var(--color-warning);
-  color: white;
+.school-card__rank.rank-warning {
+  background: var(--color-accent);
 }
 
-.school-card__rank.el-tag--success {
+.school-card__rank.rank-success {
   background: var(--color-success);
-  color: white;
 }
 
-.school-card__rank.el-tag--info {
+.school-card__rank.rank-info {
   background: var(--color-info);
-  color: white;
 }
 
 .school-card__meta {
@@ -1711,20 +1633,36 @@ onUnmounted(() => {
 
 .card-action-btn {
   font-weight: var(--font-medium);
+  font-size: var(--text-sm);
+  padding: 6px 16px;
   border-radius: var(--radius-lg);
-  transition: all var(--transition-normal);
+  border: 1.5px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  min-height: 32px;
 }
 
 .card-action-btn:hover {
-  transform: translateY(-2px);
+  border-color: var(--color-solid);
+  color: var(--color-solid);
+  transform: translateY(-1px);
+}
+
+.card-action-btn.is-added {
+  background: var(--color-slate-50);
+  border-color: var(--color-success);
+  color: var(--color-success);
 }
 
 /* ========== 列表视图 ========== */
 .schools-list {
-  background: #fff;
+  background: var(--color-surface);
   border-radius: var(--radius-xl);
   overflow: hidden;
   box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border-light);
 }
 
 .schools-list :deep(.el-table) {
@@ -1750,8 +1688,63 @@ onUnmounted(() => {
   color: var(--color-text-primary);
 }
 
-.list-school-name .rank-tag {
+.rank-tag {
   flex-shrink: 0;
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  color: white;
+}
+
+.rank-tag.rank-danger {
+  background: var(--color-danger);
+}
+
+.rank-tag.rank-warning {
+  background: var(--color-accent);
+}
+
+.rank-tag.rank-success {
+  background: var(--color-success);
+}
+
+.rank-tag.rank-info {
+  background: var(--color-info);
+}
+
+.table-action-btn {
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  padding: 5px 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  margin-right: 6px;
+}
+
+.table-action-btn:hover {
+  border-color: var(--color-solid);
+  color: var(--color-solid);
+}
+
+.table-action-btn--primary {
+  background: var(--color-solid);
+  color: var(--color-text-inverse);
+  border-color: var(--color-solid);
+}
+
+.table-action-btn--primary:hover {
+  background: var(--color-solid-hover);
+}
+
+.table-action-btn.is-added {
+  background: var(--color-slate-50);
+  border-color: var(--color-success);
+  color: var(--color-success);
 }
 
 .low-rate {
@@ -1769,6 +1762,35 @@ onUnmounted(() => {
 
 .pagination :deep(.el-pagination) {
   --el-pagination-button-bg-color: var(--color-surface);
+}
+
+/* ========== 空状态 ========== */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-16) var(--space-8);
+  text-align: center;
+}
+
+.empty-state-icon {
+  font-size: 48px;
+  color: var(--color-slate-300);
+  margin-bottom: var(--space-6);
+}
+
+.empty-state-title {
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-2);
+}
+
+.empty-state-desc {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  max-width: 320px;
 }
 
 /* ========== 专业卡片网格 ========== */
@@ -1791,6 +1813,12 @@ onUnmounted(() => {
 }
 
 @media (min-width: 1200px) {
+  .majors-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1440px) {
   .majors-grid {
     grid-template-columns: repeat(4, 1fr);
   }
@@ -1815,10 +1843,12 @@ onUnmounted(() => {
 
 .major-card__top-bar {
   position: absolute;
-  top: 0; left: 0; right: 0;
+  top: 0;
+  left: 0;
+  right: 0;
   height: 3px;
   background: var(--color-slate-300);
-  transition: height 0.3s ease;
+  transition: height 0.25s ease;
 }
 
 .major-card.category-engineering .major-card__top-bar {
@@ -1830,7 +1860,7 @@ onUnmounted(() => {
 }
 
 .major-card.category-social .major-card__top-bar {
-  background: var(--color-warning);
+  background: var(--color-accent);
 }
 
 .major-card.category-science .major-card__top-bar {
@@ -1884,30 +1914,29 @@ onUnmounted(() => {
   font-weight: var(--font-medium);
   padding: 2px 10px;
   border-radius: var(--radius-full);
-  border: none;
 }
 
-.category-tag.el-tag--primary {
+.category-tag.tag-primary {
   background: var(--color-slate-100);
   color: var(--color-slate-700);
 }
 
-.category-tag.el-tag--success {
+.category-tag.tag-success {
   background: var(--color-success-bg);
   color: var(--color-success);
 }
 
-.category-tag.el-tag--warning {
-  background: var(--color-warning-bg);
-  color: var(--color-warning);
+.category-tag.tag-warning {
+  background: var(--color-accent-subtle);
+  color: var(--color-accent);
 }
 
-.category-tag.el-tag--info {
+.category-tag.tag-info {
   background: var(--color-info-bg);
   color: var(--color-info);
 }
 
-.category-tag.el-tag--danger {
+.category-tag.tag-danger {
   background: var(--color-danger-bg);
   color: var(--color-danger);
 }
@@ -1973,20 +2002,8 @@ onUnmounted(() => {
   flex-direction: column;
   gap: 2px;
   border: 1px solid var(--color-border-light);
-  position: relative;
-  overflow: hidden;
   height: 60px;
   justify-content: center;
-}
-
-.major-salary::before {
-  content: '💰';
-  position: absolute;
-  right: 6px;
-  top: 50%;
-  transform: translateY(-50%);
-  opacity: 0.08;
-  font-size: 36px;
 }
 
 .salary-label {
@@ -2020,110 +2037,21 @@ onUnmounted(() => {
 
 .detail-link {
   font-weight: var(--font-medium);
+  font-size: var(--text-sm);
   color: var(--color-slate-700);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: var(--radius-md);
   transition: all var(--transition-normal);
+  display: inline-flex;
+  align-items: center;
 }
 
 .detail-link:hover {
-  color: var(--color-slate-700);
+  color: var(--color-solid);
   transform: translateX(4px);
-}
-
-.major-card:hover .detail-link .el-icon {
-  transform: translateX(4px);
-}
-
-/* ========== 详情对话框 ========== */
-.school-detail {
-  padding: var(--space-5);
-}
-
-.detail-header {
-  display: flex;
-  gap: var(--space-5);
-  padding: var(--space-5);
-  background: var(--color-slate-50);
-  border-radius: var(--radius-xl);
-  margin-bottom: var(--space-6);
-}
-
-.school-image {
-  width: 160px;
-  height: 110px;
-  object-fit: cover;
-  border-radius: var(--radius-lg);
-  flex-shrink: 0;
-}
-
-.detail-title {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.detail-title h2 {
-  margin: 0 0 var(--space-2);
-  font-size: var(--text-2xl);
-  color: var(--color-text-primary);
-  font-weight: var(--font-bold);
-}
-
-.detail-subtitle {
-  color: var(--color-text-secondary);
-  margin: 0;
-  font-size: var(--text-base);
-}
-
-.description-section,
-.requirements-section {
-  padding: var(--space-5);
-  margin-top: var(--space-5);
-  background: var(--color-background);
-  border-radius: var(--radius-xl);
-  border: 1px solid var(--color-border-light);
-}
-
-.description-section h4,
-.requirements-section h4 {
-  margin-bottom: var(--space-3);
-  color: var(--color-text-primary);
-  font-size: var(--text-lg);
-  font-weight: var(--font-semibold);
-}
-
-.requirements-section ul {
-  padding-left: var(--space-6);
-  list-style: square;
-}
-
-.requirements-section li {
-  margin-bottom: var(--space-2);
-  color: var(--color-text-secondary);
-  line-height: var(--leading-relaxed);
-}
-
-.detail-actions {
-  margin-top: var(--space-6);
-  padding: var(--space-5);
-  display: flex;
-  justify-content: center;
-  gap: var(--space-4);
-  background: var(--color-background);
-  border-radius: var(--radius-xl);
-}
-
-.source-sup {
-  color: var(--color-info);
-  cursor: pointer;
-  font-size: 10px;
-  margin-left: 2px;
-  font-weight: normal;
-}
-
-.source-sup:hover {
-  color: var(--color-slate-700);
-  text-decoration: underline;
 }
 
 /* ========== 对比操作栏 ========== */
@@ -2149,6 +2077,33 @@ onUnmounted(() => {
   color: var(--color-slate-700);
 }
 
+.compare-btn {
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  padding: 8px 18px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.compare-btn:hover {
+  border-color: var(--color-solid);
+  color: var(--color-solid);
+}
+
+.compare-btn--primary {
+  background: var(--color-solid);
+  color: var(--color-text-inverse);
+  border-color: var(--color-solid);
+}
+
+.compare-btn--primary:hover {
+  background: var(--color-solid-hover);
+}
+
 .compare-container {
   overflow-x: auto;
 }
@@ -2165,14 +2120,14 @@ onUnmounted(() => {
 
 /* ========== 响应式设计 ========== */
 
-/* 平板端 */
-@media (max-width: 992px) {
-  .db-hero {
-    padding: var(--space-12) var(--space-6) var(--space-8);
-  }
-
+/* 平板及以下 */
+@media (max-width: 1199px) {
   .db-container {
     padding: 0 var(--space-6);
+  }
+
+  .db-hero {
+    padding: var(--space-12) var(--space-6) var(--space-8);
   }
 
   .db-hero-title {
@@ -2185,7 +2140,7 @@ onUnmounted(() => {
 }
 
 /* 大手机 */
-@media (max-width: 768px) {
+@media (max-width: 767px) {
   .db-hero {
     padding: var(--space-10) var(--space-5) var(--space-6);
   }
@@ -2254,7 +2209,7 @@ onUnmounted(() => {
   }
 }
 
-/* 手机 */
+/* 小手机 */
 @media (max-width: 576px) {
   .db-hero-title {
     font-size: var(--text-xl);
@@ -2291,31 +2246,13 @@ onUnmounted(() => {
     display: none;
   }
 
-  .detail-header {
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-  }
-
-  .detail-title {
-    align-items: center;
-  }
-
-  .detail-actions {
-    flex-direction: column;
-  }
-
-  .detail-actions .el-button {
-    width: 100%;
-  }
-
   .compare-bar {
     flex-direction: column;
     align-items: stretch;
     text-align: center;
   }
 
-  .compare-bar .el-button {
+  .compare-btn {
     width: 100%;
   }
 
@@ -2349,10 +2286,31 @@ onUnmounted(() => {
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 767px) {
   .major-compare-dialog {
     width: 90% !important;
     max-width: 90% !important;
+  }
+}
+
+/* Toast 移动端适配 */
+@media (max-width: 767px) {
+  .toast-notification {
+    left: 16px;
+    right: 16px;
+    transform: none;
+  }
+
+  .toast-fade-enter-from {
+    transform: translateY(-12px);
+  }
+
+  .toast-fade-leave-to {
+    transform: translateY(-8px);
+  }
+
+  .toast-message {
+    white-space: normal;
   }
 }
 
@@ -2375,9 +2333,9 @@ onUnmounted(() => {
     transform: none;
   }
 
-  .db-hero-glow::before,
-  .db-hero-glow::after {
-    animation: none;
+  .toast-fade-enter-active,
+  .toast-fade-leave-active {
+    transition-duration: 0.01ms;
   }
 }
 </style>

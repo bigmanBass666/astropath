@@ -63,84 +63,11 @@
         />
       </router-view>
     </el-main>
-    <footer
+    <SiteFooter
       v-if="!isImmersivePage && !isHomePage"
-      class="app-footer"
-    >
-      <div class="footer-container">
-        <div class="footer-content">
-          <div class="footer-brand">
-            <h3>智途 AstroPath</h3>
-            <p>通过AI分析您的背景，生成动态、可执行的个性化留学路径图</p>
-          </div>
-          <div class="footer-links">
-            <h4>快速链接</h4>
-            <ul>
-              <li><a href="/assessment">背景评估</a></li>
-              <li><a href="/school-recommendation">AI选校</a></li>
-              <li><a href="/timeline">时间规划</a></li>
-              <li><a href="/materials">材料中心</a></li>
-              <li><a href="/university-database">院校数据库</a></li>
-              <li><a href="/ai-chat">AI对话</a></li>
-            </ul>
-          </div>
-          <div class="footer-help">
-            <h4>帮助支持</h4>
-            <ul>
-              <li>
-                <a
-                  href="#"
-                  @click.prevent="showGuide"
-                >使用指南</a>
-              </li>
-              <li><a href="#">常见问题</a></li>
-              <li>
-                <a
-                  href="#"
-                  @click.prevent="showContact"
-                >联系我们</a>
-              </li>
-            </ul>
-          </div>
-          <div class="footer-contact">
-            <h4>联系方式</h4>
-            <p><el-icon><Message /></el-icon> support@astropath.com</p>
-            <p><el-icon><Phone /></el-icon> 400-123-4567</p>
-            <div class="social-links">
-              <a
-                href="https://github.com/bigmanBass666"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="social-link github-link"
-                title="GitHub"
-              >
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                  width="18"
-                  height="18"
-                >
-                  <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z" />
-                </svg>
-              </a>
-              <a
-                href="#"
-                class="social-link"
-                title="微信"
-              ><el-icon><ChatDotRound /></el-icon></a>
-              <a
-                href="#"
-                class="social-link"
-                title="微博"
-              ><el-icon><Platform /></el-icon></a>
-            </div>
-          </div>
-        </div>
-        <div class="footer-bottom">
-          <p>&copy; 2026 智途 AstroPath. All rights reserved.</p>
-        </div>
-      </div>
-    </footer>
+      @show-guide="showGuide"
+      @show-contact="showContact"
+    />
 
     <!-- 移动端导航抽屉 -->
     <el-drawer
@@ -243,8 +170,9 @@
 <script setup>
 import { computed, ref, provide } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { Expand, Menu, Close, Document, Cpu, DataLine, Message, Phone } from '@element-plus/icons-vue'
+import { Expand, Menu, Close, Document, Cpu, DataLine } from '@element-plus/icons-vue'
 import Logo from './components/common/Logo.vue'
+import SiteFooter from './components/common/SiteFooter.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -518,173 +446,6 @@ const showContact = () => {
 .app-container.is-home .app-main {
   padding: 0;
   background: var(--color-surface);
-}
-
-.app-footer {
-  background-color: var(--color-text-primary);
-  color: rgba(255, 255, 255, 0.75);
-  padding: 0;
-}
-
-.app-footer .footer-container {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 60px 40px 0;
-  box-sizing: border-box;
-}
-
-.app-footer .footer-content {
-  display: grid;
-  grid-template-columns: 1.5fr 1fr 1fr 1fr;
-  gap: 40px;
-  padding-bottom: 40px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.app-footer .footer-brand h3 {
-  font-size: 20px;
-  font-weight: 700;
-  margin-bottom: 16px;
-  color: white;
-  font-family: var(--font-family-display);
-}
-
-.app-footer .footer-brand p {
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 14px;
-  line-height: 1.7;
-}
-
-.app-footer .footer-links h4,
-.app-footer .footer-help h4,
-.app-footer .footer-contact h4 {
-  font-size: 16px;
-  font-weight: 600;
-  margin-bottom: 20px;
-  color: #fff;
-}
-
-.app-footer .footer-links ul,
-.app-footer .footer-help ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.app-footer .footer-links li,
-.app-footer .footer-help li {
-  margin-bottom: 12px;
-}
-
-.app-footer .footer-links a,
-.app-footer .footer-help a {
-  color: rgba(255, 255, 255, 0.7);
-  text-decoration: none;
-  font-size: 14px;
-  transition: color 0.3s ease;
-}
-
-.app-footer .footer-links a:hover,
-.app-footer .footer-help a:hover {
-  color: #D4AF37;
-}
-
-.app-footer .footer-contact p {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: rgba(255, 255, 255, 0.7);
-  font-size: 14px;
-  margin-bottom: 12px;
-}
-
-.app-footer .footer-contact .el-icon {
-  font-size: 16px;
-  color: #D4AF37;
-}
-
-.app-footer .social-links {
-  display: flex;
-  gap: 12px;
-  margin-top: 16px;
-}
-
-.app-footer .social-link {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.7);
-  text-decoration: none;
-  transition: all 0.3s ease;
-}
-
-.app-footer .social-link:hover {
-  background: #D4AF37;
-  color: var(--color-text-primary);
-  transform: translateY(-2px);
-}
-
-.app-footer .social-link svg {
-  display: block;
-}
-
-.app-footer .footer-bottom {
-  padding: 20px 0;
-  text-align: center;
-}
-
-.app-footer .footer-bottom p {
-  color: rgba(255, 255, 255, 0.65);
-  font-size: 13px;
-  margin: 0;
-}
-
-@media (max-width: 992px) {
-  .app-footer .footer-content {
-    grid-template-columns: 1fr 1fr;
-    gap: 30px;
-  }
-}
-
-@media (max-width: 576px) {
-  .app-footer .footer-container {
-    padding: 40px 20px 0;
-  }
-
-  .app-footer .footer-content {
-    grid-template-columns: 1fr;
-    gap: 30px;
-    text-align: center;
-  }
-
-  .app-footer .footer-links ul,
-  .app-footer .footer-help ul {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 8px 16px;
-  }
-
-  .app-footer .footer-links li,
-  .app-footer .footer-help li {
-    margin: 0;
-  }
-
-  .app-footer .footer-contact {
-    text-align: center;
-  }
-
-  .app-footer .footer-contact p {
-    justify-content: center;
-  }
-
-  .app-footer .social-links {
-    justify-content: center;
-  }
 }
 
 /* 移动端菜单抽屉 */

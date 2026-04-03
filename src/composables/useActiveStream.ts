@@ -3,6 +3,7 @@ import { useGlobalAIState, type MessageActionsConfig } from './useGlobalAIState'
 
 export interface UseActiveStreamOptions {
   actions?: Partial<MessageActionsConfig>
+  taskId?: string
 }
 
 export function useActiveStream(options: UseActiveStreamOptions = {}) {
@@ -10,18 +11,23 @@ export function useActiveStream(options: UseActiveStreamOptions = {}) {
 
   const activeStream = computed(() => globalState.activeStream.value)
 
-  const isLoading = computed(() => activeStream.value?.isLoading ?? false)
+  const isOwnTask = computed(() => {
+    if (!options.taskId) return true
+    return activeStream.value?.taskId === options.taskId
+  })
+
+  const isLoading = computed(() => isOwnTask.value ? (activeStream.value?.isLoading ?? false) : false)
   const isGenerating = computed(() => isLoading.value)
-  const isQueued = computed(() => activeStream.value?.isQueued ?? false)
-  const isThinking = computed(() => activeStream.value?.isThinking ?? false)
-  const isStreaming = computed(() => activeStream.value?.isStreaming ?? false)
-  const isConnecting = computed(() => activeStream.value?.isConnecting ?? false)
-  const hasError = computed(() => activeStream.value?.hasError ?? false)
-  const queuePosition = computed(() => activeStream.value?.queuePosition ?? 0)
-  const canRetry = computed(() => activeStream.value?.canRetry ?? false)
-  const retryCount = computed(() => activeStream.value?.retryCount ?? 0)
-  const maxRetries = computed(() => activeStream.value?.maxRetries ?? 0)
-  const waitingPhase = computed(() => activeStream.value?.waitingPhase ?? 'ready')
+  const isQueued = computed(() => isOwnTask.value ? (activeStream.value?.isQueued ?? false) : false)
+  const isThinking = computed(() => isOwnTask.value ? (activeStream.value?.isThinking ?? false) : false)
+  const isStreaming = computed(() => isOwnTask.value ? (activeStream.value?.isStreaming ?? false) : false)
+  const isConnecting = computed(() => isOwnTask.value ? (activeStream.value?.isConnecting ?? false) : false)
+  const hasError = computed(() => isOwnTask.value ? (activeStream.value?.hasError ?? false) : false)
+  const queuePosition = computed(() => isOwnTask.value ? (activeStream.value?.queuePosition ?? 0) : 0)
+  const canRetry = computed(() => isOwnTask.value ? (activeStream.value?.canRetry ?? false) : false)
+  const retryCount = computed(() => isOwnTask.value ? (activeStream.value?.retryCount ?? 0) : 0)
+  const maxRetries = computed(() => isOwnTask.value ? (activeStream.value?.maxRetries ?? 0) : 0)
+  const waitingPhase = computed(() => isOwnTask.value ? (activeStream.value?.waitingPhase ?? 'ready') : 'ready')
 
   const stopButtonVisible = computed(() => {
     const config = globalState.getConfig().messageActions
@@ -34,8 +40,9 @@ export function useActiveStream(options: UseActiveStreamOptions = {}) {
   })
 
   const waitingText = computed(() => {
-    if (waitingPhase.value === 'connecting') return '正在连接...'
-    if (waitingPhase.value === 'processing') return 'AI 正在分析...'
+    const phases = globalState.getConfig().waitingState.phases
+    if (waitingPhase.value === 'connecting') return phases.connecting.text
+    if (waitingPhase.value === 'processing') return phases.processing.text
     return ''
   })
 

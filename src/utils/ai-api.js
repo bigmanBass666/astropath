@@ -60,7 +60,7 @@ export async function sendMessageToAI(providerId, messages, options = {}, extern
   try {
     // 发送请求 - 思考模式需要更长的超时时间
     const controller = new AbortController()
-    const timeout = options.enableThinking ? 120000 : 60000 // 思考模式120秒，普通模式60秒
+    const timeout = options.requestTimeout || (options.enableThinking ? 120000 : 60000)
     const timeoutId = setTimeout(() => controller.abort(), timeout)
     
     // 如果提供了外部 signal，监听它

@@ -508,52 +508,50 @@ html, body {
 
 /* ===== F046: 导航栏固定抖动修复 ===== */
 
-/* 全局滚动条稳定性 - 防止滚动条出现/消失时导致页面内容偏移 */
+/* 全局滚动条 - 统一由 html 管理，auto 按需显示，避免双滚动条和预留空间过宽 */
 html {
-  overflow-y: scroll;
+  overflow-y: auto;
   overflow-x: hidden;
-  scrollbar-gutter: stable;
 }
 
-/* 隐藏横向滚动条 */
+/* body 不产生独立滚动容器，所有纵向滚动交给 html */
 body {
   overflow-x: hidden;
 }
 
-/* 滚动条样式 - 现代浏览器（webkit） */
+/* 滚动条样式 - 深色主题 */
 ::-webkit-scrollbar {
-  width: 6px;
+  width: 8px;
   height: 0;
 }
 
 ::-webkit-scrollbar-track {
-  background: transparent;
-  border-radius: 3px;
+  background: rgba(15, 23, 42, 0.06);
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(30, 58, 95, 0.2);
-  border-radius: 3px;
+  background: var(--color-solid);
+  border-radius: 4px;
   transition: background 0.3s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(30, 58, 95, 0.5);
+  background: var(--color-text-primary);
 }
 
-/* 页面悬停时滚动条更明显 */
 html:hover::-webkit-scrollbar-thumb {
-  background: rgba(30, 58, 95, 0.3);
+  background: var(--color-solid);
 }
 
-/* Firefox 滚动条 */
+/* Firefox 滚动条 - 深色主题 */
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(30, 58, 95, 0.2) transparent;
+  scrollbar-color: var(--color-solid) rgba(15, 23, 42, 0.06);
 }
 
 *:hover {
-  scrollbar-color: rgba(30, 58, 95, 0.4) transparent;
+  scrollbar-color: var(--color-text-primary) rgba(15, 23, 42, 0.06);
 }
 
 /* 导航栏固定稳定性优化 - 防止滚动时抖动 */
