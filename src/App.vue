@@ -8,8 +8,12 @@
       class="app-header"
     >
       <div class="header-content">
-        <Logo @click="router.push('/')" />
-        <!-- 桌面端导航菜单 -->
+        <!-- 左侧：Logo -->
+        <div class="header-left">
+          <Logo @click="router.push('/')" />
+        </div>
+
+        <!-- 中间：桌面端导航菜单 -->
         <nav class="nav-menu-container desktop-nav">
           <router-link
             v-for="item in menuItems"
@@ -20,16 +24,35 @@
             {{ item.name }}
           </router-link>
         </nav>
-        <!-- 移动端汉堡菜单按钮 -->
-        <button
-          class="hamburger-btn"
-          aria-label="打开菜单"
-          @click="mobileMenuVisible = true"
-        >
-          <el-icon :size="24">
-            <Expand />
-          </el-icon>
-        </button>
+
+        <!-- 右侧：设置按钮 + 移动端汉堡菜单按钮 -->
+        <div class="header-right">
+          <el-tooltip
+            content="AI配置"
+            placement="bottom"
+            :show-after="200"
+          >
+            <button
+              class="ai-config-btn"
+              :class="{ 'is-active': isAIConfigPage }"
+              aria-label="AI配置"
+              @click="router.push('/ai-config')"
+            >
+              <el-icon :size="18">
+                <Cpu />
+              </el-icon>
+            </button>
+          </el-tooltip>
+          <button
+            class="hamburger-btn"
+            aria-label="打开菜单"
+            @click="mobileMenuVisible = true"
+          >
+            <el-icon :size="24">
+              <Expand />
+            </el-icon>
+          </button>
+        </div>
       </div>
     </el-header>
     <el-main class="app-main">
@@ -230,12 +253,12 @@ const activeMenu = computed(() => route.path)
 
 const isImmersivePage = computed(() => route.path === '/ai-chat')
 const isHomePage = computed(() => route.path === '/')
+const isAIConfigPage = computed(() => route.path === '/ai-config')
 
 const mobileMenuVisible = ref(false)
 
 const menuItems = [
   { path: '/', name: '首页' },
-  { path: '/ai-config', name: 'AI配置' },
   { path: '/assessment', name: '背景评估' },
   { path: '/school-recommendation', name: '选校推荐' },
   { path: '/timeline', name: '时间规划' },
@@ -249,11 +272,6 @@ const navigateTo = (path) => {
   mobileMenuVisible.value = false
 }
 
-const handleMenuSelect = (path) => {
-  router.push(path)
-}
-
-// 对话框状态 - 通过 provide 共享给子组件（如 Home.vue 的页脚）
 const guideVisible = ref(false)
 const aboutVisible = ref(false)
 const contactVisible = ref(false)
@@ -264,10 +282,6 @@ provide('contactVisible', contactVisible)
 
 const showGuide = () => {
   guideVisible.value = true
-}
-
-const showAbout = () => {
-  aboutVisible.value = true
 }
 
 const showContact = () => {
@@ -294,10 +308,23 @@ const showContact = () => {
 .header-content {
   max-width: 1800px;
   margin: 0 auto;
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
   height: 100%;
-  gap: 40px;
+  padding: 0 20px;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
 }
 
 .nav-menu-container {
@@ -353,6 +380,40 @@ const showContact = () => {
   justify-content: center;
 }
 
+/* AI配置按钮 - 圆形 */
+.ai-config-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, var(--color-primary-100) 0%, var(--color-primary-50) 100%);
+  border: 2px solid var(--color-primary-200);
+  border-radius: 50%;
+  padding: 0;
+  cursor: pointer;
+  color: var(--color-primary);
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.ai-config-btn:hover {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-600) 100%);
+  border-color: var(--color-primary);
+  color: white;
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* AI配置按钮 - active状态 */
+.ai-config-btn.is-active {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-600) 100%);
+  border-color: var(--color-primary);
+  color: white;
+  box-shadow: 0 0 0 3px var(--color-primary-200), 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
 /* 汉堡菜单按钮 */
 .hamburger-btn {
   display: none;
@@ -375,6 +436,7 @@ const showContact = () => {
 /* 响应式布局 */
 @media (max-width: 992px) {
   .header-content {
+    display: flex;
     justify-content: space-between;
     gap: 16px;
   }
@@ -754,20 +816,8 @@ const showContact = () => {
 
 /* 响应式设计 */
 @media (max-width: 768px) {
-  /* 隐藏桌面端导航，显示汉堡按钮 */
-  .desktop-nav {
-    display: none;
-  }
-
-  .hamburger-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  /* 调整 header-content 布局 */
   .header-content {
-    gap: 12px;
+    padding: 0 16px;
   }
 }
 </style>
