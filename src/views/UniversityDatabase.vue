@@ -1,534 +1,606 @@
-<template>
+﻿<template>
   <div class="university-database-page">
-    <h2 class="page-title">
-      院校数据库
-    </h2>
-    
-    <el-alert
-      title="数据仅供参考演示，实际信息请以院校官网为准"
-      type="warning"
-      :closable="false"
-      show-icon
-      class="data-disclaimer"
-    />
-
-    <el-tabs
-      v-model="activeTab"
-      class="database-tabs"
+    <!-- Hero 搜索区域 -->
+    <section
+      ref="heroRef"
+      class="db-hero"
+      :class="{ 'is-visible': heroVisible }"
     >
-      <!-- Tab 1: 院校搜索 -->
-      <el-tab-pane
-        label="院校搜索"
-        name="schools"
-      >
-        <!-- 搜索和筛选 -->
-        <el-card class="search-card">
-          <div class="search-controls">
-            <div class="search-row search-row--filters">
-              <el-input
-                v-model="searchKeyword"
-                placeholder="搜索学校名称或专业"
-                clearable
-                class="filter-search-input"
-              >
-                <template #prefix>
-                  <el-icon><Search /></el-icon>
-                </template>
-              </el-input>
-              <el-select
-                v-model="filterCountry"
-                placeholder="国家"
-                clearable
-                class="filter-select filter-select--country"
-              >
-                <el-option
-                  v-for="country in uniqueCountries"
-                  :key="country"
-                  :label="country"
-                  :value="country"
-                />
-              </el-select>
-              <el-select
-                v-model="filterRankRange"
-                placeholder="排名范围"
-                clearable
-                class="filter-select filter-select--rank"
-              >
-                <el-option
-                  label="Top 10"
-                  value="top10"
-                />
-                <el-option
-                  label="Top 20"
-                  value="top20"
-                />
-                <el-option
-                  label="Top 50"
-                  value="top50"
-                />
-                <el-option
-                  label="Top 100"
-                  value="top100"
-                />
-              </el-select>
-              <el-select
-                v-model="filterMajor"
-                placeholder="专业领域"
-                clearable
-                class="filter-select filter-select--major"
-              >
-                <el-option
-                  v-for="major in uniqueMajors"
-                  :key="major"
-                  :label="major"
-                  :value="major"
-                />
-              </el-select>
-              <el-select
-                v-model="sortBy"
-                placeholder="排序"
-                clearable
-                class="filter-select filter-select--sort"
-              >
-                <el-option
-                  label="QS排名"
-                  value="qs_rank"
-                />
-                <el-option
-                  label="录取率"
-                  value="acceptance_rate"
-                />
-                <el-option
-                  label="学费"
-                  value="tuition"
-                />
-              </el-select>
-            </div>
-            <div class="search-row search-row--actions">
-              <el-button
-                type="primary"
-                class="search-btn"
-                @click="search"
-              >
-                搜索
-              </el-button>
-              <el-button
-                class="reset-btn"
-                @click="resetFilters"
-              >
-                重置
-              </el-button>
-            </div>
-          </div>
-        </el-card>
+      <!-- 渐变叠加层 -->
+      <div class="db-hero-gradient" />
 
-        <!-- 视图切换控件 -->
-        <div class="view-toggle">
-          <el-radio-group
-            v-model="viewMode"
-            size="small"
+      <!-- 光晕装饰 -->
+      <div class="db-hero-glow" />
+
+      <div class="db-hero-content">
+        <h1 class="db-hero-title">
+          院校数据库
+        </h1>
+        <p class="db-hero-subtitle">
+          探索全球顶尖院校，找到最适合你的留学目标
+        </p>
+
+        <!-- Hero 搜索框 -->
+        <div class="db-hero-search">
+          <el-input
+            v-model="heroSearchKeyword"
+            placeholder="搜索院校名称、专业或国家..."
+            size="large"
+            clearable
+            class="hero-search-input"
+            @keyup.enter="handleHeroSearch"
           >
-            <el-radio-button label="card">
-              <el-icon><Grid /></el-icon>
-              卡片视图
-            </el-radio-button>
-            <el-radio-button label="list">
-              <el-icon><List /></el-icon>
-              列表视图
-            </el-radio-button>
-          </el-radio-group>
+            <template #prefix>
+              <el-icon><Search /></el-icon>
+            </template>
+          </el-input>
+          <el-button
+            type="primary"
+            size="large"
+            class="hero-search-btn"
+            @click="handleHeroSearch"
+          >
+            搜索
+          </el-button>
         </div>
 
-        <!-- 院校网格 - 卡片视图 -->
-        <transition
-          name="fade"
-          mode="out-in"
-        >
-          <div
-            v-if="filteredSchools.length > 0 && viewMode === 'card'"
-            key="card"
-            class="schools-grid"
+        <!-- 热门搜索标签 -->
+        <div class="db-hero-tags">
+          <span class="tag-label">热门搜索：</span>
+          <el-tag
+            v-for="tag in hotTags"
+            :key="tag"
+            class="hot-tag"
+            effect="plain"
+            round
+            @click="searchByTag(tag)"
           >
-            <el-card
-              v-for="school in filteredSchools"
-              :key="school.id"
-              class="school-card"
-              shadow="hover"
-              @click="showDetail(school)"
-            >
-              <div class="card-header">
-                <h3>{{ school.name }}</h3>
-                <el-tag
-                  :type="school.rankType"
-                  size="small"
+            {{ tag }}
+          </el-tag>
+        </div>
+
+        <!-- 数据统计 -->
+        <div class="db-hero-stats">
+          <div class="hero-stat-item">
+            <span class="hero-stat-number">{{ allSchools.length }}+</span>
+            <span class="hero-stat-label">院校数据</span>
+          </div>
+          <div class="hero-stat-divider" />
+          <div class="hero-stat-item">
+            <span class="hero-stat-number">{{ uniqueCountries.length }}</span>
+            <span class="hero-stat-label">覆盖国家</span>
+          </div>
+          <div class="hero-stat-divider" />
+          <div class="hero-stat-item">
+            <span class="hero-stat-number">{{ allMajors.length }}</span>
+            <span class="hero-stat-label">热门专业</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 主内容区域 -->
+    <section
+      ref="contentRef"
+      class="db-content"
+      :class="{ 'is-visible': contentVisible }"
+    >
+      <div class="db-container">
+        <!-- Tab 导航 -->
+        <el-tabs
+          v-model="activeTab"
+          class="database-tabs"
+        >
+          <!-- Tab 1: 院校搜索 -->
+          <el-tab-pane
+            label="院校搜索"
+            name="schools"
+          >
+            <!-- 筛选栏 -->
+            <div class="filter-bar">
+              <div class="filter-bar__items">
+                <el-select
+                  v-model="filterCountry"
+                  placeholder="国家/地区"
+                  clearable
+                  class="filter-bar__select"
                 >
-                  {{ school.ranking }}
-                </el-tag>
+                  <el-option
+                    v-for="country in uniqueCountries"
+                    :key="country"
+                    :label="country"
+                    :value="country"
+                  />
+                </el-select>
+                <el-select
+                  v-model="filterRankRange"
+                  placeholder="排名范围"
+                  clearable
+                  class="filter-bar__select"
+                >
+                  <el-option
+                    label="Top 10"
+                    value="top10"
+                  />
+                  <el-option
+                    label="Top 20"
+                    value="top20"
+                  />
+                  <el-option
+                    label="Top 50"
+                    value="top50"
+                  />
+                  <el-option
+                    label="Top 100"
+                    value="top100"
+                  />
+                </el-select>
+                <el-select
+                  v-model="filterMajor"
+                  placeholder="专业领域"
+                  clearable
+                  class="filter-bar__select"
+                >
+                  <el-option
+                    v-for="major in uniqueMajors"
+                    :key="major"
+                    :label="major"
+                    :value="major"
+                  />
+                </el-select>
+                <el-select
+                  v-model="sortBy"
+                  placeholder="排序方式"
+                  clearable
+                  class="filter-bar__select"
+                >
+                  <el-option
+                    label="QS排名"
+                    value="qs_rank"
+                  />
+                  <el-option
+                    label="录取率"
+                    value="acceptance_rate"
+                  />
+                  <el-option
+                    label="学费"
+                    value="tuition"
+                  />
+                </el-select>
               </div>
-              <div class="country-row">
-                <span class="country-name">{{ school.country }}</span>
-              </div>
-              <p class="major">
-                {{ school.major }}
-              </p>
-              <div class="card-stats">
-                <div class="stat-item">
-                  <span class="stat-label">费用范围</span>
-                  <span class="stat-value">{{ school.tuition }}</span>
-                </div>
-                <div class="stat-item">
-                  <span class="stat-label">录取率</span>
-                  <span
-                    class="stat-value"
-                    :class="{ 'low-rate': parseFloat(school.acceptanceRate) < 20 }"
-                  >
-                    {{ school.acceptanceRate }}
-                  </span>
-                </div>
-              </div>
-              <div class="card-footer">
+              <div class="filter-bar__actions">
                 <el-button
-                  type="primary"
-                  size="small"
-                  plain
-                  @click.stop="addToShortlist(school)"
+                  class="filter-reset-btn"
+                  @click="resetFilters"
                 >
-                  {{ shortlisted.includes(school.id) ? '已在清单中' : '加入选校清单' }}
+                  重置筛选
                 </el-button>
               </div>
-            </el-card>
-          </div>
+            </div>
 
-          <!-- 院校列表 - 列表视图 -->
-          <div
-            v-else-if="filteredSchools.length > 0 && viewMode === 'list'"
-            key="list"
-            class="schools-list"
-          >
-            <el-table
-              :data="filteredSchools"
-              stripe
-              style="width: 100%"
-              @row-click="showDetail"
-            >
-              <el-table-column
-                prop="name"
-                label="院校名称"
-                min-width="180"
+            <!-- 视图切换 -->
+            <div class="view-toggle">
+              <el-radio-group
+                v-model="viewMode"
+                size="small"
               >
-                <template #default="scope">
-                  <div class="list-school-name">
-                    <span class="name-text">{{ scope.row.name }}</span>
-                    <el-tag
-                      :type="scope.row.rankType"
+                <el-radio-button label="card">
+                  <el-icon><Grid /></el-icon>
+                  卡片视图
+                </el-radio-button>
+                <el-radio-button label="list">
+                  <el-icon><List /></el-icon>
+                  列表视图
+                </el-radio-button>
+              </el-radio-group>
+              <span class="result-count">共 {{ totalSchools.length }} 所院校</span>
+            </div>
+
+            <!-- 院校网格 - 卡片视图 -->
+            <transition
+              name="fade"
+              mode="out-in"
+            >
+              <div
+                v-if="filteredSchools.length > 0 && viewMode === 'card'"
+                key="card"
+                class="schools-grid"
+              >
+                <div
+                  v-for="school in filteredSchools"
+                  :key="school.id"
+                  class="school-card"
+                  @click="showDetail(school)"
+                >
+                  <div class="school-card__top-bar" />
+
+                  <div class="school-card__body">
+                    <div class="school-card__header">
+                      <h3 class="school-card__title">{{ school.name }}</h3>
+                      <el-tag
+                        :type="school.rankType"
+                        size="small"
+                        class="school-card__rank"
+                      >
+                        {{ school.ranking }}
+                      </el-tag>
+                    </div>
+
+                    <div class="school-card__meta">
+                      <span class="school-card__country">
+                        <span class="meta-dot" />{{ school.country }}
+                      </span>
+                    </div>
+
+                    <p class="school-card__major">
+                      <span class="major-icon">📚</span>{{ school.major }}
+                    </p>
+
+                    <div class="school-card__stats">
+                      <div class="stat-block">
+                        <span class="stat-block__label">费用范围</span>
+                        <span class="stat-block__value">{{ school.tuition }}</span>
+                      </div>
+                      <div class="stat-block">
+                        <span class="stat-block__label">录取率</span>
+                        <span
+                          class="stat-block__value"
+                          :class="{ 'low-rate': parseFloat(school.acceptanceRate) < 20 }"
+                        >{{ school.acceptanceRate }}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="school-card__footer">
+                    <el-button
+                      type="primary"
                       size="small"
-                      class="rank-tag"
+                      plain
+                      class="card-action-btn"
+                      @click.stop="addToShortlist(school)"
                     >
-                      {{ scope.row.ranking }}
+                      {{ shortlisted.includes(school.id) ? '✓ 已在清单' : '+ 加入清单' }}
+                    </el-button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 院校列表 - 列表视图 -->
+              <div
+                v-else-if="filteredSchools.length > 0 && viewMode === 'list'"
+                key="list"
+                class="schools-list"
+              >
+                <el-table
+                  :data="filteredSchools"
+                  stripe
+                  style="width: 100%"
+                  @row-click="showDetail"
+                >
+                  <el-table-column
+                    prop="name"
+                    label="院校名称"
+                    min-width="180"
+                  >
+                    <template #default="scope">
+                      <div class="list-school-name">
+                        <span class="name-text">{{ scope.row.name }}</span>
+                        <el-tag
+                          :type="scope.row.rankType"
+                          size="small"
+                          class="rank-tag"
+                        >
+                          {{ scope.row.ranking }}
+                        </el-tag>
+                      </div>
+                    </template>
+                  </el-table-column>
+                  <el-table-column
+                    prop="country"
+                    label="国家/地区"
+                    width="100"
+                  />
+                  <el-table-column
+                    prop="major"
+                    label="热门专业"
+                    width="140"
+                  />
+                  <el-table-column
+                    prop="tuition"
+                    label="学费"
+                    width="100"
+                  />
+                  <el-table-column
+                    prop="acceptanceRate"
+                    label="录取率"
+                    width="90"
+                  >
+                    <template #default="scope">
+                      <span :class="{ 'low-rate': parseFloat(scope.row.acceptanceRate) < 20 }">
+                        {{ scope.row.acceptanceRate }}
+                      </span>
+                    </template>
+                  </el-table-column>
+                  <el-table-column
+                    label="操作"
+                    width="160"
+                    fixed="right"
+                  >
+                    <template #default="scope">
+                      <el-button
+                        type="primary"
+                        size="small"
+                        plain
+                        @click.stop="addToShortlist(scope.row)"
+                      >
+                        {{ shortlisted.includes(scope.row.id) ? '已加入' : '加入清单' }}
+                      </el-button>
+                      <el-button
+                        size="small"
+                        @click.stop="showDetail(scope.row)"
+                      >
+                        详情
+                      </el-button>
+                    </template>
+                  </el-table-column>
+                </el-table>
+              </div>
+            </transition>
+
+            <!-- 分页 -->
+            <div
+              v-if="totalSchools.length > 0"
+              class="pagination"
+            >
+              <el-pagination
+                v-model:current-page="currentSchoolPage"
+                v-model:page-size="schoolPageSize"
+                :page-sizes="[8, 12, 24, 48]"
+                :total="totalSchools.length"
+                layout="total, sizes, prev, pager, next, jumper"
+                background
+                @size-change="handleSchoolSizeChange"
+                @current-change="handleSchoolPageChange"
+              />
+            </div>
+
+            <el-empty
+              v-else
+              description="暂无匹配的院校数据"
+            />
+          </el-tab-pane>
+
+          <!-- Tab 2: 专业搜索 -->
+          <el-tab-pane
+            label="专业搜索"
+            name="majors"
+          >
+            <!-- 专业筛选栏 -->
+            <div class="filter-bar">
+              <div class="filter-bar__items">
+                <el-input
+                  v-model="majorSearchKeyword"
+                  placeholder="搜索专业名称或类别..."
+                  clearable
+                  class="filter-bar__search"
+                >
+                  <template #prefix>
+                    <el-icon><Search /></el-icon>
+                  </template>
+                </el-input>
+                <el-select
+                  v-model="filterDegreeType"
+                  placeholder="学位类型"
+                  clearable
+                  class="filter-bar__select"
+                >
+                  <el-option
+                    label="本科"
+                    value="本科"
+                  />
+                  <el-option
+                    label="硕士"
+                    value="硕士"
+                  />
+                  <el-option
+                    label="博士"
+                    value="博士"
+                  />
+                </el-select>
+                <el-select
+                  v-model="filterCategory"
+                  placeholder="专业类别"
+                  clearable
+                  class="filter-bar__select"
+                >
+                  <el-option
+                    v-for="cat in uniqueCategories"
+                    :key="cat"
+                    :label="cat"
+                    :value="cat"
+                  />
+                </el-select>
+              </div>
+              <div class="filter-bar__actions">
+                <el-button
+                  class="filter-reset-btn"
+                  @click="resetMajorFilters"
+                >
+                  重置筛选
+                </el-button>
+              </div>
+            </div>
+
+            <!-- 结果计数 + 视图提示 -->
+            <div class="view-toggle">
+              <span class="result-count">共 {{ totalMajors.length }} 个专业</span>
+            </div>
+
+            <!-- 专业列表 -->
+            <div
+              v-if="filteredMajors.length > 0"
+              class="majors-grid"
+            >
+              <div
+                v-for="major in filteredMajors"
+                :key="major.id"
+                class="major-card"
+                :class="'category-' + getCategoryClass(major.category)"
+                @click="goToMajorDetail(major)"
+              >
+                <div class="major-card__top-bar" />
+
+                <div class="major-card__body">
+                  <div class="major-card__header">
+                    <div
+                      class="major-checkbox"
+                      @click.stop
+                    >
+                      <el-checkbox
+                        v-model="selectedMajors"
+                        :label="major.id"
+                      >
+                        <span class="checkbox-text">对比</span>
+                      </el-checkbox>
+                    </div>
+                    <el-tag
+                      :type="getCategoryTagType(major.category)"
+                      size="small"
+                      class="category-tag"
+                    >
+                      {{ major.category }}
                     </el-tag>
                   </div>
-                </template>
-              </el-table-column>
-              <el-table-column
-                prop="country"
-                label="国家/地区"
-                width="100"
-              />
-              <el-table-column
-                prop="major"
-                label="热门专业"
-                width="140"
-              />
-              <el-table-column
-                prop="tuition"
-                label="学费"
-                width="100"
-              />
-              <el-table-column
-                prop="acceptanceRate"
-                label="录取率"
-                width="90"
-              >
-                <template #default="scope">
-                  <span :class="{ 'low-rate': parseFloat(scope.row.acceptanceRate) < 20 }">
-                    {{ scope.row.acceptanceRate }}
-                  </span>
-                </template>
-              </el-table-column>
-              <el-table-column
-                label="操作"
-                width="160"
-                fixed="right"
-              >
-                <template #default="scope">
+
+                  <div class="major-name">
+                    <span class="major-name-cn">{{ parseMajorName(major.name).chinese }}</span>
+                    <span
+                      v-if="parseMajorName(major.name).english"
+                      class="major-name-en"
+                    >
+                      {{ parseMajorName(major.name).english }}
+                    </span>
+                  </div>
+
+                  <p class="major-degree">
+                    <span class="degree-dot" />{{ major.degreeType }} · {{ major.duration }}
+                  </p>
+
+                  <div class="major-salary">
+                    <span class="salary-label">平均薪资</span>
+                    <span class="salary-value">{{ major.salaryRange }}</span>
+                  </div>
+                </div>
+
+                <div class="major-card__footer">
                   <el-button
                     type="primary"
                     size="small"
-                    plain
-                    @click.stop="addToShortlist(scope.row)"
+                    text
+                    class="detail-link"
+                    @click.stop="goToMajorDetail(major)"
                   >
-                    {{ shortlisted.includes(scope.row.id) ? '已加入' : '加入清单' }}
+                    查看详情 <el-icon class="el-icon--right"><ArrowRight /></el-icon>
                   </el-button>
-                  <el-button
-                    size="small"
-                    @click.stop="showDetail(scope.row)"
-                  >
-                    详情
-                  </el-button>
-                </template>
-              </el-table-column>
-            </el-table>
-          </div>
-        </transition>
-
-        <!-- 院校分页 -->
-        <div
-          v-if="totalSchools.length > 0"
-          class="pagination"
-        >
-          <el-pagination
-            v-model:current-page="currentSchoolPage"
-            v-model:page-size="schoolPageSize"
-            :page-sizes="[8, 12, 24, 48]"
-            :total="totalSchools.length"
-            layout="total, sizes, prev, pager, next, jumper"
-            background
-            @size-change="handleSchoolSizeChange"
-            @current-change="handleSchoolPageChange"
-          />
-        </div>
-
-        <el-empty
-          v-else
-          description="暂无匹配的院校数据"
-        />
-      </el-tab-pane>
-
-      <!-- Tab 2: 专业搜索 -->
-      <el-tab-pane
-        label="专业搜索"
-        name="majors"
-      >
-        <!-- 专业搜索和筛选 -->
-        <el-card class="search-card">
-          <div class="search-controls">
-            <div class="search-row search-row--filters">
-              <el-input
-                v-model="majorSearchKeyword"
-                placeholder="搜索专业名称或类别"
-                clearable
-                class="filter-search-input filter-search-input--major"
-              >
-                <template #prefix>
-                  <el-icon><Search /></el-icon>
-                </template>
-              </el-input>
-              <el-select
-                v-model="filterDegreeType"
-                placeholder="学位类型"
-                clearable
-                class="filter-select filter-select--degree"
-              >
-                <el-option
-                  label="本科"
-                  value="本科"
-                />
-                <el-option
-                  label="硕士"
-                  value="硕士"
-                />
-                <el-option
-                  label="博士"
-                  value="博士"
-                />
-              </el-select>
-              <el-select
-                v-model="filterCategory"
-                placeholder="专业类别"
-                clearable
-                class="filter-select filter-select--category"
-              >
-                <el-option
-                  v-for="cat in uniqueCategories"
-                  :key="cat"
-                  :label="cat"
-                  :value="cat"
-                />
-              </el-select>
-            </div>
-            <div class="search-row search-row--actions">
-              <el-button
-                type="primary"
-                class="search-btn"
-                @click="searchMajors"
-              >
-                搜索
-              </el-button>
-              <el-button
-                class="reset-btn"
-                @click="resetMajorFilters"
-              >
-                重置
-              </el-button>
-            </div>
-          </div>
-        </el-card>
-
-        <!-- 专业列表 -->
-        <div
-          v-if="filteredMajors.length > 0"
-          class="majors-grid"
-        >
-          <div
-            v-for="major in filteredMajors"
-            :key="major.id"
-            class="major-card"
-            :class="'category-' + getCategoryClass(major.category)"
-            @click="goToMajorDetail(major)"
-          >
-            <div class="major-card-header">
-              <div
-                class="major-checkbox"
-                @click.stop
-              >
-                <el-checkbox
-                  v-model="selectedMajors"
-                  :label="major.id"
-                >
-                  <span class="checkbox-text">对比</span>
-                </el-checkbox>
-              </div>
-              <el-tag
-                :type="getCategoryTagType(major.category)"
-                size="small"
-                class="category-tag"
-              >
-                {{ major.category }}
-              </el-tag>
-            </div>
-
-            <div class="major-card-body">
-              <h3 class="major-name">
-                {{ major.name }}
-              </h3>
-              <p class="major-degree">
-                {{ major.degreeType }} · {{ major.duration }}
-              </p>
-
-              <div class="major-salary">
-                <span class="salary-label">平均薪资</span>
-                <span class="salary-value">{{ major.salaryRange }}</span>
+                </div>
               </div>
             </div>
 
-            <div class="major-card-footer">
-              <el-button
-                type="primary"
-                size="small"
-                text
-                @click.stop="goToMajorDetail(major)"
-              >
-                查看详情 <el-icon class="el-icon--right">
-                  <ArrowRight />
-                </el-icon>
-              </el-button>
-            </div>
-          </div>
-        </div>
-
-        <!-- 专业分页 -->
-        <div
-          v-if="totalMajors.length > 0"
-          class="pagination"
-        >
-          <el-pagination
-            v-model:current-page="currentMajorPage"
-            v-model:page-size="majorPageSize"
-            :page-sizes="[8, 12, 24, 48]"
-            :total="totalMajors.length"
-            layout="total, sizes, prev, pager, next, jumper"
-            background
-            @size-change="handleMajorSizeChange"
-            @current-change="handleMajorPageChange"
-          />
-        </div>
-
-        <el-empty
-          v-else
-          description="暂无匹配的专业数据"
-        />
-
-        <!-- 对比操作栏 -->
-        <div
-          v-if="selectedMajors.length > 0"
-          class="compare-bar"
-        >
-          <div class="compare-info">
-            已选择 <strong>{{ selectedMajors.length }}</strong> 个专业进行对比
-          </div>
-          <el-button
-            type="primary"
-            @click="showCompare"
-          >
-            开始对比
-          </el-button>
-          <el-button @click="clearSelection">
-            清空选择
-          </el-button>
-        </div>
-
-        <!-- 专业对比对话框 -->
-        <el-dialog
-          v-model="compareVisible"
-          title="专业对比"
-          width="80%"
-          top="5vh"
-          class="major-compare-dialog"
-        >
-          <div
-            v-if="majorsToCompare.length > 0"
-            class="compare-container"
-          >
-            <el-table
-              :data="compareTableData"
-              border
-              style="width: 100%"
-              class="major-compare-table"
+            <!-- 专业分页 -->
+            <div
+              v-if="totalMajors.length > 0"
+              class="pagination"
             >
-              <el-table-column
-                prop="field"
-                label="对比项"
-                min-width="140"
-                fixed
-              >
-                <template #default="scope">
-                  <strong>{{ scope.row.field }}</strong>
-                </template>
-              </el-table-column>
-              <el-table-column
-                v-for="major in majorsToCompare"
-                :key="major.id"
-                :label="major.name"
-                :prop="'major_' + major.id"
-                min-width="180"
-                show-overflow-tooltip
-              >
-                <template #default="scope">
-                  {{ scope.row['major_' + major.id] || '-' }}
-                </template>
-              </el-table-column>
-            </el-table>
-          </div>
-        </el-dialog>
-      </el-tab-pane>
-    </el-tabs>
+              <el-pagination
+                v-model:current-page="currentMajorPage"
+                v-model:page-size="majorPageSize"
+                :page-sizes="[8, 12, 24, 48]"
+                :total="totalMajors.length"
+                layout="total, sizes, prev, pager, next, jumper"
+                background
+                @size-change="handleMajorSizeChange"
+                @current-change="handleMajorPageChange"
+              />
+            </div>
 
-    <!-- 详情对话框 -->
+            <el-empty
+              v-else
+              description="暂无匹配的专业数据"
+            />
+
+            <!-- 对比操作栏 -->
+            <div
+              v-if="selectedMajors.length > 0"
+              class="compare-bar"
+            >
+              <div class="compare-info">
+                已选择 <strong>{{ selectedMajors.length }}</strong> 个专业进行对比
+              </div>
+              <el-button
+                type="primary"
+                @click="showCompare"
+              >
+                开始对比
+              </el-button>
+              <el-button @click="clearSelection">
+                清空选择
+              </el-button>
+            </div>
+
+            <!-- 专业对比对话框 -->
+            <el-dialog
+              v-model="compareVisible"
+              title="专业对比"
+              width="80%"
+              top="5vh"
+              class="major-compare-dialog"
+            >
+              <div
+                v-if="majorsToCompare.length > 0"
+                class="compare-container"
+              >
+                <el-table
+                  :data="compareTableData"
+                  border
+                  style="width: 100%"
+                  class="major-compare-table"
+                >
+                  <el-table-column
+                    prop="field"
+                    label="对比项"
+                    min-width="140"
+                    fixed
+                  >
+                    <template #default="scope">
+                      <strong>{{ scope.row.field }}</strong>
+                    </template>
+                  </el-table-column>
+                  <el-table-column
+                    v-for="major in majorsToCompare"
+                    :key="major.id"
+                    :label="major.name"
+                    :prop="'major_' + major.id"
+                    min-width="180"
+                    show-overflow-tooltip
+                  >
+                    <template #default="scope">
+                      {{ scope.row['major_' + major.id] || '-' }}
+                    </template>
+                  </el-table-column>
+                </el-table>
+              </div>
+            </el-dialog>
+          </el-tab-pane>
+        </el-tabs>
+      </div>
+    </section>
+
     <!-- 详情对话框 -->
     <el-dialog
       v-model="detailVisible"
       :title="currentSchool?.name"
       width="70%"
+      class="school-detail-dialog"
     >
       <div
         v-if="currentSchool"
@@ -580,7 +652,7 @@
               v-if="currentSchool.sources?.acceptance"
               class="source-sup"
               @click.stop="openSource(currentSchool.sources.acceptance.url)"
-            >[{{ currentSchool.sources.acceptance.label }}]</sup>
+            >[{{ currentSchool.sources.accept.label }}]</sup>
           </el-descriptions-item>
           <el-descriptions-item label="学校类型">
             {{ currentSchool.type || '综合大学' }}
@@ -642,15 +714,23 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { Search, List, Grid, Calendar, ArrowRight } from '@element-plus/icons-vue'
+import { Search, List, Grid, ArrowRight } from '@element-plus/icons-vue'
 import { majorsData } from '@/data/majors'
 import { schoolsData } from '@/data/schools'
 
 const router = useRouter()
+const route = useRoute()
+
+const heroRef = ref(null)
+const contentRef = ref(null)
+const heroVisible = ref(false)
+const contentVisible = ref(false)
+
 const activeTab = ref('schools')
+const heroSearchKeyword = ref('')
 const searchKeyword = ref('')
 const filterCountry = ref('')
 const filterRankRange = ref('')
@@ -665,7 +745,6 @@ const detailVisible = ref(false)
 const currentSchool = ref(null)
 const shortlisted = ref([])
 
-// 专业搜索相关状态
 const majorSearchKeyword = ref('')
 const filterDegreeType = ref('')
 const filterCategory = ref('')
@@ -674,7 +753,8 @@ const compareVisible = ref(false)
 const majorsToCompare = ref([])
 const compareTableData = ref([])
 
-// 使用共享院校数据，添加 rankType 字段用于显示
+const hotTags = ['计算机科学', '商科', '人工智能', '医学', '工程学', '法学']
+
 const allSchools = ref(schoolsData.map(school => ({
   ...school,
   rankType: getRankType(school.ranking)
@@ -688,28 +768,23 @@ function getRankType(ranking) {
   return 'info'
 }
 
-// 专业数据（使用共享数据）
 const allMajors = ref(majorsData)
 
-// 提取所有唯一的专业用于下拉选项
 const uniqueMajors = computed(() => {
   const majors = allSchools.value.map(s => s.major)
-  return [...new Set(majors)]
+  return Array.from(new Set(majors))
 })
 
-// 提取所有唯一的国家用于下拉选项
 const uniqueCountries = computed(() => {
   const countries = allSchools.value.map(s => s.country)
-  return [...new Set(countries)].sort()
+  return Array.from(new Set(countries)).sort()
 })
 
-// 提取所有唯一的专业类别
 const uniqueCategories = computed(() => {
   const categories = allMajors.value.map(m => m.category)
-  return [...new Set(categories)]
+  return Array.from(new Set(categories))
 })
 
-// 专业过滤结果（不分页，用于总数统计和搜索消息）
 const totalMajors = computed(() => {
   let result = allMajors.value
   if (majorSearchKeyword.value) {
@@ -729,14 +804,12 @@ const totalMajors = computed(() => {
   return result
 })
 
-// 专业分页结果
 const filteredMajors = computed(() => {
   const start = (currentMajorPage.value - 1) * majorPageSize.value
   const end = start + majorPageSize.value
   return totalMajors.value.slice(start, end)
 })
 
-// 获取类别标签类型
 const getCategoryTagType = (category) => {
   const types = {
     '工科': 'primary',
@@ -748,7 +821,6 @@ const getCategoryTagType = (category) => {
   return types[category] || 'info'
 }
 
-// 获取类别CSS类名
 const getCategoryClass = (category) => {
   const classMap = {
     '工科': 'engineering',
@@ -760,13 +832,19 @@ const getCategoryClass = (category) => {
   return classMap[category] || 'default'
 }
 
-// 解析排名数字
 const getRankNumber = (ranking) => {
   const match = ranking.match(/(\d+)/)
   return match ? parseInt(match[1]) : 999
 }
 
-// 院校过滤结果（不分页，用于总数统计和搜索消息）
+const parseMajorName = (name) => {
+  const match = name.match(/^(.+?)\s*\((.+)\)$/)
+  if (match) {
+    return { chinese: match[1], english: match[2] }
+  }
+  return { chinese: name, english: '' }
+}
+
 const totalSchools = computed(() => {
   let result = allSchools.value
   if (searchKeyword.value) {
@@ -808,12 +886,26 @@ const totalSchools = computed(() => {
   return result
 })
 
-// 院校分页结果
 const filteredSchools = computed(() => {
   const start = (currentSchoolPage.value - 1) * schoolPageSize.value
   const end = start + schoolPageSize.value
   return totalSchools.value.slice(start, end)
 })
+
+const handleHeroSearch = () => {
+  searchKeyword.value = heroSearchKeyword.value
+  activeTab.value = 'schools'
+  currentSchoolPage.value = 1
+  ElMessage.success(`找到 ${totalSchools.value.length} 所学校`)
+}
+
+const searchByTag = (tag) => {
+  heroSearchKeyword.value = tag
+  searchKeyword.value = tag
+  activeTab.value = 'schools'
+  currentSchoolPage.value = 1
+  ElMessage.success(`按「${tag}」搜索，找到 ${totalSchools.value.length} 所学校`)
+}
 
 const search = () => {
   currentSchoolPage.value = 1
@@ -829,7 +921,6 @@ const resetFilters = () => {
   currentSchoolPage.value = 1
 }
 
-// 专业搜索相关方法
 const searchMajors = () => {
   currentMajorPage.value = 1
   ElMessage.success(`找到 ${totalMajors.value.length} 个专业`)
@@ -842,7 +933,6 @@ const resetMajorFilters = () => {
   currentMajorPage.value = 1
 }
 
-// 专业对比相关方法
 const showCompare = () => {
   majorsToCompare.value = allMajors.value.filter(m => selectedMajors.value.includes(m.id))
   buildCompareTableData()
@@ -903,7 +993,7 @@ const addToShortlist = (school) => {
   }
 }
 
-const goToApply = (school) => {
+const goToApply = (_school) => {
   router.push('/materials')
 }
 
@@ -939,7 +1029,6 @@ const handleMajorPageChange = (val) => {
   currentMajorPage.value = val
 }
 
-// 切换 tab 时重置分页
 watch(activeTab, (newTab) => {
   if (newTab === 'schools') {
     currentSchoolPage.value = 1
@@ -948,32 +1037,398 @@ watch(activeTab, (newTab) => {
   }
 })
 
+let scrollTicking = false
+
+const handleScroll = () => {
+  if (scrollTicking) return
+  scrollTicking = true
+  requestAnimationFrame(() => {
+    const windowHeight = window.innerHeight
+
+    if (heroRef.value && !heroVisible.value) {
+      const rect = heroRef.value.getBoundingClientRect()
+      if (rect.top < windowHeight * 0.9) {
+        heroVisible.value = true
+      }
+    }
+
+    if (contentRef.value && !contentVisible.value) {
+      const rect = contentRef.value.getBoundingClientRect()
+      if (rect.top < windowHeight * 0.85) {
+        contentVisible.value = true
+      }
+    }
+
+    scrollTicking = false
+  })
+}
+
 onMounted(() => {
   const saved = localStorage.getItem('school_favorites')
   if (saved) {
     shortlisted.value = JSON.parse(saved)
   }
 
-  // 如果有选校清单中的学校，高亮显示
-  console.log('University database loaded')
+  if (route.query.tab === 'majors') {
+    activeTab.value = 'majors'
+  }
+
+  setTimeout(() => {
+    heroVisible.value = true
+  }, 100)
+
+  window.addEventListener('scroll', handleScroll, { passive: true })
+  handleScroll()
+})
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', handleScroll)
 })
 </script>
 
 <style scoped>
+/* ========== 页面根容器 ========== */
 .university-database-page {
-  /* 不设置 max-width，与首页各区域保持一致，填满 app-main 全宽 */
   padding-bottom: 40px;
+  min-height: 100vh;
+  background: var(--color-background);
 }
 
-.data-disclaimer {
-  margin-bottom: 16px;
+/* ========== Hero 搜索区域 ========== */
+.db-hero {
+  position: relative;
+  overflow: hidden;
+  padding: var(--space-16) var(--space-10) var(--space-12);
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
 }
 
-/* 视图切换控件 */
+.db-hero.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.db-hero-gradient {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgba(30, 58, 95, 0.03) 1px, transparent 1px),
+    linear-gradient(rgba(30, 58, 95, 0.03) 1px, transparent 1px),
+    radial-gradient(ellipse at 25% 50%, rgba(30, 58, 95, 0.05) 0%, transparent 55%),
+    radial-gradient(ellipse at 75% 50%, rgba(184, 134, 11, 0.04) 0%, transparent 55%),
+    linear-gradient(180deg, var(--color-background-warm) 0%, var(--color-surface) 100%);
+  background-size: 80px 80px, 80px 80px, 100% 100%, 100% 100%, 100% 100%;
+}
+
+.db-hero-glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.db-hero-glow::before {
+  content: '';
+  position: absolute;
+  width: 500px;
+  height: 500px;
+  top: -150px;
+  left: -80px;
+  background: radial-gradient(circle, rgba(184, 134, 11, 0.07) 0%, transparent 70%);
+  animation: glow-pulse 10s ease-in-out infinite;
+}
+
+.db-hero-glow::after {
+  content: '';
+  position: absolute;
+  width: 350px;
+  height: 350px;
+  bottom: -80px;
+  right: -40px;
+  background: radial-gradient(circle, rgba(30, 58, 95, 0.06) 0%, transparent 70%);
+  animation: glow-pulse 12s ease-in-out infinite reverse;
+}
+
+.db-hero-content {
+  position: relative;
+  z-index: 2;
+  max-width: 800px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.db-hero-title {
+  font-family: var(--font-family-display);
+  font-size: var(--text-4xl);
+  font-weight: var(--font-bold);
+  color: var(--color-text-primary);
+  margin: 0 0 var(--space-3);
+  line-height: var(--leading-tight);
+  position: relative;
+  display: inline-block;
+}
+
+.db-hero-title::after {
+  content: '';
+  display: block;
+  width: 60px;
+  height: 4px;
+  background: var(--gradient-primary);
+  margin: var(--space-4) auto 0;
+  border-radius: var(--radius-sm);
+}
+
+.db-hero-subtitle {
+  font-size: var(--text-lg);
+  color: var(--color-text-secondary);
+  margin: 0 0 var(--space-8);
+  line-height: var(--leading-relaxed);
+}
+
+/* Hero 搜索框 */
+.db-hero-search {
+  display: flex;
+  gap: var(--space-3);
+  max-width: 600px;
+  margin: 0 auto var(--space-6);
+}
+
+.hero-search-input {
+  flex: 1;
+}
+
+.hero-search-input :deep(.el-input__wrapper) {
+  padding: 8px 16px;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md), 0 0 0 1px var(--color-border-light);
+  transition: all var(--transition-normal);
+}
+
+.hero-search-input :deep(.el-input__wrapper:hover) {
+  box-shadow: var(--shadow-lg), 0 0 0 1px var(--color-primary-200);
+}
+
+.hero-search-input :deep(.el-input__wrapper.is-focus) {
+  box-shadow: var(--shadow-lg), 0 0 0 3px rgba(30, 58, 95, 0.1), var(--shadow-glow-primary);
+  border-color: var(--color-primary);
+}
+
+.hero-search-input :deep(.el-input__inner) {
+  font-size: var(--text-base);
+}
+
+.hero-search-btn {
+  border-radius: var(--radius-xl);
+  padding: 0 var(--space-8);
+  font-weight: var(--font-semibold);
+  background: var(--gradient-primary);
+  border: none;
+  flex-shrink: 0;
+  transition: all var(--transition-spring);
+}
+
+.hero-search-btn:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: var(--shadow-lg), var(--shadow-glow-primary);
+}
+
+/* 热门标签 */
+.db-hero-tags {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-6);
+}
+
+.tag-label {
+  font-size: var(--text-sm);
+  color: var(--color-text-tertiary);
+  margin-right: var(--space-1);
+}
+
+.hot-tag {
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  font-size: var(--text-xs);
+}
+
+.hot-tag:hover {
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+  background: var(--color-primary-50);
+  transform: translateY(-1px);
+}
+
+/* Hero 统计 */
+.db-hero-stats {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-6);
+}
+
+.hero-stat-item {
+  text-align: center;
+}
+
+.hero-stat-number {
+  display: block;
+  font-size: var(--text-2xl);
+  font-weight: var(--font-bold);
+  color: var(--color-primary);
+  font-family: var(--font-family-display);
+}
+
+.hero-stat-label {
+  font-size: var(--text-xs);
+  color: var(--color-text-tertiary);
+  letter-spacing: 0.5px;
+}
+
+.hero-stat-divider {
+  width: 1px;
+  height: 28px;
+  background: var(--color-border);
+}
+
+/* ========== 主内容区域 ========== */
+.db-content {
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+
+.db-content.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.db-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 var(--space-10);
+  box-sizing: border-box;
+}
+
+/* ========== Tab 导航 ========== */
+.database-tabs {
+  margin-top: var(--space-4);
+}
+
+.database-tabs :deep(.el-tabs__header) {
+  margin-bottom: var(--space-6);
+}
+
+.database-tabs :deep(.el-tabs__nav-wrap::after) {
+  height: 1px;
+  background-color: var(--color-border-light);
+}
+
+.database-tabs :deep(.el-tabs__item) {
+  font-size: var(--text-lg);
+  font-weight: var(--font-medium);
+  color: var(--color-text-secondary);
+  transition: all var(--transition-normal);
+  padding: 0 var(--space-6);
+  height: 48px;
+  line-height: 48px;
+}
+
+.database-tabs :deep(.el-tabs__item:hover) {
+  color: var(--color-primary);
+}
+
+.database-tabs :deep(.el-tabs__item.is-active) {
+  color: var(--color-primary);
+  font-weight: var(--font-semibold);
+}
+
+.database-tabs :deep(.el-tabs__active-bar) {
+  height: 3px;
+  background: var(--gradient-primary);
+  border-radius: var(--radius-sm);
+}
+
+/* ========== 筛选栏 ========== */
+.filter-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  background: var(--color-surface);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--color-border-light);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: var(--space-6);
+  flex-wrap: wrap;
+}
+
+.filter-bar__items {
+  display: flex;
+  gap: var(--space-3);
+  flex: 1;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.filter-bar__select {
+  min-width: 130px;
+}
+
+.filter-bar__select :deep(.el-select__wrapper) {
+  border-radius: var(--radius-lg);
+  background: var(--color-primary-50);
+  border-color: transparent;
+  transition: all var(--transition-fast);
+}
+
+.filter-bar__select :deep(.el-select__wrapper:hover) {
+  background: var(--color-primary-100);
+  border-color: var(--color-primary-200);
+}
+
+.filter-bar__search {
+  min-width: 200px;
+  flex: 1;
+  max-width: 300px;
+}
+
+.filter-bar__search :deep(.el-input__wrapper) {
+  border-radius: var(--radius-lg);
+  background: var(--color-primary-50);
+  border-color: transparent;
+}
+
+.filter-bar__search :deep(.el-input__wrapper:hover) {
+  background: var(--color-primary-100);
+}
+
+.filter-bar__actions {
+  display: flex;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+.filter-reset-btn {
+  border-radius: var(--radius-lg);
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  border-color: var(--color-border);
+}
+
+.filter-reset-btn:hover {
+  color: var(--color-primary);
+  border-color: var(--color-primary-200);
+}
+
+/* ========== 视图切换 ========== */
 .view-toggle {
   display: flex;
-  justify-content: flex-end;
-  margin-bottom: 16px;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-5);
 }
 
 .view-toggle :deep(.el-radio-button__inner) {
@@ -982,7 +1437,6 @@ onMounted(() => {
   gap: 4px;
 }
 
-/* 修复视图切换 radio button 的 active 状态样式 */
 .view-toggle :deep(.el-radio-button.is-active .el-radio-button__inner) {
   background-color: var(--color-primary) !important;
   border-color: var(--color-primary) !important;
@@ -990,18 +1444,17 @@ onMounted(() => {
   box-shadow: -1px 0 0 0 var(--color-primary) !important;
 }
 
-/* 未选中的 radio button 样式 - 白色背景 */
 .view-toggle :deep(.el-radio-button:not(.is-active) .el-radio-button__inner) {
   background-color: #fff !important;
   color: #606266 !important;
 }
 
-/* 未选中的 radio button hover 状态 */
-.view-toggle :deep(.el-radio-button:not(.is-active) .el-radio-button__inner:hover) {
-  color: var(--color-primary) !important;
+.result-count {
+  font-size: var(--text-sm);
+  color: var(--color-text-tertiary);
 }
 
-/* 过渡动画 */
+/* ========== 过渡动画 ========== */
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.3s ease;
@@ -1012,246 +1465,13 @@ onMounted(() => {
   opacity: 0;
 }
 
-/* 列表视图样式 */
-.schools-list {
-  background: #fff;
-  border-radius: 8px;
-  overflow: hidden;
-}
-
-.schools-list :deep(.el-table) {
-  border-radius: 8px;
-}
-
-.schools-list :deep(.el-table__row) {
-  cursor: pointer;
-}
-
-.schools-list :deep(.el-table__row:hover) {
-  background-color: #f5f7fa;
-}
-
-.list-school-name {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.list-school-name .name-text {
-  font-weight: 500;
-  color: #303133;
-}
-
-.list-school-name .rank-tag {
-  flex-shrink: 0;
-}
-
-.low-rate {
-  color: #f56c6c;
-  font-weight: 500;
-}
-
-.search-card {
-  margin-bottom: 20px;
-}
-
-.search-card :deep(.el-card__body) {
-  padding: 16px 20px;
-}
-
-/* 响应式筛选控件 */
-.filter-search-input {
-  flex: 1 1 100%;
-  min-width: 0;
-  width: 100%;
-}
-
-.filter-search-input--major {
-  flex: 1 1 100%;
-  min-width: 0;
-  width: 100%;
-}
-
-.filter-search-input :deep(.el-input__wrapper) {
-  min-width: 0 !important;
-}
-
-.filter-search-input :deep(.el-input__inner) {
-  min-width: 0 !important;
-}
-
-.filter-select {
-  flex: 1 1 auto;
-  min-width: 0;
-}
-
-/* 覆盖 Element Plus el-select */
-.filter-select :deep(.el-select__wrapper) {
-  min-width: 0 !important;
-}
-
-.filter-select--major,
-.filter-select--category {
-  flex: 1 1 150px;
-  min-width: 0;
-}
-
-/* 平板端 (900px): 学位类型和类别下拉框宽度微调 */
-@media (max-width: 900px) {
-  .filter-select--major,
-  .filter-select--category,
-  .filter-select--degree {
-    flex: 1 1 120px;
-    min-width: 0;
-    width: auto !important;
-  }
-}
-
-/* 移动端 (480px): 搜索框全宽，下拉框两行排列 */
-@media (max-width: 480px) {
-  /* 让 search-controls 扩展到全宽，解除宽度限制 */
-  .search-controls {
-    width: 100% !important;
-    min-width: 0 !important;
-  }
-
-  .search-row--filters {
-    gap: 10px;
-    min-width: 0;
-    width: 100%;
-    flex: 1 1 100%;
-  }
-
-  .filter-search-input {
-    flex: 1 1 100% !important;
-    max-width: 100%;
-    min-width: 0;
-    width: 100% !important;
-  }
-
-  .filter-search-input :deep(.el-input__wrapper) {
-    min-width: 0 !important;
-    width: 100% !important;
-    flex: 1 !important;
-  }
-
-  /* 专业搜索tab的搜索输入框同样全宽 */
-  .filter-search-input--major {
-    flex: 1 1 100% !important;
-    max-width: 100%;
-    min-width: 0;
-    width: 100% !important;
-  }
-
-  .filter-search-input--major :deep(.el-input__wrapper) {
-    min-width: 0 !important;
-    width: 100% !important;
-    flex: 1 !important;
-  }
-
-  .filter-select {
-    display: flex !important;
-    flex: 1 1 calc(50% - 5px);
-    min-width: 0;
-    width: calc(50% - 5px) !important;
-  }
-
-  /* 穿透 Element Plus select wrapper 的 min-width 限制 */
-  .filter-select :deep(.el-select__wrapper) {
-    min-width: 0 !important;
-    width: 100% !important;
-    flex: 1 !important;
-  }
-
-  .filter-select--country,
-  .filter-select--degree {
-    display: flex !important;
-    flex: 1 1 calc(50% - 5px);
-    min-width: 0;
-    width: calc(50% - 5px) !important;
-  }
-
-  .filter-select--country :deep(.el-select__wrapper),
-  .filter-select--degree :deep(.el-select__wrapper) {
-    min-width: 0 !important;
-    width: 100% !important;
-    flex: 1 !important;
-  }
-
-  .filter-select--rank {
-    display: flex !important;
-    flex: 1 1 calc(50% - 5px);
-    min-width: 0;
-    width: calc(50% - 5px) !important;
-  }
-
-  .filter-select--rank :deep(.el-select__wrapper) {
-    min-width: 0 !important;
-    width: 100% !important;
-    flex: 1 !important;
-  }
-
-  .filter-select--major,
-  .filter-select--category {
-    display: flex !important;
-    flex: 1 1 calc(50% - 5px);
-    min-width: 0;
-    width: calc(50% - 5px) !important;
-  }
-
-  .filter-select--major :deep(.el-select__wrapper),
-  .filter-select--category :deep(.el-select__wrapper) {
-    min-width: 0 !important;
-    width: 100% !important;
-    flex: 1 !important;
-  }
-
-  /* 移动端操作按钮 */
-  .search-row--actions {
-    gap: 12px;
-  }
-}
-
-/* 两行式搜索布局 */
-.search-controls {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  /* 默认不限制宽度，让内容决定宽度 */
-  width: auto;
-}
-
-.search-row {
-  display: flex;
-  gap: 12px;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-.search-row--filters {
-  justify-content: center;
-}
-
-.search-row--actions {
-  justify-content: flex-start;
-  gap: 16px;
-}
-
-/* 搜索/重置按钮样式 */
-.search-btn,
-.reset-btn {
-  min-width: 80px;
-  white-space: nowrap;
-}
-
+/* ========== 院校卡片网格 ========== */
 .schools-grid {
   display: grid;
-  gap: 20px;
-  /* 默认移动端优先：1列 */
+  gap: var(--space-5);
   grid-template-columns: 1fr;
 }
 
-/* 平板及以上：2列 */
 @media (min-width: 480px) {
   .schools-grid {
     grid-template-columns: repeat(2, 1fr);
@@ -1264,196 +1484,333 @@ onMounted(() => {
   }
 }
 
-/* 大桌面端：4列 */
 @media (min-width: 1200px) {
   .schools-grid {
     grid-template-columns: repeat(4, 1fr);
   }
 }
 
+/* ========== 院校卡片 - 学术优雅风格 ========== */
 .school-card {
+  background: var(--color-surface);
+  border-radius: var(--radius-2xl);
+  border: 1px solid var(--color-border-light);
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
   position: relative;
   overflow: hidden;
-  cursor: pointer;
-  transition: all 0.3s;
-  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-sm);
+  transform-style: preserve-3d;
+  height: 100%;
+  box-sizing: border-box;
 }
 
-.school-card :deep(.el-card__body) {
-  padding: 16px;
+.school-card__top-bar {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--gradient-primary);
+  transition: height 0.3s ease;
 }
 
 .school-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.2);
+  transform: translateY(-8px) rotateX(2deg);
+  box-shadow: 0 25px 50px -12px rgba(30, 58, 95, 0.15), 0 0 0 1px rgba(30, 58, 95, 0.05);
+  border-color: var(--color-primary-200);
 }
 
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
+.school-card:hover .school-card__top-bar {
+  height: 4px;
 }
 
-.card-header h3 {
-  margin: 0;
-  font-size: 16px;
-  color: #303133;
-}
-
-.country {
-  color: #909399;
-  margin-bottom: 5px;
-}
-
-.country-row {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-bottom: 5px;
-}
-
-.country-name {
-  color: #909399;
-  font-size: 14px;
-}
-
-.major {
-  color: var(--color-primary);
-  font-weight: 500;
-  margin-bottom: 15px;
-}
-
-.card-stats {
-  display: flex;
-  gap: 20px;
-  margin-bottom: 15px;
-}
-
-.stat-item {
+.school-card__body {
+  padding: var(--space-5);
+  flex: 1;
   display: flex;
   flex-direction: column;
 }
 
-.stat-label {
-  font-size: 12px;
-  color: #909399;
-}
-
-.stat-value {
-  font-size: 14px;
-  color: #303133;
-  font-weight: 500;
-}
-
-.card-footer {
+.school-card__header {
   display: flex;
-  gap: 8px;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--space-3);
+  gap: var(--space-3);
+}
+
+.school-card__title {
+  margin: 0;
+  font-size: var(--text-lg);
+  color: var(--color-text-primary);
+  font-weight: var(--font-semibold);
+  font-family: var(--font-family-display);
+  line-height: var(--leading-tight);
+  flex: 1;
+}
+
+.school-card__rank {
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  border: none;
+  flex-shrink: 0;
+}
+
+.school-card__rank.el-tag--danger {
+  background: linear-gradient(135deg, var(--color-danger) 0%, #ef5350 100%);
+  color: white;
+}
+
+.school-card__rank.el-tag--warning {
+  background: linear-gradient(135deg, var(--color-warning) 0%, #ffb74d 100%);
+  color: white;
+}
+
+.school-card__rank.el-tag--success {
+  background: linear-gradient(135deg, var(--color-success) 0%, #66bb6a 100%);
+  color: white;
+}
+
+.school-card__rank.el-tag--info {
+  background: linear-gradient(135deg, var(--color-info) 0%, #64b5f6 100%);
+  color: white;
+}
+
+.school-card__meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+
+.meta-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  display: inline-block;
+}
+
+.school-card__country {
+  color: var(--color-text-secondary);
+  font-size: var(--text-sm);
+}
+
+.school-card__major {
+  color: var(--color-primary);
+  font-weight: var(--font-medium);
+  margin: 0 0 var(--space-4);
+  font-size: var(--text-base);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.major-icon {
+  font-size: 14px;
+}
+
+.school-card__stats {
+  display: flex;
+  gap: var(--space-4);
+  margin-top: auto;
+  padding: var(--space-3);
+  background: linear-gradient(135deg, var(--color-background-warm) 0%, var(--color-primary-50) 100%);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border-light);
+}
+
+.stat-block {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.stat-block__label {
+  font-size: 11px;
+  color: var(--color-text-tertiary);
+  font-weight: var(--font-medium);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 2px;
+}
+
+.stat-block__value {
+  font-size: var(--text-sm);
+  color: var(--color-text-primary);
+  font-weight: var(--font-semibold);
+}
+
+.stat-block__value.low-rate {
+  color: var(--color-danger);
+}
+
+.school-card__footer {
+  padding: var(--space-3) var(--space-5);
+  border-top: 1px solid var(--color-border-light);
+  display: flex;
   justify-content: flex-end;
 }
 
+.card-action-btn {
+  font-weight: var(--font-medium);
+  border-radius: var(--radius-lg);
+  transition: all var(--transition-normal);
+}
+
+.card-action-btn:hover {
+  transform: translateY(-2px);
+}
+
+/* ========== 列表视图 ========== */
+.schools-list {
+  background: #fff;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.schools-list :deep(.el-table) {
+  border-radius: var(--radius-xl);
+}
+
+.schools-list :deep(.el-table__row) {
+  cursor: pointer;
+}
+
+.schools-list :deep(.el-table__row:hover) {
+  background-color: var(--color-primary-50);
+}
+
+.list-school-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.list-school-name .name-text {
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
+.list-school-name .rank-tag {
+  flex-shrink: 0;
+}
+
+.low-rate {
+  color: var(--color-danger);
+  font-weight: 500;
+}
+
+/* ========== 分页器 ========== */
 .pagination {
-  margin-top: 30px;
+  margin-top: var(--space-8);
   display: flex;
   justify-content: center;
-  padding: 16px 0;
+  padding: var(--space-4) 0;
 }
 
-/* 移动端分页器响应式 */
-@media (max-width: 480px) {
-  .pagination :deep(.el-pagination__total) {
-    display: none;
-  }
-  .pagination :deep(.el-pagination__jump) {
-    display: none;
-  }
+.pagination :deep(.el-pagination) {
+  --el-pagination-button-bg-color: var(--color-surface);
 }
 
-/* 专业卡片网格布局 */
+/* ========== 专业卡片网格 ========== */
 .majors-grid {
   display: grid;
-  gap: 20px;
-  /* 默认移动端优先：1列 */
+  gap: var(--space-5);
   grid-template-columns: 1fr;
 }
 
-/* 平板及以上：2列 */
-@media (min-width: 600px) {
+@media (min-width: 480px) {
   .majors-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 
-/* 桌面端及以上：3列 */
-@media (min-width: 1024px) {
+@media (min-width: 768px) {
   .majors-grid {
     grid-template-columns: repeat(3, 1fr);
   }
 }
 
-/* 专业卡片 - 简洁设计 */
+@media (min-width: 1200px) {
+  .majors-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* ========== 专业卡片 ========== */
 .major-card {
-  background: #fff;
-  border-radius: 12px;
-  border: 1px solid #e4e7ed;
-  padding: 20px;
+  background: var(--color-surface);
+  border-radius: var(--radius-2xl);
+  border: 1px solid var(--color-border-light);
+  padding: var(--space-5);
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
   position: relative;
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  box-shadow: var(--shadow-sm);
+  transform-style: preserve-3d;
+  height: 100%;
+  box-sizing: border-box;
 }
 
-/* 左侧色条 */
-.major-card::before {
-  content: '';
+.major-card__top-bar {
   position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 4px;
-  background: #909399;
-  transition: width 0.3s ease;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--color-primary-300);
+  transition: height 0.3s ease;
 }
 
-/* 不同类别的主题色 */
-.major-card.category-engineering::before {
-  background: #409eff;
+.major-card.category-engineering .major-card__top-bar {
+  background: linear-gradient(90deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
 }
 
-.major-card.category-business::before {
-  background: #67c23a;
+.major-card.category-business .major-card__top-bar {
+  background: linear-gradient(90deg, var(--color-success) 0%, #66bb6a 100%);
 }
 
-.major-card.category-social::before {
-  background: #e6a23c;
+.major-card.category-social .major-card__top-bar {
+  background: linear-gradient(90deg, var(--color-warning) 0%, #ffb74d 100%);
 }
 
-.major-card.category-science::before {
-  background: #909399;
+.major-card.category-science .major-card__top-bar {
+  background: linear-gradient(90deg, var(--color-info) 0%, #64b5f6 100%);
 }
 
-.major-card.category-arts::before {
-  background: #f56c6c;
+.major-card.category-arts .major-card__top-bar {
+  background: linear-gradient(90deg, var(--color-danger) 0%, #ef5350 100%);
 }
 
 .major-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
-  border-color: #dcdfe6;
+  transform: translateY(-8px) rotateX(2deg);
+  box-shadow: 0 25px 50px -12px rgba(30, 58, 95, 0.15), 0 0 0 1px rgba(30, 58, 95, 0.05);
+  border-color: var(--color-primary-200);
 }
 
-.major-card:hover::before {
-  width: 6px;
+.major-card:hover .major-card__top-bar {
+  height: 4px;
 }
 
-/* 卡片头部 */
-.major-card-header {
+.major-card__body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.major-card__header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: var(--space-3);
+  height: 24px;
 }
 
 .major-checkbox {
@@ -1461,173 +1818,251 @@ onMounted(() => {
 }
 
 .major-checkbox :deep(.el-checkbox__label) {
-  font-size: 12px;
-  color: #909399;
+  font-size: var(--text-xs);
+  color: var(--color-text-tertiary);
 }
 
 .checkbox-text {
-  font-size: 12px;
+  font-size: var(--text-xs);
 }
 
 .category-tag {
-  font-size: 12px;
+  font-size: var(--text-xs);
+  font-weight: var(--font-medium);
+  padding: 2px 10px;
+  border-radius: var(--radius-full);
+  border: none;
 }
 
-/* 卡片主体 */
-.major-card-body {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
+.category-tag.el-tag--primary {
+  background: var(--color-primary-50);
+  color: var(--color-primary);
+}
+
+.category-tag.el-tag--success {
+  background: #e8f5e9;
+  color: var(--color-success);
+}
+
+.category-tag.el-tag--warning {
+  background: #fff3e0;
+  color: var(--color-warning);
+}
+
+.category-tag.el-tag--info {
+  background: #e3f2fd;
+  color: var(--color-info);
+}
+
+.category-tag.el-tag--danger {
+  background: #ffebee;
+  color: var(--color-danger);
 }
 
 .major-name {
-  margin: 0 0 8px;
-  font-size: 18px;
-  font-weight: 600;
-  color: #303133;
-  line-height: 1.4;
+  margin: 0 0 var(--space-2);
+  line-height: var(--leading-tight);
+  height: 28px;
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  overflow: hidden;
+}
+
+.major-name-cn {
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-primary);
+  font-family: var(--font-family-display);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.major-name-en {
+  font-size: var(--text-xs);
+  font-weight: var(--font-normal);
+  color: var(--color-text-tertiary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-shrink: 1;
+  min-width: 0;
 }
 
 .major-degree {
-  margin: 0 0 16px;
-  font-size: 13px;
-  color: #606266;
+  margin: 0 0 var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  height: 20px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-/* 薪资区域 */
+.degree-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  display: inline-block;
+  flex-shrink: 0;
+}
+
 .major-salary {
   margin-top: auto;
-  padding: 12px;
-  background: #f5f7fa;
-  border-radius: 8px;
+  padding: var(--space-3);
+  background: linear-gradient(135deg, var(--color-background-warm) 0%, var(--color-primary-50) 100%);
+  border-radius: var(--radius-lg);
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;
+  border: 1px solid var(--color-border-light);
+  position: relative;
+  overflow: hidden;
+  height: 60px;
+  justify-content: center;
+}
+
+.major-salary::before {
+  content: '💰';
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 0.08;
+  font-size: 36px;
 }
 
 .salary-label {
-  font-size: 12px;
-  color: #909399;
+  font-size: 11px;
+  color: var(--color-text-tertiary);
+  font-weight: var(--font-medium);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  line-height: 1.2;
 }
 
 .salary-value {
-  font-size: 14px;
-  font-weight: 600;
-  color: #f56c6c;
-  line-height: 1.4;
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--color-accent);
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-/* 卡片底部 */
-.major-card-footer {
-  margin-top: 16px;
-  padding-top: 16px;
-  border-top: 1px solid #ebeef5;
+.major-card__footer {
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-border-light);
   display: flex;
   justify-content: flex-end;
+  height: 32px;
+  align-items: center;
 }
 
-.major-card-footer :deep(.el-button) {
-  font-weight: 500;
+.detail-link {
+  font-weight: var(--font-medium);
+  color: var(--color-primary);
+  transition: all var(--transition-normal);
 }
 
-/* 移动端适配 */
-@media (max-width: 480px) {
-  .major-card {
-    padding: 16px;
-  }
-
-  .major-name {
-    font-size: 16px;
-  }
-
-  .major-salary {
-    padding: 10px;
-  }
-
-  .salary-value {
-    font-size: 13px;
-  }
+.detail-link:hover {
+  color: var(--color-primary-light);
+  transform: translateX(4px);
 }
 
+.major-card:hover .detail-link .el-icon {
+  transform: translateX(4px);
+}
+
+/* ========== 详情对话框 ========== */
 .school-detail {
-  /* 为对话框内容添加统一内边距，确保内容不紧贴边缘 */
-  padding: 20px;
+  padding: var(--space-5);
 }
 
-.school-detail .detail-header {
-  /* header 内容区添加内边距，使图片和标题不紧贴边缘 */
-  padding: 16px;
-  background: #f8f9fc;
-  border-radius: 8px;
-  margin-bottom: 20px;
+.detail-header {
+  display: flex;
+  gap: var(--space-5);
+  padding: var(--space-5);
+  background: linear-gradient(135deg, var(--color-primary-50) 0%, var(--color-background-warm) 100%);
+  border-radius: var(--radius-xl);
+  margin-bottom: var(--space-6);
 }
 
 .school-image {
-  width: 150px;
-  height: 100px;
+  width: 160px;
+  height: 110px;
   object-fit: cover;
-  border-radius: 8px;
+  border-radius: var(--radius-lg);
   flex-shrink: 0;
 }
 
 .detail-title {
-  margin-left: 16px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .detail-title h2 {
-  margin: 0 0 10px;
+  margin: 0 0 var(--space-2);
+  font-family: var(--font-family-display);
+  font-size: var(--text-2xl);
+  color: var(--color-text-primary);
 }
 
 .detail-subtitle {
-  color: #909399;
+  color: var(--color-text-secondary);
   margin: 0;
+  font-size: var(--text-base);
 }
 
-/* descriptions 卡片添加内边距 */
-.school-detail .el-descriptions {
-  padding: 16px;
-}
-
-/* 描述和需求区域添加内边距和底部分隔 */
 .description-section,
 .requirements-section {
-  padding: 16px;
-  margin-top: 16px;
-  background: #f8f9fc;
-  border-radius: 8px;
+  padding: var(--space-5);
+  margin-top: var(--space-5);
+  background: var(--color-background);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--color-border-light);
 }
 
 .description-section h4,
 .requirements-section h4 {
-  margin-bottom: 10px;
-  color: #303133;
+  margin-bottom: var(--space-3);
+  color: var(--color-text-primary);
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
 }
 
 .requirements-section ul {
-  padding-left: 20px;
+  padding-left: var(--space-6);
   list-style: square;
 }
 
 .requirements-section li {
-  margin-bottom: 8px;
-  color: #606266;
+  margin-bottom: var(--space-2);
+  color: var(--color-text-secondary);
+  line-height: var(--leading-relaxed);
 }
 
-/* 按钮组居中对齐 */
 .detail-actions {
-  margin-top: 20px;
-  padding: 16px;
+  margin-top: var(--space-6);
+  padding: var(--space-5);
   display: flex;
   justify-content: center;
-  gap: 16px;
-}
-
-.low-rate {
-  color: #f56c6c;
+  gap: var(--space-4);
+  background: var(--color-background);
+  border-radius: var(--radius-xl);
 }
 
 .source-sup {
-  color: #409eff;
+  color: var(--color-info);
   cursor: pointer;
   font-size: 10px;
   margin-left: 2px;
@@ -1635,33 +2070,37 @@ onMounted(() => {
 }
 
 .source-sup:hover {
-  color: #66b1ff;
+  color: var(--color-primary-light);
   text-decoration: underline;
 }
 
-/* 对比操作栏：移动端垂直堆叠 */
+/* ========== 对比操作栏 ========== */
 .compare-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 16px;
-  background: #f5f7fa;
-  border-radius: 8px;
-  margin-top: 16px;
+  padding: var(--space-4) var(--space-5);
+  background: var(--color-primary-50);
+  border-radius: var(--radius-xl);
+  margin-top: var(--space-5);
+  border: 1px solid var(--color-primary-100);
   flex-wrap: wrap;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
 .compare-info {
-  font-size: 14px;
-  color: #606266;
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
 }
 
 .compare-info strong {
   color: var(--color-primary);
 }
 
-/* 专业对比表格：移动端响应式 */
+.compare-container {
+  overflow-x: auto;
+}
+
 .major-compare-table :deep(.el-table__cell) {
   overflow: hidden;
 }
@@ -1672,16 +2111,143 @@ onMounted(() => {
   text-overflow: ellipsis;
 }
 
-/* 移动端对比表格：允许换行 */
-@media (max-width: 480px) {
-  .major-compare-table :deep(.el-table__body .cell) {
-    white-space: normal !important;
-    text-overflow: unset !important;
-    overflow: visible !important;
+/* ========== 响应式设计 ========== */
+
+/* 平板端 */
+@media (max-width: 992px) {
+  .db-hero {
+    padding: var(--space-12) var(--space-6) var(--space-8);
   }
 
-  .major-compare-table :deep(.el-table__cell) {
-    overflow: visible !important;
+  .db-container {
+    padding: 0 var(--space-6);
+  }
+
+  .db-hero-title {
+    font-size: var(--text-3xl);
+  }
+
+  .db-hero-stats {
+    gap: var(--space-4);
+  }
+}
+
+/* 大手机 */
+@media (max-width: 768px) {
+  .db-hero {
+    padding: var(--space-10) var(--space-5) var(--space-6);
+  }
+
+  .db-container {
+    padding: 0 var(--space-5);
+  }
+
+  .db-hero-title {
+    font-size: var(--text-2xl);
+  }
+
+  .db-hero-subtitle {
+    font-size: var(--text-base);
+  }
+
+  .db-hero-search {
+    flex-direction: column;
+  }
+
+  .hero-search-btn {
+    width: 100%;
+  }
+
+  .db-hero-stats {
+    gap: var(--space-5);
+  }
+
+  .hero-stat-number {
+    font-size: var(--text-xl);
+  }
+
+  .filter-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filter-bar__items {
+    flex-direction: column;
+  }
+
+  .filter-bar__select {
+    width: 100%;
+    min-width: unset;
+  }
+
+  .filter-bar__search {
+    max-width: 100%;
+  }
+
+  .filter-bar__actions {
+    justify-content: flex-end;
+  }
+
+  .view-toggle {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-2);
+  }
+}
+
+/* 手机 */
+@media (max-width: 576px) {
+  .db-hero-title {
+    font-size: var(--text-xl);
+  }
+
+  .db-hero-tags {
+    gap: var(--space-1);
+  }
+
+  .hot-tag {
+    font-size: 11px;
+    padding: 0 8px;
+  }
+
+  .db-hero-stats {
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  .hero-stat-divider {
+    width: 40px;
+    height: 1px;
+  }
+
+  .pagination :deep(.el-pagination__total) {
+    display: none;
+  }
+
+  .pagination :deep(.el-pagination__sizes) {
+    display: none;
+  }
+
+  .pagination :deep(.el-pagination__jump) {
+    display: none;
+  }
+
+  .detail-header {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .detail-title {
+    align-items: center;
+  }
+
+  .detail-actions {
+    flex-direction: column;
+  }
+
+  .detail-actions .el-button {
+    width: 100%;
   }
 
   .compare-bar {
@@ -1693,36 +2259,15 @@ onMounted(() => {
   .compare-bar .el-button {
     width: 100%;
   }
-}
 
-/* 专业搜索 tab 移动端响应式补充 */
-@media (max-width: 480px) {
-  /* 筛选区域已在 480px 媒体查询中处理 */
-  /* 分页器移动端：隐藏不必要元素 */
-  .pagination :deep(.el-pagination__sizes) {
-    display: none;
+  .major-compare-table :deep(.el-table__body .cell) {
+    white-space: normal !important;
+    text-overflow: unset !important;
+    overflow: visible !important;
   }
-  .pagination :deep(.el-pagination__total) {
-    display: none;
-  }
-  .pagination :deep(.el-pagination__jump) {
-    display: none;
-  }
-  .pagination :deep(.el-pagination__rightwrapper) {
-    display: none;
-  }
-}
 
-/* 对比容器：允许水平滚动 */
-.compare-container {
-  overflow-x: auto;
-}
-
-/* 移动端对话框响应式宽度 */
-@media (max-width: 768px) {
-  .major-compare-dialog {
-    width: 90% !important;
-    max-width: 90% !important;
+  .major-compare-table :deep(.el-table__cell) {
+    overflow: visible !important;
   }
 }
 
@@ -1731,10 +2276,7 @@ onMounted(() => {
     width: 96% !important;
     max-width: 96% !important;
   }
-}
 
-/* 移动端专业对比对话框 */
-@media (max-width: 480px) {
   .major-compare-table {
     font-size: 13px;
   }
@@ -1746,9 +2288,37 @@ onMounted(() => {
   .major-compare-table :deep(.el-table__body td) {
     padding: 6px 4px;
   }
+}
 
-  .compare-container {
-    overflow-x: auto;
+@media (max-width: 768px) {
+  .major-compare-dialog {
+    width: 90% !important;
+    max-width: 90% !important;
+  }
+}
+
+/* 减少动画偏好 */
+@media (prefers-reduced-motion: reduce) {
+  .db-hero,
+  .db-content {
+    transition: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .school-card,
+  .major-card {
+    transition: box-shadow 0.2s ease, border-color 0.2s ease;
+  }
+
+  .school-card:hover,
+  .major-card:hover {
+    transform: none;
+  }
+
+  .db-hero-glow::before,
+  .db-hero-glow::after {
+    animation: none;
   }
 }
 </style>
