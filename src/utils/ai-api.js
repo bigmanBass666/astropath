@@ -1,11 +1,7 @@
 /**
  * AI API 调用工具模块
  * 支持多provider切换：OpenAI、Anthropic、国内供应商、其他
- * 支持代理模式：通过 Cloudflare Worker 代理隐藏 API Key
  */
-
-const USE_PROXY = true;  // 是否使用代理模式
-const PROXY_URL = 'https://liuxue-ai-proxy.bigmanbass666.workers.dev';  // Cloudflare Worker 代理地址
 
 // 自定义错误类
 export class AIError extends Error {
@@ -37,8 +33,7 @@ export async function sendMessageToAI(providerId, messages, options = {}) {
     throw new AIError('config', 'AI服务提供商未找到，请检查配置')
   }
 
-  const isProxyMode = USE_PROXY && provider.useProxy
-  if (!isProxyMode && (!provider.apiKey || !provider.baseUrl)) {
+  if (!provider.apiKey || !provider.baseUrl) {
     throw new AIError('config', 'AI服务配置不完整，请完善API Key和Base URL')
   }
 
@@ -57,22 +52,12 @@ export async function sendMessageToAI(providerId, messages, options = {}) {
     const timeout = options.enableThinking ? 120000 : 60000 // 思考模式120秒，普通模式60秒
     const timeoutId = setTimeout(() => controller.abort(), timeout)
 
-    // 构建请求 URL 和 headers
-    const isProxyMode = USE_PROXY && provider.useProxy
-    const requestUrl = isProxyMode ? PROXY_URL : `${provider.baseUrl}/chat/completions`
-    
-    const headers = {
-      'Content-Type': 'application/json'
-    }
-    
-    // 代理模式下不需要 Authorization header（key 在 Worker 端）
-    if (!isProxyMode) {
-      headers['Authorization'] = `Bearer ${provider.apiKey}`
-    }
-
-    const response = await fetch(requestUrl, {
+    const response = await fetch(`${provider.baseUrl}/chat/completions`, {
       method: 'POST',
-      headers: headers,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${provider.apiKey}`
+      },
       body: JSON.stringify(requestBody),
       signal: controller.signal
     })
@@ -138,17 +123,34 @@ function buildRequestBody(provider, messages, options) {
 
   // 思考模式特殊处理
   if (options.enableThinking) {
-    baseBody.enable_thinking = true
+    // 根据不同 provider 类型设置思考模式参数
+    if (provider.type === 'anthropic') {
+      // Anthropic 使用 thinking 字段
+      // (anthropic 类型在下面单独处理)
+    } else if (provider.type === 'domestic' || provider.type === 'other') {
+      // 智谱 AI GLM-4 系列使用 thinking 对象参数
+      baseBody.thinking = {
+        type: 'enabled'
+      }
+    } else {
+      // OpenAI 兼容接口
+      baseBody.enable_thinking = true
+    }
+    
     // DeepSeek 思考模式需要设置更大的思考空间
     if (provider.type === 'deepseek' || provider.model?.toLowerCase().includes('deepseek')) {
       baseBody.max_thinking_tokens = 8000
     }
-  } else {
-    baseBody.enable_thinking = false
+    
+    // 思考模式需要更大的 max_tokens 空间
+    // 智谱AI GLM-4.7 默认 max_tokens 是 65536
+    if (!baseBody.max_tokens) {
+      baseBody.max_tokens = 8192  // 为思考过程和回复内容预留足够空间
+    }
   }
-
-  // 只有在非思考模式或明确指定时才设置 max_tokens
-  if (!options.enableThinking && options.maxTokens && options.maxTokens > 0) {
+  
+  // 设置 max_tokens（如果提供了且大于0）
+  if (options.maxTokens && options.maxTokens > 0) {
     baseBody.max_tokens = options.maxTokens
   }
 
@@ -168,7 +170,8 @@ function buildRequestBody(provider, messages, options) {
     return anthropicBody
   }
 
-  console.log('[AI API] Final request body:', baseBody)
+  console.log('[AI API] Final request body:', JSON.stringify(baseBody, null, 2))
+  console.log('[AI API] enableThinking:', options.enableThinking, 'has thinking field:', !!baseBody.thinking)
   return baseBody
 }
 
@@ -300,8 +303,14 @@ async function* handleStreamResponse(response) {
           const parsed = JSON.parse(data)
           console.log('[AI API] Parsed data:', parsed)
           
-          // 处理推理内容（智谱 AI 的 reasoning_content）
-          const reasoningContent = parsed.choices?.[0]?.delta?.reasoning_content
+          // 处理推理内容 - 支持多种字段名
+          const delta = parsed.choices?.[0]?.delta
+          const reasoningContent = 
+            delta?.reasoning_content ||
+            delta?.thinking ||
+            delta?.reasoning ||
+            delta?.thought
+          
           if (reasoningContent) {
             chunkCount++
             console.log('[AI API] Yielding reasoning chunk #', chunkCount, ':', reasoningContent)
@@ -343,8 +352,18 @@ async function* handleStreamResponse(response) {
       try {
         const parsed = JSON.parse(data)
         
-        // 处理推理内容
-        const reasoningContent = parsed.choices?.[0]?.delta?.reasoning_content
+        // 处理推理内容 - 支持多种字段名
+        const reasoningContent = 
+          parsed.choices?.[0]?.delta?.reasoning_content ||
+          parsed.choices?.[0]?.delta?.thinking ||
+          parsed.choices?.[0]?.delta?.reasoning ||
+          parsed.choices?.[0]?.delta?.thought ||
+          parsed.choices?.[0]?.message?.reasoning_content ||
+          parsed.choices?.[0]?.message?.thinking ||
+          parsed.thinking ||
+          parsed.reasoning ||
+          parsed.thought
+        
         if (reasoningContent) {
           yield { type: 'reasoning', content: reasoningContent }
         }
@@ -375,8 +394,7 @@ export async function testProviderConnection(providerId) {
     return { success: false, error: 'Provider未找到', errorType: 'config' }
   }
 
-  const isProxyMode = USE_PROXY && provider.useProxy
-  if (!isProxyMode && (!provider.apiKey || !provider.baseUrl)) {
+  if (!provider.apiKey || !provider.baseUrl) {
     return { success: false, error: '配置不完整', errorType: 'config' }
   }
 

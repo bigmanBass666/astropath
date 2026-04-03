@@ -150,7 +150,7 @@
               <div 
                 class="thinking-toggle" 
                 :class="{ 'is-active': enableThinking }"
-                @click="enableThinking = !enableThinking"
+                @click="toggleThinking"
               >
                 <el-icon :size="14"><Cpu /></el-icon>
                 <span>思考</span>
@@ -500,6 +500,10 @@ const selectAgent = (agentId) => {
   }
 }
 
+const toggleThinking = () => {
+  enableThinking.value = !enableThinking.value
+}
+
 const useQuickPrompt = (prompt) => {
   inputMessage.value = prompt
   sendMessage()
@@ -557,12 +561,15 @@ const sendMessage = async () => {
     messages.value.push(aiMsg)
     const aiMsgIndex = messages.value.length - 1
 
-    const stream = await sendMessageToAI(selectedProvider.value, apiMessages, {
+    const requestOptions = {
       temperature: 0.7,
-      maxTokens: 1000,
+      maxTokens: enableThinking.value ? 8192 : 2000,  // 思考模式需要更大的空间
       stream: true,
       enableThinking: enableThinking.value
-    })
+    }
+    console.log('[AIChat] Sending request with options:', requestOptions, 'enableThinking:', enableThinking.value)
+    
+    const stream = await sendMessageToAI(selectedProvider.value, apiMessages, requestOptions)
 
     console.log('[AIChat] Got stream, starting to read...')
     let chunkCount = 0

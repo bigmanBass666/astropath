@@ -1,0 +1,129 @@
+/* 智途 AstroPath 设计系统变量 */
+/* 基于 ui-ux-pro-max 插件的 "Educational App" 配色规范 */
+
+:root {
+  /* ==================== 主色调 - 靛蓝 (专业、可信赖) ==================== */
+  --color-primary: #4F46E5;
+  --color-primary-light: #818CF8;
+  --color-primary-dark: #1E1B4B;
+  --color-primary-50: #EEF2FF;
+  --color-primary-100: #E0E7FF;
+  --color-primary-200: #C7D2FE;
+  --color-primary-300: #A5B4FC;
+  --color-primary-400: #818CF8;
+  --color-primary-500: #6366F1;
+  --color-primary-600: #4F46E5;
+  --color-primary-700: #4338CA;
+  --color-primary-800: #3730A3;
+  --color-primary-900: #312E81;
+
+  /* ==================== 辅助色 - 活力橙 (CTA) ==================== */
+  --color-accent: #EA580C;
+  --color-accent-light: #FB923C;
+  --color-accent-dark: #9A3412;
+
+  /* ==================== 功能色 ==================== */
+  --color-success: #059669;
+  --color-success-light: #34D399;
+  --color-success-bg: #ECFDF5;
+  
+  --color-warning: #D97706;
+  --color-warning-light: #FBBF24;
+  --color-warning-bg: #FFFBEB;
+  
+  --color-danger: #DC2626;
+  --color-danger-light: #F87171;
+  --color-danger-bg: #FEF2F2;
+  
+  --color-info: #0891B2;
+  --color-info-light: #22D3EE;
+  --color-info-bg: #ECFEFF;
+
+  /* ==================== 中性色 ==================== */
+  --color-background: #F8FAFC;
+  --color-surface: #FFFFFF;
+  --color-surface-elevated: #FFFFFF;
+  
+  --color-text-primary: #0F172A;
+  --color-text-secondary: #64748B;
+  --color-text-tertiary: #94A3B8;
+  --color-text-inverse: #FFFFFF;
+  
+  --color-border: #E2E8F0;
+  --color-border-light: #F1F5F9;
+  --color-divider: #E2E8F0;
+
+  /* ==================== 渐变 ==================== */
+  --gradient-primary: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
+  --gradient-accent: linear-gradient(135deg, #EA580C 0%, #F97316 100%);
+  --gradient-success: linear-gradient(135deg, #059669 0%, #10B981 100%);
+  --gradient-gold: linear-gradient(135deg, #F59E0B 0%, #FBBF24 100%);
+  --gradient-silver: linear-gradient(135deg, #94A3B8 0%, #CBD5E1 100%);
+  --gradient-bronze: linear-gradient(135deg, #B45309 0%, #D97706 100%);
+
+  /* ==================== 间距系统 (8px 基准) ==================== */
+  --space-0: 0;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
+  --space-24: 96px;
+
+  /* ==================== 字体规范 ==================== */
+  --font-family-base: 'Inter', 'PingFang SC', 'Microsoft YaHei', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-family-display: 'Poppins', 'PingFang SC', sans-serif;
+  --font-family-mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-base: 16px;
+  --text-lg: 18px;
+  --text-xl: 20px;
+  --text-2xl: 24px;
+  --text-3xl: 30px;
+  --text-4xl: 36px;
+  --text-5xl: 48px;
+
+  --font-normal: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+
+  --leading-tight: 1.25;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.75;
+
+  /* ==================== 阴影系统 ==================== */
+  --shadow-none: none;
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  --shadow-inner: inset 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+  --shadow-glow-primary: 0 0 20px rgba(79, 70, 229, 0.3);
+  --shadow-glow-success: 0 0 20px rgba(5, 150, 105, 0.3);
+
+  /* ==================== 圆角系统 ==================== */
+  --radius-none: 0;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --radius-2xl: 16px;
+  --radius-3xl: 24px;
+  --radius-full: 9999px;
+
+  /* ==================== 过渡动画 ==================== */
+  --transition-fast: 150ms ease;
+  --transition-normal: 250ms ease;
+  --transition-slow: 350ms ease;
+  --transition-spring: 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}

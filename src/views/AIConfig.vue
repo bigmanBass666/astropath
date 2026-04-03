@@ -21,12 +21,6 @@
           </template>
         </el-table-column>
         <el-table-column prop="model" label="模型名称" min-width="140" show-overflow-tooltip />
-        <el-table-column prop="useProxy" label="代理模式" min-width="90">
-          <template #default="{ row }">
-            <el-tag v-if="row.useProxy" type="success">已启用</el-tag>
-            <el-tag v-else type="info">未启用</el-tag>
-          </template>
-        </el-table-column>
         <el-table-column prop="status" label="状态" min-width="90">
           <template #default="{ row }">
             <el-tag v-if="row.status === 'testing'" type="warning">测试中</el-tag>
@@ -48,11 +42,13 @@
 
       <h4>快速配置</h4>
       <div style="margin-bottom: 20px; color: #666; font-size: 14px;">
-        推荐评委使用下方一键配置，直接通过代理服务器连接AI服务，无需填写API Key
+        推荐评委使用下方一键配置，直接连接AI服务
       </div>
-      <el-button type="primary" @click="addZhipuPreset">
-        一键使用智谱 GLM-4-Flash（推荐）
-      </el-button>
+      <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+        <el-button type="primary" @click="addZhipuPreset">
+          一键配置智谱 GLM-4.7-Flash
+        </el-button>
+      </div>
 
       <el-divider />
 
@@ -69,14 +65,10 @@
             <el-option label="其他" value="other" />
           </el-select>
         </el-form-item>
-        <el-form-item label="使用代理">
-          <el-switch v-model="newProvider.useProxy" />
-          <span style="margin-left: 10px; color: #999; font-size: 12px;">开启后通过代理服务器转发请求，API Key安全</span>
-        </el-form-item>
-        <el-form-item label="Base URL" v-if="!newProvider.useProxy">
+        <el-form-item label="Base URL">
           <el-input v-model="newProvider.baseUrl" placeholder="https://api.openai.com/v1" />
         </el-form-item>
-        <el-form-item label="API Key" v-if="!newProvider.useProxy">
+        <el-form-item label="API Key">
           <el-input v-model="newProvider.apiKey" type="password" placeholder="sk-..." />
         </el-form-item>
         <el-form-item label="模型名称">
@@ -130,8 +122,7 @@ const newProvider = ref({
   type: '',
   baseUrl: '',
   apiKey: '',
-  model: '',
-  useProxy: false
+  model: ''
 })
 const editVisible = ref(false)
 const editingProvider = ref({})
@@ -155,12 +146,8 @@ const saveProviders = () => {
 }
 
 const addProvider = () => {
-  if (!newProvider.value.name || !newProvider.value.model) {
-    ElMessage.warning('请填写供应商名称和模型名称')
-    return
-  }
-  if (!newProvider.value.useProxy && (!newProvider.value.baseUrl || !newProvider.value.apiKey)) {
-    ElMessage.warning('请填写完整信息或启用代理模式')
+  if (!newProvider.value.name || !newProvider.value.baseUrl || !newProvider.value.apiKey) {
+    ElMessage.warning('请填写完整信息')
     return
   }
   providers.value.push({
@@ -170,27 +157,47 @@ const addProvider = () => {
   })
   saveProviders()
   ElMessage.success('配置已保存')
-  newProvider.value = { name: '', type: '', baseUrl: '', apiKey: '', model: '', useProxy: false }
+  newProvider.value = { name: '', type: '', baseUrl: '', apiKey: '', model: '' }
 }
 
 const addZhipuPreset = () => {
-  const existing = providers.value.find(p => p.name === '智谱 GLM-4-Flash')
+  const existing = providers.value.find(p => p.name === '智谱 GLM-4.7-Flash（推荐）')
   if (existing) {
     ElMessage.info('智谱配置已存在')
     return
   }
   providers.value.push({
-    name: '智谱 GLM-4-Flash',
+    name: '智谱 GLM-4.7-Flash（推荐）',
+    type: 'domestic',
+    baseUrl: 'https://open.bigmodel.cn/api/paas/v4',
+    apiKey: '015518e0bc86498dafdc42bf88b1572a.dioiOVESgV9mUg5i',
+    model: 'glm-4.7-flash',
+    status: 'untested',
+    id: Date.now(),
+    supportsThinking: true
+  })
+  saveProviders()
+  ElMessage.success('已添加智谱 GLM-4.7-Flash 配置（支持思考模式），请点击"测试"验证连接')
+}
+
+const addZhipuFlashPreset = () => {
+  const existing = providers.value.find(p => p.name === '智谱 GLM-4-Flash（快速）')
+  if (existing) {
+    ElMessage.info('智谱 Flash 配置已存在')
+    return
+  }
+  providers.value.push({
+    name: '智谱 GLM-4-Flash（快速）',
     type: 'domestic',
     baseUrl: 'https://open.bigmodel.cn/api/paas/v4',
     apiKey: '015518e0bc86498dafdc42bf88b1572a.dioiOVESgV9mUg5i',
     model: 'glm-4-flash',
-    useProxy: false,
     status: 'untested',
-    id: Date.now()
+    id: Date.now(),
+    supportsThinking: false
   })
   saveProviders()
-  ElMessage.success('已添加智谱配置，请点击"测试"验证连接')
+  ElMessage.success('已添加智谱 GLM-4-Flash 配置（速度快，不支持思考），请点击"测试"验证连接')
 }
 
 const removeProvider = (index) => {
