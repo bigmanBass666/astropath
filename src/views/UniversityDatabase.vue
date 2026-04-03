@@ -33,15 +33,16 @@
             <template #prefix>
               <el-icon><Search /></el-icon>
             </template>
+            <template #suffix>
+              <div
+                class="hero-search-suffix"
+                @click="handleHeroSearch"
+              >
+                搜索
+                <el-icon class="search-arrow-icon"><ArrowRight /></el-icon>
+              </div>
+            </template>
           </el-input>
-          <el-button
-            type="primary"
-            size="large"
-            class="hero-search-btn"
-            @click="handleHeroSearch"
-          >
-            搜索
-          </el-button>
         </div>
 
         <!-- 热门搜索标签 -->
@@ -96,104 +97,95 @@
             label="院校搜索"
             name="schools"
           >
-            <!-- 筛选栏 -->
-            <div class="filter-bar">
-              <div class="filter-bar__items">
-                <el-select
-                  v-model="filterCountry"
-                  placeholder="国家/地区"
-                  clearable
-                  class="filter-bar__select"
-                >
-                  <el-option
-                    v-for="country in uniqueCountries"
-                    :key="country"
-                    :label="country"
-                    :value="country"
-                  />
-                </el-select>
-                <el-select
-                  v-model="filterRankRange"
-                  placeholder="排名范围"
-                  clearable
-                  class="filter-bar__select"
-                >
-                  <el-option
-                    label="Top 10"
-                    value="top10"
-                  />
-                  <el-option
-                    label="Top 20"
-                    value="top20"
-                  />
-                  <el-option
-                    label="Top 50"
-                    value="top50"
-                  />
-                  <el-option
-                    label="Top 100"
-                    value="top100"
-                  />
-                </el-select>
-                <el-select
-                  v-model="filterMajor"
-                  placeholder="专业领域"
-                  clearable
-                  class="filter-bar__select"
-                >
-                  <el-option
-                    v-for="major in uniqueMajors"
-                    :key="major"
-                    :label="major"
-                    :value="major"
-                  />
-                </el-select>
-                <el-select
-                  v-model="sortBy"
-                  placeholder="排序方式"
-                  clearable
-                  class="filter-bar__select"
-                >
-                  <el-option
-                    label="QS排名"
-                    value="qs_rank"
-                  />
-                  <el-option
-                    label="录取率"
-                    value="acceptance_rate"
-                  />
-                  <el-option
-                    label="学费"
-                    value="tuition"
-                  />
-                </el-select>
+            <!-- 极简标签筛选栏 -->
+            <div class="filter-chips">
+              <div class="filter-chips__row">
+                <span class="filter-chips__label">国家</span>
+                <span
+                  class="filter-chip"
+                  :class="{ 'is-active': !filterCountry }"
+                  @click="filterCountry = ''"
+                >全部</span>
+                <span
+                  v-for="country in uniqueCountries.slice(0, 4)"
+                  :key="country"
+                  class="filter-chip"
+                  :class="{ 'is-active': filterCountry === country }"
+                  @click="filterCountry = filterCountry === country ? '' : country"
+                >{{ country }}</span>
               </div>
-              <div class="filter-bar__actions">
-                <el-button
-                  class="filter-reset-btn"
-                  @click="resetFilters"
-                >
-                  重置筛选
-                </el-button>
+
+              <div class="filter-chips__row">
+                <span class="filter-chips__label">排名</span>
+                <span
+                  class="filter-chip"
+                  :class="{ 'is-active': !filterRankRange }"
+                  @click="filterRankRange = ''"
+                >全部</span>
+                <span
+                  class="filter-chip"
+                  :class="{ 'is-active': filterRankRange === 'top10' }"
+                  @click="toggleRankFilter('top10')"
+                >Top 10</span>
+                <span
+                  class="filter-chip"
+                  :class="{ 'is-active': filterRankRange === 'top20' }"
+                  @click="toggleRankFilter('top20')"
+                >Top 30</span>
+                <span
+                  class="filter-chip"
+                  :class="{ 'is-active': filterRankRange === 'top50' }"
+                  @click="toggleRankFilter('top50')"
+                >Top 50</span>
+              </div>
+
+              <div class="filter-chips__row">
+                <span class="filter-chips__label">专业</span>
+                <span
+                  class="filter-chip"
+                  :class="{ 'is-active': !filterMajor }"
+                  @click="filterMajor = ''"
+                >全部</span>
+                <span
+                  v-for="major in uniqueMajors.slice(0, 3)"
+                  :key="major"
+                  class="filter-chip"
+                  :class="{ 'is-active': filterMajor === major }"
+                  @click="filterMajor = filterMajor === major ? '' : major"
+                >{{ major }}</span>
+
+                <span
+                  class="filter-chip filter-chip--sort"
+                  :class="{ 'is-active': sortBy === 'qs_rank' }"
+                  @click="sortBy = sortBy === 'qs_rank' ? '' : 'qs_rank'"
+                >排名 ↓</span>
+                <span
+                  class="filter-chip filter-chip--sort"
+                  :class="{ 'is-active': sortBy === 'acceptance_rate' }"
+                  @click="sortBy = sortBy === 'acceptance_rate' ? '' : 'acceptance_rate'"
+                >录取率 ↑</span>
               </div>
             </div>
 
             <!-- 视图切换 -->
             <div class="view-toggle">
-              <el-radio-group
-                v-model="viewMode"
-                size="small"
-              >
-                <el-radio-button label="card">
+              <div class="view-mode-switch">
+                <span
+                  class="view-mode-btn"
+                  :class="{ 'is-active': viewMode === 'card' }"
+                  @click="viewMode = 'card'"
+                >
                   <el-icon><Grid /></el-icon>
-                  卡片视图
-                </el-radio-button>
-                <el-radio-button label="list">
+                </span>
+                <span
+                  class="view-mode-btn"
+                  :class="{ 'is-active': viewMode === 'list' }"
+                  @click="viewMode = 'list'"
+                >
                   <el-icon><List /></el-icon>
-                  列表视图
-                </el-radio-button>
-              </el-radio-group>
-              <span class="result-count">共 {{ totalSchools.length }} 所院校</span>
+                </span>
+              </div>
+              <span class="result-count">{{ totalSchools.length }} 所院校</span>
             </div>
 
             <!-- 院校网格 - 卡片视图 -->
@@ -375,59 +367,55 @@
             label="专业搜索"
             name="majors"
           >
-            <!-- 专业筛选栏 -->
-            <div class="filter-bar">
-              <div class="filter-bar__items">
-                <el-input
-                  v-model="majorSearchKeyword"
-                  placeholder="搜索专业名称或类别..."
-                  clearable
-                  class="filter-bar__search"
-                >
-                  <template #prefix>
-                    <el-icon><Search /></el-icon>
-                  </template>
-                </el-input>
-                <el-select
-                  v-model="filterDegreeType"
-                  placeholder="学位类型"
-                  clearable
-                  class="filter-bar__select"
-                >
-                  <el-option
-                    label="本科"
-                    value="本科"
-                  />
-                  <el-option
-                    label="硕士"
-                    value="硕士"
-                  />
-                  <el-option
-                    label="博士"
-                    value="博士"
-                  />
-                </el-select>
-                <el-select
-                  v-model="filterCategory"
-                  placeholder="专业类别"
-                  clearable
-                  class="filter-bar__select"
-                >
-                  <el-option
-                    v-for="cat in uniqueCategories"
-                    :key="cat"
-                    :label="cat"
-                    :value="cat"
-                  />
-                </el-select>
+            <!-- 专业极简标签筛选 -->
+            <div class="filter-chips">
+              <div class="filter-chips__row">
+                <span class="filter-chips__label">类别</span>
+                <span
+                  class="filter-chip"
+                  :class="{ 'is-active': !filterCategory }"
+                  @click="filterCategory = ''"
+                >全部</span>
+                <span
+                  v-for="cat in uniqueCategories"
+                  :key="cat"
+                  class="filter-chip"
+                  :class="{ 'is-active': filterCategory === cat }"
+                  @click="filterCategory = filterCategory === cat ? '' : cat"
+                >{{ cat }}</span>
               </div>
-              <div class="filter-bar__actions">
-                <el-button
-                  class="filter-reset-btn"
-                  @click="resetMajorFilters"
-                >
-                  重置筛选
-                </el-button>
+
+              <div class="filter-chips__row">
+                <span class="filter-chips__label">学位</span>
+                <span
+                  class="filter-chip"
+                  :class="{ 'is-active': !filterDegreeType }"
+                  @click="filterDegreeType = ''"
+                >全部</span>
+                <span
+                  class="filter-chip"
+                  :class="{ 'is-active': filterDegreeType === '本科' }"
+                  @click="filterDegreeType = filterDegreeType === '本科' ? '' : '本科'"
+                >本科</span>
+                <span
+                  class="filter-chip"
+                  :class="{ 'is-active': filterDegreeType === '硕士' }"
+                  @click="filterDegreeType = filterDegreeType === '硕士' ? '' : '硕士'"
+                >硕士</span>
+                <span
+                  class="filter-chip"
+                  :class="{ 'is-active': filterDegreeType === '博士' }"
+                  @click="filterDegreeType = filterDegreeType === '博士' ? '' : '博士'"
+                >博士</span>
+
+                <div class="major-search-inline">
+                  <el-icon class="search-mini-icon"><Search /></el-icon>
+                  <input
+                    v-model="majorSearchKeyword"
+                    placeholder="搜索专业..."
+                    class="search-mini-input"
+                  >
+                </div>
               </div>
             </div>
 
@@ -628,7 +616,7 @@
             {{ currentSchool.country }}
           </el-descriptions-item>
           <el-descriptions-item label="排名">
-            {{ currentSchool.ranking }}
+            <span>{{ currentSchool.ranking }}</span>
             <sup
               v-if="currentSchool.sources?.ranking"
               class="source-sup"
@@ -639,7 +627,7 @@
             {{ currentSchool.major }}
           </el-descriptions-item>
           <el-descriptions-item label="学费">
-            {{ currentSchool.tuition }}
+            <span>{{ currentSchool.tuition }}</span>
             <sup
               v-if="currentSchool.sources?.tuition"
               class="source-sup"
@@ -647,11 +635,11 @@
             >[{{ currentSchool.sources.tuition.label }}]</sup>
           </el-descriptions-item>
           <el-descriptions-item label="录取率">
-            {{ currentSchool.acceptanceRate }}
+            <span>{{ currentSchool.acceptanceRate }}</span>
             <sup
-              v-if="currentSchool.sources?.acceptance"
+              v-if="currentSchool.sources?.accept"
               class="source-sup"
-              @click.stop="openSource(currentSchool.sources.acceptance.url)"
+              @click.stop="openSource(currentSchool.sources.accept.url)"
             >[{{ currentSchool.sources.accept.label }}]</sup>
           </el-descriptions-item>
           <el-descriptions-item label="学校类型">
@@ -921,6 +909,10 @@ const resetFilters = () => {
   currentSchoolPage.value = 1
 }
 
+const toggleRankFilter = (val) => {
+  filterRankRange.value = filterRankRange.value === val ? '' : val
+}
+
 const searchMajors = () => {
   currentMajorPage.value = 1
   ElMessage.success(`找到 ${totalMajors.value.length} 个专业`)
@@ -1037,30 +1029,33 @@ watch(activeTab, (newTab) => {
   }
 })
 
-let scrollTicking = false
+let heroObserver = null
+let contentObserver = null
 
-const handleScroll = () => {
-  if (scrollTicking) return
-  scrollTicking = true
-  requestAnimationFrame(() => {
-    const windowHeight = window.innerHeight
+const setupObservers = () => {
+  heroObserver = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          heroVisible.value = true
+          heroObserver?.unobserve(entry.target)
+        }
+      })
+    },
+    { threshold: 0.1 }
+  )
 
-    if (heroRef.value && !heroVisible.value) {
-      const rect = heroRef.value.getBoundingClientRect()
-      if (rect.top < windowHeight * 0.9) {
-        heroVisible.value = true
-      }
-    }
-
-    if (contentRef.value && !contentVisible.value) {
-      const rect = contentRef.value.getBoundingClientRect()
-      if (rect.top < windowHeight * 0.85) {
-        contentVisible.value = true
-      }
-    }
-
-    scrollTicking = false
-  })
+  contentObserver = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          contentVisible.value = true
+          contentObserver?.unobserve(entry.target)
+        }
+      })
+    },
+    { threshold: 0.05 }
+  )
 }
 
 onMounted(() => {
@@ -1077,12 +1072,23 @@ onMounted(() => {
     heroVisible.value = true
   }, 100)
 
-  window.addEventListener('scroll', handleScroll, { passive: true })
-  handleScroll()
+  setupObservers()
+
+  requestAnimationFrame(() => {
+    if (heroRef.value) heroObserver?.observe(heroRef.value)
+    if (contentRef.value) contentObserver?.observe(contentRef.value)
+  })
+
+  setTimeout(() => {
+    if (!contentVisible.value) {
+      contentVisible.value = true
+    }
+  }, 800)
 })
 
 onUnmounted(() => {
-  window.removeEventListener('scroll', handleScroll)
+  heroObserver?.disconnect()
+  contentObserver?.disconnect()
 })
 </script>
 
@@ -1112,6 +1118,7 @@ onUnmounted(() => {
 .db-hero-gradient {
   position: absolute;
   inset: 0;
+  pointer-events: none;
   background:
     linear-gradient(90deg, rgba(30, 58, 95, 0.03) 1px, transparent 1px),
     linear-gradient(rgba(30, 58, 95, 0.03) 1px, transparent 1px),
@@ -1136,6 +1143,7 @@ onUnmounted(() => {
   left: -80px;
   background: radial-gradient(circle, rgba(184, 134, 11, 0.07) 0%, transparent 70%);
   animation: glow-pulse 10s ease-in-out infinite;
+  pointer-events: none;
 }
 
 .db-hero-glow::after {
@@ -1147,6 +1155,7 @@ onUnmounted(() => {
   right: -40px;
   background: radial-gradient(circle, rgba(30, 58, 95, 0.06) 0%, transparent 70%);
   animation: glow-pulse 12s ease-in-out infinite reverse;
+  pointer-events: none;
 }
 
 .db-hero-content {
@@ -1187,18 +1196,12 @@ onUnmounted(() => {
 
 /* Hero 搜索框 */
 .db-hero-search {
-  display: flex;
-  gap: var(--space-3);
   max-width: 600px;
   margin: 0 auto var(--space-6);
 }
 
-.hero-search-input {
-  flex: 1;
-}
-
 .hero-search-input :deep(.el-input__wrapper) {
-  padding: 8px 16px;
+  padding: 8px 8px 8px 16px;
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-md), 0 0 0 1px var(--color-border-light);
   transition: all var(--transition-normal);
@@ -1217,19 +1220,34 @@ onUnmounted(() => {
   font-size: var(--text-base);
 }
 
-.hero-search-btn {
-  border-radius: var(--radius-xl);
-  padding: 0 var(--space-8);
-  font-weight: var(--font-semibold);
+.hero-search-suffix {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 14px;
   background: var(--gradient-primary);
-  border: none;
-  flex-shrink: 0;
-  transition: all var(--transition-spring);
+  color: #fff;
+  border-radius: var(--radius-lg);
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  user-select: none;
+  margin-right: -4px;
 }
 
-.hero-search-btn:hover {
-  transform: translateY(-2px) scale(1.02);
-  box-shadow: var(--shadow-lg), var(--shadow-glow-primary);
+.hero-search-suffix:hover {
+  transform: translateX(2px);
+  box-shadow: 0 4px 12px rgba(30, 58, 95, 0.25);
+}
+
+.search-arrow-icon {
+  font-size: 12px;
+  transition: transform var(--transition-fast);
+}
+
+.hero-search-suffix:hover .search-arrow-icon {
+  transform: translateX(2px);
 }
 
 /* 热门标签 */
@@ -1351,76 +1369,101 @@ onUnmounted(() => {
   border-radius: var(--radius-sm);
 }
 
-/* ========== 筛选栏 ========== */
-.filter-bar {
+/* ========== 极简标签筛选栏 ========== */
+.filter-chips {
   display: flex;
-  align-items: center;
-  gap: var(--space-4);
-  padding: var(--space-4) var(--space-5);
-  background: var(--color-surface);
-  border-radius: var(--radius-xl);
-  border: 1px solid var(--color-border-light);
-  box-shadow: var(--shadow-sm);
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-2);
   margin-bottom: var(--space-6);
-  flex-wrap: wrap;
 }
 
-.filter-bar__items {
+.filter-chips__row {
   display: flex;
-  gap: var(--space-3);
-  flex: 1;
-  flex-wrap: wrap;
   align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
 }
 
-.filter-bar__select {
-  min-width: 130px;
+.filter-chips__label {
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  min-width: 28px;
 }
 
-.filter-bar__select :deep(.el-select__wrapper) {
-  border-radius: var(--radius-lg);
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 14px;
+  font-size: var(--text-sm);
+  font-weight: var(--font-medium);
+  color: var(--color-text-secondary);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all var(--transition-fast);
+  user-select: none;
+}
+
+.filter-chip:hover {
+  color: var(--color-primary);
+  border-color: var(--color-primary-200);
   background: var(--color-primary-50);
+}
+
+.filter-chip.is-active {
+  color: #fff;
+  background: var(--gradient-primary);
   border-color: transparent;
+  box-shadow: 0 2px 8px rgba(30, 58, 95, 0.2);
+}
+
+.filter-chip--sort {
+  font-size: var(--text-xs);
+  padding: 4px 10px;
+}
+
+/* 专业搜索 - 紧凑内联输入框 */
+.major-search-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px 3px 10px;
+  margin-left: auto;
+  background: var(--color-background);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-full);
   transition: all var(--transition-fast);
 }
 
-.filter-bar__select :deep(.el-select__wrapper:hover) {
-  background: var(--color-primary-100);
-  border-color: var(--color-primary-200);
+.major-search-inline:focus-within {
+  border-color: var(--color-primary-300);
+  box-shadow: 0 0 0 2px rgba(30, 58, 95, 0.08);
 }
 
-.filter-bar__search {
-  min-width: 200px;
-  flex: 1;
-  max-width: 300px;
-}
-
-.filter-bar__search :deep(.el-input__wrapper) {
-  border-radius: var(--radius-lg);
-  background: var(--color-primary-50);
-  border-color: transparent;
-}
-
-.filter-bar__search :deep(.el-input__wrapper:hover) {
-  background: var(--color-primary-100);
-}
-
-.filter-bar__actions {
-  display: flex;
-  gap: var(--space-2);
+.search-mini-icon {
+  color: var(--color-text-tertiary);
+  font-size: 13px;
   flex-shrink: 0;
 }
 
-.filter-reset-btn {
-  border-radius: var(--radius-lg);
+.search-mini-input {
+  border: none;
+  outline: none;
+  background: transparent;
   font-size: var(--text-sm);
-  color: var(--color-text-secondary);
-  border-color: var(--color-border);
+  color: var(--color-text-primary);
+  width: 100px;
+  line-height: 20px;
 }
 
-.filter-reset-btn:hover {
-  color: var(--color-primary);
-  border-color: var(--color-primary-200);
+.search-mini-input::placeholder {
+  color: var(--color-text-tertiary);
 }
 
 /* ========== 视图切换 ========== */
@@ -1431,22 +1474,36 @@ onUnmounted(() => {
   margin-bottom: var(--space-5);
 }
 
-.view-toggle :deep(.el-radio-button__inner) {
+.view-mode-switch {
   display: flex;
+  gap: 2px;
+  padding: 2px;
+  background: var(--color-background);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border-light);
+}
+
+.view-mode-btn {
+  display: inline-flex;
   align-items: center;
-  gap: 4px;
+  justify-content: center;
+  width: 32px;
+  height: 28px;
+  border-radius: var(--radius-md);
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
 }
 
-.view-toggle :deep(.el-radio-button.is-active .el-radio-button__inner) {
-  background-color: var(--color-primary) !important;
-  border-color: var(--color-primary) !important;
-  color: #fff !important;
-  box-shadow: -1px 0 0 0 var(--color-primary) !important;
+.view-mode-btn:hover {
+  color: var(--color-text-secondary);
+  background: var(--color-surface);
 }
 
-.view-toggle :deep(.el-radio-button:not(.is-active) .el-radio-button__inner) {
-  background-color: #fff !important;
-  color: #606266 !important;
+.view-mode-btn.is-active {
+  color: #fff;
+  background: var(--gradient-primary);
+  box-shadow: 0 1px 4px rgba(30, 58, 95, 0.15);
 }
 
 .result-count {
@@ -2151,11 +2208,7 @@ onUnmounted(() => {
   }
 
   .db-hero-search {
-    flex-direction: column;
-  }
-
-  .hero-search-btn {
-    width: 100%;
+    max-width: 100%;
   }
 
   .db-hero-stats {
@@ -2166,26 +2219,32 @@ onUnmounted(() => {
     font-size: var(--text-xl);
   }
 
-  .filter-bar {
-    flex-direction: column;
-    align-items: stretch;
+  .filter-chips {
+    padding: var(--space-3) 0;
+    gap: var(--space-2);
   }
 
-  .filter-bar__items {
-    flex-direction: column;
+  .filter-chips__row {
+    gap: var(--space-1);
   }
 
-  .filter-bar__select {
+  .filter-chip {
+    padding: 4px 10px;
+    font-size: var(--text-xs);
+  }
+
+  .filter-chips__label {
+    display: none;
+  }
+
+  .major-search-inline {
+    margin-left: 0;
     width: 100%;
-    min-width: unset;
   }
 
-  .filter-bar__search {
-    max-width: 100%;
-  }
-
-  .filter-bar__actions {
-    justify-content: flex-end;
+  .search-mini-input {
+    width: auto;
+    flex: 1;
   }
 
   .view-toggle {

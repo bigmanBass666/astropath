@@ -117,20 +117,19 @@
         </el-table-column>
       </el-table>
 
-      <el-divider />
-
-      <h4>快速配置</h4>
-      <div style="margin-bottom: 20px; color: #666; font-size: 14px;">
-        推荐评委使用下方一键配置，直接连接AI服务
-      </div>
-      <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-        <el-button
-          type="primary"
-          @click="addZhipuPreset"
-        >
-          一键配置智谱 GLM-4.7-Flash
-        </el-button>
-      </div>
+      <el-alert
+        type="warning"
+        :closable="false"
+        show-icon
+        style="margin-top: 16px;"
+      >
+        <template #title>
+          <span style="font-weight: 600;">当前使用的是开发者个人测试 API Key（智谱 GLM-4.7-Flash）</span>
+        </template>
+        <p style="margin: 4px 0 0 0; color: #e6a23c; font-size: 13px;">
+          本 Key 为个人账号提供，仅用于比赛演示和体验，<strong>请勿用于其他用途或频繁调用</strong>。如需长期使用，请在下方「自定义配置」中填入您自己的 API Key。
+        </p>
+      </el-alert>
 
       <el-divider />
 
@@ -286,6 +285,7 @@ const loadProviders = () => {
     providers.value = JSON.parse(saved)
   } else {
     providers.value = []
+    addZhipuPreset()
   }
 }
 
@@ -326,26 +326,6 @@ const addZhipuPreset = () => {
   })
   saveProviders()
   ElMessage.success('已添加智谱 GLM-4.7-Flash 配置（支持思考模式），请点击"测试"验证连接')
-}
-
-const addZhipuFlashPreset = () => {
-  const existing = providers.value.find(p => p.name === '智谱 GLM-4-Flash（快速）')
-  if (existing) {
-    ElMessage.info('智谱 Flash 配置已存在')
-    return
-  }
-  providers.value.push({
-    name: '智谱 GLM-4-Flash（快速）',
-    type: 'domestic',
-    baseUrl: 'https://open.bigmodel.cn/api/paas/v4',
-    apiKey: 'REDACTED_API_KEY',
-    model: 'glm-4-flash',
-    status: 'untested',
-    id: Date.now(),
-    supportsThinking: false
-  })
-  saveProviders()
-  ElMessage.success('已添加智谱 GLM-4-Flash 配置（速度快，不支持思考），请点击"测试"验证连接')
 }
 
 const removeProvider = (index) => {

@@ -163,9 +163,49 @@
 
 /* 渐变背景动画 */
 @keyframes gradient-shift {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+  0% { background-position: 0% 50%, 0% 50%, 0% 50%, 100% 50%, 0% 0%; }
+  50% { background-position: 100% 50%, 100% 50%, 100% 50%, 0% 50%, 0% 0%; }
+  100% { background-position: 0% 50%, 0% 50%, 0% 50%, 100% 50%, 0% 0%; }
+}
+
+/* 光晕脉冲动画 */
+@keyframes glow-pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.8;
+  }
+}
+
+/* 线条闪光动画 */
+@keyframes shimmer-line {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+/* 3D卡片翻转效果 */
+@keyframes card-flip {
+  0% { transform: rotateY(0deg); }
+  100% { transform: rotateY(360deg); }
+}
+
+/* 波浪动画 */
+@keyframes wave {
+  0%, 100% { transform: translateX(0) translateZ(0) scaleY(1); }
+  50% { transform: translateX(-25%) translateZ(0) scaleY(0.8); }
+}
+
+/* 脉冲光晕 */
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(184, 134, 11, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(184, 134, 11, 0.6), 0 0 60px rgba(184, 134, 11, 0.3);
+  }
 }
 
 /* 动画工具类 */

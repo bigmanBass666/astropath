@@ -84,7 +84,11 @@ for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
 
 const router = createRouter({
   history: createWebHashHistory(),
-  routes
+  routes,
+  scrollBehavior(_to, _from, savedPosition) {
+    if (savedPosition) return savedPosition
+    return { top: 0 }
+  }
 })
 
 // 路由守卫：设置页面标题（必须在 app.use(router) 之前注册）
@@ -96,10 +100,7 @@ router.beforeEach((to) => {
 app.use(router)
 app.use(ElementPlus)
 
-// 暴露 router 到 window 以便测试和调试
-import { useRoute } from 'vue-router'
 app.config.globalProperties.$router = router
-// 实例挂载后，可以通过 getCurrentInstance() 获取
 app.mount('#app')
 
 // 将 router 和 route 暴露到 window 方便 Playwright 测试

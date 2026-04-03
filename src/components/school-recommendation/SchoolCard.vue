@@ -96,7 +96,7 @@
 </template>
 
 <script setup>
-import { computed, h } from 'vue'
+import { computed } from 'vue'
 import { Star, StarFilled, ChatDotRound, View, QuestionFilled, Trophy, Medal, CircleCheck, CollectionTag } from '@element-plus/icons-vue'
 import { schoolsData } from '@/utils/recommendationEngine'
 

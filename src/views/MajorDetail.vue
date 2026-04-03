@@ -8,7 +8,7 @@
       <div class="detail-back">
         <el-button
           class="back-btn"
-          @click="router.back()"
+          @click="goBackToMajors"
         >
           <el-icon><ArrowLeft /></el-icon>
           返回专业库
@@ -51,6 +51,11 @@
             </div>
             <p class="info-text">
               {{ major.description }}
+              <sup
+                v-if="major.sources?.description"
+                class="source-sup"
+                @click.stop="openSource(major.sources.description.url)"
+              >[{{ major.sources.description.label }}]</sup>
             </p>
           </div>
           <div class="info-card">
@@ -62,6 +67,11 @@
             </div>
             <p class="info-text salary-text">
               {{ major.salaryRange }}
+              <sup
+                v-if="major.sources?.salary"
+                class="source-sup"
+                @click.stop="openSource(major.sources.salary.url)"
+              >[{{ major.sources.salary.label }}]</sup>
             </p>
           </div>
         </div>
@@ -172,6 +182,20 @@ const getCategoryTagType = (category) => {
     '文科': 'danger'
   }
   return types[category] || 'info'
+}
+
+const goBackToMajors = () => {
+  // 使用 router.push 并设置 activeTab 参数，确保返回到专业库页面
+  router.push({
+    path: '/university-database',
+    query: { tab: 'majors' }
+  })
+}
+
+const openSource = (url) => {
+  if (url) {
+    window.open(url, '_blank')
+  }
 }
 
 onMounted(() => {
@@ -307,6 +331,21 @@ onMounted(() => {
   font-weight: 600;
   color: #67c23a;
   line-height: 1.6;
+}
+
+/* 来源角标样式 */
+.source-sup {
+  color: var(--color-primary);
+  cursor: pointer;
+  font-size: 10px;
+  margin-left: 2px;
+  font-weight: normal;
+  vertical-align: super;
+}
+
+.source-sup:hover {
+  color: var(--color-primary-light);
+  text-decoration: underline;
 }
 
 /* 核心课程卡片 */

@@ -693,7 +693,7 @@ const requestNotificationPermission = async () => {
     const permission = await Notification.requestPermission()
     notificationPermission.value = permission
     return permission
-  } catch (e) {
+  } catch (_e) {
     ElMessage.error('请求通知权限失败')
     return 'error'
   }
