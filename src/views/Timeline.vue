@@ -1,87 +1,196 @@
 <template>
   <div class="timeline-page">
-    <h2 class="page-title">时间规划与任务管理</h2>
+    <h2 class="page-title">
+      时间规划与任务管理
+    </h2>
 
     <!-- 视图切换 -->
     <div class="view-toggle">
       <div class="toggle-left">
-        <el-radio-group v-model="currentView" size="large">
-          <el-radio-button label="chart">图表视图</el-radio-button>
-          <el-radio-button label="timeline">时间线</el-radio-button>
-          <el-radio-button label="kanban">任务看板</el-radio-button>
+        <el-radio-group
+          v-model="currentView"
+          size="large"
+        >
+          <el-radio-button label="chart">
+            图表视图
+          </el-radio-button>
+          <el-radio-button label="timeline">
+            时间线
+          </el-radio-button>
+          <el-radio-button label="kanban">
+            任务看板
+          </el-radio-button>
         </el-radio-group>
-        <el-select v-model="mode" placeholder="规划模式" @change="handleModeChange" style="width: 150px;">
-          <el-option label="紧凑" value="compact" />
-          <el-option label="常规" value="normal" />
-          <el-option label="宽松" value="relaxed" />
+        <el-select
+          v-model="mode"
+          placeholder="规划模式"
+          style="width: 150px;"
+          @change="handleModeChange"
+        >
+          <el-option
+            label="紧凑"
+            value="compact"
+          />
+          <el-option
+            label="常规"
+            value="normal"
+          />
+          <el-option
+            label="宽松"
+            value="relaxed"
+          />
         </el-select>
       </div>
       <div class="toggle-right">
-        <el-button type="danger" :icon="Delete" @click="deleteAllTasks">删除所有任务</el-button>
-        <el-button type="warning" :icon="RefreshRight" @click="resetAllTasks">重置所有任务</el-button>
-        <el-button type="primary" :icon="DocumentAdd" @click="generateSampleTasks">生成示例任务</el-button>
+        <el-button
+          type="danger"
+          :icon="Delete"
+          @click="deleteAllTasks"
+        >
+          删除所有任务
+        </el-button>
+        <el-button
+          type="warning"
+          :icon="RefreshRight"
+          @click="resetAllTasks"
+        >
+          重置所有任务
+        </el-button>
+        <el-button
+          type="primary"
+          :icon="DocumentAdd"
+          @click="generateSampleTasks"
+        >
+          生成示例任务
+        </el-button>
       </div>
     </div>
 
     <!-- ECharts图表视图 -->
-    <div v-if="currentView === 'chart'" class="chart-view">
+    <div
+      v-if="currentView === 'chart'"
+      class="chart-view"
+    >
       <el-card class="chart-card">
-        <div ref="chartRef" class="timeline-chart"></div>
+        <div
+          ref="chartRef"
+          class="timeline-chart"
+        />
       </el-card>
     </div>
 
     <!-- 时间线视图 -->
-    <div v-else-if="currentView === 'timeline'" class="timeline-view">
+    <div
+      v-else-if="currentView === 'timeline'"
+      class="timeline-view"
+    >
       <el-card class="timeline-card">
         <div class="timeline-layout">
           <!-- 左侧时间线 -->
           <div class="timeline-container">
-            <div v-for="milestone in milestones" :key="milestone.id" class="milestone-item"
+            <div
+              v-for="milestone in milestones"
+              :key="milestone.id"
+              class="milestone-item"
               :class="{ 'is-overdue': isOverdue(milestone.deadline), 'is-selected': selectedMilestone?.id === milestone.id }"
-              @click="selectMilestone(milestone)">
+              @click="selectMilestone(milestone)"
+            >
               <div class="milestone-marker">
-                <el-icon :color="getStatusColor(milestone.status)"><CircleCheck /></el-icon>
+                <el-icon :color="getStatusColor(milestone.status)">
+                  <CircleCheck />
+                </el-icon>
               </div>
               <div class="milestone-content">
                 <div class="milestone-header">
                   <h4>{{ milestone.title }}</h4>
-                  <el-tag :type="getStatusTagType(milestone.status)" size="small">
+                  <el-tag
+                    :type="getStatusTagType(milestone.status)"
+                    size="small"
+                  >
                     {{ getStatusLabel(milestone.status) }}
                   </el-tag>
                 </div>
-                <p class="milestone-date">{{ formatDate(milestone.deadline) }}</p>
-                <p class="milestone-desc">{{ milestone.description }}</p>
+                <p class="milestone-date">
+                  {{ formatDate(milestone.deadline) }}
+                </p>
+                <p class="milestone-desc">
+                  {{ milestone.description }}
+                </p>
               </div>
             </div>
           </div>
 
           <!-- 右侧详情面板 -->
-          <div class="detail-panel" v-if="selectedMilestone">
+          <div
+            v-if="selectedMilestone"
+            class="detail-panel"
+          >
             <h3>{{ selectedMilestone.title }} - 任务详情</h3>
-            <p class="detail-date">截止日期：{{ formatDate(selectedMilestone.deadline) }}</p>
-            <p class="detail-desc">{{ selectedMilestone.description }}</p>
+            <p class="detail-date">
+              截止日期：{{ formatDate(selectedMilestone.deadline) }}
+            </p>
+            <p class="detail-desc">
+              {{ selectedMilestone.description }}
+            </p>
 
             <div class="detail-tasks">
               <h5>任务清单 ({{ selectedMilestone.tasks.filter(t => !t.completed).length }}/{{ selectedMilestone.tasks.length }} 未完成)</h5>
               <ul>
-                <li v-for="task in selectedMilestone.tasks" :key="task.id" :class="{ completed: task.completed }">
-                  <el-checkbox :model-value="task.completed" @change="toggleTask(selectedMilestone.id, task.id)" />
+                <li
+                  v-for="task in selectedMilestone.tasks"
+                  :key="task.id"
+                  :class="{ completed: task.completed }"
+                >
+                  <el-checkbox
+                    :model-value="task.completed"
+                    @change="toggleTask(selectedMilestone.id, task.id)"
+                  />
                   <span>{{ task.title }}</span>
-                  <el-tag v-if="isUrgent(task.deadline)" type="danger" size="small">即将到期</el-tag>
-                  <el-tag v-else-if="isOverdue(task.deadline)" type="danger" size="small">已逾期</el-tag>
+                  <el-tag
+                    v-if="isUrgent(task.deadline)"
+                    type="danger"
+                    size="small"
+                  >
+                    即将到期
+                  </el-tag>
+                  <el-tag
+                    v-else-if="isOverdue(task.deadline)"
+                    type="danger"
+                    size="small"
+                  >
+                    已逾期
+                  </el-tag>
                 </li>
               </ul>
-              <p v-if="selectedMilestone.tasks.length === 0" class="empty-tasks">暂无任务</p>
+              <p
+                v-if="selectedMilestone.tasks.length === 0"
+                class="empty-tasks"
+              >
+                暂无任务
+              </p>
             </div>
 
             <div class="panel-actions">
-              <el-button size="small" @click="showAddTaskToMilestone">添加任务</el-button>
+              <el-button
+                size="small"
+                @click="showAddTaskToMilestone"
+              >
+                添加任务
+              </el-button>
             </div>
           </div>
 
           <!-- 空状态提示 -->
-          <div class="empty-selection" v-else>
-            <el-icon :size="64" color="#dcdfe6"><CircleCheck /></el-icon>
+          <div
+            v-else
+            class="empty-selection"
+          >
+            <el-icon
+              :size="64"
+              color="#dcdfe6"
+            >
+              <CircleCheck />
+            </el-icon>
             <p>点击左侧任意里程碑节点查看详情</p>
           </div>
         </div>
@@ -89,60 +198,112 @@
     </div>
 
     <!-- 看板视图 -->
-    <div v-else class="kanban-view">
+    <div
+      v-else
+      class="kanban-view"
+    >
       <div class="kanban-toolbar">
         <el-button
+          v-if="!showOnlyUpcoming"
           type="warning"
           :icon="Bell"
           @click="showUpcomingTasks"
-          v-if="!showOnlyUpcoming">
+        >
           查看即将到期 (7天)
         </el-button>
         <el-button
+          v-else
           type="primary"
           :icon="Back"
           @click="showAllTasks"
-          v-else>
+        >
           显示全部任务
         </el-button>
-        <span class="upcoming-count" v-if="upcomingTasksCount > 0 && !showOnlyUpcoming">
+        <span
+          v-if="upcomingTasksCount > 0 && !showOnlyUpcoming"
+          class="upcoming-count"
+        >
           有 {{ upcomingTasksCount }} 个任务即将到期
         </span>
       </div>
       <div class="kanban-board">
-        <div v-for="column in columns" :key="column.id" class="kanban-column">
+        <div
+          v-for="column in columns"
+          :key="column.id"
+          class="kanban-column"
+        >
           <div class="column-header">
             <h4>{{ column.title }}</h4>
             <span class="task-count">{{ getColumnTasks(column.id).length }}</span>
           </div>
           <div class="column-content">
-            <div v-for="task in getColumnTasks(column.id)" :key="task.id" class="task-card"
+            <div
+              v-for="task in getColumnTasks(column.id)"
+              :key="task.id"
+              class="task-card"
               :class="{
                 'is-urgent': isUrgent(task.deadline),
                 'is-soon': isSoon(task.deadline),
                 'is-overdue': isOverdue(task.deadline)
-              }" draggable="true"
-              @dragstart="dragStart(task, column.id)" @drop="drop(task, column.id)">
+              }"
+              draggable="true"
+              @dragstart="dragStart(task, column.id)"
+              @drop="drop(task, column.id)"
+            >
               <div class="task-header">
                 <span class="task-title">{{ task.title }}</span>
                 <span class="tag-group">
-                  <el-tag v-if="isOverdue(task.deadline)" type="danger" size="small">已逾期</el-tag>
-                  <el-tag v-else-if="task.reminderEnabled && isSoon(task.deadline)" type="warning" size="small">即将到期</el-tag>
-                  <el-tag v-else-if="isUrgent(task.deadline)" type="warning" size="small">紧急</el-tag>
-                  <el-tag v-if="task.reminderEnabled && !isOverdue(task.deadline)" type="info" size="small">提醒已开</el-tag>
+                  <el-tag
+                    v-if="isOverdue(task.deadline)"
+                    type="danger"
+                    size="small"
+                  >已逾期</el-tag>
+                  <el-tag
+                    v-else-if="task.reminderEnabled && isSoon(task.deadline)"
+                    type="warning"
+                    size="small"
+                  >即将到期</el-tag>
+                  <el-tag
+                    v-else-if="isUrgent(task.deadline)"
+                    type="warning"
+                    size="small"
+                  >紧急</el-tag>
+                  <el-tag
+                    v-if="task.reminderEnabled && !isOverdue(task.deadline)"
+                    type="info"
+                    size="small"
+                  >提醒已开</el-tag>
                 </span>
               </div>
-              <p class="task-milestone">{{ getMilestoneTitle(task.milestoneId) }}</p>
+              <p class="task-milestone">
+                {{ getMilestoneTitle(task.milestoneId) }}
+              </p>
               <p class="task-deadline">
                 <el-icon><Calendar /></el-icon>
                 {{ formatDate(task.deadline) }}
               </p>
               <div class="task-actions">
-                <el-button size="small" type="text" @click="editTask(task)">编辑</el-button>
-                <el-button size="small" type="danger" text @click="deleteTask(task.id)">删除</el-button>
+                <el-button
+                  size="small"
+                  type="text"
+                  @click="editTask(task)"
+                >
+                  编辑
+                </el-button>
+                <el-button
+                  size="small"
+                  type="danger"
+                  text
+                  @click="deleteTask(task.id)"
+                >
+                  删除
+                </el-button>
               </div>
             </div>
-            <el-button class="add-task-btn" @click="showAddTask(column.id)">
+            <el-button
+              class="add-task-btn"
+              @click="showAddTask(column.id)"
+            >
               <el-icon><Plus /></el-icon>
               添加任务
             </el-button>
@@ -152,43 +313,99 @@
     </div>
 
     <!-- 添加/编辑任务对话框 -->
-    <el-dialog v-model="taskDialogVisible" :title="editingTask ? '编辑任务' : '添加任务'" width="500px">
-      <el-form :model="taskForm" label-width="100px">
+    <el-dialog
+      v-model="taskDialogVisible"
+      :title="editingTask ? '编辑任务' : '添加任务'"
+      width="500px"
+    >
+      <el-form
+        :model="taskForm"
+        label-width="100px"
+      >
         <el-form-item label="任务标题">
-          <el-input v-model="taskForm.title" placeholder="请输入任务标题" />
+          <el-input
+            v-model="taskForm.title"
+            placeholder="请输入任务标题"
+          />
         </el-form-item>
         <el-form-item label="所属阶段">
-          <el-select v-model="taskForm.milestoneId" placeholder="选择阶段">
-            <el-option v-for="m in milestones" :key="m.id" :label="m.title" :value="m.id" />
+          <el-select
+            v-model="taskForm.milestoneId"
+            placeholder="选择阶段"
+          >
+            <el-option
+              v-for="m in milestones"
+              :key="m.id"
+              :label="m.title"
+              :value="m.id"
+            />
           </el-select>
         </el-form-item>
         <el-form-item label="截止日期">
-          <el-date-picker v-model="taskForm.deadline" type="date" placeholder="选择日期" />
+          <el-date-picker
+            v-model="taskForm.deadline"
+            type="date"
+            placeholder="选择日期"
+          />
         </el-form-item>
         <el-form-item label="优先级">
           <el-radio-group v-model="taskForm.priority">
-            <el-radio-button label="low">低</el-radio-button>
-            <el-radio-button label="medium">中</el-radio-button>
-            <el-radio-button label="high">高</el-radio-button>
+            <el-radio-button label="low">
+              低
+            </el-radio-button>
+            <el-radio-button label="medium">
+              中
+            </el-radio-button>
+            <el-radio-button label="high">
+              高
+            </el-radio-button>
           </el-radio-group>
         </el-form-item>
         <el-form-item label="任务提醒">
-          <el-checkbox v-model="taskForm.reminderEnabled">启用提醒</el-checkbox>
+          <el-checkbox v-model="taskForm.reminderEnabled">
+            启用提醒
+          </el-checkbox>
         </el-form-item>
-        <el-form-item label="提前提醒" v-if="taskForm.reminderEnabled">
-          <el-select v-model="taskForm.reminderDays" placeholder="选择天数">
-            <el-option label="提前1天" :value="1" />
-            <el-option label="提前3天" :value="3" />
-            <el-option label="提前7天" :value="7" />
+        <el-form-item
+          v-if="taskForm.reminderEnabled"
+          label="提前提醒"
+        >
+          <el-select
+            v-model="taskForm.reminderDays"
+            placeholder="选择天数"
+          >
+            <el-option
+              label="提前1天"
+              :value="1"
+            />
+            <el-option
+              label="提前3天"
+              :value="3"
+            />
+            <el-option
+              label="提前7天"
+              :value="7"
+            />
           </el-select>
         </el-form-item>
         <el-form-item label="描述">
-          <el-input v-model="taskForm.description" type="textarea" :rows="3" />
+          <el-input
+            v-model="taskForm.description"
+            type="textarea"
+            :rows="3"
+          />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="taskDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="saveTask">保存</el-button>
+        <el-button @click="taskDialogVisible = false">
+          取消
+        </el-button>
+        <el-button
+          type="primary"
+          @click="saveTask"
+        >
+          保存
+        </el-button>
       </template>
     </el-dialog>
   </div>

@@ -1,6 +1,8 @@
 <template>
   <div class="university-database-page">
-    <h2 class="page-title">院校数据库</h2>
+    <h2 class="page-title">
+      院校数据库
+    </h2>
     
     <el-alert
       title="数据仅供参考演示，实际信息请以院校官网为准"
@@ -10,46 +12,122 @@
       class="data-disclaimer"
     />
 
-    <el-tabs v-model="activeTab" class="database-tabs">
+    <el-tabs
+      v-model="activeTab"
+      class="database-tabs"
+    >
       <!-- Tab 1: 院校搜索 -->
-      <el-tab-pane label="院校搜索" name="schools">
+      <el-tab-pane
+        label="院校搜索"
+        name="schools"
+      >
         <!-- 搜索和筛选 -->
         <el-card class="search-card">
           <div class="search-controls">
             <div class="search-row search-row--filters">
-              <el-input v-model="searchKeyword" placeholder="搜索学校名称或专业" clearable class="filter-search-input">
+              <el-input
+                v-model="searchKeyword"
+                placeholder="搜索学校名称或专业"
+                clearable
+                class="filter-search-input"
+              >
                 <template #prefix>
                   <el-icon><Search /></el-icon>
                 </template>
               </el-input>
-              <el-select v-model="filterCountry" placeholder="国家" clearable class="filter-select filter-select--country">
-                <el-option v-for="country in uniqueCountries" :key="country" :label="country" :value="country" />
+              <el-select
+                v-model="filterCountry"
+                placeholder="国家"
+                clearable
+                class="filter-select filter-select--country"
+              >
+                <el-option
+                  v-for="country in uniqueCountries"
+                  :key="country"
+                  :label="country"
+                  :value="country"
+                />
               </el-select>
-              <el-select v-model="filterRankRange" placeholder="排名范围" clearable class="filter-select filter-select--rank">
-                <el-option label="Top 10" value="top10" />
-                <el-option label="Top 20" value="top20" />
-                <el-option label="Top 50" value="top50" />
-                <el-option label="Top 100" value="top100" />
+              <el-select
+                v-model="filterRankRange"
+                placeholder="排名范围"
+                clearable
+                class="filter-select filter-select--rank"
+              >
+                <el-option
+                  label="Top 10"
+                  value="top10"
+                />
+                <el-option
+                  label="Top 20"
+                  value="top20"
+                />
+                <el-option
+                  label="Top 50"
+                  value="top50"
+                />
+                <el-option
+                  label="Top 100"
+                  value="top100"
+                />
               </el-select>
-              <el-select v-model="filterMajor" placeholder="专业领域" clearable class="filter-select filter-select--major">
-                <el-option v-for="major in uniqueMajors" :key="major" :label="major" :value="major" />
+              <el-select
+                v-model="filterMajor"
+                placeholder="专业领域"
+                clearable
+                class="filter-select filter-select--major"
+              >
+                <el-option
+                  v-for="major in uniqueMajors"
+                  :key="major"
+                  :label="major"
+                  :value="major"
+                />
               </el-select>
-              <el-select v-model="sortBy" placeholder="排序" clearable class="filter-select filter-select--sort">
-                <el-option label="QS排名" value="qs_rank" />
-                <el-option label="录取率" value="acceptance_rate" />
-                <el-option label="学费" value="tuition" />
+              <el-select
+                v-model="sortBy"
+                placeholder="排序"
+                clearable
+                class="filter-select filter-select--sort"
+              >
+                <el-option
+                  label="QS排名"
+                  value="qs_rank"
+                />
+                <el-option
+                  label="录取率"
+                  value="acceptance_rate"
+                />
+                <el-option
+                  label="学费"
+                  value="tuition"
+                />
               </el-select>
             </div>
             <div class="search-row search-row--actions">
-              <el-button type="primary" class="search-btn" @click="search">搜索</el-button>
-              <el-button class="reset-btn" @click="resetFilters">重置</el-button>
+              <el-button
+                type="primary"
+                class="search-btn"
+                @click="search"
+              >
+                搜索
+              </el-button>
+              <el-button
+                class="reset-btn"
+                @click="resetFilters"
+              >
+                重置
+              </el-button>
             </div>
           </div>
         </el-card>
 
         <!-- 视图切换控件 -->
         <div class="view-toggle">
-          <el-radio-group v-model="viewMode" size="small">
+          <el-radio-group
+            v-model="viewMode"
+            size="small"
+          >
             <el-radio-button label="card">
               <el-icon><Grid /></el-icon>
               卡片视图
@@ -61,134 +139,281 @@
           </el-radio-group>
         </div>
 
-    <!-- 院校网格 - 卡片视图 -->
-    <transition name="fade" mode="out-in">
-      <div v-if="filteredSchools.length > 0 && viewMode === 'card'" key="card" class="schools-grid">
-      <el-card v-for="school in filteredSchools" :key="school.id" class="school-card"
-        shadow="hover" @click="showDetail(school)">
-        <div class="card-header">
-          <h3>{{ school.name }}</h3>
-          <el-tag :type="school.rankType" size="small">{{ school.ranking }}</el-tag>
-        </div>
-        <div class="country-row">
-          <span class="country-name">{{ school.country }}</span>
-        </div>
-        <p class="major">{{ school.major }}</p>
-        <div class="card-stats">
-          <div class="stat-item">
-            <span class="stat-label">费用范围</span>
-            <span class="stat-value">{{ school.tuition }}</span>
+        <!-- 院校网格 - 卡片视图 -->
+        <transition
+          name="fade"
+          mode="out-in"
+        >
+          <div
+            v-if="filteredSchools.length > 0 && viewMode === 'card'"
+            key="card"
+            class="schools-grid"
+          >
+            <el-card
+              v-for="school in filteredSchools"
+              :key="school.id"
+              class="school-card"
+              shadow="hover"
+              @click="showDetail(school)"
+            >
+              <div class="card-header">
+                <h3>{{ school.name }}</h3>
+                <el-tag
+                  :type="school.rankType"
+                  size="small"
+                >
+                  {{ school.ranking }}
+                </el-tag>
+              </div>
+              <div class="country-row">
+                <span class="country-name">{{ school.country }}</span>
+              </div>
+              <p class="major">
+                {{ school.major }}
+              </p>
+              <div class="card-stats">
+                <div class="stat-item">
+                  <span class="stat-label">费用范围</span>
+                  <span class="stat-value">{{ school.tuition }}</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-label">录取率</span>
+                  <span
+                    class="stat-value"
+                    :class="{ 'low-rate': parseFloat(school.acceptanceRate) < 20 }"
+                  >
+                    {{ school.acceptanceRate }}
+                  </span>
+                </div>
+              </div>
+              <div class="card-footer">
+                <el-button
+                  type="primary"
+                  size="small"
+                  plain
+                  @click.stop="addToShortlist(school)"
+                >
+                  {{ shortlisted.includes(school.id) ? '已在清单中' : '加入选校清单' }}
+                </el-button>
+              </div>
+            </el-card>
           </div>
-          <div class="stat-item">
-            <span class="stat-label">录取率</span>
-            <span class="stat-value" :class="{ 'low-rate': parseFloat(school.acceptanceRate) < 20 }">
-              {{ school.acceptanceRate }}
-            </span>
+
+          <!-- 院校列表 - 列表视图 -->
+          <div
+            v-else-if="filteredSchools.length > 0 && viewMode === 'list'"
+            key="list"
+            class="schools-list"
+          >
+            <el-table
+              :data="filteredSchools"
+              stripe
+              style="width: 100%"
+              @row-click="showDetail"
+            >
+              <el-table-column
+                prop="name"
+                label="院校名称"
+                min-width="180"
+              >
+                <template #default="scope">
+                  <div class="list-school-name">
+                    <span class="name-text">{{ scope.row.name }}</span>
+                    <el-tag
+                      :type="scope.row.rankType"
+                      size="small"
+                      class="rank-tag"
+                    >
+                      {{ scope.row.ranking }}
+                    </el-tag>
+                  </div>
+                </template>
+              </el-table-column>
+              <el-table-column
+                prop="country"
+                label="国家/地区"
+                width="100"
+              />
+              <el-table-column
+                prop="major"
+                label="热门专业"
+                width="140"
+              />
+              <el-table-column
+                prop="tuition"
+                label="学费"
+                width="100"
+              />
+              <el-table-column
+                prop="acceptanceRate"
+                label="录取率"
+                width="90"
+              >
+                <template #default="scope">
+                  <span :class="{ 'low-rate': parseFloat(scope.row.acceptanceRate) < 20 }">
+                    {{ scope.row.acceptanceRate }}
+                  </span>
+                </template>
+              </el-table-column>
+              <el-table-column
+                label="操作"
+                width="160"
+                fixed="right"
+              >
+                <template #default="scope">
+                  <el-button
+                    type="primary"
+                    size="small"
+                    plain
+                    @click.stop="addToShortlist(scope.row)"
+                  >
+                    {{ shortlisted.includes(scope.row.id) ? '已加入' : '加入清单' }}
+                  </el-button>
+                  <el-button
+                    size="small"
+                    @click.stop="showDetail(scope.row)"
+                  >
+                    详情
+                  </el-button>
+                </template>
+              </el-table-column>
+            </el-table>
           </div>
+        </transition>
+
+        <!-- 院校分页 -->
+        <div
+          v-if="totalSchools.length > 0"
+          class="pagination"
+        >
+          <el-pagination
+            v-model:current-page="currentSchoolPage"
+            v-model:page-size="schoolPageSize"
+            :page-sizes="[8, 12, 24, 48]"
+            :total="totalSchools.length"
+            layout="total, sizes, prev, pager, next, jumper"
+            background
+            @size-change="handleSchoolSizeChange"
+            @current-change="handleSchoolPageChange"
+          />
         </div>
-        <div class="card-footer">
-          <el-button type="primary" size="small" plain @click.stop="addToShortlist(school)">
-            {{ shortlisted.includes(school.id) ? '已在清单中' : '加入选校清单' }}
-          </el-button>
-        </div>
-      </el-card>
-    </div>
 
-    <!-- 院校列表 - 列表视图 -->
-    <div v-else-if="filteredSchools.length > 0 && viewMode === 'list'" key="list" class="schools-list">
-      <el-table :data="filteredSchools" stripe style="width: 100%" @row-click="showDetail">
-        <el-table-column prop="name" label="院校名称" min-width="180">
-          <template #default="scope">
-            <div class="list-school-name">
-              <span class="name-text">{{ scope.row.name }}</span>
-              <el-tag :type="scope.row.rankType" size="small" class="rank-tag">{{ scope.row.ranking }}</el-tag>
-            </div>
-          </template>
-        </el-table-column>
-        <el-table-column prop="country" label="国家/地区" width="100" />
-        <el-table-column prop="major" label="热门专业" width="140" />
-        <el-table-column prop="tuition" label="学费" width="100" />
-        <el-table-column prop="acceptanceRate" label="录取率" width="90">
-          <template #default="scope">
-            <span :class="{ 'low-rate': parseFloat(scope.row.acceptanceRate) < 20 }">
-              {{ scope.row.acceptanceRate }}
-            </span>
-          </template>
-        </el-table-column>
-        <el-table-column label="操作" width="160" fixed="right">
-          <template #default="scope">
-            <el-button type="primary" size="small" plain @click.stop="addToShortlist(scope.row)">
-              {{ shortlisted.includes(scope.row.id) ? '已加入' : '加入清单' }}
-            </el-button>
-            <el-button size="small" @click.stop="showDetail(scope.row)">详情</el-button>
-          </template>
-        </el-table-column>
-      </el-table>
-    </div>
-    </transition>
-
-    <!-- 院校分页 -->
-    <div v-if="totalSchools.length > 0" class="pagination">
-      <el-pagination
-        v-model:current-page="currentSchoolPage"
-        v-model:page-size="schoolPageSize"
-        :page-sizes="[8, 12, 24, 48]"
-        :total="totalSchools.length"
-        layout="total, sizes, prev, pager, next, jumper"
-        background
-        @size-change="handleSchoolSizeChange"
-        @current-change="handleSchoolPageChange"
-      />
-    </div>
-
-    <el-empty v-else description="暂无匹配的院校数据" />
-
+        <el-empty
+          v-else
+          description="暂无匹配的院校数据"
+        />
       </el-tab-pane>
 
       <!-- Tab 2: 专业搜索 -->
-      <el-tab-pane label="专业搜索" name="majors">
+      <el-tab-pane
+        label="专业搜索"
+        name="majors"
+      >
         <!-- 专业搜索和筛选 -->
         <el-card class="search-card">
           <div class="search-controls">
             <div class="search-row search-row--filters">
-              <el-input v-model="majorSearchKeyword" placeholder="搜索专业名称或类别" clearable class="filter-search-input filter-search-input--major">
+              <el-input
+                v-model="majorSearchKeyword"
+                placeholder="搜索专业名称或类别"
+                clearable
+                class="filter-search-input filter-search-input--major"
+              >
                 <template #prefix>
                   <el-icon><Search /></el-icon>
                 </template>
               </el-input>
-              <el-select v-model="filterDegreeType" placeholder="学位类型" clearable class="filter-select filter-select--degree">
-                <el-option label="本科" value="本科" />
-                <el-option label="硕士" value="硕士" />
-                <el-option label="博士" value="博士" />
+              <el-select
+                v-model="filterDegreeType"
+                placeholder="学位类型"
+                clearable
+                class="filter-select filter-select--degree"
+              >
+                <el-option
+                  label="本科"
+                  value="本科"
+                />
+                <el-option
+                  label="硕士"
+                  value="硕士"
+                />
+                <el-option
+                  label="博士"
+                  value="博士"
+                />
               </el-select>
-              <el-select v-model="filterCategory" placeholder="专业类别" clearable class="filter-select filter-select--category">
-                <el-option v-for="cat in uniqueCategories" :key="cat" :label="cat" :value="cat" />
+              <el-select
+                v-model="filterCategory"
+                placeholder="专业类别"
+                clearable
+                class="filter-select filter-select--category"
+              >
+                <el-option
+                  v-for="cat in uniqueCategories"
+                  :key="cat"
+                  :label="cat"
+                  :value="cat"
+                />
               </el-select>
             </div>
             <div class="search-row search-row--actions">
-              <el-button type="primary" class="search-btn" @click="searchMajors">搜索</el-button>
-              <el-button class="reset-btn" @click="resetMajorFilters">重置</el-button>
+              <el-button
+                type="primary"
+                class="search-btn"
+                @click="searchMajors"
+              >
+                搜索
+              </el-button>
+              <el-button
+                class="reset-btn"
+                @click="resetMajorFilters"
+              >
+                重置
+              </el-button>
             </div>
           </div>
         </el-card>
 
         <!-- 专业列表 -->
-        <div v-if="filteredMajors.length > 0" class="majors-grid">
-          <div v-for="major in filteredMajors" :key="major.id" class="major-card"
+        <div
+          v-if="filteredMajors.length > 0"
+          class="majors-grid"
+        >
+          <div
+            v-for="major in filteredMajors"
+            :key="major.id"
+            class="major-card"
             :class="'category-' + getCategoryClass(major.category)"
-            @click="goToMajorDetail(major)">
+            @click="goToMajorDetail(major)"
+          >
             <div class="major-card-header">
-              <div class="major-checkbox" @click.stop>
-                <el-checkbox v-model="selectedMajors" :label="major.id">
+              <div
+                class="major-checkbox"
+                @click.stop
+              >
+                <el-checkbox
+                  v-model="selectedMajors"
+                  :label="major.id"
+                >
                   <span class="checkbox-text">对比</span>
                 </el-checkbox>
               </div>
-              <el-tag :type="getCategoryTagType(major.category)" size="small" class="category-tag">{{ major.category }}</el-tag>
+              <el-tag
+                :type="getCategoryTagType(major.category)"
+                size="small"
+                class="category-tag"
+              >
+                {{ major.category }}
+              </el-tag>
             </div>
 
             <div class="major-card-body">
-              <h3 class="major-name">{{ major.name }}</h3>
-              <p class="major-degree">{{ major.degreeType }} · {{ major.duration }}</p>
+              <h3 class="major-name">
+                {{ major.name }}
+              </h3>
+              <p class="major-degree">
+                {{ major.degreeType }} · {{ major.duration }}
+              </p>
 
               <div class="major-salary">
                 <span class="salary-label">平均薪资</span>
@@ -197,15 +422,25 @@
             </div>
 
             <div class="major-card-footer">
-              <el-button type="primary" size="small" text @click.stop="goToMajorDetail(major)">
-                查看详情 <el-icon class="el-icon--right"><ArrowRight /></el-icon>
+              <el-button
+                type="primary"
+                size="small"
+                text
+                @click.stop="goToMajorDetail(major)"
+              >
+                查看详情 <el-icon class="el-icon--right">
+                  <ArrowRight />
+                </el-icon>
               </el-button>
             </div>
           </div>
         </div>
 
         <!-- 专业分页 -->
-        <div v-if="totalMajors.length > 0" class="pagination">
+        <div
+          v-if="totalMajors.length > 0"
+          class="pagination"
+        >
           <el-pagination
             v-model:current-page="currentMajorPage"
             v-model:page-size="majorPageSize"
@@ -218,27 +453,66 @@
           />
         </div>
 
-        <el-empty v-else description="暂无匹配的专业数据" />
+        <el-empty
+          v-else
+          description="暂无匹配的专业数据"
+        />
 
         <!-- 对比操作栏 -->
-        <div class="compare-bar" v-if="selectedMajors.length > 0">
+        <div
+          v-if="selectedMajors.length > 0"
+          class="compare-bar"
+        >
           <div class="compare-info">
             已选择 <strong>{{ selectedMajors.length }}</strong> 个专业进行对比
           </div>
-          <el-button type="primary" @click="showCompare">开始对比</el-button>
-          <el-button @click="clearSelection">清空选择</el-button>
+          <el-button
+            type="primary"
+            @click="showCompare"
+          >
+            开始对比
+          </el-button>
+          <el-button @click="clearSelection">
+            清空选择
+          </el-button>
         </div>
 
         <!-- 专业对比对话框 -->
-        <el-dialog v-model="compareVisible" title="专业对比" width="80%" top="5vh" class="major-compare-dialog">
-          <div v-if="majorsToCompare.length > 0" class="compare-container">
-            <el-table :data="compareTableData" border style="width: 100%" class="major-compare-table">
-              <el-table-column prop="field" label="对比项" min-width="140" fixed>
+        <el-dialog
+          v-model="compareVisible"
+          title="专业对比"
+          width="80%"
+          top="5vh"
+          class="major-compare-dialog"
+        >
+          <div
+            v-if="majorsToCompare.length > 0"
+            class="compare-container"
+          >
+            <el-table
+              :data="compareTableData"
+              border
+              style="width: 100%"
+              class="major-compare-table"
+            >
+              <el-table-column
+                prop="field"
+                label="对比项"
+                min-width="140"
+                fixed
+              >
                 <template #default="scope">
                   <strong>{{ scope.row.field }}</strong>
                 </template>
               </el-table-column>
-              <el-table-column v-for="major in majorsToCompare" :key="major.id" :label="major.name" :prop="'major_' + major.id" min-width="180" show-overflow-tooltip>
+              <el-table-column
+                v-for="major in majorsToCompare"
+                :key="major.id"
+                :label="major.name"
+                :prop="'major_' + major.id"
+                min-width="180"
+                show-overflow-tooltip
+              >
                 <template #default="scope">
                   {{ scope.row['major_' + major.id] || '-' }}
                 </template>
@@ -247,38 +521,73 @@
           </div>
         </el-dialog>
       </el-tab-pane>
-
     </el-tabs>
 
     <!-- 详情对话框 -->
     <!-- 详情对话框 -->
-    <el-dialog v-model="detailVisible" :title="currentSchool?.name" width="70%">
-      <div v-if="currentSchool" class="school-detail">
+    <el-dialog
+      v-model="detailVisible"
+      :title="currentSchool?.name"
+      width="70%"
+    >
+      <div
+        v-if="currentSchool"
+        class="school-detail"
+      >
         <div class="detail-header">
-          <img v-if="currentSchool.image" :src="currentSchool.image" class="school-image" />
+          <img
+            v-if="currentSchool.image"
+            :src="currentSchool.image"
+            class="school-image"
+          >
           <div class="detail-title">
             <h2>{{ currentSchool.name }}</h2>
-            <p class="detail-subtitle">{{ currentSchool.country }} | {{ currentSchool.ranking }}</p>
+            <p class="detail-subtitle">
+              {{ currentSchool.country }} | {{ currentSchool.ranking }}
+            </p>
           </div>
         </div>
 
-        <el-descriptions :column="2" border>
-          <el-descriptions-item label="国家">{{ currentSchool.country }}</el-descriptions-item>
+        <el-descriptions
+          :column="2"
+          border
+        >
+          <el-descriptions-item label="国家">
+            {{ currentSchool.country }}
+          </el-descriptions-item>
           <el-descriptions-item label="排名">
             {{ currentSchool.ranking }}
-            <sup v-if="currentSchool.sources?.ranking" class="source-sup" @click.stop="openSource(currentSchool.sources.ranking.url)">[{{ currentSchool.sources.ranking.label }}]</sup>
+            <sup
+              v-if="currentSchool.sources?.ranking"
+              class="source-sup"
+              @click.stop="openSource(currentSchool.sources.ranking.url)"
+            >[{{ currentSchool.sources.ranking.label }}]</sup>
           </el-descriptions-item>
-          <el-descriptions-item label="热门专业">{{ currentSchool.major }}</el-descriptions-item>
+          <el-descriptions-item label="热门专业">
+            {{ currentSchool.major }}
+          </el-descriptions-item>
           <el-descriptions-item label="学费">
             {{ currentSchool.tuition }}
-            <sup v-if="currentSchool.sources?.tuition" class="source-sup" @click.stop="openSource(currentSchool.sources.tuition.url)">[{{ currentSchool.sources.tuition.label }}]</sup>
+            <sup
+              v-if="currentSchool.sources?.tuition"
+              class="source-sup"
+              @click.stop="openSource(currentSchool.sources.tuition.url)"
+            >[{{ currentSchool.sources.tuition.label }}]</sup>
           </el-descriptions-item>
           <el-descriptions-item label="录取率">
             {{ currentSchool.acceptanceRate }}
-            <sup v-if="currentSchool.sources?.acceptance" class="source-sup" @click.stop="openSource(currentSchool.sources.acceptance.url)">[{{ currentSchool.sources.acceptance.label }}]</sup>
+            <sup
+              v-if="currentSchool.sources?.acceptance"
+              class="source-sup"
+              @click.stop="openSource(currentSchool.sources.acceptance.url)"
+            >[{{ currentSchool.sources.acceptance.label }}]</sup>
           </el-descriptions-item>
-          <el-descriptions-item label="学校类型">{{ currentSchool.type || '综合大学' }}</el-descriptions-item>
-          <el-descriptions-item label="学生人数">{{ currentSchool.students || 'N/A' }}</el-descriptions-item>
+          <el-descriptions-item label="学校类型">
+            {{ currentSchool.type || '综合大学' }}
+          </el-descriptions-item>
+          <el-descriptions-item label="学生人数">
+            {{ currentSchool.students || 'N/A' }}
+          </el-descriptions-item>
         </el-descriptions>
 
         <div class="description-section">
@@ -287,20 +596,45 @@
         </div>
 
         <div class="requirements-section">
-          <h4>申请要求
-            <sup v-if="currentSchool.sources?.requirements" class="source-sup" @click.stop="openSource(currentSchool.sources.requirements.url)">[{{ currentSchool.sources.requirements.label }}]</sup>
+          <h4>
+            申请要求
+            <sup
+              v-if="currentSchool.sources?.requirements"
+              class="source-sup"
+              @click.stop="openSource(currentSchool.sources.requirements.url)"
+            >[{{ currentSchool.sources.requirements.label }}]</sup>
           </h4>
           <ul>
-            <li v-for="(req, idx) in currentSchool.requirements" :key="idx">{{ req }}</li>
+            <li
+              v-for="(req, idx) in currentSchool.requirements"
+              :key="idx"
+            >
+              {{ req }}
+            </li>
           </ul>
         </div>
 
         <div class="detail-actions">
-          <el-button type="primary" @click="addToShortlist(currentSchool)">
+          <el-button
+            type="primary"
+            @click="addToShortlist(currentSchool)"
+          >
             {{ shortlisted.includes(currentSchool.id) ? '已在清单中' : '加入选校清单' }}
           </el-button>
-          <el-button type="success" plain @click="goToApply(currentSchool)">开始申请</el-button>
-          <el-button type="info" plain @click="visitWebsite(currentSchool.website)">访问官网</el-button>
+          <el-button
+            type="success"
+            plain
+            @click="goToApply(currentSchool)"
+          >
+            开始申请
+          </el-button>
+          <el-button
+            type="info"
+            plain
+            @click="visitWebsite(currentSchool.website)"
+          >
+            访问官网
+          </el-button>
         </div>
       </div>
     </el-dialog>

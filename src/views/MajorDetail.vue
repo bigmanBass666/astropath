@@ -1,21 +1,37 @@
 <template>
-  <div class="major-detail-page" ref="pageRoot">
+  <div
+    ref="pageRoot"
+    class="major-detail-page"
+  >
     <div class="major-detail-container">
       <!-- 返回按钮 -->
       <div class="detail-back">
-        <el-button @click="$router.back()" class="back-btn">
+        <el-button
+          class="back-btn"
+          @click="$router.back()"
+        >
           <el-icon><ArrowLeft /></el-icon>
           返回专业库
         </el-button>
       </div>
 
-      <div v-if="major" class="major-detail">
+      <div
+        v-if="major"
+        class="major-detail"
+      >
         <!-- 头部信息卡片 -->
         <div class="detail-header">
           <div class="header-left">
-            <h1 class="major-title">{{ major.name }}</h1>
+            <h1 class="major-title">
+              {{ major.name }}
+            </h1>
             <div class="major-meta">
-              <el-tag :type="getCategoryTagType(major.category)" size="large">{{ major.category }}</el-tag>
+              <el-tag
+                :type="getCategoryTagType(major.category)"
+                size="large"
+              >
+                {{ major.category }}
+              </el-tag>
               <span class="meta-separator">|</span>
               <span class="meta-item">{{ major.degreeType }}</span>
               <span class="meta-separator">|</span>
@@ -28,24 +44,34 @@
         <div class="info-grid">
           <div class="info-card">
             <div class="info-card-header">
-              <el-icon class="info-icon"><Reading /></el-icon>
+              <el-icon class="info-icon">
+                <Reading />
+              </el-icon>
               <h3>专业描述</h3>
             </div>
-            <p class="info-text">{{ major.description }}</p>
+            <p class="info-text">
+              {{ major.description }}
+            </p>
           </div>
           <div class="info-card">
             <div class="info-card-header">
-              <el-icon class="info-icon"><TrendCharts /></el-icon>
+              <el-icon class="info-icon">
+                <TrendCharts />
+              </el-icon>
               <h3>平均薪资</h3>
             </div>
-            <p class="info-text salary-text">{{ major.salaryRange }}</p>
+            <p class="info-text salary-text">
+              {{ major.salaryRange }}
+            </p>
           </div>
         </div>
 
         <!-- 核心课程卡片 -->
         <div class="info-card courses-card">
           <div class="info-card-header">
-            <el-icon class="info-icon"><Collection /></el-icon>
+            <el-icon class="info-icon">
+              <Collection />
+            </el-icon>
             <h3>核心课程</h3>
           </div>
           <div class="courses-list">
@@ -63,23 +89,39 @@
         <!-- 就业方向卡片 -->
         <div class="info-card career-card">
           <div class="info-card-header">
-            <el-icon class="info-icon"><Briefcase /></el-icon>
+            <el-icon class="info-icon">
+              <Briefcase />
+            </el-icon>
             <h3>就业方向</h3>
           </div>
-          <p class="info-text">{{ major.career }}</p>
+          <p class="info-text">
+            {{ major.career }}
+          </p>
         </div>
 
         <!-- 操作按钮 -->
         <div class="detail-actions">
-          <el-button type="primary" size="large" class="action-btn primary-btn">
+          <el-button
+            type="primary"
+            size="large"
+            class="action-btn primary-btn"
+          >
             <el-icon><Star /></el-icon>
             收藏专业
           </el-button>
-          <el-button size="large" class="action-btn" @click="$router.push('/school-recommendation')">
+          <el-button
+            size="large"
+            class="action-btn"
+            @click="$router.push('/school-recommendation')"
+          >
             <el-icon><Search /></el-icon>
             查看相关院校
           </el-button>
-          <el-button size="large" class="action-btn" @click="$router.push('/ai-chat')">
+          <el-button
+            size="large"
+            class="action-btn"
+            @click="$router.push('/ai-chat')"
+          >
             <el-icon><ChatDotRound /></el-icon>
             咨询AI
           </el-button>
@@ -94,7 +136,12 @@
         sub-title="未找到对应的专业信息"
       >
         <template #extra>
-          <el-button type="primary" @click="$router.push('/university-database')">返回专业库</el-button>
+          <el-button
+            type="primary"
+            @click="$router.push('/university-database')"
+          >
+            返回专业库
+          </el-button>
         </template>
       </el-result>
     </div>

@@ -1,8 +1,19 @@
 <template>
-  <div class="school-card" :class="{ 'is-favorite': isFavorite }">
+  <div
+    class="school-card"
+    :class="{ 'is-favorite': isFavorite }"
+  >
     <div class="card-header">
-      <div class="ranking-badge" :class="rankingClass">
-        <span class="ranking-icon">{{ rankingIcon }}</span>
+      <div
+        class="ranking-badge"
+        :class="rankingClass"
+      >
+        <component 
+          :is="rankingIcon" 
+          :weight="rankingWeight"
+          :size="20"
+          class="ranking-icon"
+        />
         <span class="ranking-text">#{{ recommendation.ranking }}</span>
       </div>
       <div class="header-actions">
@@ -17,10 +28,23 @@
     </div>
 
     <div class="school-info">
-      <h4 class="school-name">{{ recommendation.schoolName }}</h4>
+      <h4 class="school-name">
+        {{ recommendation.schoolName }}
+      </h4>
       <div class="school-meta">
-        <el-tag size="small" effect="plain">{{ school?.country }}</el-tag>
-        <el-tag size="small" effect="plain" type="info">{{ school?.ranking }}</el-tag>
+        <el-tag
+          size="small"
+          effect="plain"
+        >
+          {{ school?.country }}
+        </el-tag>
+        <el-tag
+          size="small"
+          effect="plain"
+          type="info"
+        >
+          {{ school?.ranking }}
+        </el-tag>
       </div>
     </div>
 
@@ -29,13 +53,18 @@
         <el-icon><ChatDotRound /></el-icon>
         <span>AI推荐理由</span>
       </div>
-      <p class="reason-text">{{ recommendation.aiReason }}</p>
+      <p class="reason-text">
+        {{ recommendation.aiReason }}
+      </p>
     </div>
 
     <div class="match-section">
       <div class="match-info">
         <span class="match-label">匹配度</span>
-        <span class="match-score" :style="{ color: matchColor }">{{ recommendation.matchScore }}%</span>
+        <span
+          class="match-score"
+          :style="{ color: matchColor }"
+        >{{ recommendation.matchScore }}%</span>
       </div>
       <el-progress
         :percentage="recommendation.matchScore"
@@ -46,11 +75,19 @@
     </div>
 
     <div class="card-actions">
-      <el-button type="primary" plain @click="viewDetail">
+      <el-button
+        type="primary"
+        plain
+        @click="viewDetail"
+      >
         <el-icon><View /></el-icon>
         查看详情
       </el-button>
-      <el-button type="warning" plain @click="showAnalysis">
+      <el-button
+        type="warning"
+        plain
+        @click="showAnalysis"
+      >
         <el-icon><QuestionFilled /></el-icon>
         为什么推荐
       </el-button>
@@ -61,6 +98,7 @@
 <script setup>
 import { computed } from 'vue'
 import { Star, StarFilled, ChatDotRound, View, QuestionFilled } from '@element-plus/icons-vue'
+import { Trophy, Medal, Award, Circle } from '@phosphor-icons/vue'
 import { schoolsData } from '@/utils/recommendationEngine'
 
 const props = defineProps({
@@ -90,17 +128,23 @@ const rankingClass = computed(() => {
 
 const rankingIcon = computed(() => {
   const rank = props.recommendation.ranking
-  if (rank === 1) return '🥇'
-  if (rank === 2) return '🥈'
-  if (rank === 3) return '🥉'
-  return '•'
+  if (rank === 1) return Trophy
+  if (rank === 2) return Medal
+  if (rank === 3) return Award
+  return Circle
+})
+
+const rankingWeight = computed(() => {
+  const rank = props.recommendation.ranking
+  if (rank <= 3) return 'fill'
+  return 'regular'
 })
 
 const matchColor = computed(() => {
   const score = props.recommendation.matchScore
-  if (score >= 85) return '#67c23a'
-  if (score >= 70) return '#e6a23c'
-  return '#f56c6c'
+  if (score >= 85) return 'var(--color-success)'
+  if (score >= 70) return 'var(--color-warning)'
+  return 'var(--color-danger)'
 })
 
 const toggleFavorite = () => {
@@ -118,11 +162,11 @@ const showAnalysis = () => {
 
 <style scoped>
 .school-card {
-  background: white;
-  border-radius: 16px;
-  padding: 20px;
-  border: 1px solid #e8e8e8;
-  transition: all 0.3s ease;
+  background: var(--color-surface);
+  border-radius: var(--radius-2xl);
+  padding: var(--space-5);
+  border: 1px solid var(--color-border);
+  transition: all var(--transition-normal);
   position: relative;
   overflow: hidden;
 }
@@ -134,15 +178,15 @@ const showAnalysis = () => {
   left: 0;
   right: 0;
   height: 4px;
-  background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+  background: var(--gradient-primary);
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity var(--transition-normal);
 }
 
 .school-card:hover {
   transform: translateY(-6px);
-  box-shadow: 0 12px 40px rgba(102, 126, 234, 0.2);
-  border-color: #667eea;
+  box-shadow: var(--shadow-xl);
+  border-color: var(--color-primary);
 }
 
 .school-card:hover::before {
@@ -150,12 +194,12 @@ const showAnalysis = () => {
 }
 
 .school-card.is-favorite {
-  border-color: #f0c239;
-  box-shadow: 0 8px 30px rgba(240, 194, 57, 0.15);
+  border-color: var(--color-warning);
+  box-shadow: 0 8px 30px rgba(217, 119, 6, 0.15);
 }
 
 .school-card.is-favorite::before {
-  background: linear-gradient(90deg, #f0c239 0%, #ff9f43 100%);
+  background: var(--gradient-gold);
   opacity: 1;
 }
 
@@ -163,113 +207,115 @@ const showAnalysis = () => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
+  margin-bottom: var(--space-4);
 }
 
 .ranking-badge {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  border-radius: 20px;
-  font-weight: 600;
-  font-size: 14px;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+  font-weight: var(--font-semibold);
+  font-size: var(--text-sm);
 }
 
 .rank-gold {
-  background: linear-gradient(135deg, #ffd700 0%, #ffed4a 100%);
-  color: #8b6914;
+  background: var(--gradient-gold);
+  color: #92400e;
 }
 
 .rank-silver {
-  background: linear-gradient(135deg, #c0c0c0 0%, #e8e8e8 100%);
-  color: #555;
+  background: var(--gradient-silver);
+  color: var(--color-text-secondary);
 }
 
 .rank-bronze {
-  background: linear-gradient(135deg, #cd7f32 0%, #daa520 100%);
+  background: var(--gradient-bronze);
   color: white;
 }
 
 .rank-normal {
-  background: #f5f5f5;
-  color: #666;
+  background: var(--color-background);
+  color: var(--color-text-secondary);
 }
 
 .ranking-icon {
-  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .school-info {
-  margin-bottom: 16px;
+  margin-bottom: var(--space-4);
 }
 
 .school-name {
-  margin: 0 0 10px 0;
-  font-size: 18px;
-  font-weight: 700;
-  color: #1a1a2e;
-  line-height: 1.3;
+  margin: 0 0 var(--space-2) 0;
+  font-size: var(--text-lg);
+  font-weight: var(--font-bold);
+  color: var(--color-text-primary);
+  line-height: var(--leading-tight);
 }
 
 .school-meta {
   display: flex;
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .ai-reason {
-  background: linear-gradient(135deg, #f8f9ff 0%, #f0f4ff 100%);
-  border-radius: 10px;
-  padding: 14px;
-  margin-bottom: 16px;
-  border: 1px solid #e0e7ff;
+  background: var(--color-primary-50);
+  border-radius: var(--radius-lg);
+  padding: var(--space-3);
+  margin-bottom: var(--space-4);
+  border: 1px solid var(--color-primary-100);
 }
 
 .reason-header {
   display: flex;
   align-items: center;
-  gap: 6px;
-  margin-bottom: 8px;
-  color: #667eea;
-  font-size: 13px;
-  font-weight: 600;
+  gap: var(--space-1);
+  margin-bottom: var(--space-2);
+  color: var(--color-primary);
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
 }
 
 .reason-text {
   margin: 0;
-  font-size: 14px;
-  color: #4a5568;
-  line-height: 1.6;
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  line-height: var(--leading-normal);
 }
 
 .match-section {
-  margin-bottom: 16px;
+  margin-bottom: var(--space-4);
 }
 
 .match-info {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
+  margin-bottom: var(--space-2);
 }
 
 .match-label {
-  font-size: 13px;
-  color: #666;
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
 }
 
 .match-score {
-  font-size: 18px;
-  font-weight: 700;
+  font-size: var(--text-xl);
+  font-weight: var(--font-bold);
 }
 
 .card-actions {
   display: flex;
-  gap: 10px;
+  gap: var(--space-2);
 }
 
 .card-actions .el-button {
   flex: 1;
-  border-radius: 8px;
+  border-radius: var(--radius-lg);
 }
 </style>

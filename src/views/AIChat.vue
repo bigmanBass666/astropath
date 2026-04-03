@@ -1,14 +1,23 @@
 <template>
   <div class="ai-chat-page">
-    <div class="sidebar" :class="{ 'is-collapsed': sidebarCollapsed }">
+    <div
+      class="sidebar"
+      :class="{ 'is-collapsed': sidebarCollapsed }"
+    >
       <div class="sidebar-header">
         <template v-if="!sidebarCollapsed">
           <div class="sidebar-brand">
-            <el-icon :size="20"><ChatDotRound /></el-icon>
+            <el-icon :size="20">
+              <ChatDotRound />
+            </el-icon>
             <span>AI 助手</span>
           </div>
         </template>
-        <button class="sidebar-toggle-btn" @click="toggleSidebar" :title="sidebarCollapsed ? '展开侧边栏' : '收起侧边栏'">
+        <button
+          class="sidebar-toggle-btn"
+          :title="sidebarCollapsed ? '展开侧边栏' : '收起侧边栏'"
+          @click="toggleSidebar"
+        >
           <el-icon :size="18">
             <ArrowLeft v-if="!sidebarCollapsed" />
             <ArrowRight v-else />
@@ -21,13 +30,21 @@
           :key="agent.id"
           class="agent-item"
           :class="{ 'is-active': currentAgentId === agent.id }"
-          @click="selectAgent(agent.id)"
           :title="sidebarCollapsed ? agent.name : ''"
+          @click="selectAgent(agent.id)"
         >
-          <div class="agent-icon" :style="{ background: agent.gradient }">
-            <el-icon :size="20"><component :is="agent.icon" /></el-icon>
+          <div
+            class="agent-icon"
+            :style="{ background: agent.gradient }"
+          >
+            <el-icon :size="20">
+              <component :is="agent.icon" />
+            </el-icon>
           </div>
-          <div class="agent-info" v-if="!sidebarCollapsed">
+          <div
+            v-if="!sidebarCollapsed"
+            class="agent-info"
+          >
             <span class="agent-name">{{ agent.name }}</span>
             <span class="agent-role">{{ agent.role }}</span>
           </div>
@@ -39,8 +56,13 @@
       <div class="chat-header">
         <div class="header-left">
           <div class="header-agent-info">
-            <div class="header-icon" :style="{ background: currentAgent?.gradient }">
-              <el-icon :size="18"><component :is="currentAgent?.icon" /></el-icon>
+            <div
+              class="header-icon"
+              :style="{ background: currentAgent?.gradient }"
+            >
+              <el-icon :size="18">
+                <component :is="currentAgent?.icon" />
+              </el-icon>
             </div>
             <div class="header-text">
               <span class="header-name">{{ currentAgent?.name }}</span>
@@ -49,20 +71,57 @@
           </div>
         </div>
         <div class="header-actions">
-          <el-button size="small" text :icon="Plus" @click="startNewChat">新对话</el-button>
-          <el-button size="small" text :icon="Clock" @click="openHistory">历史记录</el-button>
-          <el-button size="small" text :icon="ArrowLeft" @click="goBack">返回</el-button>
+          <el-button
+            size="small"
+            text
+            :icon="Plus"
+            @click="startNewChat"
+          >
+            新对话
+          </el-button>
+          <el-button
+            size="small"
+            text
+            :icon="Clock"
+            @click="openHistory"
+          >
+            历史记录
+          </el-button>
+          <el-button
+            size="small"
+            text
+            :icon="ArrowLeft"
+            @click="goBack"
+          >
+            返回
+          </el-button>
         </div>
       </div>
 
-      <div class="chat-messages" ref="messagesContainer" @scroll="handleScroll">
-        <div v-if="messages.length === 0 && currentAgent" class="welcome-fullscreen">
+      <div
+        ref="messagesContainer"
+        class="chat-messages"
+        @scroll="handleScroll"
+      >
+        <div
+          v-if="messages.length === 0 && currentAgent"
+          class="welcome-fullscreen"
+        >
           <div class="welcome-content">
-            <div class="welcome-icon-large" :style="{ background: currentAgent.gradient }">
-              <el-icon :size="48"><component :is="currentAgent.icon" /></el-icon>
+            <div
+              class="welcome-icon-large"
+              :style="{ background: currentAgent.gradient }"
+            >
+              <el-icon :size="48">
+                <component :is="currentAgent.icon" />
+              </el-icon>
             </div>
-            <h2 class="welcome-title-large">{{ currentAgent.name }}</h2>
-            <p class="welcome-role-large">{{ currentAgent.role }}</p>
+            <h2 class="welcome-title-large">
+              {{ currentAgent.name }}
+            </h2>
+            <p class="welcome-role-large">
+              {{ currentAgent.role }}
+            </p>
             <div class="welcome-desc">
               <p>{{ currentAgent.welcome }}</p>
             </div>
@@ -89,46 +148,89 @@
             :class="{ 'is-user': msg.role === 'user' }"
           >
             <div class="message">
-              <div class="message-avatar" :style="{ background: msg.role === 'user' ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : currentAgent?.gradient }">
+              <div
+                class="message-avatar"
+                :style="{ background: msg.role === 'user' ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : currentAgent?.gradient }"
+              >
                 <el-icon :size="16">
                   <User v-if="msg.role === 'user'" />
-                  <component :is="currentAgent?.icon" v-else />
+                  <component
+                    :is="currentAgent?.icon"
+                    v-else
+                  />
                 </el-icon>
               </div>
               <div class="message-content">
-                <div v-if="msg.reasoning" class="message-reasoning">
-                  <div class="reasoning-header" @click="msg.showReasoning = !msg.showReasoning">
-                    <el-icon :size="14"><Cpu /></el-icon>
+                <div
+                  v-if="msg.reasoning"
+                  class="message-reasoning"
+                >
+                  <div
+                    class="reasoning-header"
+                    @click="msg.showReasoning = !msg.showReasoning"
+                  >
+                    <el-icon :size="14">
+                      <Cpu />
+                    </el-icon>
                     <span>思考过程</span>
-                    <el-icon :size="12" class="reasoning-arrow" :class="{ 'is-expanded': msg.showReasoning }">
+                    <el-icon
+                      :size="12"
+                      class="reasoning-arrow"
+                      :class="{ 'is-expanded': msg.showReasoning }"
+                    >
                       <ArrowDown />
                     </el-icon>
                   </div>
-                  <div v-show="msg.showReasoning" class="reasoning-content">
+                  <div
+                    v-show="msg.showReasoning"
+                    class="reasoning-content"
+                  >
                     {{ msg.reasoning }}
                   </div>
                 </div>
                 <div class="message-text">
-                  <span v-html="renderMessage(msg.content)"></span>
-                  <span v-if="isGenerating && msg.role === 'assistant' && isLastMessage(msg)" class="typing-cursor"></span>
+                  <span v-html="renderMessage(msg.content)" />
+                  <span
+                    v-if="isGenerating && msg.role === 'assistant' && isLastMessage(msg)"
+                    class="typing-cursor"
+                  />
                 </div>
               </div>
             </div>
           </div>
-
         </template>
 
-        <div v-if="lastError" class="error-banner">
+        <div
+          v-if="lastError"
+          class="error-banner"
+        >
           <div class="error-content">
-            <el-icon class="error-icon" :size="18"><WarningFilled /></el-icon>
+            <el-icon
+              class="error-icon"
+              :size="18"
+            >
+              <WarningFilled />
+            </el-icon>
             <div class="error-info">
               <span class="error-title">{{ getErrorTitle(lastError.type) }}</span>
               <span class="error-desc">{{ lastError.message }}</span>
             </div>
           </div>
           <div class="error-actions">
-            <el-button type="primary" size="small" @click="retryLastMessage">重试</el-button>
-            <el-button size="small" text @click="clearError">忽略</el-button>
+            <el-button
+              type="primary"
+              size="small"
+              @click="retryLastMessage"
+            >
+              重试
+            </el-button>
+            <el-button
+              size="small"
+              text
+              @click="clearError"
+            >
+              忽略
+            </el-button>
           </div>
         </div>
       </div>
@@ -140,19 +242,24 @@
             type="textarea"
             :rows="2"
             placeholder="输入您的问题，按 Enter 发送..."
-            @keydown.enter.exact.prevent="sendMessage"
             :disabled="isGenerating"
             resize="none"
             class="message-input"
+            @keydown.enter.exact.prevent="sendMessage"
           />
           <div class="input-actions">
-            <el-tooltip content="开启后显示AI思考过程" placement="top">
+            <el-tooltip
+              content="开启后显示AI思考过程"
+              placement="top"
+            >
               <div 
                 class="thinking-toggle" 
                 :class="{ 'is-active': enableThinking }"
                 @click="toggleThinking"
               >
-                <el-icon :size="14"><Cpu /></el-icon>
+                <el-icon :size="14">
+                  <Cpu />
+                </el-icon>
                 <span>思考</span>
               </div>
             </el-tooltip>
@@ -163,9 +270,13 @@
               @command="(cmd) => selectedProvider = cmd"
             >
               <div class="model-selector">
-                <el-icon :size="14"><Cpu /></el-icon>
+                <el-icon :size="14">
+                  <Cpu />
+                </el-icon>
                 <span class="model-name">{{ currentProviderName }}</span>
-                <el-icon :size="12"><ArrowDown /></el-icon>
+                <el-icon :size="12">
+                  <ArrowDown />
+                </el-icon>
               </div>
               <template #dropdown>
                 <el-dropdown-menu>
@@ -177,7 +288,12 @@
                   >
                     <div class="model-option">
                       <span class="option-name">{{ p.name }}</span>
-                      <el-icon v-if="selectedProvider === p.id" :size="12"><Check /></el-icon>
+                      <el-icon
+                        v-if="selectedProvider === p.id"
+                        :size="12"
+                      >
+                        <Check />
+                      </el-icon>
                     </div>
                   </el-dropdown-item>
                 </el-dropdown-menu>
@@ -189,17 +305,21 @@
               class="config-model-btn"
               @click="$router.push('/ai-config')"
             >
-              <el-icon :size="14"><Setting /></el-icon>
+              <el-icon :size="14">
+                <Setting />
+              </el-icon>
               配置模型
             </el-button>
             <el-button
               v-if="!isGenerating"
               type="primary"
               class="send-btn"
-              @click="sendMessage"
               :disabled="!inputMessage.trim()"
+              @click="sendMessage"
             >
-              <el-icon :size="18"><Promotion /></el-icon>
+              <el-icon :size="18">
+                <Promotion />
+              </el-icon>
             </el-button>
             <el-button
               v-else
@@ -207,17 +327,32 @@
               class="send-btn"
               @click="stopGeneration"
             >
-              <el-icon :size="18"><VideoPause /></el-icon>
+              <el-icon :size="18">
+                <VideoPause />
+              </el-icon>
             </el-button>
           </div>
         </div>
       </div>
     </div>
 
-    <el-drawer v-model="historyVisible" title="历史对话" size="380px" class="history-drawer">
+    <el-drawer
+      v-model="historyVisible"
+      title="历史对话"
+      size="380px"
+      class="history-drawer"
+    >
       <div class="history-list">
-        <div v-if="conversations.length === 0" class="empty-history">
-          <el-icon :size="48" class="empty-icon"><ChatDotRound /></el-icon>
+        <div
+          v-if="conversations.length === 0"
+          class="empty-history"
+        >
+          <el-icon
+            :size="48"
+            class="empty-icon"
+          >
+            <ChatDotRound />
+          </el-icon>
           <p>暂无历史对话</p>
         </div>
         <template v-else>
@@ -226,7 +361,9 @@
             :key="date"
             class="history-group"
           >
-            <div class="history-date">{{ date }}</div>
+            <div class="history-date">
+              {{ date }}
+            </div>
             <div
               v-for="conv in group"
               :key="conv.createdAt"
@@ -237,7 +374,9 @@
                 <el-icon><ChatLineRound /></el-icon>
               </div>
               <div class="history-info">
-                <div class="history-title">{{ conv.title || '新对话' }}</div>
+                <div class="history-title">
+                  {{ conv.title || '新对话' }}
+                </div>
                 <div class="history-meta">
                   <span>{{ getAgentName(conv.agentId) }}</span>
                   <span>{{ formatTime(conv.createdAt) }}</span>
@@ -563,7 +702,7 @@ const sendMessage = async () => {
 
     const requestOptions = {
       temperature: 0.7,
-      maxTokens: enableThinking.value ? 8192 : 2000,  // 思考模式需要更大的空间
+      maxTokens: 128000,  // GLM-4.7-Flash 最大支持 128K tokens 输出
       stream: true,
       enableThinking: enableThinking.value
     }

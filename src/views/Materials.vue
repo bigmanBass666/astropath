@@ -1,13 +1,26 @@
 <template>
   <div class="materials-page">
-    <h2 class="page-title">申请材料中心</h2>
+    <h2 class="page-title">
+      申请材料中心
+    </h2>
 
     <!-- 选项卡 -->
-    <el-tabs v-model="activeTab" type="card">
-      <el-tab-pane label="文书助手" name="essay">
+    <el-tabs
+      v-model="activeTab"
+      type="card"
+    >
+      <el-tab-pane
+        label="文书助手"
+        name="essay"
+      >
         <!-- 文书类型选择界面 -->
-        <div v-if="!selectedEssayType" class="essay-type-selection">
-          <h3 class="section-title">选择文书类型</h3>
+        <div
+          v-if="!selectedEssayType"
+          class="essay-type-selection"
+        >
+          <h3 class="section-title">
+            选择文书类型
+          </h3>
           <div class="essay-types-grid">
             <div
               v-for="type in essayTypes"
@@ -15,7 +28,9 @@
               class="essay-type-card"
               @click="selectEssayType(type.value)"
             >
-              <div class="card-icon">{{ type.icon }}</div>
+              <div class="card-icon">
+                {{ type.icon }}
+              </div>
               <h4>{{ type.label }}</h4>
               <p>{{ type.description }}</p>
             </div>
@@ -23,9 +38,16 @@
         </div>
 
         <!-- 模板选择界面 -->
-        <div v-else-if="!selectedTemplate" class="template-selection">
+        <div
+          v-else-if="!selectedTemplate"
+          class="template-selection"
+        >
           <div class="template-header">
-            <el-button @click="selectedEssayType = null" type="text" size="small">
+            <el-button
+              type="text"
+              size="small"
+              @click="selectedEssayType = null"
+            >
               ← 返回文书类型选择
             </el-button>
             <h3>{{ getEssayTypeLabel(selectedEssayType) }} - 选择模板</h3>
@@ -42,7 +64,10 @@
           >
             <template #default>
               <ul class="key-points-list">
-                <li v-for="(point, index) in essayKeyPoints[selectedEssayType]" :key="index">
+                <li
+                  v-for="(point, index) in essayKeyPoints[selectedEssayType]"
+                  :key="index"
+                >
                   {{ point }}
                 </li>
               </ul>
@@ -56,19 +81,35 @@
               class="template-card"
               @click="selectTemplate(template)"
             >
-              <div class="template-name">{{ template.name }}</div>
-              <div class="template-desc">{{ template.description }}</div>
+              <div class="template-name">
+                {{ template.name }}
+              </div>
+              <div class="template-desc">
+                {{ template.description }}
+              </div>
               <div class="template-actions">
-                <el-button type="primary" size="small">使用此模板</el-button>
+                <el-button
+                  type="primary"
+                  size="small"
+                >
+                  使用此模板
+                </el-button>
               </div>
             </div>
           </div>
         </div>
 
         <!-- 文书编辑器 -->
-        <div v-else class="essay-editor">
+        <div
+          v-else
+          class="essay-editor"
+        >
           <div class="editor-header">
-            <el-button @click="backToTemplates" type="text" size="small">
+            <el-button
+              type="text"
+              size="small"
+              @click="backToTemplates"
+            >
               ← 返回模板选择
             </el-button>
             <span class="current-essay-info">
@@ -78,40 +119,149 @@
 
           <div class="editor-toolbar">
             <div class="toolbar-main">
-              <el-select v-model="currentEssayType" placeholder="选择文书类型" size="small" style="width: 110px;">
-                <el-option label="个人陈述" value="ps" />
-                <el-option label="简历" value="cv" />
-                <el-option label="推荐信" value="reference" />
-                <el-option label="研究计划" value="research" />
+              <el-select
+                v-model="currentEssayType"
+                placeholder="选择文书类型"
+                size="small"
+                style="width: 110px;"
+              >
+                <el-option
+                  label="个人陈述"
+                  value="ps"
+                />
+                <el-option
+                  label="简历"
+                  value="cv"
+                />
+                <el-option
+                  label="推荐信"
+                  value="reference"
+                />
+                <el-option
+                  label="研究计划"
+                  value="research"
+                />
               </el-select>
-              <el-select v-model="selectedProvider" placeholder="选择AI提供商" size="small" style="width: 130px;">
-                <el-option v-for="p in providers" :key="p.id" :label="p.name" :value="p.id" />
+              <el-select
+                v-model="selectedProvider"
+                placeholder="选择AI提供商"
+                size="small"
+                style="width: 130px;"
+              >
+                <el-option
+                  v-for="p in providers"
+                  :key="p.id"
+                  :label="p.name"
+                  :value="p.id"
+                />
               </el-select>
               <el-divider direction="vertical" />
               <el-button-group class="format-group">
-                <el-button size="small" @click="formatDoc('bold')" title="加粗">B</el-button>
-                <el-button size="small" @click="formatDoc('italic')" title="斜体">I</el-button>
-                <el-button size="small" @click="formatDoc('underline')" title="下划线">U</el-button>
+                <el-button
+                  size="small"
+                  title="加粗"
+                  @click="formatDoc('bold')"
+                >
+                  B
+                </el-button>
+                <el-button
+                  size="small"
+                  title="斜体"
+                  @click="formatDoc('italic')"
+                >
+                  I
+                </el-button>
+                <el-button
+                  size="small"
+                  title="下划线"
+                  @click="formatDoc('underline')"
+                >
+                  U
+                </el-button>
               </el-button-group>
               <el-button-group class="format-group">
-                <el-button size="small" @click="formatDoc('h1')" title="一级标题">H1</el-button>
-                <el-button size="small" @click="formatDoc('h2')" title="二级标题">H2</el-button>
-                <el-button size="small" @click="formatDoc('h3')" title="三级标题">H3</el-button>
+                <el-button
+                  size="small"
+                  title="一级标题"
+                  @click="formatDoc('h1')"
+                >
+                  H1
+                </el-button>
+                <el-button
+                  size="small"
+                  title="二级标题"
+                  @click="formatDoc('h2')"
+                >
+                  H2
+                </el-button>
+                <el-button
+                  size="small"
+                  title="三级标题"
+                  @click="formatDoc('h3')"
+                >
+                  H3
+                </el-button>
               </el-button-group>
               <el-button-group class="format-group">
-                <el-button size="small" @click="formatDoc('ul')" title="无序列表">☰</el-button>
-                <el-button size="small" @click="formatDoc('ol')" title="有序列表">1.</el-button>
+                <el-button
+                  size="small"
+                  title="无序列表"
+                  @click="formatDoc('ul')"
+                >
+                  ☰
+                </el-button>
+                <el-button
+                  size="small"
+                  title="有序列表"
+                  @click="formatDoc('ol')"
+                >
+                  1.
+                </el-button>
               </el-button-group>
               <el-button-group class="format-group">
-                <el-button size="small" @click="formatDoc('undo')" title="撤销">↶</el-button>
-                <el-button size="small" @click="formatDoc('redo')" title="重做">↷</el-button>
+                <el-button
+                  size="small"
+                  title="撤销"
+                  @click="formatDoc('undo')"
+                >
+                  ↶
+                </el-button>
+                <el-button
+                  size="small"
+                  title="重做"
+                  @click="formatDoc('redo')"
+                >
+                  ↷
+                </el-button>
               </el-button-group>
             </div>
             <div class="toolbar-actions">
-              <el-button size="small" @click="showWordCountDialog">字数统计</el-button>
-              <el-button size="small" type="primary" @click="showVersionNoteDialog">保存版本</el-button>
-              <el-button size="small" @click="showVersions">历史版本</el-button>
-              <el-button size="small" type="success" @click="previewAndExportPDF">导出PDF</el-button>
+              <el-button
+                size="small"
+                @click="showWordCountDialog"
+              >
+                字数统计
+              </el-button>
+              <el-button
+                size="small"
+                type="primary"
+                @click="showVersionNoteDialog"
+              >
+                保存版本
+              </el-button>
+              <el-button
+                size="small"
+                @click="showVersions"
+              >
+                历史版本
+              </el-button>
+              <el-button
+                size="small"
+                type="success"
+                @click="previewAndExportPDF"
+              >
+                导出PDF
+              </el-button>
             </div>
           </div>
 
@@ -128,8 +278,8 @@
               <el-button
                 type="primary"
                 size="small"
-                @click="generateWithAI"
                 :loading="isGenerating"
+                @click="generateWithAI"
               >
                 {{ isGenerating ? '生成中...' : 'AI生成' }}
               </el-button>
@@ -141,37 +291,61 @@
               ref="editorRef"
               class="rich-editor"
               contenteditable="true"
+              :data-placeholder="'在此编辑文书内容，可以使用AI生成辅助...'"
               @input="onEditorInput"
               @keydown="onEditorKeydown"
-              :data-placeholder="'在此编辑文书内容，可以使用AI生成辅助...'"
-            ></div>
+            />
           </div>
           <div class="word-count">
             <span>字数统计: {{ wordCount }} 字 | 预计阅读时间: {{ Math.ceil(wordCount / 400) }}分钟</span>
-            <el-button size="small" type="text" @click="showWordCountDialog">详细统计</el-button>
+            <el-button
+              size="small"
+              type="text"
+              @click="showWordCountDialog"
+            >
+              详细统计
+            </el-button>
           </div>
         </div>
       </el-tab-pane>
 
-      <el-tab-pane label="材料清单" name="checklist">
+      <el-tab-pane
+        label="材料清单"
+        name="checklist"
+      >
         <div class="checklist-page">
           <el-card class="progress-card">
             <div class="progress-header">
               <h3>材料准备进度</h3>
-              <el-progress :percentage="completionRate" :color="progressColor" />
+              <el-progress
+                :percentage="completionRate"
+                :color="progressColor"
+              />
             </div>
           </el-card>
 
           <el-card class="checklist-card">
             <div class="checklist-actions">
-              <el-button type="primary" @click="exportCSV">导出清单</el-button>
-              <el-button @click="generateReport">生成检查报告</el-button>
-              <el-button @click="resetChecklist">重置</el-button>
+              <el-button
+                type="primary"
+                @click="exportCSV"
+              >
+                导出清单
+              </el-button>
+              <el-button @click="generateReport">
+                生成检查报告
+              </el-button>
+              <el-button @click="resetChecklist">
+                重置
+              </el-button>
             </div>
 
             <el-collapse v-model="activeCategory">
-              <el-collapse-item v-for="category in categories" :key="category.id"
-                :name="category.id">
+              <el-collapse-item
+                v-for="category in categories"
+                :key="category.id"
+                :name="category.id"
+              >
                 <template #title>
                   <span>{{ category.name }}</span>
                   <el-select
@@ -181,25 +355,63 @@
                     style="margin-left: 15px; width: 120px;"
                     @click.stop
                   >
-                    <el-option v-for="country in countries" :key="country" :label="country" :value="country" />
+                    <el-option
+                      v-for="country in countries"
+                      :key="country"
+                      :label="country"
+                      :value="country"
+                    />
                   </el-select>
                 </template>
-                <el-table :data="getCategoryItems(category.id)" style="width: 100%" class="materials-checklist-table" :row-class-name="({ row }) => row.completed ? 'completed-row' : ''">
+                <el-table
+                  :data="getCategoryItems(category.id)"
+                  style="width: 100%"
+                  class="materials-checklist-table"
+                  :row-class-name="({ row }) => row.completed ? 'completed-row' : ''"
+                >
                   <el-table-column width="50">
                     <template #default="{ row }">
-                      <el-checkbox v-model="row.completed" @change="updateProgress" />
+                      <el-checkbox
+                        v-model="row.completed"
+                        @change="updateProgress"
+                      />
                     </template>
                   </el-table-column>
-                  <el-table-column prop="name" label="材料名称" min-width="200" show-overflow-tooltip>
+                  <el-table-column
+                    prop="name"
+                    label="材料名称"
+                    min-width="200"
+                    show-overflow-tooltip
+                  >
                     <template #default="{ row }">
                       <span :class="{ 'completed-text': row.completed }">{{ row.name }}</span>
                     </template>
                   </el-table-column>
-                  <el-table-column prop="note" label="备注" min-width="160" show-overflow-tooltip />
-                  <el-table-column label="操作" width="110">
+                  <el-table-column
+                    prop="note"
+                    label="备注"
+                    min-width="160"
+                    show-overflow-tooltip
+                  />
+                  <el-table-column
+                    label="操作"
+                    width="110"
+                  >
                     <template #default="{ row, $index }">
-                      <el-button size="small" type="text" @click="editItem(category.id, $index)">编辑</el-button>
-                      <el-button size="small" type="text" @click="removeItem(category.id, $index)">删除</el-button>
+                      <el-button
+                        size="small"
+                        type="text"
+                        @click="editItem(category.id, $index)"
+                      >
+                        编辑
+                      </el-button>
+                      <el-button
+                        size="small"
+                        type="text"
+                        @click="removeItem(category.id, $index)"
+                      >
+                        删除
+                      </el-button>
                     </template>
                   </el-table-column>
                 </el-table>
@@ -207,19 +419,33 @@
             </el-collapse>
           </el-card>
 
-          <el-button class="add-custom-btn" type="primary" plain @click="addCustomItem">
+          <el-button
+            class="add-custom-btn"
+            type="primary"
+            plain
+            @click="addCustomItem"
+          >
             <el-icon><Plus /></el-icon>
             添加自定义材料
           </el-button>
         </div>
       </el-tab-pane>
 
-      <el-tab-pane label="申请进度" name="progress">
+      <el-tab-pane
+        label="申请进度"
+        name="progress"
+      >
         <div class="progress-dashboard">
           <el-card class="overall-progress-card">
             <div class="overall-progress">
               <div class="progress-circle">
-                <el-progress type="circle" :percentage="overallProgress" :width="120" :stroke-width="12" :color="progressColors" />
+                <el-progress
+                  type="circle"
+                  :percentage="overallProgress"
+                  :width="120"
+                  :stroke-width="12"
+                  :color="progressColors"
+                />
               </div>
               <div class="progress-info">
                 <h3>整体申请进度</h3>
@@ -238,23 +464,54 @@
           </el-card>
 
           <div class="stages-grid">
-            <el-card v-for="stage in applicationStages" :key="stage.id" class="stage-card" :class="{ 'stage-completed': isStageCompleted(stage) }">
+            <el-card
+              v-for="stage in applicationStages"
+              :key="stage.id"
+              class="stage-card"
+              :class="{ 'stage-completed': isStageCompleted(stage) }"
+            >
               <div class="stage-header">
-                <div class="stage-icon">{{ stage.icon }}</div>
+                <div class="stage-icon">
+                  {{ stage.icon }}
+                </div>
                 <h4>{{ stage.name }}</h4>
-                <el-tag :type="getStageTagType(stage)" size="small">{{ getStageStatus(stage) }}</el-tag>
+                <el-tag
+                  :type="getStageTagType(stage)"
+                  size="small"
+                >
+                  {{ getStageStatus(stage) }}
+                </el-tag>
               </div>
-              <el-progress :percentage="getStageProgress(stage)" :color="getStageColor(stage)" :stroke-width="8" />
+              <el-progress
+                :percentage="getStageProgress(stage)"
+                :color="getStageColor(stage)"
+                :stroke-width="8"
+              />
               <div class="stage-tasks">
-                <div class="task-count">{{ getStageCompletedCount(stage) }}/{{ stage.tasks.length }} 任务</div>
+                <div class="task-count">
+                  {{ getStageCompletedCount(stage) }}/{{ stage.tasks.length }} 任务
+                </div>
                 <div class="task-list">
-                  <div v-for="(task, index) in stage.tasks" :key="index" 
-                       class="task-item" 
-                       :class="{ 'task-completed': task.completed }"
-                       @click="handleTaskClick(stage, task)">
-                    <el-checkbox v-model="task.completed" size="small" @click.stop @change="saveProgressData" />
+                  <div
+                    v-for="(task, index) in stage.tasks"
+                    :key="index" 
+                    class="task-item" 
+                    :class="{ 'task-completed': task.completed }"
+                    @click="handleTaskClick(stage, task)"
+                  >
+                    <el-checkbox
+                      v-model="task.completed"
+                      size="small"
+                      @click.stop
+                      @change="saveProgressData"
+                    />
                     <span class="task-name">{{ task.name }}</span>
-                    <el-icon v-if="!task.completed" class="task-action"><Right /></el-icon>
+                    <el-icon
+                      v-if="!task.completed"
+                      class="task-action"
+                    >
+                      <Right />
+                    </el-icon>
                   </div>
                 </div>
               </div>
@@ -265,61 +522,158 @@
     </el-tabs>
 
     <!-- 编辑材料对话框 -->
-    <el-dialog v-model="editItemDialogVisible" title="编辑材料" width="400px">
-      <el-form :model="editingItem" label-width="80px">
+    <el-dialog
+      v-model="editItemDialogVisible"
+      title="编辑材料"
+      width="400px"
+    >
+      <el-form
+        :model="editingItem"
+        label-width="80px"
+      >
         <el-form-item label="材料名称">
-          <el-input v-model="editingItem.name" placeholder="材料名称" />
+          <el-input
+            v-model="editingItem.name"
+            placeholder="材料名称"
+          />
         </el-form-item>
         <el-form-item label="备注">
-          <el-input v-model="editingItem.note" type="textarea" placeholder="备注信息" />
+          <el-input
+            v-model="editingItem.note"
+            type="textarea"
+            placeholder="备注信息"
+          />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="editItemDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="confirmEditItem">保存修改</el-button>
+        <el-button @click="editItemDialogVisible = false">
+          取消
+        </el-button>
+        <el-button
+          type="primary"
+          @click="confirmEditItem"
+        >
+          保存修改
+        </el-button>
       </template>
     </el-dialog>
 
     <!-- 检查报告对话框 -->
-    <el-dialog v-model="reportVisible" title="材料准备检查报告" width="600px">
+    <el-dialog
+      v-model="reportVisible"
+      title="材料准备检查报告"
+      width="600px"
+    >
       <div class="report-content">
         <el-card class="report-summary-card">
           <div class="report-summary">
             <div class="summary-stat">
-              <div class="stat-value" style="color: #67c23a;">{{ completedCount }}</div>
-              <div class="stat-label">已完成</div>
+              <div
+                class="stat-value"
+                style="color: #67c23a;"
+              >
+                {{ completedCount }}
+              </div>
+              <div class="stat-label">
+                已完成
+              </div>
             </div>
             <div class="summary-stat">
-              <div class="stat-value" style="color: #e6a23c;">{{ pendingCount }}</div>
-              <div class="stat-label">未完成</div>
+              <div
+                class="stat-value"
+                style="color: #e6a23c;"
+              >
+                {{ pendingCount }}
+              </div>
+              <div class="stat-label">
+                未完成
+              </div>
             </div>
             <div class="summary-stat">
-              <div class="stat-value" style="color: #667eea;">{{ completionRate }}%</div>
-              <div class="stat-label">完成率</div>
+              <div
+                class="stat-value"
+                style="color: #667eea;"
+              >
+                {{ completionRate }}%
+              </div>
+              <div class="stat-label">
+                完成率
+              </div>
             </div>
           </div>
-          <el-progress :percentage="completionRate" :color="progressColor" style="margin-top: 15px;" />
+          <el-progress
+            :percentage="completionRate"
+            :color="progressColor"
+            style="margin-top: 15px;"
+          />
         </el-card>
 
-        <div v-if="pendingItems.length > 0" class="pending-section">
-          <h4 class="pending-title">⚠️ 待完成材料 ({{ pendingItems.length }}项)</h4>
-          <el-table :data="pendingItems" size="small" border class="pending-items-table">
-            <el-table-column prop="name" label="材料名称" min-width="200" show-overflow-tooltip />
-            <el-table-column prop="categoryName" label="分类" width="100" />
-            <el-table-column prop="note" label="备注" min-width="160" show-overflow-tooltip />
-            <el-table-column label="操作" width="80">
+        <div
+          v-if="pendingItems.length > 0"
+          class="pending-section"
+        >
+          <h4 class="pending-title">
+            ⚠️ 待完成材料 ({{ pendingItems.length }}项)
+          </h4>
+          <el-table
+            :data="pendingItems"
+            size="small"
+            border
+            class="pending-items-table"
+          >
+            <el-table-column
+              prop="name"
+              label="材料名称"
+              min-width="200"
+              show-overflow-tooltip
+            />
+            <el-table-column
+              prop="categoryName"
+              label="分类"
+              width="100"
+            />
+            <el-table-column
+              prop="note"
+              label="备注"
+              min-width="160"
+              show-overflow-tooltip
+            />
+            <el-table-column
+              label="操作"
+              width="80"
+            >
               <template #default="{ row }">
-                <el-button size="small" type="success" text @click="markCompleted(row)">完成</el-button>
+                <el-button
+                  size="small"
+                  type="success"
+                  text
+                  @click="markCompleted(row)"
+                >
+                  完成
+                </el-button>
               </template>
             </el-table-column>
           </el-table>
         </div>
-        <el-empty v-else description="所有材料已准备完成！🎉" />
+        <el-empty
+          v-else
+          description="所有材料已准备完成！🎉"
+        />
 
-        <div v-if="completedItems.length > 0" class="completed-section">
-          <h4 class="completed-title">✅ 已完成材料 ({{ completedItems.length }}项)</h4>
+        <div
+          v-if="completedItems.length > 0"
+          class="completed-section"
+        >
+          <h4 class="completed-title">
+            ✅ 已完成材料 ({{ completedItems.length }}项)
+          </h4>
           <div class="completed-list">
-            <el-tag v-for="item in completedItems" :key="item.name" type="success" style="margin: 4px;">
+            <el-tag
+              v-for="item in completedItems"
+              :key="item.name"
+              type="success"
+              style="margin: 4px;"
+            >
               {{ item.name }}
             </el-tag>
           </div>
@@ -328,45 +682,119 @@
     </el-dialog>
 
     <!-- 添加自定义材料对话框 -->
-    <el-dialog v-model="itemDialogVisible" title="添加自定义材料" width="400px">
-      <el-form :model="newItem" label-width="80px">
+    <el-dialog
+      v-model="itemDialogVisible"
+      title="添加自定义材料"
+      width="400px"
+    >
+      <el-form
+        :model="newItem"
+        label-width="80px"
+      >
         <el-form-item label="材料名称">
-          <el-input v-model="newItem.name" placeholder="如：作品集" />
+          <el-input
+            v-model="newItem.name"
+            placeholder="如：作品集"
+          />
         </el-form-item>
         <el-form-item label="所属分类">
-          <el-select v-model="newItem.category" style="width: 100%;">
-            <el-option label="必需材料" value="required" />
-            <el-option label="推荐材料" value="recommended" />
-            <el-option label="可选材料" value="optional" />
+          <el-select
+            v-model="newItem.category"
+            style="width: 100%;"
+          >
+            <el-option
+              label="必需材料"
+              value="required"
+            />
+            <el-option
+              label="推荐材料"
+              value="recommended"
+            />
+            <el-option
+              label="可选材料"
+              value="optional"
+            />
           </el-select>
         </el-form-item>
         <el-form-item label="备注">
-          <el-input v-model="newItem.note" type="textarea" placeholder="备注信息（可选）" />
+          <el-input
+            v-model="newItem.note"
+            type="textarea"
+            placeholder="备注信息（可选）"
+          />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="itemDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="confirmAddItem">添加</el-button>
+        <el-button @click="itemDialogVisible = false">
+          取消
+        </el-button>
+        <el-button
+          type="primary"
+          @click="confirmAddItem"
+        >
+          添加
+        </el-button>
       </template>
     </el-dialog>
 
     <!-- 历史版本对话框 -->
-    <el-dialog v-model="versionsVisible" title="文书历史版本" width="600px">
-      <el-table :data="versions" style="width: 100%" class="versions-table">
-        <el-table-column prop="date" label="保存时间" width="180" />
-        <el-table-column prop="note" label="版本备注" min-width="200" show-overflow-tooltip />
-        <el-table-column label="操作" width="140">
+    <el-dialog
+      v-model="versionsVisible"
+      title="文书历史版本"
+      width="600px"
+    >
+      <el-table
+        :data="versions"
+        style="width: 100%"
+        class="versions-table"
+      >
+        <el-table-column
+          prop="date"
+          label="保存时间"
+          width="180"
+        />
+        <el-table-column
+          prop="note"
+          label="版本备注"
+          min-width="200"
+          show-overflow-tooltip
+        />
+        <el-table-column
+          label="操作"
+          width="140"
+        >
           <template #default="{ row }">
-            <el-button size="small" type="primary" text @click="previewVersion(row)">预览</el-button>
-            <el-button size="small" type="success" text @click="restoreVersion(row)">恢复</el-button>
+            <el-button
+              size="small"
+              type="primary"
+              text
+              @click="previewVersion(row)"
+            >
+              预览
+            </el-button>
+            <el-button
+              size="small"
+              type="success"
+              text
+              @click="restoreVersion(row)"
+            >
+              恢复
+            </el-button>
           </template>
         </el-table-column>
       </el-table>
     </el-dialog>
 
     <!-- 版本备注对话框 -->
-    <el-dialog v-model="versionNoteVisible" title="保存版本" width="400px">
-      <el-form :model="versionNote" label-width="80px">
+    <el-dialog
+      v-model="versionNoteVisible"
+      title="保存版本"
+      width="400px"
+    >
+      <el-form
+        :model="versionNote"
+        label-width="80px"
+      >
         <el-form-item label="版本备注">
           <el-input
             v-model="versionNote.text"
@@ -377,15 +805,29 @@
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="versionNoteVisible = false">取消</el-button>
-        <el-button type="primary" @click="confirmSaveVersion">保存</el-button>
+        <el-button @click="versionNoteVisible = false">
+          取消
+        </el-button>
+        <el-button
+          type="primary"
+          @click="confirmSaveVersion"
+        >
+          保存
+        </el-button>
       </template>
     </el-dialog>
 
     <!-- 字数统计对话框 -->
-    <el-dialog v-model="wordCountVisible" title="字数统计详情" width="500px">
+    <el-dialog
+      v-model="wordCountVisible"
+      title="字数统计详情"
+      width="500px"
+    >
       <div class="word-count-detail">
-        <el-descriptions :column="1" border>
+        <el-descriptions
+          :column="1"
+          border
+        >
           <el-descriptions-item label="总字符数">
             {{ essayContent.length }} 个字符
           </el-descriptions-item>
@@ -418,19 +860,39 @@
     </el-dialog>
 
     <!-- PDF预览对话框 -->
-    <el-dialog v-model="pdfPreviewVisible" title="PDF预览" width="700px" fullscreen>
-      <div class="pdf-preview-wrapper" ref="pdfPreviewRef">
+    <el-dialog
+      v-model="pdfPreviewVisible"
+      title="PDF预览"
+      width="700px"
+      fullscreen
+    >
+      <div
+        ref="pdfPreviewRef"
+        class="pdf-preview-wrapper"
+      >
         <div class="pdf-document">
           <div class="pdf-header">
             <h1>{{ getEssayTypeLabel(selectedEssayType) }}</h1>
-            <p class="pdf-template-info">{{ selectedTemplate?.name }}</p>
+            <p class="pdf-template-info">
+              {{ selectedTemplate?.name }}
+            </p>
           </div>
-          <div class="pdf-body" v-html="renderedContent"></div>
+          <div
+            class="pdf-body"
+            v-html="renderedContent"
+          />
         </div>
       </div>
       <template #footer>
-        <el-button @click="pdfPreviewVisible = false">关闭预览</el-button>
-        <el-button type="primary" @click="downloadPDF">下载PDF</el-button>
+        <el-button @click="pdfPreviewVisible = false">
+          关闭预览
+        </el-button>
+        <el-button
+          type="primary"
+          @click="downloadPDF"
+        >
+          下载PDF
+        </el-button>
       </template>
     </el-dialog>
   </div>

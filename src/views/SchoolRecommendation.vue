@@ -1,19 +1,36 @@
 <template>
   <div class="school-recommendation-page">
-    <h2 class="page-title">AI智能选校推荐</h2>
+    <h2 class="page-title">
+      AI智能选校推荐
+    </h2>
 
     <!-- 未完成背景评估提示 -->
-    <el-card class="intro-card" v-if="!hasAssessment">
-      <el-result icon="info" title="请先完成背景评估" sub-title="系统需要您的背景信息才能进行精准推荐">
+    <el-card
+      v-if="!hasAssessment"
+      class="intro-card"
+    >
+      <el-result
+        icon="info"
+        title="请先完成背景评估"
+        sub-title="系统需要您的背景信息才能进行精准推荐"
+      >
         <template #extra>
-          <el-button type="primary" @click="$router.push('/assessment')">去评估</el-button>
+          <el-button
+            type="primary"
+            @click="$router.push('/assessment')"
+          >
+            去评估
+          </el-button>
         </template>
       </el-result>
     </el-card>
 
     <template v-else>
       <!-- Step 1: 偏好收集 -->
-      <el-card v-if="currentStep === 'preference'" class="main-card">
+      <el-card
+        v-if="currentStep === 'preference'"
+        class="main-card"
+      >
         <PreferenceCollector
           :assessment="assessment"
           :loading="loading"
@@ -49,21 +66,65 @@
     />
 
     <!-- 对比对话框 -->
-    <el-dialog v-model="compareVisible" title="学校对比" width="80%">
-      <el-table :data="compareSchools" style="width: 100%" class="compare-table">
-        <el-table-column prop="name" label="学校" min-width="140" show-overflow-tooltip />
-        <el-table-column prop="country" label="国家" min-width="80" />
-        <el-table-column prop="ranking" label="排名" min-width="80" />
-        <el-table-column prop="match" label="匹配度" min-width="160">
+    <el-dialog
+      v-model="compareVisible"
+      title="学校对比"
+      width="80%"
+    >
+      <el-table
+        :data="compareSchools"
+        style="width: 100%"
+        class="compare-table"
+      >
+        <el-table-column
+          prop="name"
+          label="学校"
+          min-width="140"
+          show-overflow-tooltip
+        />
+        <el-table-column
+          prop="country"
+          label="国家"
+          min-width="80"
+        />
+        <el-table-column
+          prop="ranking"
+          label="排名"
+          min-width="80"
+        />
+        <el-table-column
+          prop="match"
+          label="匹配度"
+          min-width="160"
+        >
           <template #default="{ row }">
-            <el-progress :percentage="row.match" :color="getScoreColor(row.match)" />
+            <el-progress
+              :percentage="row.match"
+              :color="getScoreColor(row.match)"
+            />
           </template>
         </el-table-column>
-        <el-table-column prop="tuition" label="学费" min-width="100" />
-        <el-table-column prop="acceptanceRate" label="录取率" min-width="90" />
-        <el-table-column label="操作" min-width="110">
+        <el-table-column
+          prop="tuition"
+          label="学费"
+          min-width="100"
+        />
+        <el-table-column
+          prop="acceptanceRate"
+          label="录取率"
+          min-width="90"
+        />
+        <el-table-column
+          label="操作"
+          min-width="110"
+        >
           <template #default="{ row }">
-            <el-button size="small" type="danger" plain @click="removeFavorite(row.id)">
+            <el-button
+              size="small"
+              type="danger"
+              plain
+              @click="removeFavorite(row.id)"
+            >
               取消收藏
             </el-button>
           </template>

@@ -3,19 +3,29 @@
     <!-- AI欢迎语 -->
     <div class="ai-welcome-message">
       <div class="ai-avatar-small">
-        <el-icon :size="28"><ChatDotRound /></el-icon>
+        <el-icon :size="28">
+          <ChatDotRound />
+        </el-icon>
       </div>
       <div class="welcome-content">
         <p class="welcome-text">
           基于你的背景和需求，我为你精选了 <strong>{{ coreRecommendations.length }}</strong> 所核心推荐学校
           <span v-if="alternativeRecommendations.length > 0">和 <strong>{{ alternativeRecommendations.length }}</strong> 个备选方案</span>
         </p>
-        <p class="summary-text" v-if="summary">{{ summary }}</p>
+        <p
+          v-if="summary"
+          class="summary-text"
+        >
+          {{ summary }}
+        </p>
       </div>
     </div>
 
     <!-- 核心推荐 -->
-    <div class="recommendation-section" v-if="coreRecommendations.length > 0">
+    <div
+      v-if="coreRecommendations.length > 0"
+      class="recommendation-section"
+    >
       <h4 class="section-title">
         <el-icon><StarFilled /></el-icon>
         核心推荐
@@ -34,7 +44,10 @@
     </div>
 
     <!-- 备选方案 -->
-    <div class="recommendation-section alternative" v-if="alternativeRecommendations.length > 0">
+    <div
+      v-if="alternativeRecommendations.length > 0"
+      class="recommendation-section alternative"
+    >
       <h4 class="section-title">
         <el-icon><Collection /></el-icon>
         备选方案
@@ -61,7 +74,10 @@
         @keyup.enter="submitAdjust"
       >
         <template #append>
-          <el-button @click="submitAdjust" :icon="Position" />
+          <el-button
+            :icon="Position"
+            @click="submitAdjust"
+          />
         </template>
       </el-input>
 
@@ -70,7 +86,11 @@
           <el-icon><RefreshLeft /></el-icon>
           重新填写偏好
         </el-button>
-        <el-button type="primary" @click="$emit('compare')" :disabled="favorites.length < 2">
+        <el-button
+          type="primary"
+          :disabled="favorites.length < 2"
+          @click="$emit('compare')"
+        >
           <el-icon><ScaleToOriginal /></el-icon>
           对比收藏 ({{ favorites.length }})
         </el-button>
