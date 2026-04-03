@@ -1,27 +1,47 @@
 <template>
-  <div class="home-page" ref="homePageRef">
+  <div
+    ref="homePageRef"
+    class="home-page"
+  >
     <!-- Hero区域 -->
-    <section class="hero" ref="heroRef">
-      <!-- 动态背景粒子 -->
+    <section
+      ref="heroRef"
+      class="hero"
+    >
+      <!-- 动态背景粒子 - 从6个减少到4个优化性能 -->
       <div class="hero-bg-effects">
-        <div class="particle p1"></div>
-        <div class="particle p2"></div>
-        <div class="particle p3"></div>
-        <div class="particle p4"></div>
-        <div class="particle p5"></div>
-        <div class="particle p6"></div>
+        <div class="particle p1" />
+        <div class="particle p2" />
+        <div class="particle p3" />
+        <div class="particle p4" />
       </div>
       <!-- 渐变叠加层 -->
-      <div class="hero-gradient-overlay"></div>
+      <div class="hero-gradient-overlay" />
 
-      <div class="hero-content" :class="{ 'is-visible': heroVisible }">
-        <h1 class="hero-title">{{ animatedTitle }}</h1>
-        <p class="hero-subtitle">{{ animatedSubtitle }}</p>
+      <div
+        class="hero-content"
+        :class="{ 'is-visible': heroVisible }"
+      >
+        <h1 class="hero-title">
+          {{ animatedTitle }}
+        </h1>
+        <p class="hero-subtitle">
+          {{ animatedSubtitle }}
+        </p>
         <div class="hero-actions">
-          <el-button type="primary" size="large" class="cta-button" @click="$router.push('/assessment')">
+          <el-button
+            type="primary"
+            size="large"
+            class="cta-button"
+            @click="$router.push('/assessment')"
+          >
             开始规划
           </el-button>
-          <el-button size="large" class="secondary-button" @click="$router.push('/university-database')">
+          <el-button
+            size="large"
+            class="secondary-button"
+            @click="$router.push('/university-database')"
+          >
             探索院校
           </el-button>
         </div>
@@ -30,12 +50,12 @@
             <span class="stat-number">32+</span>
             <span class="stat-desc">功能模块</span>
           </div>
-          <div class="stat-divider"></div>
+          <div class="stat-divider" />
           <div class="stat-item">
             <span class="stat-number">1000+</span>
             <span class="stat-desc">院校数据</span>
           </div>
-          <div class="stat-divider"></div>
+          <div class="stat-divider" />
           <div class="stat-item">
             <span class="stat-number">AI</span>
             <span class="stat-desc">智能辅助</span>
@@ -46,28 +66,47 @@
       <!-- 向下滚动提示 -->
       <div class="scroll-indicator">
         <div class="scroll-mouse">
-          <div class="scroll-wheel"></div>
+          <div class="scroll-wheel" />
         </div>
         <span>向下滚动</span>
       </div>
     </section>
 
     <!-- 核心功能展示 -->
-    <section class="features" ref="featuresRef" :class="{ 'is-visible': featuresVisible }">
+    <section
+      ref="featuresRef"
+      class="features"
+      :class="{ 'is-visible': featuresVisible }"
+    >
       <div class="container">
-        <h2 class="section-title">核心功能</h2>
+        <h2 class="section-title">
+          核心功能
+        </h2>
         <div class="features-grid">
-          <div class="feature-card" v-for="(feature, index) in features" :key="index"
+          <div
+            v-for="(feature, index) in features"
+            :key="index"
+            class="feature-card"
             :style="{ animationDelay: `${index * 0.1}s` }"
-            @click="navigateTo(feature.path)">
+            @click="navigateTo(feature.path)"
+          >
             <div class="feature-icon-wrapper">
-              <el-icon class="feature-icon"><component :is="feature.icon" /></el-icon>
+              <el-icon class="feature-icon">
+                <component :is="feature.icon" />
+              </el-icon>
             </div>
             <h3>{{ feature.title }}</h3>
             <p>{{ feature.desc }}</p>
-            <el-link type="primary" :underline="false" class="feature-link" :href="feature.path">
+            <el-link
+              type="primary"
+              :underline="false"
+              class="feature-link"
+              :href="feature.path"
+            >
               了解更多
-              <el-icon class="link-arrow"><ArrowRight /></el-icon>
+              <el-icon class="link-arrow">
+                <ArrowRight />
+              </el-icon>
             </el-link>
           </div>
         </div>
@@ -75,14 +114,29 @@
     </section>
 
     <!-- 平台特色 -->
-    <section class="highlights" ref="highlightsRef" :class="{ 'is-visible': highlightsVisible }">
+    <section
+      ref="highlightsRef"
+      class="highlights"
+      :class="{ 'is-visible': highlightsVisible }"
+    >
       <div class="container">
-        <h2 class="section-title">为什么选择我们</h2>
+        <h2 class="section-title">
+          为什么选择我们
+        </h2>
         <div class="highlights-content">
-          <div class="highlight-item" v-for="(item, index) in highlights" :key="index"
-            :style="{ animationDelay: `${index * 0.15}s` }">
+          <div
+            v-for="(item, index) in highlights"
+            :key="index"
+            class="highlight-item"
+            :style="{ animationDelay: `${index * 0.15}s` }"
+          >
             <div class="highlight-icon-wrapper">
-              <el-icon :size="48" color="#667eea"><component :is="item.icon" /></el-icon>
+              <el-icon
+                :size="48"
+                :color="'var(--color-primary)'"
+              >
+                <component :is="item.icon" />
+              </el-icon>
             </div>
             <h4>{{ item.title }}</h4>
             <p>{{ item.desc }}</p>
@@ -92,18 +146,30 @@
     </section>
 
     <!-- CTA区域 -->
-    <section class="cta-section" ref="ctaRef" :class="{ 'is-visible': ctaVisible }">
+    <section
+      ref="ctaRef"
+      class="cta-section"
+      :class="{ 'is-visible': ctaVisible }"
+    >
       <div class="cta-content">
         <h2>准备好开始您的留学规划了吗？</h2>
         <p>30秒完成背景评估，获取专属留学路径图</p>
-        <el-button type="primary" size="large" class="cta-final-button" @click="$router.push('/assessment')">
+        <el-button
+          type="primary"
+          size="large"
+          class="cta-final-button"
+          @click="$router.push('/assessment')"
+        >
           立即开始
         </el-button>
       </div>
     </section>
 
     <!-- 页脚区域 -->
-    <footer class="site-footer" ref="footerRef">
+    <footer
+      ref="footerRef"
+      class="site-footer"
+    >
       <div class="container">
         <div class="footer-content">
           <div class="footer-brand">
@@ -124,7 +190,12 @@
           <div class="footer-help">
             <h4>帮助支持</h4>
             <ul>
-              <li><a href="#" @click.prevent="guideVisible = true">使用指南</a></li>
+              <li>
+                <a
+                  href="#"
+                  @click.prevent="guideVisible = true"
+                >使用指南</a>
+              </li>
               <li><a href="#">常见问题</a></li>
               <li><a href="#">联系我们</a></li>
             </ul>
@@ -134,13 +205,32 @@
             <p><el-icon><Message /></el-icon> support@astropath.com</p>
             <p><el-icon><Phone /></el-icon> 400-123-4567</p>
             <div class="social-links">
-              <a href="https://github.com/bigmanBass666" target="_blank" rel="noopener noreferrer" class="social-link github-link" title="GitHub">
-                <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
-                  <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
+              <a
+                href="https://github.com/bigmanBass666"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="social-link github-link"
+                title="GitHub"
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  width="18"
+                  height="18"
+                >
+                  <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z" />
                 </svg>
               </a>
-              <a href="#" class="social-link" title="微信"><el-icon><ChatDotRound /></el-icon></a>
-              <a href="#" class="social-link" title="微博"><el-icon><Platform /></el-icon></a>
+              <a
+                href="#"
+                class="social-link"
+                title="微信"
+              ><el-icon><ChatDotRound /></el-icon></a>
+              <a
+                href="#"
+                class="social-link"
+                title="微博"
+              ><el-icon><Platform /></el-icon></a>
             </div>
           </div>
         </div>
@@ -151,7 +241,12 @@
     </footer>
 
     <!-- 返回顶部按钮 -->
-    <button class="back-to-top" :class="{ visible: showBackToTop }" @click="scrollToTop" title="返回顶部">
+    <button
+      class="back-to-top"
+      :class="{ visible: showBackToTop }"
+      title="返回顶部"
+      @click="scrollToTop"
+    >
       <el-icon><Top /></el-icon>
     </button>
   </div>
@@ -313,7 +408,7 @@ onUnmounted(() => {
 /* ===== Hero区域 ===== */
 .hero {
   position: relative;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--gradient-primary);
   color: white;
   padding: 100px 120px 100px;
   text-align: center;
@@ -322,7 +417,7 @@ onUnmounted(() => {
   transform: translateY(calc(var(--parallax-y, 0) * -0.3));
 }
 
-/* 动态粒子背景 */
+/* 动态粒子背景 - 优化性能 */
 .hero-bg-effects {
   position: absolute;
   inset: 0;
@@ -334,54 +429,24 @@ onUnmounted(() => {
   position: absolute;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.1);
-  animation: float 6s ease-in-out infinite;
+  animation: particle-float 6s ease-in-out infinite;
+  will-change: transform;
+  transform: translateZ(0);
 }
 
 .p1 { width: 80px; height: 80px; top: 10%; left: 5%; animation-duration: 8s; animation-delay: 0s; }
 .p2 { width: 120px; height: 120px; top: 20%; right: 10%; animation-duration: 10s; animation-delay: 1s; background: rgba(255,255,255,0.08); }
 .p3 { width: 60px; height: 60px; top: 60%; left: 15%; animation-duration: 7s; animation-delay: 2s; }
 .p4 { width: 100px; height: 100px; bottom: 20%; right: 20%; animation-duration: 9s; animation-delay: 0.5s; background: rgba(255,255,255,0.06); }
-.p5 { width: 50px; height: 50px; top: 40%; left: 50%; animation-duration: 6s; animation-delay: 3s; }
-.p6 { width: 70px; height: 70px; bottom: 10%; left: 30%; animation-duration: 11s; animation-delay: 1.5s; background: rgba(255,255,255,0.09); }
-
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0) translateX(0) scale(1);
-    opacity: 0.6;
-  }
-  25% {
-    transform: translateY(-20px) translateX(10px) scale(1.05);
-    opacity: 0.8;
-  }
-  50% {
-    transform: translateY(-10px) translateX(-5px) scale(0.95);
-    opacity: 0.5;
-  }
-  75% {
-    transform: translateY(-30px) translateX(15px) scale(1.08);
-    opacity: 0.7;
-  }
-}
 
 /* 渐变叠加动画 */
 .hero-gradient-overlay {
   position: absolute;
   inset: 0;
-  background: radial-gradient(ellipse at 30% 50%, rgba(102, 126, 234, 0.3) 0%, transparent 50%),
-              radial-gradient(ellipse at 70% 50%, rgba(118, 75, 162, 0.3) 0%, transparent 50%);
-  animation: gradientShift 8s ease-in-out infinite alternate;
+  background: radial-gradient(ellipse at 30% 50%, rgba(79, 70, 229, 0.3) 0%, transparent 50%),
+              radial-gradient(ellipse at 70% 50%, rgba(124, 58, 237, 0.3) 0%, transparent 50%);
+  animation: gradient-shift 8s ease-in-out infinite alternate;
   pointer-events: none;
-}
-
-@keyframes gradientShift {
-  0% {
-    background: radial-gradient(ellipse at 30% 50%, rgba(102, 126, 234, 0.4) 0%, transparent 50%),
-                radial-gradient(ellipse at 70% 50%, rgba(118, 75, 162, 0.2) 0%, transparent 50%);
-  }
-  100% {
-    background: radial-gradient(ellipse at 70% 50%, rgba(102, 126, 234, 0.3) 0%, transparent 50%),
-                radial-gradient(ellipse at 30% 50%, rgba(118, 75, 162, 0.4) 0%, transparent 50%);
-  }
 }
 
 /* Hero内容 */
@@ -393,7 +458,7 @@ onUnmounted(() => {
   box-sizing: border-box;
   opacity: 0;
   transform: translateY(30px);
-  transition: opacity 0.8s ease, transform 0.8s ease;
+  transition: opacity var(--transition-slow), transform var(--transition-slow);
 }
 
 .hero-content.is-visible {
@@ -403,11 +468,11 @@ onUnmounted(() => {
 
 .hero-title {
   font-size: 52px;
-  font-weight: 800;
-  margin-bottom: 24px;
+  font-weight: var(--font-bold);
+  margin-bottom: var(--space-6);
   text-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
   letter-spacing: -1px;
-  line-height: 1.2;
+  line-height: var(--leading-tight);
   background: linear-gradient(90deg, #ffffff 0%, rgba(255,255,255,0.9) 50%, #ffffff 100%);
   background-size: 200% 100%;
   -webkit-background-clip: text;
@@ -416,65 +481,60 @@ onUnmounted(() => {
   animation: shimmer 3s ease-in-out infinite;
 }
 
-@keyframes shimmer {
-  0%, 100% { background-position: 100% center; }
-  50% { background-position: 0% center; }
-}
-
 .hero-subtitle {
-  font-size: 20px;
+  font-size: var(--text-xl);
   opacity: 0.95;
-  margin-bottom: 40px;
-  line-height: 1.7;
+  margin-bottom: var(--space-10);
+  line-height: var(--leading-relaxed);
   text-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
   min-height: 1.7em;
 }
 
 .hero-actions {
   display: flex;
-  gap: 24px;
+  gap: var(--space-6);
   justify-content: center;
-  margin-bottom: 50px;
+  margin-bottom: var(--space-12);
   flex-wrap: wrap;
 }
 
 .cta-button {
-  background: white;
-  color: #667eea;
-  font-size: 18px;
-  padding: 16px 52px;
-  border-radius: 30px;
-  font-weight: 600;
+  background: var(--color-surface);
+  color: var(--color-primary);
+  font-size: var(--text-lg);
+  padding: var(--space-4) var(--space-10);
+  border-radius: var(--radius-full);
+  font-weight: var(--font-semibold);
   border: none;
   white-space: nowrap;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  transition: all var(--transition-spring);
+  box-shadow: var(--shadow-lg);
   min-width: 160px;
 }
 
 .cta-button:hover {
-  transform: translateY(-3px) scale(1.02);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: var(--shadow-xl), var(--shadow-glow-primary);
 }
 
 .secondary-button {
   background: rgba(255, 255, 255, 0.15);
   color: white;
-  font-size: 18px;
-  padding: 16px 52px;
-  border-radius: 30px;
-  font-weight: 600;
+  font-size: var(--text-lg);
+  padding: var(--space-4) var(--space-10);
+  border-radius: var(--radius-full);
+  font-weight: var(--font-semibold);
   border: 2px solid rgba(255, 255, 255, 0.4);
   backdrop-filter: blur(10px);
   white-space: nowrap;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all var(--transition-spring);
   min-width: 160px;
 }
 
 .secondary-button:hover {
   background: rgba(255, 255, 255, 0.25);
   border-color: rgba(255, 255, 255, 0.6);
-  transform: translateY(-3px);
+  transform: translateY(-2px);
 }
 
 /* Hero统计数据 */
@@ -482,7 +542,7 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 30px;
+  gap: var(--space-6);
   opacity: 0.9;
 }
 
@@ -494,13 +554,13 @@ onUnmounted(() => {
 
 .stat-number {
   font-size: 28px;
-  font-weight: 800;
+  font-weight: var(--font-bold);
   line-height: 1;
-  margin-bottom: 4px;
+  margin-bottom: var(--space-1);
 }
 
 .stat-desc {
-  font-size: 13px;
+  font-size: var(--text-xs);
   opacity: 0.8;
 }
 
@@ -519,7 +579,7 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
   opacity: 0.7;
   animation: bounce 2s ease-in-out infinite;
   z-index: 2;
@@ -540,31 +600,26 @@ onUnmounted(() => {
   height: 8px;
   background: rgba(255, 255, 255, 0.8);
   border-radius: 2px;
-  animation: scrollWheel 2s ease-in-out infinite;
+  animation: scroll-wheel 2s ease-in-out infinite;
 }
 
-@keyframes scrollWheel {
+@keyframes scroll-wheel {
   0% { opacity: 1; transform: translateY(0); }
   100% { opacity: 0; transform: translateY(12px); }
 }
 
-@keyframes bounce {
-  0%, 100% { transform: translateX(-50%) translateY(0); }
-  50% { transform: translateX(-50%) translateY(8px); }
-}
-
 .scroll-indicator span {
-  font-size: 12px;
+  font-size: var(--text-xs);
   color: rgba(255, 255, 255, 0.8);
 }
 
 /* ===== Features区域 ===== */
 .features {
-  padding: 40px 40px 100px;
-  background: #f5f7fa;
+  padding: var(--space-10) var(--space-10) var(--space-24);
+  background: var(--color-background);
   opacity: 0;
   transform: translateY(40px);
-  transition: opacity 0.8s ease, transform 0.8s ease;
+  transition: opacity var(--transition-slow), transform var(--transition-slow);
 }
 
 .features.is-visible {
@@ -575,17 +630,17 @@ onUnmounted(() => {
 .container {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 0 40px;
+  padding: 0 var(--space-10);
   box-sizing: border-box;
 }
 
 .section-title {
   text-align: center;
-  font-size: 32px;
-  color: #2c3e50;
-  margin-bottom: 60px;
+  font-size: var(--text-3xl);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-12);
   position: relative;
-  font-weight: 700;
+  font-weight: var(--font-bold);
 }
 
 .section-title::after {
@@ -593,98 +648,87 @@ onUnmounted(() => {
   display: block;
   width: 60px;
   height: 4px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  margin: 16px auto 0;
-  border-radius: 2px;
+  background: var(--gradient-primary);
+  margin: var(--space-4) auto 0;
+  border-radius: var(--radius-sm);
 }
 
 .features-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 32px;
+  gap: var(--space-6);
 }
 
 .feature-card {
-  background: white;
-  border-radius: 16px;
-  padding: 48px 36px;
+  background: var(--color-surface);
+  border-radius: var(--radius-2xl);
+  padding: var(--space-10) var(--space-8);
   text-align: center;
   cursor: pointer;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  transition: all var(--transition-normal);
+  box-shadow: var(--shadow-sm);
   border: 1px solid transparent;
   animation: fadeInUp 0.6s ease both;
 }
 
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
 .feature-card:hover {
   transform: translateY(-10px);
-  box-shadow: 0 20px 50px rgba(102, 126, 234, 0.2);
-  border-color: rgba(102, 126, 234, 0.2);
+  box-shadow: var(--shadow-xl);
+  border-color: var(--color-primary-200);
 }
 
 .feature-icon-wrapper {
   width: 88px;
   height: 88px;
-  border-radius: 16px;
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+  border-radius: var(--radius-xl);
+  background: var(--color-primary-50);
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto 16px;
-  transition: all 0.3s ease;
+  margin: 0 auto var(--space-4);
+  transition: all var(--transition-normal);
 }
 
 .feature-card:hover .feature-icon-wrapper {
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%);
+  background: var(--color-primary-100);
   transform: scale(1.1);
 }
 
 .feature-icon {
   font-size: 44px;
-  color: #667eea;
+  color: var(--color-primary);
 }
 
 .feature-card h3 {
-  font-size: 20px;
-  color: #2c3e50;
-  margin-bottom: 12px;
-  font-weight: 600;
+  font-size: var(--text-xl);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-3);
+  font-weight: var(--font-semibold);
 }
 
 .feature-card p {
-  color: #606266;
-  line-height: 1.7;
-  margin-bottom: 20px;
-  font-size: 15px;
+  color: var(--color-text-secondary);
+  line-height: var(--leading-normal);
+  margin-bottom: var(--space-5);
+  font-size: var(--text-base);
 }
 
 .feature-link {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  font-size: 14px;
-  color: #667eea;
-  font-weight: 500;
-  transition: all 0.3s ease;
+  gap: var(--space-1);
+  font-size: var(--text-sm);
+  color: var(--color-primary);
+  font-weight: var(--font-medium);
+  transition: all var(--transition-normal);
 }
 
 .feature-card:hover .feature-link {
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .link-arrow {
-  transition: transform 0.3s ease;
+  transition: transform var(--transition-normal);
 }
 
 .feature-card:hover .link-arrow {
@@ -693,11 +737,11 @@ onUnmounted(() => {
 
 /* ===== Highlights区域 ===== */
 .highlights {
-  padding: 100px 120px;
-  background: white;
+  padding: var(--space-24) var(--space-24);
+  background: var(--color-surface);
   opacity: 0;
   transform: translateY(40px);
-  transition: opacity 0.8s ease, transform 0.8s ease;
+  transition: opacity var(--transition-slow), transform var(--transition-slow);
 }
 
 .highlights.is-visible {
@@ -708,7 +752,7 @@ onUnmounted(() => {
 .highlights-content {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 40px;
+  gap: var(--space-10);
 }
 
 .highlight-item {
@@ -720,41 +764,41 @@ onUnmounted(() => {
   width: 90px;
   height: 90px;
   border-radius: 50%;
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.08) 0%, rgba(118, 75, 162, 0.08) 100%);
+  background: var(--color-primary-50);
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto 12px;
-  transition: all 0.4s ease;
+  margin: 0 auto var(--space-3);
+  transition: all var(--transition-normal);
 }
 
 .highlight-item:hover .highlight-icon-wrapper {
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.15) 0%, rgba(118, 75, 162, 0.15) 100%);
+  background: var(--color-primary-100);
   transform: scale(1.1);
 }
 
 .highlight-item h4 {
-  margin: 0 0 8px;
-  color: #2c3e50;
-  font-size: 18px;
-  font-weight: 600;
+  margin: 0 0 var(--space-2);
+  color: var(--color-text-primary);
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
 }
 
 .highlight-item p {
-  color: #606266;
-  line-height: 1.7;
-  font-size: 14px;
+  color: var(--color-text-secondary);
+  line-height: var(--leading-normal);
+  font-size: var(--text-sm);
 }
 
 /* ===== CTA区域 ===== */
 .cta-section {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 80px 120px;
-  margin-bottom: 40px;
+  background: var(--gradient-primary);
+  padding: var(--space-20) var(--space-24);
+  margin-bottom: var(--space-10);
   text-align: center;
   opacity: 0;
   transform: translateY(30px);
-  transition: opacity 0.8s ease, transform 0.8s ease;
+  transition: opacity var(--transition-slow), transform var(--transition-slow);
 }
 
 .cta-section.is-visible {
@@ -765,38 +809,38 @@ onUnmounted(() => {
 .cta-content {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 20px;
+  padding: 0 var(--space-5);
   box-sizing: border-box;
 }
 
 .cta-content h2 {
   color: white;
-  font-size: 32px;
-  font-weight: 700;
-  margin-bottom: 16px;
+  font-size: var(--text-3xl);
+  font-weight: var(--font-bold);
+  margin-bottom: var(--space-4);
 }
 
 .cta-content p {
   color: rgba(255, 255, 255, 0.9);
-  font-size: 18px;
-  margin-bottom: 36px;
+  font-size: var(--text-lg);
+  margin-bottom: var(--space-8);
 }
 
 .cta-final-button {
-  background: white;
-  color: #667eea;
-  font-size: 18px;
-  padding: 16px 56px;
-  border-radius: 30px;
-  font-weight: 600;
+  background: var(--color-surface);
+  color: var(--color-primary);
+  font-size: var(--text-lg);
+  padding: var(--space-4) var(--space-12);
+  border-radius: var(--radius-full);
+  font-weight: var(--font-semibold);
   border: none;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: var(--shadow-lg);
+  transition: all var(--transition-spring);
 }
 
 .cta-final-button:hover {
-  transform: translateY(-3px) scale(1.02);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: var(--shadow-xl), var(--shadow-glow-primary);
 }
 
 /* ===== 返回顶部按钮 ===== */
@@ -807,15 +851,15 @@ onUnmounted(() => {
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: var(--gradient-primary);
   color: white;
   border: none;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  box-shadow: 0 4px 16px rgba(102, 126, 234, 0.4);
-  transition: all 0.3s ease;
+  box-shadow: var(--shadow-glow-primary);
+  transition: all var(--transition-normal);
   z-index: 999;
   opacity: 0;
   pointer-events: none;
@@ -828,198 +872,14 @@ onUnmounted(() => {
 
 .back-to-top:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 30px rgba(102, 126, 234, 0.5);
-}
-
-/* ===== 响应式设计 ===== */
-@media (max-width: 768px) {
-  .hero {
-    padding: 60px 20px 80px;
-  }
-
-  .hero-title {
-    font-size: 32px;
-  }
-
-  .hero-subtitle {
-    font-size: 16px;
-  }
-
-  .hero-actions {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .cta-button,
-  .secondary-button {
-    width: 100%;
-    max-width: 280px;
-    padding: 14px 32px;
-    font-size: 16px;
-  }
-
-  .hero-stats {
-    gap: 20px;
-  }
-
-  .stat-number {
-    font-size: 22px;
-  }
-
-  .section-title {
-    font-size: 26px;
-  }
-
-  .features-grid {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
-  }
-
-  .feature-card {
-    padding: 24px 20px;
-  }
-
-  .feature-icon-wrapper {
-    width: 64px;
-    height: 64px;
-  }
-
-  .feature-icon {
-    font-size: 32px;
-  }
-
-  .feature-card h3 {
-    font-size: 16px;
-  }
-
-  .feature-card p {
-    font-size: 13px;
-    line-height: 1.5;
-    margin-bottom: 12px;
-  }
-
-  .features {
-    padding: 60px 20px;
-  }
-
-  .highlights {
-    padding: 60px 20px;
-  }
-
-  .highlights-content {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 24px;
-  }
-
-  .highlight-icon-wrapper {
-    width: 72px;
-    height: 72px;
-  }
-
-  .highlight-item h4 {
-    font-size: 16px;
-  }
-
-  .highlight-item p {
-    font-size: 13px;
-  }
-
-  .cta-content h2 {
-    font-size: 24px;
-  }
-
-  .scroll-indicator {
-    display: none;
-  }
-
-  .cta-section {
-    padding: 60px 20px;
-  }
-}
-
-/* ===== 移动端单列布局 ===== */
-@media (max-width: 576px) {
-  .features-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .feature-card {
-    padding: 20px 16px;
-  }
-
-  .highlights-content {
-    grid-template-columns: 1fr;
-  }
-
-  .hero-stats {
-    gap: 16px;
-  }
-
-  .stat-number {
-    font-size: 20px;
-  }
-
-  .stat-divider {
-    height: 32px;
-  }
-}
-
-/* ===== 使用指南模态框样式 ===== */
-.guide-dialog .el-dialog__body {
-  max-height: 60vh;
-  overflow-y: auto;
-}
-
-.guide-content {
-  padding: 10px 0;
-}
-
-.guide-section {
-  margin-bottom: 24px;
-  padding: 16px;
-  background: #f5f7fa;
-  border-radius: 8px;
-}
-
-.guide-section:last-child {
-  margin-bottom: 0;
-}
-
-.guide-section h4 {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 16px;
-  font-weight: 600;
-  color: #2c3e50;
-  margin-bottom: 12px;
-}
-
-.guide-section .el-icon {
-  color: #667eea;
-  font-size: 18px;
-}
-
-.guide-section p,
-.guide-section ul,
-.guide-section ol {
-  margin: 0;
-  padding-left: 20px;
-  color: #606266;
-  font-size: 14px;
-  line-height: 1.8;
-}
-
-.guide-section li {
-  margin-bottom: 8px;
+  box-shadow: var(--shadow-xl), var(--shadow-glow-primary);
 }
 
 /* ===== 页脚样式 ===== */
 .site-footer {
-  background: #1a1a2e;
-  color: #fff;
-  padding: 120px 120px 0;
-  /* 抵消父容器 .app-main 的 padding，实现全宽效果 */
+  background: var(--color-text-primary);
+  color: white;
+  padding: var(--space-24) var(--space-24) 0;
   margin: 0 -20px;
   width: calc(100% + 40px);
   box-sizing: border-box;
@@ -1028,21 +888,20 @@ onUnmounted(() => {
 .footer-content {
   display: grid;
   grid-template-columns: 1.5fr 1fr 1fr 1fr;
-  gap: 40px;
-  padding-bottom: 40px;
+  gap: var(--space-10);
+  padding-bottom: var(--space-10);
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   max-width: 100%;
   box-sizing: border-box;
-  /* 移除container的限制，直接使用footer的120px padding全宽 */
   padding-left: 0;
   padding-right: 0;
 }
 
 .footer-brand h3 {
-  font-size: 20px;
-  font-weight: 700;
-  margin-bottom: 16px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  font-size: var(--text-xl);
+  font-weight: var(--font-bold);
+  margin-bottom: var(--space-4);
+  background: var(--gradient-primary);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -1050,17 +909,17 @@ onUnmounted(() => {
 
 .footer-brand p {
   color: rgba(255, 255, 255, 0.7);
-  font-size: 14px;
-  line-height: 1.7;
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
 }
 
 .footer-links h4,
 .footer-help h4,
 .footer-contact h4 {
-  font-size: 16px;
-  font-weight: 600;
-  margin-bottom: 20px;
-  color: #fff;
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  margin-bottom: var(--space-5);
+  color: white;
 }
 
 .footer-links ul,
@@ -1072,40 +931,40 @@ onUnmounted(() => {
 
 .footer-links li,
 .footer-help li {
-  margin-bottom: 12px;
+  margin-bottom: var(--space-3);
 }
 
 .footer-links a,
 .footer-help a {
   color: rgba(255, 255, 255, 0.7);
   text-decoration: none;
-  font-size: 14px;
-  transition: color 0.3s ease;
+  font-size: var(--text-sm);
+  transition: color var(--transition-fast);
 }
 
 .footer-links a:hover,
 .footer-help a:hover {
-  color: #667eea;
+  color: var(--color-primary-light);
 }
 
 .footer-contact p {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
   color: rgba(255, 255, 255, 0.7);
-  font-size: 14px;
-  margin-bottom: 12px;
+  font-size: var(--text-sm);
+  margin-bottom: var(--space-3);
 }
 
 .footer-contact .el-icon {
-  font-size: 16px;
-  color: #667eea;
+  font-size: var(--text-base);
+  color: var(--color-primary-light);
 }
 
 .social-links {
   display: flex;
-  gap: 12px;
-  margin-top: 16px;
+  gap: var(--space-3);
+  margin-top: var(--space-4);
 }
 
 .social-link {
@@ -1118,42 +977,175 @@ onUnmounted(() => {
   background: rgba(255, 255, 255, 0.1);
   color: rgba(255, 255, 255, 0.7);
   text-decoration: none;
-  transition: all 0.3s ease;
+  transition: all var(--transition-fast);
 }
 
 .social-link:hover {
-  background: #667eea;
+  background: var(--color-primary);
   color: white;
   transform: translateY(-2px);
 }
 
 .footer-bottom {
-  padding: 20px 0;
+  padding: var(--space-5) 0;
   text-align: center;
 }
 
 .footer-bottom p {
   color: rgba(255, 255, 255, 0.65);
-  font-size: 13px;
+  font-size: var(--text-xs);
   margin: 0;
+}
+
+/* ===== 响应式设计 ===== */
+@media (max-width: 768px) {
+  .hero {
+    padding: var(--space-12) var(--space-5) var(--space-16);
+  }
+
+  .hero-title {
+    font-size: var(--text-3xl);
+  }
+
+  .hero-subtitle {
+    font-size: var(--text-base);
+  }
+
+  .hero-actions {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .cta-button,
+  .secondary-button {
+    width: 100%;
+    max-width: 280px;
+    padding: var(--space-3) var(--space-8);
+    font-size: var(--text-base);
+  }
+
+  .hero-stats {
+    gap: var(--space-4);
+  }
+
+  .stat-number {
+    font-size: 22px;
+  }
+
+  .section-title {
+    font-size: var(--text-2xl);
+  }
+
+  .features-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-4);
+  }
+
+  .feature-card {
+    padding: var(--space-6) var(--space-5);
+  }
+
+  .feature-icon-wrapper {
+    width: 64px;
+    height: 64px;
+  }
+
+  .feature-icon {
+    font-size: 32px;
+  }
+
+  .feature-card h3 {
+    font-size: var(--text-base);
+  }
+
+  .feature-card p {
+    font-size: var(--text-xs);
+    line-height: var(--leading-tight);
+    margin-bottom: var(--space-3);
+  }
+
+  .features {
+    padding: var(--space-12) var(--space-5);
+  }
+
+  .highlights {
+    padding: var(--space-12) var(--space-5);
+  }
+
+  .highlights-content {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-6);
+  }
+
+  .highlight-icon-wrapper {
+    width: 72px;
+    height: 72px;
+  }
+
+  .highlight-item h4 {
+    font-size: var(--text-base);
+  }
+
+  .highlight-item p {
+    font-size: var(--text-xs);
+  }
+
+  .cta-content h2 {
+    font-size: var(--text-xl);
+  }
+
+  .scroll-indicator {
+    display: none;
+  }
+
+  .cta-section {
+    padding: var(--space-12) var(--space-5);
+  }
+}
+
+/* ===== 移动端单列布局 ===== */
+@media (max-width: 576px) {
+  .features-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .feature-card {
+    padding: var(--space-5) var(--space-4);
+  }
+
+  .highlights-content {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-stats {
+    gap: var(--space-4);
+  }
+
+  .stat-number {
+    font-size: var(--text-xl);
+  }
+
+  .stat-divider {
+    height: 32px;
+  }
 }
 
 /* ===== 页脚响应式设计 ===== */
 @media (max-width: 992px) {
   .footer-content {
     grid-template-columns: 1fr 1fr;
-    gap: 30px;
+    gap: var(--space-6);
   }
 }
 
 @media (max-width: 576px) {
   .site-footer {
-    padding: 40px 0 0;
+    padding: var(--space-10) 0 0;
   }
 
   .footer-content {
     grid-template-columns: 1fr;
-    gap: 30px;
+    gap: var(--space-6);
     text-align: center;
   }
 
@@ -1162,7 +1154,7 @@ onUnmounted(() => {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 8px 16px;
+    gap: var(--space-2) var(--space-4);
   }
 
   .footer-links li,

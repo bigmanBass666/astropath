@@ -2,26 +2,45 @@
   <div class="preference-collector">
     <div class="ai-avatar-section">
       <div class="ai-avatar">
-        <el-icon :size="48"><ChatDotRound /></el-icon>
+        <el-icon :size="48">
+          <ChatDotRound />
+        </el-icon>
       </div>
       <div class="ai-welcome">
         <h3>🤖 AI选校助手</h3>
-        <p class="ai-greeting">你好！我是你的专属选校顾问。</p>
+        <p class="ai-greeting">
+          你好！我是你的专属选校顾问。
+        </p>
       </div>
     </div>
 
-    <div class="background-summary" v-if="assessment">
-      <p class="summary-text">我已经了解了你的背景：</p>
+    <div
+      v-if="assessment"
+      class="background-summary"
+    >
+      <p class="summary-text">
+        我已经了解了你的背景：
+      </p>
       <div class="summary-tags">
-        <el-tag type="primary">GPA: {{ assessment.basic?.gpa || 'N/A' }}</el-tag>
-        <el-tag type="success">{{ getUniversityLabel(assessment.basic?.university) }}</el-tag>
-        <el-tag type="warning">均分: {{ assessment.academic?.averageScore || 'N/A' }}</el-tag>
-        <el-tag type="info">{{ assessment.academic?.degree || '本科' }}</el-tag>
+        <el-tag type="primary">
+          GPA: {{ assessment.basic?.gpa || 'N/A' }}
+        </el-tag>
+        <el-tag type="success">
+          {{ getUniversityLabel(assessment.basic?.university) }}
+        </el-tag>
+        <el-tag type="warning">
+          均分: {{ assessment.academic?.averageScore || 'N/A' }}
+        </el-tag>
+        <el-tag type="info">
+          {{ assessment.academic?.degree || '本科' }}
+        </el-tag>
       </div>
     </div>
 
     <div class="preference-form">
-      <p class="form-intro">为了给你最合适的推荐，请告诉我：</p>
+      <p class="form-intro">
+        为了给你最合适的推荐，请告诉我：
+      </p>
 
       <!-- 问题1: 最看重什么 -->
       <div class="form-item">
@@ -34,9 +53,9 @@
             v-for="option in priorityOptions"
             :key="option.value"
             :checked="selectedPriorities.includes(option.value)"
-            @change="togglePriority(option.value)"
             class="priority-tag"
             :class="{ 'is-checked': selectedPriorities.includes(option.value) }"
+            @change="togglePriority(option.value)"
           >
             <el-icon :size="16">
               <Trophy v-if="option.icon === 'Trophy'" />
@@ -59,9 +78,9 @@
         <div class="country-options">
           <el-check-tag
             :checked="excludedCountries.length === 0"
-            @change="clearExcludedCountries"
             class="country-tag"
             :class="{ 'is-checked': excludedCountries.length === 0 }"
+            @change="clearExcludedCountries"
           >
             无
           </el-check-tag>
@@ -69,9 +88,9 @@
             v-for="country in availableCountries"
             :key="country"
             :checked="excludedCountries.includes(country)"
-            @change="toggleCountry(country)"
             class="country-tag"
             :class="{ 'is-checked': excludedCountries.includes(country) }"
+            @change="toggleCountry(country)"
           >
             {{ country }}
           </el-check-tag>
@@ -98,10 +117,10 @@
       <el-button
         type="primary"
         size="large"
-        @click="submitPreferences"
         :loading="loading"
         :disabled="selectedPriorities.length === 0"
         class="submit-btn"
+        @click="submitPreferences"
       >
         <el-icon><MagicStick /></el-icon>
         开始智能推荐

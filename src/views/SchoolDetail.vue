@@ -1,21 +1,37 @@
 <template>
-  <div class="school-detail-page" ref="pageRoot">
+  <div
+    ref="pageRoot"
+    class="school-detail-page"
+  >
     <div class="school-detail-container">
       <!-- 返回按钮 -->
       <div class="detail-back">
-        <el-button @click="$router.back()" class="back-btn">
+        <el-button
+          class="back-btn"
+          @click="$router.back()"
+        >
           <el-icon><ArrowLeft /></el-icon>
           返回选校推荐
         </el-button>
       </div>
 
-      <div v-if="school" class="school-detail">
+      <div
+        v-if="school"
+        class="school-detail"
+      >
         <!-- 头部信息卡片 -->
         <div class="detail-header">
           <div class="header-left">
-            <h1 class="school-name">{{ school.name }}</h1>
+            <h1 class="school-name">
+              {{ school.name }}
+            </h1>
             <div class="school-meta">
-              <el-tag :type="getCountryTagType(school.country)" size="large">{{ school.country }}</el-tag>
+              <el-tag
+                :type="getCountryTagType(school.country)"
+                size="large"
+              >
+                {{ school.country }}
+              </el-tag>
               <span class="meta-separator">|</span>
               <span class="meta-item">{{ school.ranking }}</span>
               <span class="meta-separator">|</span>
@@ -23,11 +39,20 @@
             </div>
           </div>
           <div class="header-right">
-            <el-button type="warning" plain @click="toggleFavorite" v-if="!isFavorite">
+            <el-button
+              v-if="!isFavorite"
+              type="warning"
+              plain
+              @click="toggleFavorite"
+            >
               <el-icon><Star /></el-icon>
               收藏院校
             </el-button>
-            <el-button type="warning" @click="toggleFavorite" v-else>
+            <el-button
+              v-else
+              type="warning"
+              @click="toggleFavorite"
+            >
               <el-icon><StarFilled /></el-icon>
               已收藏
             </el-button>
@@ -38,15 +63,21 @@
         <div class="info-grid">
           <div class="info-card">
             <div class="info-card-header">
-              <el-icon class="info-icon"><OfficeBuilding /></el-icon>
+              <el-icon class="info-icon">
+                <OfficeBuilding />
+              </el-icon>
               <h3>院校概况</h3>
             </div>
             <div class="school-info-list">
               <p><strong>国家/地区：</strong>{{ school.country }}</p>
               <p><strong>世界排名：</strong>{{ school.ranking }}</p>
               <p><strong>专业方向：</strong>{{ school.major }}</p>
-              <p><strong>录取难度：</strong>
-                <el-tag :type="getDifficultyTagType(school.match)" size="small">
+              <p>
+                <strong>录取难度：</strong>
+                <el-tag
+                  :type="getDifficultyTagType(school.match)"
+                  size="small"
+                >
                   {{ getDifficultyText(school.match) }}
                 </el-tag>
               </p>
@@ -55,13 +86,17 @@
 
           <div class="info-card">
             <div class="info-card-header">
-              <el-icon class="info-icon"><Money /></el-icon>
+              <el-icon class="info-icon">
+                <Money />
+              </el-icon>
               <h3>学费与费用</h3>
             </div>
             <div class="school-info-list">
               <p><strong>预估学费：</strong>{{ school.tuition }}</p>
               <p><strong>录取率：</strong>{{ school.acceptanceRate }}</p>
-              <p class="info-note">* 费用仅供参考，具体以学校官方公布为准</p>
+              <p class="info-note">
+                * 费用仅供参考，具体以学校官方公布为准
+              </p>
             </div>
           </div>
         </div>
@@ -69,16 +104,25 @@
         <!-- 专业设置卡片 -->
         <div class="info-card programs-card">
           <div class="info-card-header">
-            <el-icon class="info-icon"><Collection /></el-icon>
+            <el-icon class="info-icon">
+              <Collection />
+            </el-icon>
             <h3>专业设置</h3>
           </div>
           <div class="programs-list">
             <div class="program-item">
               <div class="program-header">
                 <span class="program-name">{{ school.major }}</span>
-                <el-tag type="primary" size="small">热门专业</el-tag>
+                <el-tag
+                  type="primary"
+                  size="small"
+                >
+                  热门专业
+                </el-tag>
               </div>
-              <p class="program-desc">该院校在{{ school.major }}领域具有较强的学术实力和研究资源。</p>
+              <p class="program-desc">
+                该院校在{{ school.major }}领域具有较强的学术实力和研究资源。
+              </p>
               <div class="program-highlights">
                 <span class="highlight-item">
                   <el-icon><Opportunity /></el-icon>
@@ -92,13 +136,20 @@
         <!-- 申请要求卡片 -->
         <div class="info-card requirements-card">
           <div class="info-card-header">
-            <el-icon class="info-icon"><Document /></el-icon>
+            <el-icon class="info-icon">
+              <Document />
+            </el-icon>
             <h3>申请要求</h3>
           </div>
           <div class="requirements-list">
             <h4>学术要求</h4>
             <ul>
-              <li v-for="(req, idx) in school.requirements" :key="idx">{{ req }}</li>
+              <li
+                v-for="(req, idx) in school.requirements"
+                :key="idx"
+              >
+                {{ req }}
+              </li>
             </ul>
             <h4>其他要求</h4>
             <ul>
@@ -112,15 +163,28 @@
 
         <!-- 操作按钮 -->
         <div class="detail-actions">
-          <el-button type="primary" size="large" class="action-btn primary-btn" @click="goToRecommendation">
+          <el-button
+            type="primary"
+            size="large"
+            class="action-btn primary-btn"
+            @click="goToRecommendation"
+          >
             <el-icon><Search /></el-icon>
             查看匹配度分析
           </el-button>
-          <el-button size="large" class="action-btn" @click="goToTimeline">
+          <el-button
+            size="large"
+            class="action-btn"
+            @click="goToTimeline"
+          >
             <el-icon><Timer /></el-icon>
             添加到时间规划
           </el-button>
-          <el-button size="large" class="action-btn" @click="startChat">
+          <el-button
+            size="large"
+            class="action-btn"
+            @click="startChat"
+          >
             <el-icon><ChatDotRound /></el-icon>
             咨询AI顾问
           </el-button>
@@ -135,7 +199,12 @@
         sub-title="未找到对应的院校信息"
       >
         <template #extra>
-          <el-button type="primary" @click="$router.push('/university-database')">返回院校数据库</el-button>
+          <el-button
+            type="primary"
+            @click="$router.push('/university-database')"
+          >
+            返回院校数据库
+          </el-button>
         </template>
       </el-result>
     </div>
@@ -203,8 +272,7 @@ const getProgramHighlight = (major) => {
   const highlights = {
     'CS': '提供AI、系统、理论等多个研究方向',
     'Computer Science': '提供AI、系统、理论等多个研究方向',
-    'AI': '涵盖机器学习、计算机视觉、自然语言处理',
-    'Computer Science': '涵盖计算理论、软件工程、人工智能'
+    'AI': '涵盖机器学习、计算机视觉、自然语言处理'
   }
   return highlights[major] || '提供广泛的计算机科学课程和研究机会'
 }

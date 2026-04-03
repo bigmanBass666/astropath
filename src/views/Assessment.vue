@@ -1,53 +1,124 @@
 <template>
   <div class="assessment-page">
-    <h2 class="page-title">背景评估</h2>
+    <h2 class="page-title">
+      背景评估
+    </h2>
 
     <!-- 步骤指示器 -->
-    <el-steps :active="currentStep" finish-status="success" class="steps-indicator">
+    <el-steps
+      :active="currentStep"
+      finish-status="success"
+      class="steps-indicator"
+    >
       <el-step title="基础信息" />
       <el-step title="学术背景" />
       <el-step title="实践经历" />
     </el-steps>
 
     <!-- 步骤1：基础信息 -->
-    <el-card v-if="currentStep === 0" class="step-card">
+    <el-card
+      v-if="currentStep === 0"
+      class="step-card"
+    >
       <template #header>
         <span>学生基础信息</span>
       </template>
-      <el-form :model="form.basic" :rules="basicRules" ref="basicFormRef" label-width="120px">
-        <el-form-item label="姓名" prop="name">
-          <el-input v-model="form.basic.name" placeholder="请输入姓名" />
+      <el-form
+        ref="basicFormRef"
+        :model="form.basic"
+        :rules="basicRules"
+        label-width="120px"
+      >
+        <el-form-item
+          label="姓名"
+          prop="name"
+        >
+          <el-input
+            v-model="form.basic.name"
+            placeholder="请输入姓名"
+          />
         </el-form-item>
-        <el-form-item label="年龄" prop="age">
-          <el-input-number v-model="form.basic.age" :min="16" :max="50" />
+        <el-form-item
+          label="年龄"
+          prop="age"
+        >
+          <el-input-number
+            v-model="form.basic.age"
+            :min="16"
+            :max="50"
+          />
         </el-form-item>
-        <el-form-item label="在读院校" prop="university">
-          <el-select v-model="form.basic.university" placeholder="请选择或输入">
-            <el-option label="985院校" value="985" />
-            <el-option label="211院校" value="211" />
-            <el-option label="普通本科" value="regular" />
-            <el-option label="海外院校" value="overseas" />
+        <el-form-item
+          label="在读院校"
+          prop="university"
+        >
+          <el-select
+            v-model="form.basic.university"
+            placeholder="请选择或输入"
+          >
+            <el-option
+              label="985院校"
+              value="985"
+            />
+            <el-option
+              label="211院校"
+              value="211"
+            />
+            <el-option
+              label="普通本科"
+              value="regular"
+            />
+            <el-option
+              label="海外院校"
+              value="overseas"
+            />
           </el-select>
         </el-form-item>
-        <el-form-item label="GPA" prop="gpa">
-          <el-slider v-model="form.basic.gpa" :min="0" :max="4" :step="0.1" show-stops />
+        <el-form-item
+          label="GPA"
+          prop="gpa"
+        >
+          <el-slider
+            v-model="form.basic.gpa"
+            :min="0"
+            :max="4"
+            :step="0.1"
+            show-stops
+          />
           <span class="gpa-display">当前GPA: {{ form.basic.gpa.toFixed(1) }}</span>
         </el-form-item>
-        <el-form-item label="语言成绩" prop="language">
-          <el-input v-model="form.basic.language" placeholder="如：雅思7.0 / 托福100" />
+        <el-form-item
+          label="语言成绩"
+          prop="language"
+        >
+          <el-input
+            v-model="form.basic.language"
+            placeholder="如：雅思7.0 / 托福100"
+          />
         </el-form-item>
       </el-form>
       <div class="step-actions">
-        <el-button type="primary" @click="nextStep">下一步</el-button>
+        <el-button
+          type="primary"
+          @click="nextStep"
+        >
+          下一步
+        </el-button>
       </div>
     </el-card>
 
     <!-- 步骤2：学术背景 -->
-    <el-card v-if="currentStep === 1" class="step-card">
+    <el-card
+      v-if="currentStep === 1"
+      class="step-card"
+    >
       <template #header>
         <span>学术背景</span>
       </template>
-      <el-form :model="form.academic" label-width="120px">
+      <el-form
+        :model="form.academic"
+        label-width="120px"
+      >
         <el-form-item label="学历层次">
           <el-radio-group v-model="form.academic.degree">
             <el-radio-button label="本科" />
@@ -65,107 +136,271 @@
           </el-checkbox-group>
         </el-form-item>
         <el-form-item label="均分">
-          <el-input-number v-model="form.academic.averageScore" :min="0" :max="100" />
+          <el-input-number
+            v-model="form.academic.averageScore"
+            :min="0"
+            :max="100"
+          />
           <span class="score-display">/ 100</span>
         </el-form-item>
         <el-form-item label="科研经历">
-          <el-button type="primary" @click="openResearchDialog">+ 添加科研经历</el-button>
-          <div v-if="form.academic.research.length === 0" class="empty-tip" style="margin-left: 10px; display: inline-block; vertical-align: middle;">暂无科研经历，点击按钮添加</div>
-          <div v-for="(item, index) in form.academic.research" :key="index" class="list-item">
+          <el-button
+            type="primary"
+            @click="openResearchDialog"
+          >
+            + 添加科研经历
+          </el-button>
+          <div
+            v-if="form.academic.research.length === 0"
+            class="empty-tip"
+            style="margin-left: 10px; display: inline-block; vertical-align: middle;"
+          >
+            暂无科研经历，点击按钮添加
+          </div>
+          <div
+            v-for="(item, index) in form.academic.research"
+            :key="index"
+            class="list-item"
+          >
             <div class="item-content">
               <strong>{{ item.name }}</strong>
               <span class="item-role">{{ item.role }}</span>
               <span class="item-duration">{{ item.duration }}</span>
-              <span v-if="item.achievements" class="item-achievements">{{ item.achievements }}</span>
+              <span
+                v-if="item.achievements"
+                class="item-achievements"
+              >{{ item.achievements }}</span>
             </div>
             <div class="item-actions">
-              <el-button type="primary" size="small" @click="editResearch(index)">编辑</el-button>
-              <el-button type="danger" size="small" @click="removeResearch(index)">删除</el-button>
+              <el-button
+                type="primary"
+                size="small"
+                @click="editResearch(index)"
+              >
+                编辑
+              </el-button>
+              <el-button
+                type="danger"
+                size="small"
+                @click="removeResearch(index)"
+              >
+                删除
+              </el-button>
             </div>
           </div>
         </el-form-item>
       </el-form>
       <div class="step-actions">
-        <el-button @click="prevStep">上一步</el-button>
-        <el-button type="primary" @click="nextStep">下一步</el-button>
+        <el-button @click="prevStep">
+          上一步
+        </el-button>
+        <el-button
+          type="primary"
+          @click="nextStep"
+        >
+          下一步
+        </el-button>
       </div>
     </el-card>
 
     <!-- 步骤3：实践经历 -->
-    <el-card v-if="currentStep === 2" class="step-card">
+    <el-card
+      v-if="currentStep === 2"
+      class="step-card"
+    >
       <template #header>
         <span>实践经历</span>
       </template>
 
       <!-- Tab 标签页 -->
-      <el-tabs v-model="practiceTab" class="practice-tabs">
+      <el-tabs
+        v-model="practiceTab"
+        class="practice-tabs"
+      >
         <!-- 实习经历 Tab -->
-        <el-tab-pane label="实习经历" name="internship">
+        <el-tab-pane
+          label="实习经历"
+          name="internship"
+        >
           <div class="tab-header">
-            <el-button type="primary" @click="openInternshipDialog">+ 添加实习经历</el-button>
-            <div v-if="form.practice.internships.length === 0" class="empty-tip">暂无实习经历，点击按钮添加</div>
-            <div v-for="(item, index) in form.practice.internships" :key="'int-'+index" class="list-item enhanced">
+            <el-button
+              type="primary"
+              @click="openInternshipDialog"
+            >
+              + 添加实习经历
+            </el-button>
+            <div
+              v-if="form.practice.internships.length === 0"
+              class="empty-tip"
+            >
+              暂无实习经历，点击按钮添加
+            </div>
+            <div
+              v-for="(item, index) in form.practice.internships"
+              :key="'int-'+index"
+              class="list-item enhanced"
+            >
               <div class="item-content">
                 <div class="item-header">
                   <strong>{{ item.company }}</strong>
-                  <el-tag size="small" type="primary">{{ item.position }}</el-tag>
+                  <el-tag
+                    size="small"
+                    type="primary"
+                  >
+                    {{ item.position }}
+                  </el-tag>
                 </div>
                 <div class="item-meta">
-                  <span class="item-duration"><i class="el-icon-time"></i> {{ item.duration }}</span>
-                  <span v-if="item.description" class="item-desc">{{ item.description }}</span>
+                  <span class="item-duration"><i class="el-icon-time" /> {{ item.duration }}</span>
+                  <span
+                    v-if="item.description"
+                    class="item-desc"
+                  >{{ item.description }}</span>
                 </div>
               </div>
               <div class="item-actions">
-                <el-button type="primary" size="small" plain @click="editInternship(index)">编辑</el-button>
-                <el-button type="danger" size="small" plain @click="deleteInternship(index)">删除</el-button>
+                <el-button
+                  type="primary"
+                  size="small"
+                  plain
+                  @click="editInternship(index)"
+                >
+                  编辑
+                </el-button>
+                <el-button
+                  type="danger"
+                  size="small"
+                  plain
+                  @click="deleteInternship(index)"
+                >
+                  删除
+                </el-button>
               </div>
             </div>
           </div>
         </el-tab-pane>
 
         <!-- 竞赛获奖 Tab -->
-        <el-tab-pane label="竞赛获奖" name="competition">
+        <el-tab-pane
+          label="竞赛获奖"
+          name="competition"
+        >
           <div class="tab-header">
-            <el-button type="primary" @click="openCompetitionDialog">+ 添加竞赛获奖</el-button>
-            <div v-if="form.practice.competitions.length === 0" class="empty-tip">暂无竞赛记录，点击按钮添加</div>
-            <div v-for="(item, index) in form.practice.competitions" :key="'comp-'+index" class="list-item enhanced">
+            <el-button
+              type="primary"
+              @click="openCompetitionDialog"
+            >
+              + 添加竞赛获奖
+            </el-button>
+            <div
+              v-if="form.practice.competitions.length === 0"
+              class="empty-tip"
+            >
+              暂无竞赛记录，点击按钮添加
+            </div>
+            <div
+              v-for="(item, index) in form.practice.competitions"
+              :key="'comp-'+index"
+              class="list-item enhanced"
+            >
               <div class="item-content">
                 <div class="item-header">
                   <strong>{{ item.name }}</strong>
-                  <el-tag size="small" :type="getAwardLevelType(item.level)">{{ item.level }}</el-tag>
+                  <el-tag
+                    size="small"
+                    :type="getAwardLevelType(item.level)"
+                  >
+                    {{ item.level }}
+                  </el-tag>
                 </div>
                 <div class="item-meta">
-                  <span class="item-award"><i class="el-icon-medal"></i> {{ item.award }}</span>
-                  <span v-if="item.time" class="item-time">{{ item.time }}</span>
+                  <span class="item-award"><i class="el-icon-medal" /> {{ item.award }}</span>
+                  <span
+                    v-if="item.time"
+                    class="item-time"
+                  >{{ item.time }}</span>
                 </div>
               </div>
               <div class="item-actions">
-                <el-button type="primary" size="small" plain @click="editCompetition(index)">编辑</el-button>
-                <el-button type="danger" size="small" plain @click="deleteCompetition(index)">删除</el-button>
+                <el-button
+                  type="primary"
+                  size="small"
+                  plain
+                  @click="editCompetition(index)"
+                >
+                  编辑
+                </el-button>
+                <el-button
+                  type="danger"
+                  size="small"
+                  plain
+                  @click="deleteCompetition(index)"
+                >
+                  删除
+                </el-button>
               </div>
             </div>
           </div>
         </el-tab-pane>
 
         <!-- 志愿服务 Tab -->
-        <el-tab-pane label="志愿服务" name="volunteer">
+        <el-tab-pane
+          label="志愿服务"
+          name="volunteer"
+        >
           <div class="tab-header">
-            <el-button type="primary" @click="openVolunteerDialog">+ 添加志愿服务</el-button>
-            <div v-if="form.practice.volunteers.length === 0" class="empty-tip">暂无志愿服务记录，点击按钮添加</div>
-            <div v-for="(item, index) in form.practice.volunteers" :key="'vol-'+index" class="list-item enhanced">
+            <el-button
+              type="primary"
+              @click="openVolunteerDialog"
+            >
+              + 添加志愿服务
+            </el-button>
+            <div
+              v-if="form.practice.volunteers.length === 0"
+              class="empty-tip"
+            >
+              暂无志愿服务记录，点击按钮添加
+            </div>
+            <div
+              v-for="(item, index) in form.practice.volunteers"
+              :key="'vol-'+index"
+              class="list-item enhanced"
+            >
               <div class="item-content">
                 <div class="item-header">
                   <strong>{{ item.organization }}</strong>
-                  <el-tag size="small" type="success">{{ item.role }}</el-tag>
+                  <el-tag
+                    size="small"
+                    type="success"
+                  >
+                    {{ item.role }}
+                  </el-tag>
                 </div>
                 <div class="item-meta">
-                  <span class="item-duration"><i class="el-icon-time"></i> {{ item.duration }}</span>
-                  <span v-if="item.description" class="item-desc">{{ item.description }}</span>
+                  <span class="item-duration"><i class="el-icon-time" /> {{ item.duration }}</span>
+                  <span
+                    v-if="item.description"
+                    class="item-desc"
+                  >{{ item.description }}</span>
                 </div>
               </div>
               <div class="item-actions">
-                <el-button type="primary" size="small" plain @click="editVolunteer(index)">编辑</el-button>
-                <el-button type="danger" size="small" plain @click="deleteVolunteer(index)">删除</el-button>
+                <el-button
+                  type="primary"
+                  size="small"
+                  plain
+                  @click="editVolunteer(index)"
+                >
+                  编辑
+                </el-button>
+                <el-button
+                  type="danger"
+                  size="small"
+                  plain
+                  @click="deleteVolunteer(index)"
+                >
+                  删除
+                </el-button>
               </div>
             </div>
           </div>
@@ -173,7 +408,9 @@
       </el-tabs>
 
       <div class="step-actions">
-        <el-button @click="prevStep">上一步</el-button>
+        <el-button @click="prevStep">
+          上一步
+        </el-button>
         <el-dropdown
           v-if="providers.length > 0"
           trigger="click"
@@ -181,9 +418,13 @@
           @command="(cmd) => selectedProvider = cmd"
         >
           <el-button>
-            <el-icon style="margin-right: 6px;"><Cpu /></el-icon>
+            <el-icon style="margin-right: 6px;">
+              <Cpu />
+            </el-icon>
             {{ currentProviderName }}
-            <el-icon class="el-icon--right"><ArrowDown /></el-icon>
+            <el-icon class="el-icon--right">
+              <ArrowDown />
+            </el-icon>
           </el-button>
           <template #dropdown>
             <el-dropdown-menu>
@@ -198,76 +439,171 @@
             </el-dropdown-menu>
           </template>
         </el-dropdown>
-        <el-button v-else type="warning" @click="$router.push('/ai-config')">
-          <el-icon style="margin-right: 6px;"><Setting /></el-icon>
+        <el-button
+          v-else
+          type="warning"
+          @click="$router.push('/ai-config')"
+        >
+          <el-icon style="margin-right: 6px;">
+            <Setting />
+          </el-icon>
           配置AI模型
         </el-button>
-        <el-button type="primary" @click="generateReport" :loading="isLoading">生成评估报告</el-button>
+        <el-button
+          type="primary"
+          :loading="isLoading"
+          @click="generateReport"
+        >
+          生成评估报告
+        </el-button>
       </div>
     </el-card>
 
     <!-- 评估报告 -->
-    <el-card v-if="currentStep === 3" class="result-card">
+    <el-card
+      v-if="currentStep === 3"
+      class="result-card"
+    >
       <!-- 加载动画 -->
-      <div v-if="isLoading" class="loading-container">
-        <el-loading :fullscreen="true" tip="正在生成评估报告..."></el-loading>
+      <div
+        v-if="isLoading"
+        class="loading-container"
+      >
+        <el-loading
+          :fullscreen="true"
+          tip="正在生成评估报告..."
+        />
       </div>
 
-      <div v-if="!isLoading" class="report-content">
+      <div
+        v-if="!isLoading"
+        class="report-content"
+      >
         <!-- AI深度分析区域 - 置顶显示 -->
         <div class="ai-analysis-section ai-analysis-highlight">
           <div class="ai-header">
             <h4>
-              <el-icon style="margin-right: 8px;"><Cpu /></el-icon>
+              <el-icon style="margin-right: 8px;">
+                <Cpu />
+              </el-icon>
               AI深度分析
             </h4>
-            <el-tag v-if="isAiAnalyzing" type="warning" effect="dark">
-              <el-icon class="is-loading" style="margin-right: 4px;"><Loading /></el-icon>
+            <el-tag
+              v-if="isAiAnalyzing"
+              type="warning"
+              effect="dark"
+            >
+              <el-icon
+                class="is-loading"
+                style="margin-right: 4px;"
+              >
+                <Loading />
+              </el-icon>
               {{ aiContent ? '生成中...' : '思考中...' }}
             </el-tag>
-            <el-tag v-else-if="aiContent" type="success" effect="dark">分析完成</el-tag>
-            <el-tag v-else-if="aiError" type="danger" effect="dark">分析失败</el-tag>
-            <el-tag v-else type="info" effect="plain">等待分析</el-tag>
+            <el-tag
+              v-else-if="aiContent"
+              type="success"
+              effect="dark"
+            >
+              分析完成
+            </el-tag>
+            <el-tag
+              v-else-if="aiError"
+              type="danger"
+              effect="dark"
+            >
+              分析失败
+            </el-tag>
+            <el-tag
+              v-else
+              type="info"
+              effect="plain"
+            >
+              等待分析
+            </el-tag>
           </div>
           
           <!-- AI思考中提示 - 只在刚开始时显示 -->
-          <div v-if="isAiAnalyzing && !aiContent && !aiReasoning" class="ai-thinking">
+          <div
+            v-if="isAiAnalyzing && !aiContent && !aiReasoning"
+            class="ai-thinking"
+          >
             <div class="thinking-animation">
-              <div class="thinking-dot"></div>
-              <div class="thinking-dot"></div>
-              <div class="thinking-dot"></div>
+              <div class="thinking-dot" />
+              <div class="thinking-dot" />
+              <div class="thinking-dot" />
             </div>
-            <p class="thinking-text">AI正在启动深度分析...</p>
-            <p class="thinking-tip">思考型模型会先分析您的背景，再生成更有针对性的建议</p>
+            <p class="thinking-text">
+              AI正在启动深度分析...
+            </p>
+            <p class="thinking-tip">
+              思考型模型会先分析您的背景，再生成更有针对性的建议
+            </p>
           </div>
           
           <!-- 思考过程（可折叠) - 有内容就立即显示 -->
-          <div v-if="aiReasoning || (isAiAnalyzing && !aiContent)" class="ai-reasoning-section">
-            <div class="reasoning-header" @click="toggleReasoning">
+          <div
+            v-if="aiReasoning || (isAiAnalyzing && !aiContent)"
+            class="ai-reasoning-section"
+          >
+            <div
+              class="reasoning-header"
+              @click="toggleReasoning"
+            >
               <div class="reasoning-title">
                 <el-icon><Cpu /></el-icon>
                 <span>思考过程</span>
-                <el-tag size="small" type="info">{{ showReasoning ? '点击收起' : '点击展开' }}</el-tag>
-                <el-icon class="toggle-icon" :class="{ rotated: showReasoning }">
+                <el-tag
+                  size="small"
+                  type="info"
+                >
+                  {{ showReasoning ? '点击收起' : '点击展开' }}
+                </el-tag>
+                <el-icon
+                  class="toggle-icon"
+                  :class="{ rotated: showReasoning }"
+                >
                   <ArrowUp v-if="!showReasoning" />
                   <ArrowDown v-else />
                 </el-icon>
               </div>
             </div>
-            <div v-show="showReasoning" class="reasoning-content" ref="reasoningContentRef">
-              <div class="reasoning-text">{{ aiReasoning || '正在思考...' }}</div>
-              <span v-if="isAiAnalyzing && !aiContent" class="typing-cursor"></span>
+            <div
+              v-show="showReasoning"
+              ref="reasoningContentRef"
+              class="reasoning-content"
+            >
+              <div class="reasoning-text">
+                {{ aiReasoning || '正在思考...' }}
+              </div>
+              <span
+                v-if="isAiAnalyzing && !aiContent"
+                class="typing-cursor"
+              />
             </div>
           </div>
           
           <!-- AI分析内容 -->
-          <div v-if="aiContent || (isAiAnalyzing && aiContent)" class="ai-content">
-            <div class="ai-markdown" v-html="renderAiContent(aiContent)"></div>
-            <span v-if="isAiAnalyzing" class="typing-cursor"></span>
+          <div
+            v-if="aiContent || (isAiAnalyzing && aiContent)"
+            class="ai-content"
+          >
+            <div
+              class="ai-markdown"
+              v-html="renderAiContent(aiContent)"
+            />
+            <span
+              v-if="isAiAnalyzing"
+              class="typing-cursor"
+            />
           </div>
           
           <!-- 错误提示 -->
-          <div v-else-if="aiError" class="ai-error">
+          <div
+            v-else-if="aiError"
+            class="ai-error"
+          >
             <el-alert
               :title="getErrorTitle(aiError.type)"
               :description="aiError.message"
@@ -275,22 +611,38 @@
               show-icon
               :closable="false"
             />
-            <el-button type="primary" style="margin-top: 12px;" @click="retryAIAnalysis">
+            <el-button
+              type="primary"
+              style="margin-top: 12px;"
+              @click="retryAIAnalysis"
+            >
               重新分析
             </el-button>
           </div>
           
           <!-- 未开始分析提示 -->
-          <div v-else-if="!selectedProvider" class="ai-placeholder">
+          <div
+            v-else-if="!selectedProvider"
+            class="ai-placeholder"
+          >
             <el-empty description="未配置AI模型，无法进行深度分析">
-              <el-button type="primary" @click="$router.push('/ai-config')">去配置</el-button>
+              <el-button
+                type="primary"
+                @click="$router.push('/ai-config')"
+              >
+                去配置
+              </el-button>
             </el-empty>
           </div>
         </div>
 
         <!-- 评分概览 -->
         <div class="score-overview">
-          <el-rate v-model="overallScore" disabled :max="5" />
+          <el-rate
+            v-model="overallScore"
+            disabled
+            :max="5"
+          />
           <span class="score-text">竞争力总分: {{ overallScore.toFixed(1) }}/5.0</span>
         </div>
 
@@ -299,144 +651,350 @@
           <el-row :gutter="20">
             <el-col :span="12">
               <div class="analysis-card">
-                <h4><i class="el-icon-school"></i> GPA 评级</h4>
+                <h4><i class="el-icon-school" /> GPA 评级</h4>
                 <div class="gpa-analysis">
                   <span class="gpa-value">GPA: {{ form.basic.gpa.toFixed(1) }}</span>
-                  <span class="gpa-grade" :class="getGpaGradeClass(form.basic.gpa)">{{ getGpaGrade(form.basic.gpa) }}</span>
+                  <span
+                    class="gpa-grade"
+                    :class="getGpaGradeClass(form.basic.gpa)"
+                  >{{ getGpaGrade(form.basic.gpa) }}</span>
                 </div>
-                <p class="analysis-detail">{{ getGpaComment(form.basic.gpa, form.basic.university) }}</p>
+                <p class="analysis-detail">
+                  {{ getGpaComment(form.basic.gpa, form.basic.university) }}
+                </p>
               </div>
             </el-col>
             <el-col :span="12">
               <div class="analysis-card">
-                <h4><i class="el-icon-chat-line-round"></i> 语言成绩分析</h4>
+                <h4><i class="el-icon-chat-line-round" /> 语言成绩分析</h4>
                 <div class="language-analysis">
                   <span class="lang-text">{{ form.basic.language || '未填写' }}</span>
-                  <span class="lang-level" :class="getLanguageScoreClass()">{{ getLanguageLevel() }}</span>
+                  <span
+                    class="lang-level"
+                    :class="getLanguageScoreClass()"
+                  >{{ getLanguageLevel() }}</span>
                 </div>
-                <p class="analysis-detail">{{ getLanguageComment() }}</p>
+                <p class="analysis-detail">
+                  {{ getLanguageComment() }}
+                </p>
               </div>
             </el-col>
           </el-row>
         </div>
 
-        <div class="radar-chart" ref="radarRef" style="height: 400px;"></div>
+        <div
+          ref="radarRef"
+          class="radar-chart"
+          style="height: 400px;"
+        />
         
 
         
         <div class="report-details">
           <h4>详细分析</h4>
           <ul>
-            <li><strong>学术能力：</strong>{{ academicScore.toFixed(1) }}/5
+            <li>
+              <strong>学术能力：</strong>{{ academicScore.toFixed(1) }}/5
               <span class="score-comment">{{ getAcademicComment() }}</span>
             </li>
-            <li><strong>语言能力：</strong>{{ languageScore.toFixed(1) }}/5
+            <li>
+              <strong>语言能力：</strong>{{ languageScore.toFixed(1) }}/5
               <span class="score-comment">{{ getLanguageComment() }}</span>
             </li>
-            <li><strong>科研经历：</strong>{{ researchScore.toFixed(1) }}/5
+            <li>
+              <strong>科研经历：</strong>{{ researchScore.toFixed(1) }}/5
               <span class="score-comment">{{ getResearchComment() }}</span>
             </li>
-            <li><strong>实践背景：</strong>{{ practiceScore.toFixed(1) }}/5
+            <li>
+              <strong>实践背景：</strong>{{ practiceScore.toFixed(1) }}/5
               <span class="score-comment">{{ getPracticeComment() }}</span>
             </li>
           </ul>
         </div>
       </div>
-      <div v-if="!isLoading" class="step-actions">
-        <el-button type="primary" @click="saveReport">保存评估结果</el-button>
-        <el-button @click="resetForm">重新填写</el-button>
+      <div
+        v-if="!isLoading"
+        class="step-actions"
+      >
+        <el-button
+          type="primary"
+          @click="saveReport"
+        >
+          保存评估结果
+        </el-button>
+        <el-button @click="resetForm">
+          重新填写
+        </el-button>
       </div>
     </el-card>
     <!-- 科研经历模态框 -->
-    <el-dialog v-model="researchDialogVisible" :title="isEditingResearch ? '编辑科研经历' : '添加科研经历'" width="500px">
-      <el-form :model="currentResearch" :rules="researchRules" ref="researchFormRef" label-width="100px">
-        <el-form-item label="项目名称" prop="name">
-          <el-input v-model="currentResearch.name" placeholder="请输入项目名称" />
+    <el-dialog
+      v-model="researchDialogVisible"
+      :title="isEditingResearch ? '编辑科研经历' : '添加科研经历'"
+      width="500px"
+    >
+      <el-form
+        ref="researchFormRef"
+        :model="currentResearch"
+        :rules="researchRules"
+        label-width="100px"
+      >
+        <el-form-item
+          label="项目名称"
+          prop="name"
+        >
+          <el-input
+            v-model="currentResearch.name"
+            placeholder="请输入项目名称"
+          />
         </el-form-item>
-        <el-form-item label="担任角色" prop="role">
-          <el-input v-model="currentResearch.role" placeholder="如：项目负责人、核心成员、参与者" />
+        <el-form-item
+          label="担任角色"
+          prop="role"
+        >
+          <el-input
+            v-model="currentResearch.role"
+            placeholder="如：项目负责人、核心成员、参与者"
+          />
         </el-form-item>
-        <el-form-item label="项目时长" prop="duration">
-          <el-input v-model="currentResearch.duration" placeholder="如：3个月、半年、1年" />
+        <el-form-item
+          label="项目时长"
+          prop="duration"
+        >
+          <el-input
+            v-model="currentResearch.duration"
+            placeholder="如：3个月、半年、1年"
+          />
         </el-form-item>
-        <el-form-item label="项目成果" prop="achievements">
-          <el-input v-model="currentResearch.achievements" type="textarea" :rows="3" placeholder="描述项目成果、发表论文、获奖情况等" />
+        <el-form-item
+          label="项目成果"
+          prop="achievements"
+        >
+          <el-input
+            v-model="currentResearch.achievements"
+            type="textarea"
+            :rows="3"
+            placeholder="描述项目成果、发表论文、获奖情况等"
+          />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="closeResearchDialog">取消</el-button>
-        <el-button type="primary" @click="saveResearch">保存</el-button>
+        <el-button @click="closeResearchDialog">
+          取消
+        </el-button>
+        <el-button
+          type="primary"
+          @click="saveResearch"
+        >
+          保存
+        </el-button>
       </template>
     </el-dialog>
 
     <!-- 实习经历模态框 -->
-    <el-dialog v-model="internshipDialogVisible" :title="isEditingInternship ? '编辑实习经历' : '添加实习经历'" width="500px">
-      <el-form :model="currentInternship" :rules="internshipRules" ref="internshipFormRef" label-width="100px">
-        <el-form-item label="公司名称" prop="company">
-          <el-input v-model="currentInternship.company" placeholder="请输入公司名称" />
+    <el-dialog
+      v-model="internshipDialogVisible"
+      :title="isEditingInternship ? '编辑实习经历' : '添加实习经历'"
+      width="500px"
+    >
+      <el-form
+        ref="internshipFormRef"
+        :model="currentInternship"
+        :rules="internshipRules"
+        label-width="100px"
+      >
+        <el-form-item
+          label="公司名称"
+          prop="company"
+        >
+          <el-input
+            v-model="currentInternship.company"
+            placeholder="请输入公司名称"
+          />
         </el-form-item>
-        <el-form-item label="职位名称" prop="position">
-          <el-input v-model="currentInternship.position" placeholder="如：前端工程师实习生、数据分析实习生" />
+        <el-form-item
+          label="职位名称"
+          prop="position"
+        >
+          <el-input
+            v-model="currentInternship.position"
+            placeholder="如：前端工程师实习生、数据分析实习生"
+          />
         </el-form-item>
-        <el-form-item label="实习时长" prop="duration">
-          <el-input v-model="currentInternship.duration" placeholder="如：3个月、6个月、1年" />
+        <el-form-item
+          label="实习时长"
+          prop="duration"
+        >
+          <el-input
+            v-model="currentInternship.duration"
+            placeholder="如：3个月、6个月、1年"
+          />
         </el-form-item>
-        <el-form-item label="工作描述" prop="description">
-          <el-input v-model="currentInternship.description" type="textarea" :rows="3" placeholder="简要描述工作内容和收获（可选）" />
+        <el-form-item
+          label="工作描述"
+          prop="description"
+        >
+          <el-input
+            v-model="currentInternship.description"
+            type="textarea"
+            :rows="3"
+            placeholder="简要描述工作内容和收获（可选）"
+          />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="closeInternshipDialog">取消</el-button>
-        <el-button type="primary" @click="saveInternship">保存</el-button>
+        <el-button @click="closeInternshipDialog">
+          取消
+        </el-button>
+        <el-button
+          type="primary"
+          @click="saveInternship"
+        >
+          保存
+        </el-button>
       </template>
     </el-dialog>
 
     <!-- 竞赛获奖模态框 -->
-    <el-dialog v-model="competitionDialogVisible" :title="isEditingCompetition ? '编辑竞赛记录' : '添加竞赛获奖'" width="500px">
-      <el-form :model="currentCompetition" :rules="competitionRules" ref="competitionFormRef" label-width="100px">
-        <el-form-item label="竞赛名称" prop="name">
-          <el-input v-model="currentCompetition.name" placeholder="请输入竞赛名称" />
+    <el-dialog
+      v-model="competitionDialogVisible"
+      :title="isEditingCompetition ? '编辑竞赛记录' : '添加竞赛获奖'"
+      width="500px"
+    >
+      <el-form
+        ref="competitionFormRef"
+        :model="currentCompetition"
+        :rules="competitionRules"
+        label-width="100px"
+      >
+        <el-form-item
+          label="竞赛名称"
+          prop="name"
+        >
+          <el-input
+            v-model="currentCompetition.name"
+            placeholder="请输入竞赛名称"
+          />
         </el-form-item>
-        <el-form-item label="竞赛级别" prop="level">
-          <el-select v-model="currentCompetition.level" placeholder="请选择级别">
-            <el-option label="国家级" value="国家级" />
-            <el-option label="省级" value="省级" />
-            <el-option label="校级" value="校级" />
-            <el-option label="其他" value="其他" />
+        <el-form-item
+          label="竞赛级别"
+          prop="level"
+        >
+          <el-select
+            v-model="currentCompetition.level"
+            placeholder="请选择级别"
+          >
+            <el-option
+              label="国家级"
+              value="国家级"
+            />
+            <el-option
+              label="省级"
+              value="省级"
+            />
+            <el-option
+              label="校级"
+              value="校级"
+            />
+            <el-option
+              label="其他"
+              value="其他"
+            />
           </el-select>
         </el-form-item>
-        <el-form-item label="获奖情况" prop="award">
-          <el-input v-model="currentCompetition.award" placeholder="如：一等奖、银奖、优秀奖" />
+        <el-form-item
+          label="获奖情况"
+          prop="award"
+        >
+          <el-input
+            v-model="currentCompetition.award"
+            placeholder="如：一等奖、银奖、优秀奖"
+          />
         </el-form-item>
-        <el-form-item label="参赛时间" prop="time">
-          <el-input v-model="currentCompetition.time" placeholder="如：2024年3月（可选）" />
+        <el-form-item
+          label="参赛时间"
+          prop="time"
+        >
+          <el-input
+            v-model="currentCompetition.time"
+            placeholder="如：2024年3月（可选）"
+          />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="closeCompetitionDialog">取消</el-button>
-        <el-button type="primary" @click="saveCompetition">保存</el-button>
+        <el-button @click="closeCompetitionDialog">
+          取消
+        </el-button>
+        <el-button
+          type="primary"
+          @click="saveCompetition"
+        >
+          保存
+        </el-button>
       </template>
     </el-dialog>
 
     <!-- 志愿服务模态框 -->
-    <el-dialog v-model="volunteerDialogVisible" :title="isEditingVolunteer ? '编辑志愿服务' : '添加志愿服务'" width="500px">
-      <el-form :model="currentVolunteer" :rules="volunteerRules" ref="volunteerFormRef" label-width="100px">
-        <el-form-item label="组织名称" prop="organization">
-          <el-input v-model="currentVolunteer.organization" placeholder="请输入服务组织名称" />
+    <el-dialog
+      v-model="volunteerDialogVisible"
+      :title="isEditingVolunteer ? '编辑志愿服务' : '添加志愿服务'"
+      width="500px"
+    >
+      <el-form
+        ref="volunteerFormRef"
+        :model="currentVolunteer"
+        :rules="volunteerRules"
+        label-width="100px"
+      >
+        <el-form-item
+          label="组织名称"
+          prop="organization"
+        >
+          <el-input
+            v-model="currentVolunteer.organization"
+            placeholder="请输入服务组织名称"
+          />
         </el-form-item>
-        <el-form-item label="志愿岗位" prop="role">
-          <el-input v-model="currentVolunteer.role" placeholder="如：活动志愿者、支教老师、社区服务" />
+        <el-form-item
+          label="志愿岗位"
+          prop="role"
+        >
+          <el-input
+            v-model="currentVolunteer.role"
+            placeholder="如：活动志愿者、支教老师、社区服务"
+          />
         </el-form-item>
-        <el-form-item label="服务时长" prop="duration">
-          <el-input v-model="currentVolunteer.duration" placeholder="如：20小时、1个月" />
+        <el-form-item
+          label="服务时长"
+          prop="duration"
+        >
+          <el-input
+            v-model="currentVolunteer.duration"
+            placeholder="如：20小时、1个月"
+          />
         </el-form-item>
-        <el-form-item label="服务描述" prop="description">
-          <el-input v-model="currentVolunteer.description" type="textarea" :rows="3" placeholder="简要描述服务内容和感受（可选）" />
+        <el-form-item
+          label="服务描述"
+          prop="description"
+        >
+          <el-input
+            v-model="currentVolunteer.description"
+            type="textarea"
+            :rows="3"
+            placeholder="简要描述服务内容和感受（可选）"
+          />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="closeVolunteerDialog">取消</el-button>
-        <el-button type="primary" @click="saveVolunteer">保存</el-button>
+        <el-button @click="closeVolunteerDialog">
+          取消
+        </el-button>
+        <el-button
+          type="primary"
+          @click="saveVolunteer"
+        >
+          保存
+        </el-button>
       </template>
     </el-dialog>
   </div>

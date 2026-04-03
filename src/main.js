@@ -6,6 +6,11 @@ import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 import App from './App.vue'
 import './styles/index.css'
 
+// 设计系统样式
+import './styles/variables.css'
+import './styles/animations.css'
+import './styles/utilities.css'
+
 // 路由配置
 const routes = [
   {

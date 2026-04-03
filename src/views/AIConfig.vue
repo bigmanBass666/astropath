@@ -1,39 +1,118 @@
 <template>
   <div class="ai-config-page">
-    <h2 class="page-title">AI配置管理</h2>
+    <h2 class="page-title">
+      AI配置管理
+    </h2>
     <el-card class="config-card">
       <template #header>
         <span>AI供应商配置</span>
-        <el-button type="primary" size="small" style="margin-left: 12px;" @click="testAllConnections">测试全部连接</el-button>
+        <el-button
+          type="primary"
+          size="small"
+          style="margin-left: 12px;"
+          @click="testAllConnections"
+        >
+          测试全部连接
+        </el-button>
       </template>
 
-      <el-table :data="providers" style="width: 100%" class="providers-table">
-        <el-table-column prop="name" label="供应商名称" min-width="150" />
-        <el-table-column prop="type" label="类型" min-width="100">
+      <el-table
+        :data="providers"
+        style="width: 100%"
+        class="providers-table"
+      >
+        <el-table-column
+          prop="name"
+          label="供应商名称"
+          min-width="150"
+        />
+        <el-table-column
+          prop="type"
+          label="类型"
+          min-width="100"
+        >
           <template #default="{ row }">
             <el-tag>{{ row.type }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="baseUrl" label="Base URL" min-width="320" show-overflow-tooltip />
-        <el-table-column prop="apiKey" label="API Key" min-width="140">
+        <el-table-column
+          prop="baseUrl"
+          label="Base URL"
+          min-width="320"
+          show-overflow-tooltip
+        />
+        <el-table-column
+          prop="apiKey"
+          label="API Key"
+          min-width="140"
+        >
           <template #default="{ row }">
             {{ '*'.repeat(row.apiKey?.length || 0) }}
           </template>
         </el-table-column>
-        <el-table-column prop="model" label="模型名称" min-width="140" show-overflow-tooltip />
-        <el-table-column prop="status" label="状态" min-width="90">
+        <el-table-column
+          prop="model"
+          label="模型名称"
+          min-width="140"
+          show-overflow-tooltip
+        />
+        <el-table-column
+          prop="status"
+          label="状态"
+          min-width="90"
+        >
           <template #default="{ row }">
-            <el-tag v-if="row.status === 'testing'" type="warning">测试中</el-tag>
-            <el-tag v-else-if="row.status === 'connected'" type="success">已连接</el-tag>
-            <el-tag v-else-if="row.status === 'error'" type="danger">连接失败</el-tag>
-            <el-tag v-else type="info">未测试</el-tag>
+            <el-tag
+              v-if="row.status === 'testing'"
+              type="warning"
+            >
+              测试中
+            </el-tag>
+            <el-tag
+              v-else-if="row.status === 'connected'"
+              type="success"
+            >
+              已连接
+            </el-tag>
+            <el-tag
+              v-else-if="row.status === 'error'"
+              type="danger"
+            >
+              连接失败
+            </el-tag>
+            <el-tag
+              v-else
+              type="info"
+            >
+              未测试
+            </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" min-width="210">
+        <el-table-column
+          label="操作"
+          min-width="210"
+        >
           <template #default="{ row, $index }">
-            <el-button size="small" @click="editProvider($index)">编辑</el-button>
-            <el-button size="small" type="danger" @click="removeProvider($index)">删除</el-button>
-            <el-button size="small" type="primary" @click="testConnection($index)">测试</el-button>
+            <el-button
+              size="small"
+              @click="editProvider($index)"
+            >
+              编辑
+            </el-button>
+            <el-button
+              size="small"
+              type="danger"
+              @click="removeProvider($index)"
+            >
+              删除
+            </el-button>
+            <el-button
+              size="small"
+              type="primary"
+              @click="testConnection($index)"
+            >
+              测试
+            </el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -45,7 +124,10 @@
         推荐评委使用下方一键配置，直接连接AI服务
       </div>
       <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-        <el-button type="primary" @click="addZhipuPreset">
+        <el-button
+          type="primary"
+          @click="addZhipuPreset"
+        >
           一键配置智谱 GLM-4.7-Flash
         </el-button>
       </div>
@@ -53,59 +135,125 @@
       <el-divider />
 
       <h4>自定义配置</h4>
-      <el-form :model="newProvider" label-width="120px" class="provider-form">
+      <el-form
+        :model="newProvider"
+        label-width="120px"
+        class="provider-form"
+      >
         <el-form-item label="供应商名称">
-          <el-input v-model="newProvider.name" placeholder="如：OpenAI、Anthropic" />
+          <el-input
+            v-model="newProvider.name"
+            placeholder="如：OpenAI、Anthropic"
+          />
         </el-form-item>
         <el-form-item label="类型">
-          <el-select v-model="newProvider.type" placeholder="选择类型">
-            <el-option label="OpenAI" value="openai" />
-            <el-option label="Anthropic" value="anthropic" />
-            <el-option label="国内供应商" value="domestic" />
-            <el-option label="其他" value="other" />
+          <el-select
+            v-model="newProvider.type"
+            placeholder="选择类型"
+          >
+            <el-option
+              label="OpenAI"
+              value="openai"
+            />
+            <el-option
+              label="Anthropic"
+              value="anthropic"
+            />
+            <el-option
+              label="国内供应商"
+              value="domestic"
+            />
+            <el-option
+              label="其他"
+              value="other"
+            />
           </el-select>
         </el-form-item>
         <el-form-item label="Base URL">
-          <el-input v-model="newProvider.baseUrl" placeholder="https://api.openai.com/v1" />
+          <el-input
+            v-model="newProvider.baseUrl"
+            placeholder="https://api.openai.com/v1"
+          />
         </el-form-item>
         <el-form-item label="API Key">
-          <el-input v-model="newProvider.apiKey" type="password" placeholder="sk-..." />
+          <el-input
+            v-model="newProvider.apiKey"
+            type="password"
+            placeholder="sk-..."
+          />
         </el-form-item>
         <el-form-item label="模型名称">
-          <el-input v-model="newProvider.model" placeholder="gpt-4, glm-4-flash等" />
+          <el-input
+            v-model="newProvider.model"
+            placeholder="gpt-4, glm-4-flash等"
+          />
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="addProvider">保存配置</el-button>
+          <el-button
+            type="primary"
+            @click="addProvider"
+          >
+            保存配置
+          </el-button>
         </el-form-item>
       </el-form>
     </el-card>
 
-    <el-dialog v-model="editVisible" title="编辑供应商" width="50%">
-      <el-form :model="editingProvider" label-width="120px">
+    <el-dialog
+      v-model="editVisible"
+      title="编辑供应商"
+      width="50%"
+    >
+      <el-form
+        :model="editingProvider"
+        label-width="120px"
+      >
         <el-form-item label="供应商名称">
           <el-input v-model="editingProvider.name" />
         </el-form-item>
         <el-form-item label="类型">
           <el-select v-model="editingProvider.type">
-            <el-option label="OpenAI" value="openai" />
-            <el-option label="Anthropic" value="anthropic" />
-            <el-option label="国内供应商" value="domestic" />
-            <el-option label="其他" value="other" />
+            <el-option
+              label="OpenAI"
+              value="openai"
+            />
+            <el-option
+              label="Anthropic"
+              value="anthropic"
+            />
+            <el-option
+              label="国内供应商"
+              value="domestic"
+            />
+            <el-option
+              label="其他"
+              value="other"
+            />
           </el-select>
         </el-form-item>
         <el-form-item label="Base URL">
           <el-input v-model="editingProvider.baseUrl" />
         </el-form-item>
         <el-form-item label="API Key">
-          <el-input v-model="editingProvider.apiKey" type="password" />
+          <el-input
+            v-model="editingProvider.apiKey"
+            type="password"
+          />
         </el-form-item>
         <el-form-item label="模型名称">
           <el-input v-model="editingProvider.model" />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="editVisible = false">取消</el-button>
-        <el-button type="primary" @click="saveEdit">保存</el-button>
+        <el-button @click="editVisible = false">
+          取消
+        </el-button>
+        <el-button
+          type="primary"
+          @click="saveEdit"
+        >
+          保存
+        </el-button>
       </template>
     </el-dialog>
   </div>

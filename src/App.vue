@@ -1,9 +1,20 @@
 <template>
-  <el-container class="app-container" :class="{ 'is-immersive': isImmersivePage }">
-    <el-header class="app-header" v-if="!isImmersivePage">
+  <el-container
+    class="app-container"
+    :class="{ 'is-immersive': isImmersivePage }"
+  >
+    <el-header
+      v-if="!isImmersivePage"
+      class="app-header"
+    >
       <div class="header-content">
-        <div class="logo" @click="$router.push('/')">
-          <el-icon class="logo-icon"><Briefcase /></el-icon>
+        <div
+          class="logo"
+          @click="$router.push('/')"
+        >
+          <el-icon class="logo-icon">
+            <Briefcase />
+          </el-icon>
           <span class="logo-text">智途 AstroPath</span>
         </div>
         <!-- 桌面端导航菜单 -->
@@ -16,24 +27,38 @@
             v-for="item in menuItems"
             :key="item.path"
             :index="item.path"
-            @click="$router.push(item.path)"
             :class="{ 'is-active': activeMenu === item.path }"
-          >{{ item.name }}</el-menu-item>
+            @click="$router.push(item.path)"
+          >
+            {{ item.name }}
+          </el-menu-item>
         </el-menu>
         <!-- 移动端汉堡菜单按钮 -->
-        <button class="hamburger-btn" @click="mobileMenuVisible = true" aria-label="打开菜单">
-          <el-icon :size="24"><Expand /></el-icon>
+        <button
+          class="hamburger-btn"
+          aria-label="打开菜单"
+          @click="mobileMenuVisible = true"
+        >
+          <el-icon :size="24">
+            <Expand />
+          </el-icon>
         </button>
       </div>
     </el-header>
     <el-main class="app-main">
       <router-view v-slot="{ Component }">
-        <transition name="fade" mode="out-in">
+        <transition
+          name="fade"
+          mode="out-in"
+        >
           <component :is="Component" />
         </transition>
       </router-view>
     </el-main>
-    <footer class="app-footer" v-if="!isImmersivePage && !isHomePage">
+    <footer
+      v-if="!isImmersivePage && !isHomePage"
+      class="app-footer"
+    >
       <div class="footer-container">
         <div class="footer-content">
           <div class="footer-brand">
@@ -54,9 +79,19 @@
           <div class="footer-help">
             <h4>帮助支持</h4>
             <ul>
-              <li><a href="#" @click.prevent="showGuide">使用指南</a></li>
+              <li>
+                <a
+                  href="#"
+                  @click.prevent="showGuide"
+                >使用指南</a>
+              </li>
               <li><a href="#">常见问题</a></li>
-              <li><a href="#" @click.prevent="showContact">联系我们</a></li>
+              <li>
+                <a
+                  href="#"
+                  @click.prevent="showContact"
+                >联系我们</a>
+              </li>
             </ul>
           </div>
           <div class="footer-contact">
@@ -64,13 +99,32 @@
             <p><el-icon><Message /></el-icon> support@astropath.com</p>
             <p><el-icon><Phone /></el-icon> 400-123-4567</p>
             <div class="social-links">
-              <a href="https://github.com/bigmanBass666" target="_blank" rel="noopener noreferrer" class="social-link github-link" title="GitHub">
-                <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
-                  <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
+              <a
+                href="https://github.com/bigmanBass666"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="social-link github-link"
+                title="GitHub"
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  width="18"
+                  height="18"
+                >
+                  <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z" />
                 </svg>
               </a>
-              <a href="#" class="social-link" title="微信"><el-icon><ChatDotRound /></el-icon></a>
-              <a href="#" class="social-link" title="微博"><el-icon><Platform /></el-icon></a>
+              <a
+                href="#"
+                class="social-link"
+                title="微信"
+              ><el-icon><ChatDotRound /></el-icon></a>
+              <a
+                href="#"
+                class="social-link"
+                title="微博"
+              ><el-icon><Platform /></el-icon></a>
             </div>
           </div>
         </div>
@@ -91,8 +145,14 @@
       <template #header>
         <div class="drawer-header">
           <span class="drawer-title">导航菜单</span>
-          <button class="drawer-close-btn" @click="mobileMenuVisible = false" aria-label="关闭菜单">
-            <el-icon :size="20"><Close /></el-icon>
+          <button
+            class="drawer-close-btn"
+            aria-label="关闭菜单"
+            @click="mobileMenuVisible = false"
+          >
+            <el-icon :size="20">
+              <Close />
+            </el-icon>
           </button>
         </div>
       </template>
@@ -111,7 +171,12 @@
     </el-drawer>
 
     <!-- 使用指南对话框 -->
-    <el-dialog v-model="guideVisible" title="使用指南" width="60%" class="guide-dialog">
+    <el-dialog
+      v-model="guideVisible"
+      title="使用指南"
+      width="60%"
+      class="guide-dialog"
+    >
       <div class="guide-content">
         <div class="guide-section">
           <h4><el-icon><Document /></el-icon> 快速开始（6个步骤）</h4>
@@ -146,13 +211,21 @@
     </el-dialog>
 
     <!-- 关于对话框 -->
-    <el-dialog v-model="aboutVisible" title="关于我们" width="50%">
+    <el-dialog
+      v-model="aboutVisible"
+      title="关于我们"
+      width="50%"
+    >
       <p>智途 AstroPath - 智能留学规划平台，通过AI分析用户背景，生成动态的、可执行的个性化留学规划路径图。</p>
       <p>技术栈：Vue 3 + Vite + Element-Plus + ECharts</p>
     </el-dialog>
 
     <!-- 联系对话框 -->
-    <el-dialog v-model="contactVisible" title="联系方式" width="40%">
+    <el-dialog
+      v-model="contactVisible"
+      title="联系方式"
+      width="40%"
+    >
       <p>如有问题或建议，欢迎联系我们：</p>
       <p>邮箱：contact@example.com</p>
     </el-dialog>
