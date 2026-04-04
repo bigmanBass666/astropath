@@ -178,7 +178,7 @@ function loadStateFromStorage() {
       if (parsed.tasks) {
         Object.keys(parsed.tasks).forEach(taskId => {
           const task = parsed.tasks[taskId]
-          if (task.state === 'thinking' || task.state === 'streaming' || task.state === 'queued') {
+          if (task.state === 'thinking' || task.state === 'streaming' || task.state === 'connecting' || task.state === 'queued') {
             task.state = 'idle'
             task.error = '任务中断，请重试'
           }
@@ -207,11 +207,19 @@ function loadStateFromStorage() {
   }
 }
 
+const TERMINAL_STATES = new Set(['completed', 'error', 'idle'])
+
 function saveStateToStorage() {
   try {
+    const terminalTasks: Record<string, AIStreamTask> = {}
+    for (const [id, task] of Object.entries(globalState.tasks)) {
+      if (TERMINAL_STATES.has(task.state)) {
+        terminalTasks[id] = task
+      }
+    }
     const stateToSave = {
-      tasks: { ...globalState.tasks },
-      queue: globalState.queue
+      tasks: terminalTasks,
+      queue: []
     }
     localStorage.setItem(STATE_KEY, JSON.stringify(stateToSave))
     localStorage.setItem(CONFIG_KEY, JSON.stringify(globalState.config))

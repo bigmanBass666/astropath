@@ -455,6 +455,8 @@ export function useAIStream(options: UseAIStreamOptions): AIStreamResult {
     onMounted(() => {
       restore()
     })
+  } else {
+    reset()
   }
 
   onUnmounted(() => {

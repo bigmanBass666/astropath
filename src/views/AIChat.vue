@@ -70,11 +70,6 @@
     <div class="main-chat">
       <div class="chat-header">
         <div class="header-left">
-          <el-tooltip content="返回" placement="bottom" :show-after="300">
-            <button class="header-back-btn" @click="goBack">
-              <el-icon :size="16"><ArrowLeft /></el-icon>
-            </button>
-          </el-tooltip>
           <div class="header-agent-info">
             <div class="header-icon" :style="{ background: currentAgent?.color }">
               <el-icon :size="16"><component :is="currentAgent?.icon" /></el-icon>
@@ -86,6 +81,11 @@
           </div>
         </div>
         <div class="header-actions">
+          <el-tooltip content="返回" placement="bottom" :show-after="300">
+            <button class="header-back-btn" @click="goBack">
+              <el-icon :size="16"><ArrowLeft /></el-icon>
+            </button>
+          </el-tooltip>
           <el-dropdown v-if="providers.length > 0" trigger="click" @command="(cmd) => selectedProvider = cmd">
             <button class="model-selector">
               <span class="model-name">{{ currentProviderName }}</span>
@@ -461,7 +461,7 @@ onUnmounted(() => { saveCurrentState(); if (currentStream.value) currentStream.v
 }
 
 .sidebar {
-  width: 260px;
+  width: 200px;
   display: flex;
   flex-direction: column;
   flex-shrink: 0;

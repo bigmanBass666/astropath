@@ -1,115 +1,166 @@
 <template>
   <div class="school-recommendation-page">
-    <!-- 未完成背景评估提示 -->
     <div
       v-if="!hasAssessment"
-      class="page-root"
+      class="page-empty"
     >
-      <div class="empty-state">
-        <div class="empty-state-icon">📋</div>
-        <h2 class="empty-state-title">请先完成背景评估</h2>
-        <p class="empty-state-desc">系统需要您的背景信息才能进行精准推荐</p>
+      <div class="empty-state-modern">
+        <div class="empty-visual">
+          <div class="empty-icon-ring" />
+          <span class="empty-icon">📋</span>
+        </div>
+        <h2 class="empty-title">请先完成背景评估</h2>
+        <p class="empty-desc">系统需要您的背景信息才能进行精准推荐</p>
         <button
-          class="primary-button"
+          class="btn-primary-modern"
           @click="router.push('/assessment')"
         >
           去评估
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
         </button>
       </div>
     </div>
 
     <template v-else>
-      <!-- Step 1: 偏好收集（表单页布局） -->
-      <div
-        v-if="currentStep === 'preference'"
-        class="page-root"
+      <Transition
+        name="page-fade"
+        mode="out-in"
       >
-        <div class="preference-hero">
-          <h1 class="hero-title">AI 智能选校</h1>
-          <p class="hero-subtitle">AI 智能解析背景，为你生成专属留学路线图</p>
-        </div>
-        <div class="form-comfortable">
-          <PreferenceCollector
-            :assessment="assessment"
-            :loading="loading"
-            :current-step="recommendationStep"
-            :step-progress="recommendationProgress"
-            :streaming-content="streamingContent"
-            :is-streaming="isStreaming"
-            @submit="handlePreferenceSubmit"
-          />
-        </div>
-      </div>
-
-      <!-- Step 2: 推荐结果（数据展示页布局 §12.3） -->
-      <template v-if="currentStep === 'recommendation'">
-        <!-- Data Hero -->
-        <section
-          ref="(el) => sectionRefs.push(el)"
-          class="data-hero fade-in-up"
+        <div
+          v-if="currentStep === 'preference'"
+          key="preference"
+          class="page-preference"
         >
-          <div class="content-wide">
-            <h1 class="hero-title">AI 智能选校结果</h1>
-            <p class="hero-subtitle">基于您的背景，为您推荐以下院校</p>
-
-            <!-- 统计卡片 -->
-            <div class="stats-row">
-              <div class="stat-card-mini">
-                <div class="value">{{ overallMatchScore }}%</div>
-                <div class="label">综合匹配度</div>
+          <section class="hero-constellation">
+            <div class="hero-grid">
+              <div class="hero-content">
+                <div class="hero-badge">
+                  <span class="badge-dot" />
+                  AI-Powered
+                </div>
+                <h1 class="hero-title animate-title">
+                  AI 智能选校
+                </h1>
+                <p class="hero-subtitle animate-subtitle">
+                  AI 智能解析背景，为你生成专属留学路线图
+                </p>
+                <div
+                  v-if="assessment"
+                  class="hero-tags animate-tags"
+                >
+                  <span class="hero-tag">{{ assessment.basic?.gpa || 'N/A' }} GPA</span>
+                  <span class="hero-tag hero-tag--accent">{{ getUniversityLabel(assessment.basic?.university) }}</span>
+                  <span class="hero-tag">{{ assessment.academic?.degree || '本科' }}</span>
+                </div>
               </div>
-              <div class="stat-card-mini">
-                <div class="value">{{ coreCount }} 所</div>
-                <div class="label">核心推荐</div>
-              </div>
-              <div class="stat-card-mini">
-                <div class="value">{{ alternativeCount }} 所</div>
-                <div class="label">备选方案</div>
+              <div class="hero-visual animate-canvas">
+                <ConstellationCanvas
+                  :size="380"
+                  :active="isStreaming"
+                  :dimensions="constellationDimensions"
+                />
               </div>
             </div>
+            <div class="hero-grid-line" />
+          </section>
 
-            <!-- 竞争力雷达图区域 -->
-            <div class="radar-section">
-              <canvas
-                ref="radarCanvas"
-                class="radar-canvas"
+          <section class="preference-section">
+            <div class="preference-container">
+              <PreferenceCollector
+                :assessment="assessment"
+                :loading="loading"
+                :current-step="recommendationStep"
+                :step-progress="recommendationProgress"
+                :streaming-content="streamingContent"
+                :is-streaming="isStreaming"
+                @submit="handlePreferenceSubmit"
               />
             </div>
-          </div>
-        </section>
+          </section>
+        </div>
 
-        <!-- 筛选工具栏 -->
-        <div class="content-wide">
-          <div class="filter-bar">
-            <div class="filter-tabs">
-              <button
-                class="filter-tab"
-                :class="{ 'is-active': activeFilter === 'all' }"
-                @click="activeFilter = 'all'"
-              >
-                全部
-              </button>
-              <button
-                class="filter-tab"
-                :class="{ 'is-active': activeFilter === 'core' }"
-                @click="activeFilter = 'core'"
-              >
-                核心推荐
-              </button>
-              <button
-                class="filter-tab"
-                :class="{ 'is-active': activeFilter === 'alternative' }"
-                @click="activeFilter = 'alternative'"
-              >
-                备选方案
-              </button>
+        <div
+          v-else-if="currentStep === 'recommendation'"
+          key="recommendation"
+          class="page-results"
+        >
+          <section class="results-hero">
+            <div class="results-container">
+              <div class="results-header">
+                <div class="results-badge">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                  推荐完成
+                </div>
+                <h1 class="results-title">AI 智能选校结果</h1>
+                <p class="results-subtitle">基于您的背景，为您推荐以下院校</p>
+              </div>
+
+              <div class="stats-modern">
+                <div class="stat-block">
+                  <div class="stat-value">
+                    <CountUp
+                      :end-val="overallMatchScore"
+                      suffix="%"
+                    />
+                  </div>
+                  <div class="stat-label">综合匹配度</div>
+                  <div class="stat-bar">
+                    <div
+                      class="stat-bar-fill"
+                      :style="{ width: overallMatchScore + '%' }"
+                    />
+                  </div>
+                </div>
+                <div class="stat-divider" />
+                <div class="stat-block">
+                  <div class="stat-value">
+                    <CountUp :end-val="coreCount" />
+                    <span class="stat-unit">所</span>
+                  </div>
+                  <div class="stat-label">核心推荐</div>
+                </div>
+                <div class="stat-divider" />
+                <div class="stat-block">
+                  <div class="stat-value">
+                    <CountUp :end-val="alternativeCount" />
+                    <span class="stat-unit">所</span>
+                  </div>
+                  <div class="stat-label">备选方案</div>
+                </div>
+              </div>
             </div>
-            <div class="filter-actions">
-              <div class="sort-control">
-                <span class="sort-label">排序:</span>
+          </section>
+
+          <section class="filter-section">
+            <div class="filter-container">
+              <div class="filter-tabs-modern">
+                <button
+                  class="f-tab"
+                  :class="{ 'f-tab--active': activeFilter === 'all' }"
+                  @click="activeFilter = 'all'"
+                >
+                  全部
+                </button>
+                <button
+                  class="f-tab"
+                  :class="{ 'f-tab--active': activeFilter === 'core' }"
+                  @click="activeFilter = 'core'"
+                >
+                  核心推荐
+                </button>
+                <button
+                  class="f-tab"
+                  :class="{ 'f-tab--active': activeFilter === 'alternative' }"
+                  @click="activeFilter = 'alternative'"
+                >
+                  备选方案
+                </button>
+              </div>
+              <div class="sort-modern">
+                <span class="sort-label">排序</span>
                 <select
                   v-model="sortBy"
-                  class="sort-select"
+                  class="sort-select-modern"
                 >
                   <option value="match-desc">
                     匹配度 ↓
@@ -123,30 +174,28 @@
                 </select>
               </div>
             </div>
-          </div>
-        </div>
+          </section>
 
-        <!-- 结果列表区 -->
-        <div
-          ref="(el) => sectionRefs.push(el)"
-          class="data-full fade-in-up"
-        >
-          <RecommendationList
-            :recommendations="filteredAndSortedRecommendations"
-            :favorites="favorites"
-            :summary="summary"
-            @toggle-favorite="toggleFavorite"
-            @view-detail="viewSchoolDetail"
-            @show-analysis="showAnalysis"
-            @reset="resetToPreference"
-            @compare="openCompareDialog"
-            @adjust="handleAdjustRequest"
-          />
+          <section
+            ref="(el) => sectionRefs.push(el)"
+            class="results-body"
+          >
+            <RecommendationList
+              :recommendations="filteredAndSortedRecommendations"
+              :favorites="favorites"
+              :summary="summary"
+              @toggle-favorite="toggleFavorite"
+              @view-detail="viewSchoolDetail"
+              @show-analysis="showAnalysis"
+              @reset="resetToPreference"
+              @compare="openCompareDialog"
+              @adjust="handleAdjustRequest"
+            />
+          </section>
         </div>
-      </template>
+      </Transition>
     </template>
 
-    <!-- 深度分析对话框 -->
     <SchoolAnalysisDialog
       v-model="analysisVisible"
       :recommendation="selectedRecommendation"
@@ -157,7 +206,6 @@
       @view-detail="viewSchoolDetail"
     />
 
-    <!-- 对话框 -->
     <el-dialog
       v-model="compareVisible"
       title="学校对比"
@@ -234,6 +282,8 @@ import { ElMessage } from 'element-plus'
 import PreferenceCollector from '@/components/school-recommendation/PreferenceCollector.vue'
 import RecommendationList from '@/components/school-recommendation/RecommendationList.vue'
 import SchoolAnalysisDialog from '@/components/school-recommendation/SchoolAnalysisDialog.vue'
+import ConstellationCanvas from '@/components/school-recommendation/ConstellationCanvas.vue'
+import CountUp from '@/components/school-recommendation/CountUp.vue'
 import { useAIRecommendation } from '@/composables/useAIRecommendation'
 import { useAIConfig } from '@/composables/useAIConfig'
 import { useActiveStream } from '@/composables/useActiveStream'
@@ -273,10 +323,17 @@ const summary = ref('')
 const favorites = ref([])
 const userPreference = ref(null)
 
-const radarCanvas = ref(null)
-
 const activeFilter = ref('all')
 const sortBy = ref('match-desc')
+
+const constellationDimensions = computed(() => [
+  { label: '学术能力', value: assessment.value?.academic?.gpa ? Math.min(100, (parseFloat(assessment.value.academic.gpa) / 4.0) * 100) : 75 },
+  { label: '语言成绩', value: 72 },
+  { label: '科研经历', value: assessment.value?.practice?.research ? 80 : 55 },
+  { label: '实习实践', value: assessment.value?.practice?.internship ? 70 : 50 },
+  { label: '综合素质', value: 68 },
+  { label: '目标匹配', value: 78 }
+])
 
 const restoreGlobalState = () => {
   if (globalState.hasOngoingRecommendation()) {
@@ -348,104 +405,14 @@ const getScoreColor = (score) => {
   return 'var(--color-danger)'
 }
 
-const drawRadarChart = () => {
-  const canvas = radarCanvas.value
-  if (!canvas) return
-  const ctx = canvas.getContext('2d')
-  const dpr = window.devicePixelRatio || 1
-  const rect = canvas.parentElement.getBoundingClientRect()
-  canvas.width = rect.width * dpr
-  canvas.height = rect.height * dpr
-  canvas.style.width = rect.width + 'px'
-  canvas.style.height = rect.height + 'px'
-  ctx.scale(dpr, dpr)
-
-  const w = rect.width
-  const h = rect.height
-  const cx = w / 2
-  const cy = h / 2
-  const radius = Math.min(w, h) / 2 - 40
-
-  const dimensions = [
-    { label: '学术能力', value: assessment.value?.academic?.gpa ? Math.min(100, (parseFloat(assessment.value.academic.gpa) / 4.0) * 100) : 75 },
-    { label: '语言成绩', value: 72 },
-    { label: '科研经历', value: assessment.value?.practice?.research ? 80 : 55 },
-    { label: '实习实践', value: assessment.value?.practice?.internship ? 70 : 50 },
-    { label: '综合素质', value: 68 },
-    { label: '目标匹配', value: overallMatchScore.value }
-  ]
-
-  const n = dimensions.length
-  const angleStep = (Math.PI * 2) / n
-
-  ctx.clearRect(0, 0, w, h)
-
-  for (let level = 5; level >= 1; level--) {
-    const r = (radius * level) / 5
-    ctx.beginPath()
-    for (let i = 0; i <= n; i++) {
-      const angle = i * angleStep - Math.PI / 2
-      const x = cx + Math.cos(angle) * r
-      const y = cy + Math.sin(angle) * r
-      if (i === 0) ctx.moveTo(x, y)
-      else ctx.lineTo(x, y)
-    }
-    ctx.closePath()
-    ctx.strokeStyle = level === 5 ? 'var(--color-border)' : 'var(--color-border-light)'
-    ctx.lineWidth = 1
-    ctx.stroke()
-    if (level % 2 === 1) {
-      ctx.fillStyle = level === 5 ? 'var(--color-surface-muted)' : 'transparent'
-      ctx.fill()
-    }
+const getUniversityLabel = (university) => {
+  const map = {
+    '985': '985院校',
+    '211': '211院校',
+    'overseas': '海外院校',
+    'regular': '普通本科'
   }
-
-  for (let i = 0; i < n; i++) {
-    const angle = i * angleStep - Math.PI / 2
-    ctx.beginPath()
-    ctx.moveTo(cx, cy)
-    ctx.lineTo(cx + Math.cos(angle) * radius, cy + Math.sin(angle) * radius)
-    ctx.strokeStyle = 'var(--color-border-light)'
-    ctx.lineWidth = 1
-    ctx.stroke()
-
-    const labelRadius = radius + 20
-    const lx = cx + Math.cos(angle) * labelRadius
-    const ly = cy + Math.sin(angle) * labelRadius
-    ctx.fillStyle = 'var(--color-text-secondary)'
-    ctx.font = '12px var(--font-family-base)'
-    ctx.textAlign = 'center'
-    ctx.textBaseline = 'middle'
-    ctx.fillText(dimensions[i].label, lx, ly)
-  }
-
-  ctx.beginPath()
-  for (let i = 0; i <= n; i++) {
-    const idx = i % n
-    const angle = idx * angleStep - Math.PI / 2
-    const val = dimensions[idx].value / 100
-    const x = cx + Math.cos(angle) * radius * val
-    const y = cy + Math.sin(angle) * radius * val
-    if (i === 0) ctx.moveTo(x, y)
-    else ctx.lineTo(x, y)
-  }
-  ctx.closePath()
-  ctx.fillStyle = 'rgba(15, 23, 42, 0.08)'
-  ctx.fill()
-  ctx.strokeStyle = 'var(--color-solid)'
-  ctx.lineWidth = 2
-  ctx.stroke()
-
-  for (let i = 0; i < n; i++) {
-    const angle = i * angleStep - Math.PI / 2
-    const val = dimensions[i].value / 100
-    const x = cx + Math.cos(angle) * radius * val
-    const y = cy + Math.sin(angle) * radius * val
-    ctx.beginPath()
-    ctx.arc(x, y, 4, 0, Math.PI * 2)
-    ctx.fillStyle = 'var(--color-solid)'
-    ctx.fill()
-  }
+  return map[university] || university || '未知院校'
 }
 
 const generateAssessmentHash = (assessmentData) => {
@@ -466,7 +433,6 @@ const generateAssessmentHash = (assessmentData) => {
 const handlePreferenceSubmit = async (preference) => {
   userPreference.value = preference
 
-  // ★ 使用 useAIConfig 获取 Provider，替代手动读 localStorage
   const defaultProvider = aiConfig.getDefaultProvider()
 
   if (!defaultProvider) {
@@ -475,25 +441,36 @@ const handlePreferenceSubmit = async (preference) => {
     return
   }
 
-  const result = await generateRecommendations(assessment.value, preference, defaultProvider.id)
+  try {
+    const result = await generateRecommendations(assessment.value, preference, defaultProvider.id)
 
-  if (result) {
-    recommendations.value = result.recommendations
-    summary.value = result.summary
-    currentStep.value = 'recommendation'
+    if (result) {
+      recommendations.value = result.recommendations
+      summary.value = result.summary
+      currentStep.value = 'recommendation'
 
-    localStorage.setItem('school_recommendations', JSON.stringify({
-      recommendations: result.recommendations,
-      summary: result.summary,
-      preference: preference,
-      timestamp: Date.now(),
-      assessmentHash: generateAssessmentHash(assessment.value)
-    }))
+      localStorage.setItem('school_recommendations', JSON.stringify({
+        recommendations: result.recommendations,
+        summary: result.summary,
+        savedAt: new Date().toISOString()
+      }))
+    }
+  } catch (error) {
+    console.error('生成推荐失败:', error)
+    ElMessage.error('请求过于频繁，请稍后重试')
+  }
+}
 
-    await nextTick()
-    drawRadarChart()
+const adjustRecommendation = async (newPreference) => {
+  const adjustedPreference = { ...userPreference.value, ...newPreference }
 
-    ElMessage.success('推荐生成完成！')
+  try {
+    await generateRecommendations(assessment.value, adjustedPreference, aiConfig.getDefaultProvider().id)
+
+    ElMessage.success('推荐已更新！')
+  } catch (error) {
+    console.error('调整推荐失败:', error)
+    ElMessage.error('调整推荐失败，请重试')
   }
 }
 
@@ -502,7 +479,6 @@ const showAnalysis = async (recommendation) => {
   analysisVisible.value = true
   currentAnalysis.value = null
 
-  // ★ 使用 useAIConfig 获取 Provider
   const defaultProvider = aiConfig.getDefaultProvider()
   if (!defaultProvider) return
 
@@ -617,13 +593,6 @@ watch(() => globalState.state.schoolAnalysis, (newState) => {
   }
 }, { deep: true })
 
-watch(currentStep, async (val) => {
-  if (val === 'recommendation') {
-    await nextTick()
-    drawRadarChart()
-  }
-})
-
 onMounted(() => {
   checkAssessment()
 
@@ -648,7 +617,6 @@ onMounted(() => {
           summary.value = data.summary
           userPreference.value = data.preference
           currentStep.value = 'recommendation'
-          nextTick(() => drawRadarChart())
         } else if (!isAssessmentUnchanged) {
           localStorage.removeItem('school_recommendations')
           currentStep.value = 'preference'
@@ -661,163 +629,470 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* ====== 页面根容器 ====== */
+/* ====== Page Root ====== */
 .school-recommendation-page {
   width: 100%;
   min-height: 100vh;
-  background: var(--color-background);
+  background: #FFFFFF;
+  position: relative;
+  overflow-x: hidden;
 }
 
-.page-root {
-  width: 100%;
-  padding: 0 var(--space-10);
-  box-sizing: border-box;
+/* ====== Empty State ====== */
+.page-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: var(--space-10);
 }
 
-/* ====== 容器体系 ====== */
-.content-wide {
-  max-width: 1440px;
-  margin: 0 auto;
-  padding: 0 var(--space-6);
-}
-
-.data-full {
-  max-width: 1600px;
-  margin: 0 auto;
-  padding: 0 var(--space-6);
-}
-
-.form-comfortable {
-  max-width: 960px;
-  margin: 0 auto;
-}
-
-/* ====== 偏好收集 Hero ====== */
-.preference-hero {
+.empty-state-modern {
   text-align: center;
-  padding: var(--space-16) var(--space-10);
+  max-width: 420px;
+}
+
+.empty-visual {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: var(--space-8);
+}
+
+.empty-icon-ring {
+  position: absolute;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  border: 1px solid var(--color-border-light);
+  animation: ring-pulse 3s ease-in-out infinite;
+}
+
+@keyframes ring-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.5; }
+  50% { transform: scale(1.08); opacity: 1; }
+}
+
+.empty-icon {
+  font-size: 48px;
+  position: relative;
+  z-index: 1;
+}
+
+.empty-title {
+  font-size: var(--text-2xl);
+  font-weight: var(--font-bold);
+  color: var(--color-text-primary);
+  margin: 0 0 var(--space-3) 0;
+  letter-spacing: -0.5px;
+}
+
+.empty-desc {
+  font-size: var(--text-base);
+  color: var(--color-text-secondary);
+  margin: 0 0 var(--space-8) 0;
+  line-height: var(--leading-relaxed);
+}
+
+.btn-primary-modern {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 14px 32px;
+  background: var(--color-solid);
+  color: white;
+  font-size: var(--text-base);
+  font-weight: var(--font-semibold);
+  border: none;
+  border-radius: var(--radius-xl);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.15);
+}
+
+.btn-primary-modern:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(15, 23, 42, 0.2);
+}
+
+.btn-primary-modern:active {
+  transform: scale(0.97);
+}
+
+/* ====== Hero Constellation ====== */
+.hero-constellation {
+  position: relative;
+  min-height: 85vh;
+  display: flex;
+  align-items: center;
+  background:
+    radial-gradient(ellipse 80% 60% at 70% 40%, rgba(15,23,42,0.02) 0%, transparent 70%),
+    radial-gradient(circle at 20% 80%, rgba(217,119,6,0.03) 0%, transparent 50%);
+  overflow: hidden;
+}
+
+.hero-constellation::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle, rgba(15,23,42,0.04) 1px, transparent 1px);
+  background-size: 32px 32px;
+  mask-image: radial-gradient(ellipse 70% 60% at 50% 50%, black, transparent);
+  -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 50%, black, transparent);
+}
+
+.hero-grid {
+  position: relative;
+  z-index: 1;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--space-16) var(--space-8);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-16);
+  align-items: center;
+}
+
+.hero-content {
+  padding-right: var(--space-4);
+}
+
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 6px 14px;
+  background: rgba(15, 23, 42, 0.05);
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-secondary);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  margin-bottom: var(--space-6);
+}
+
+.badge-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  animation: dot-blink 2s ease-in-out infinite;
+}
+
+@keyframes dot-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
 }
 
 .hero-title {
-  font-size: var(--text-4xl);
-  font-weight: var(--font-bold);
-  color: var(--color-text-primary);
-  letter-spacing: -1px;
-  line-height: var(--leading-tight);
-  margin: 0 0 var(--space-4) 0;
+  font-size: clamp(40px, 5.5vw, 68px);
+  font-weight: 800;
+  color: var(--color-solid);
+  letter-spacing: -2.5px;
+  line-height: 1.08;
+  margin: 0 0 var(--space-5) 0;
 }
 
 .hero-subtitle {
-  font-size: var(--text-lg);
+  font-size: clamp(16px, 1.6vw, 20px);
   color: var(--color-text-secondary);
-  margin: 0;
-  line-height: var(--leading-normal);
+  line-height: var(--leading-relaxed);
+  margin: 0 0 var(--space-8) 0;
+  max-width: 420px;
 }
 
-/* ====== Data Hero (§12.3 数据展示页模板) ====== */
-.data-hero {
+.hero-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.hero-tag {
+  padding: 5px 14px;
+  background: var(--color-slate-50);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  font-weight: var(--font-medium);
+  color: var(--color-slate-600);
+  letter-spacing: 0.2px;
+}
+
+.hero-tag--accent {
+  background: var(--color-accent-subtle);
+  border-color: rgba(217, 119, 6, 0.2);
+  color: var(--color-accent);
+}
+
+.hero-visual {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hero-grid-line {
+  position: absolute;
+  bottom: -1px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--color-border-light) 20%, var(--color-border-light) 80%, transparent);
+}
+
+.hero-grid-line::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 8px;
+  background: radial-gradient(ellipse, rgba(15,23,42,0.08), transparent);
+  border-radius: 50%;
+}
+
+/* ====== Hero Animations ====== */
+.animate-title {
+  animation: heroFadeUp 0.8s ease-out both;
+  animation-delay: 0.1s;
+}
+
+.animate-subtitle {
+  animation: heroFadeUp 0.8s ease-out both;
+  animation-delay: 0.25s;
+}
+
+.animate-tags {
+  animation: heroFadeUp 0.8s ease-out both;
+  animation-delay: 0.4s;
+}
+
+.animate-canvas {
+  animation: heroFadeIn 1s ease-out both;
+  animation-delay: 0.5s;
+}
+
+@keyframes heroFadeUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes heroFadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* ====== Preference Section (seamless hero continuation) ====== */
+.preference-section {
+  position: relative;
+  padding: var(--space-16) var(--space-8) var(--space-24);
+  background:
+    radial-gradient(ellipse 60% 40% at 50% -10%, rgba(15,23,42,0.025) 0%, transparent 70%),
+    linear-gradient(180deg, rgba(248,250,252,1) 0%, #FFFFFF 40%);
+}
+
+.preference-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 200px;
+  background:
+    linear-gradient(180deg, transparent 0%, rgba(248,250,252,0.5) 100%);
+  pointer-events: none;
+}
+
+.preference-container {
+  max-width: 720px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+/* ====== Results Hero ====== */
+.results-hero {
   background: var(--color-background-alt);
-  padding: var(--space-20) var(--space-10);
   border-bottom: 1px solid var(--color-border-light);
+  position: relative;
+  overflow: hidden;
 }
 
-.data-hero .hero-title {
-  text-align: center;
-  margin-bottom: var(--space-3);
+.results-hero::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -20%;
+  width: 500px;
+  height: 500px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(217,119,6,0.04) 0%, transparent 70%);
+  pointer-events: none;
 }
 
-.data-hero .hero-subtitle {
+.results-container {
+  position: relative;
+  z-index: 1;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: var(--space-16) var(--space-8);
+}
+
+.results-header {
   text-align: center;
   margin-bottom: var(--space-12);
 }
 
-/* 统计卡片 (§11.4) */
-.stats-row {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: var(--space-6);
-  margin-bottom: var(--space-8);
+.results-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 6px 16px;
+  background: rgba(5, 150, 105, 0.08);
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  font-weight: var(--font-semibold);
+  color: var(--color-success);
+  letter-spacing: 0.3px;
+  margin-bottom: var(--space-6);
 }
 
-.stat-card-mini {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border-light);
-  border-radius: var(--radius-xl);
-  padding: var(--space-6);
-  text-align: center;
-}
-
-.stat-card-mini .value {
-  font-size: var(--text-4xl);
-  font-weight: var(--font-bold);
+.results-title {
+  font-size: clamp(32px, 4vw, 48px);
+  font-weight: 800;
   color: var(--color-solid);
-  letter-spacing: -1px;
-  line-height: 1;
+  letter-spacing: -1.5px;
+  line-height: 1.15;
+  margin: 0 0 var(--space-4) 0;
 }
 
-.stat-card-mini .label {
-  font-size: var(--text-sm);
+.results-subtitle {
+  font-size: var(--text-lg);
   color: var(--color-text-secondary);
-  margin-top: var(--space-2);
+  margin: 0;
 }
 
-/* 雷达图区域 */
-.radar-section {
+/* ====== Modern Stats ====== */
+.stats-modern {
   display: flex;
-  justify-content: center;
-  padding: var(--space-6) 0;
+  align-items: stretch;
+  gap: 0;
+  background: white;
+  border-radius: var(--radius-2xl);
+  border: 1px solid var(--color-border-light);
+  padding: var(--space-8);
+  box-shadow: var(--shadow-sm);
 }
 
-.radar-canvas {
-  width: 360px;
-  height: 280px;
+.stat-block {
+  flex: 1;
+  text-align: center;
+  padding: 0 var(--space-6);
+  position: relative;
 }
 
-/* ====== 筛选工具栏 ====== */
-.filter-bar {
+.stat-value {
+  font-size: var(--text-5xl);
+  font-weight: 800;
+  color: var(--color-solid);
+  font-family: var(--font-family-mono);
+  letter-spacing: -2px;
+  line-height: 1;
+  margin-bottom: var(--space-2);
+}
+
+.stat-unit {
+  font-size: var(--text-xl);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-tertiary);
+  font-family: var(--font-family-base);
+  letter-spacing: 0;
+}
+
+.stat-label {
+  font-size: var(--text-sm);
+  color: var(--color-text-tertiary);
+  font-weight: var(--font-medium);
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+.stat-bar {
+  width: 60px;
+  height: 3px;
+  background: var(--color-slate-100);
+  border-radius: var(--radius-full);
+  margin: var(--space-3) auto 0;
+  overflow: hidden;
+}
+
+.stat-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-solid), var(--color-accent));
+  border-radius: var(--radius-full);
+  transition: width 1.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.stat-divider {
+  width: 1px;
+  background: var(--color-border-light);
+  align-self: stretch;
+}
+
+/* ====== Filter Section ====== */
+.filter-section {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.filter-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--space-4) var(--space-8);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--space-5) 0;
-  border-bottom: 1px solid var(--color-border-light);
-  margin-bottom: var(--space-8);
 }
 
-.filter-tabs {
+.filter-tabs-modern {
   display: flex;
-  gap: var(--space-2);
+  gap: var(--space-1);
+  background: var(--color-slate-50);
+  padding: 4px;
+  border-radius: var(--radius-lg);
 }
 
-.filter-tab {
-  padding: var(--space-2) var(--space-5);
-  border-radius: var(--radius-full);
+.f-tab {
+  padding: 8px 20px;
+  border: none;
+  border-radius: var(--radius-md);
   font-size: var(--text-sm);
   font-weight: var(--font-medium);
   color: var(--color-text-secondary);
   background: transparent;
-  border: 1px solid transparent;
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-.filter-tab:hover {
+.f-tab:hover {
   color: var(--color-text-primary);
-  background: var(--color-slate-100);
 }
 
-.filter-tab.is-active {
-  background: var(--color-solid);
-  color: white;
-  border-color: var(--color-solid);
+.f-tab--active {
+  background: white;
+  color: var(--color-solid);
+  box-shadow: var(--shadow-sm);
 }
 
-.filter-actions {
-  display: flex;
-  align-items: center;
-  gap: var(--space-4);
-}
-
-.sort-control {
+.sort-modern {
   display: flex;
   align-items: center;
   gap: var(--space-2);
@@ -825,76 +1100,47 @@ onMounted(() => {
 
 .sort-label {
   font-size: var(--text-sm);
-  color: var(--color-text-secondary);
+  color: var(--color-text-tertiary);
+  font-weight: var(--font-medium);
 }
 
-.sort-select {
-  padding: var(--space-1) var(--space-3);
+.sort-select-modern {
+  padding: 7px 28px 7px 12px;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   font-size: var(--text-sm);
   color: var(--color-text-primary);
-  background: var(--color-surface);
+  background: white url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394A3B8' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 10px center;
   cursor: pointer;
   outline: none;
-  transition: border-color var(--transition-fast);
+  appearance: none;
+  -webkit-appearance: none;
+  transition: border-color 0.2s;
 }
 
-.sort-select:focus {
+.sort-select-modern:focus {
   border-color: var(--color-solid);
+  box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.06);
 }
 
-/* ====== 空状态 ====== */
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: var(--space-20) var(--space-8);
-  text-align: center;
+/* ====== Results Body ====== */
+.results-body {
+  max-width: 1300px;
+  margin: 0 auto;
+  padding: var(--space-10) var(--space-8) var(--space-20);
 }
 
-.empty-state-icon {
-  font-size: 64px;
-  margin-bottom: var(--space-6);
+/* ====== Dialog ====== */
+.table-container {
+  background: var(--color-surface);
+  border-radius: var(--radius-xl);
+  border: 1px solid var(--color-border);
+  overflow: hidden;
 }
 
-.empty-state-title {
-  font-size: var(--text-xl);
-  font-weight: var(--font-semibold);
-  color: var(--color-text-primary);
-  margin: 0 0 var(--space-2) 0;
-}
-
-.empty-state-desc {
-  font-size: var(--text-sm);
-  color: var(--color-text-secondary);
-  margin: 0 0 var(--space-6) 0;
-  max-width: 400px;
-}
-
-/* ====== 按钮 ====== */
-.primary-button {
-  background: var(--color-solid);
-  color: var(--color-text-inverse);
-  font-size: var(--text-base);
-  font-weight: var(--font-semibold);
-  padding: 10px 24px;
-  border-radius: var(--radius-lg);
-  border: none;
-  min-height: 44px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all var(--transition-fast);
-  box-shadow: var(--shadow-sm);
-}
-
-.primary-button:hover {
-  background: var(--color-solid-hover);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-md);
+.compare-dialog :deep(.el-dialog__header) {
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: var(--space-3);
 }
 
 .ghost-btn {
@@ -918,55 +1164,101 @@ onMounted(() => {
   background: var(--color-danger-bg);
 }
 
-/* ====== 表格容器 ====== */
-.table-container {
-  background: var(--color-surface);
-  border-radius: var(--radius-xl);
-  border: 1px solid var(--color-border);
-  overflow: hidden;
+/* ====== Page Transition ====== */
+.page-fade-enter-active,
+.page-fade-leave-active {
+  transition: opacity 0.4s ease, transform 0.4s ease;
 }
 
-.compare-dialog :deep(.el-dialog__header) {
-  border-bottom: 1px solid var(--color-border);
-  padding-bottom: var(--space-3);
-}
-
-/* ====== 滚动动画 ====== */
-.fade-in-up {
+.page-fade-enter-from {
   opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+  transform: translateY(16px);
 }
 
-.fade-in-up.is-visible {
+.page-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-16px);
+}
+
+/* ====== Scroll Reveal Animation (used by children) ====== */
+:deep(.reveal-up) {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1), transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+:deep(.reveal-up.is-visible) {
   opacity: 1;
   transform: translateY(0);
 }
 
-/* ====== 响应式 ====== */
-@media (max-width: 768px) {
-  .page-root {
-    padding: 0 var(--space-5);
+/* ====== Responsive ====== */
+@media (max-width: 1024px) {
+  .hero-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-10);
+    text-align: center;
   }
 
-  .data-hero {
+  .hero-content {
+    padding-right: 0;
+  }
+
+  .hero-subtitle {
+    max-width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .hero-tags {
+    justify-content: center;
+  }
+
+  .stats-modern {
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+
+  .stat-divider {
+    width: 60%;
+    height: 1px;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero-constellation {
+    min-height: auto;
     padding: var(--space-12) var(--space-5);
   }
 
-  .stats-row {
-    grid-template-columns: 1fr;
-    gap: var(--space-4);
+  .hero-grid {
+    padding: var(--space-10) var(--space-5);
   }
 
-  .filter-bar {
+  .hero-visual {
+    order: -1;
+  }
+
+  .results-container {
+    padding: var(--space-10) var(--space-5);
+  }
+
+  .filter-container {
     flex-direction: column;
-    gap: var(--space-4);
-    align-items: flex-start;
+    gap: var(--space-3);
+    align-items: stretch;
   }
 
-  .radar-canvas {
-    width: 280px;
-    height: 220px;
+  .filter-tabs-modern {
+    justify-content: center;
+  }
+
+  .sort-modern {
+    justify-content: center;
+  }
+
+  .results-body {
+    padding: var(--space-6) var(--space-5) var(--space-12);
   }
 }
 </style>

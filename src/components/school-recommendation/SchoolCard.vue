@@ -1,107 +1,88 @@
 <template>
   <div
-    class="school-card"
-    :class="{ 'is-favorite': isFavorite }"
+    class="card-modern"
+    :class="{ 'card-modern--fav': isFavorite, 'card-modern--core': isCore, 'card-modern--alt': !isCore }"
   >
-    <div class="card-header">
-      <div
-        class="ranking-badge"
-        :class="rankingClass"
-      >
-        <el-icon
-          :size="16"
-          class="ranking-icon"
-        >
-          <component :is="rankingIcon" />
-        </el-icon>
-        <span class="ranking-text">#{{ recommendation.ranking }}</span>
-      </div>
-      <div class="header-actions">
+    <div class="card-color-bar" />
+
+    <div class="card-inner">
+      <div class="card-top">
+        <div class="rank-badge" :class="rankClass">
+          <component :is="rankingIconComp" :size="13" />
+          <span>#{{ recommendation.ranking }}</span>
+        </div>
         <button
-          class="icon-btn"
-          :class="{ 'is-active': isFavorite }"
-          @click="toggleFavorite"
+          class="fav-btn"
+          :class="{ 'fav-btn--active': isFavorite }"
+          @click.stop="toggleFavorite"
         >
-          <el-icon :size="16">
-            <component :is="isFavorite ? StarFilled : Star" />
-          </el-icon>
+          <svg v-if="!isFavorite" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          <svg v-else width="15" height="15" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
         </button>
       </div>
-    </div>
 
-    <div class="school-info">
-      <h4 class="school-name">
-        {{ recommendation.schoolName }}
-      </h4>
-      <div class="school-meta">
-        <span class="meta-tag">{{ school?.country }}</span>
-        <span class="meta-tag meta-tag--muted">{{ school?.ranking }}</span>
-      </div>
-    </div>
+      <h4 class="card-name">{{ recommendation.schoolName }}</h4>
 
-    <div class="ai-reason">
-      <div class="reason-header">
-        <el-icon :size="14"><ChatDotRound /></el-icon>
-        <span>AI推荐理由</span>
+      <div class="card-meta">
+        <span class="meta-pill">{{ school?.country || '' }}</span>
+        <span class="meta-dot" />
+        <span class="meta-text">{{ school?.ranking || '' }}</span>
+        <span class="meta-dot" />
+        <span class="meta-text" v-if="school?.topMajor">{{ school.topMajor }}</span>
       </div>
-      <p class="reason-text">
-        {{ recommendation.aiReason }}
-      </p>
-    </div>
 
-    <div class="match-section">
-      <div class="match-info">
-        <span class="match-label">匹配度</span>
-        <span
-          class="match-score"
-          :style="{ color: matchColor }"
-        >{{ recommendation.matchScore }}%</span>
+      <div class="card-reason">
+        <div class="reason-label">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          AI 推荐理由
+        </div>
+        <p class="reason-text">{{ recommendation.aiReason }}</p>
       </div>
-      <div class="progress-track">
-        <div
-          class="progress-fill"
-          :style="{ width: recommendation.matchScore + '%', backgroundColor: matchColor }"
-        />
-      </div>
-    </div>
 
-    <div class="card-details">
-      <div class="detail-item" v-if="school?.topMajor">
-        <span class="detail-label">强势专业</span>
-        <span class="detail-value">{{ school.topMajor }}</span>
+      <div class="card-match">
+        <div class="match-left">
+          <span class="match-lbl">匹配度</span>
+          <span
+            class="match-val"
+            :style="{ color: matchColor }"
+          >{{ recommendation.matchScore }}%</span>
+        </div>
+        <div class="match-bar-track">
+          <div
+            class="match-bar-fill"
+            :style="{ width: recommendation.matchScore + '%', backgroundColor: matchColor }"
+          />
+        </div>
       </div>
-      <div class="detail-item" v-if="school?.tuition">
-        <span class="detail-label">学费</span>
-        <span class="detail-value">{{ school.tuition }}</span>
-      </div>
-      <div class="detail-item" v-if="school?.acceptanceRate">
-        <span class="detail-label">录取率</span>
-        <span class="detail-value">{{ school.acceptanceRate }}</span>
-      </div>
-    </div>
 
-    <div class="card-actions">
-      <button
-        class="action-btn primary"
-        @click="viewDetail"
-      >
-        <el-icon :size="14"><View /></el-icon>
-        查看详情
-      </button>
-      <button
-        class="action-btn secondary"
-        @click="showAnalysis"
-      >
-        <el-icon :size="14"><QuestionFilled /></el-icon>
-        为什么推荐
-      </button>
+      <div class="card-details-row">
+        <div class="detail-cell" v-if="school?.tuition">
+          <span class="detail-key">学费</span>
+          <span class="detail-val">{{ school.tuition }}</span>
+        </div>
+        <div class="detail-cell" v-if="school?.acceptanceRate">
+          <span class="detail-key">录取率</span>
+          <span class="detail-val">{{ school.acceptanceRate }}</span>
+        </div>
+        <div class="detail-cell detail-cell--flex" />
+      </div>
+
+      <div class="card-actions-row">
+        <button class="card-btn card-btn--primary" @click="viewDetail">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          查看详情
+        </button>
+        <button class="card-btn card-btn--ghost" @click="showAnalysis">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          为什么推荐
+        </button>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue'
-import { Star, StarFilled, ChatDotRound, View, QuestionFilled, Trophy, Medal, CircleCheck, CollectionTag } from '@element-plus/icons-vue'
+import { computed, h } from 'vue'
 import { schoolsData } from '@/utils/recommendationEngine'
 
 const props = defineProps({
@@ -112,6 +93,10 @@ const props = defineProps({
   isFavorite: {
     type: Boolean,
     default: false
+  },
+  index: {
+    type: Number,
+    default: 0
   }
 })
 
@@ -121,26 +106,38 @@ const school = computed(() => {
   return schoolsData.find(s => s.id === props.recommendation.schoolId)
 })
 
+const CATEGORY_MAP = {
+  reach: 'core',
+  match: 'core',
+  safe: 'alternative',
+  core: 'core',
+  alternative: 'alternative'
+}
+
+const isCore = computed(() => CATEGORY_MAP[props.recommendation.category] === 'core')
+
 const rankingClass = computed(() => {
   const rank = props.recommendation.ranking
   if (rank === 1) return 'rank-gold'
   if (rank === 2) return 'rank-silver'
   if (rank === 3) return 'rank-bronze'
-  return 'rank-normal'
+  return 'rank-default'
 })
 
-const rankingIcon = computed(() => {
+const rankingIconComp = computed(() => {
   const rank = props.recommendation.ranking
-  if (rank === 1) return Trophy
-  if (rank === 2) return Medal
-  if (rank === 3) return CollectionTag
-  return CircleCheck
+  return () => {
+    if (rank === 1) return h('svg', { width: 13, height: 13, viewBox: '0 0 24 24', fill: 'currentColor' }, [h('circle', { cx: 12, cy: 8, r: 6 }), h('path', { d: 'M15.477 12.89 17 22l-5-3.53L7 22l1.523-9.11' })])
+    if (rank === 2) return h('svg', { width: 13, height: 13, viewBox: '0 0 24 24', fill: 'currentColor' }, [h('circle', { cx: 12, cy: 8, r: 6 }), h('path', { d: 'M15.477 12.89 17 22l-5-3.53L7 22l1.523-9.11' })])
+    if (rank === 3) return h('svg', { width: 13, height: 13, viewBox: '0 0 24 24', fill: 'currentColor' }, [h('circle', { cx: 12, cy: 8, r: 6 }), h('path', { d: 'M15.477 12.89 17 22l-5-3.53L7 22l1.523-9.11' })])
+    return h('svg', { width: 13, height: 13, viewBox: '0 0 24 24', fill: 'none', stroke: 'currentColor', 'strokeWidth': 2.5 }, [h('polyline', { points: '20 6 9 17 4 12' })])
+  }
 })
 
 const matchColor = computed(() => {
   const score = props.recommendation.matchScore
   if (score >= 85) return 'var(--color-success)'
-  if (score >= 70) return 'var(--color-warning)'
+  if (score >= 70) return 'var(--color-accent)'
   return 'var(--color-danger)'
 })
 
@@ -158,63 +155,85 @@ const showAnalysis = () => {
 </script>
 
 <style scoped>
-.school-card {
-  background: var(--color-surface);
-  border-radius: var(--radius-xl);
-  padding: var(--space-8);
-  border: 1px solid var(--color-border-light);
-  transition: all var(--transition-normal);
+.card-modern {
   position: relative;
+  background: white;
+  border-radius: var(--radius-2xl);
   overflow: hidden;
+  transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  border: 1px solid var(--color-border-light);
 }
 
-.school-card::before {
+.card-modern::before {
   content: '';
   position: absolute;
-  top: 0;
   left: 0;
-  right: 0;
-  height: 3px;
-  background: var(--color-solid);
-  opacity: 0;
-  transition: opacity var(--transition-normal);
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  transition: background 0.3s ease;
+  z-index: 2;
 }
 
-.school-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
+.card-modern--core::before {
+  background: linear-gradient(180deg, var(--color-accent), #B45309);
+}
+
+.card-modern--alt::before {
+  background: linear-gradient(180deg, var(--color-slate-400), var(--color-slate-500));
+}
+
+.card-modern:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.1);
   border-color: var(--color-border);
 }
 
-.school-card:hover::before {
-  opacity: 1;
+.card-modern--fav {
+  border-color: rgba(217, 119, 6, 0.3);
 }
 
-.school-card.is-favorite {
-  border-color: var(--color-accent);
+.card-modern--fav::before {
+  background: linear-gradient(180deg, var(--color-accent), #D97706) !important;
 }
 
-.school-card.is-favorite::before {
-  background: var(--color-accent);
-  opacity: 1;
+.card-color-bar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  height: 0;
+  transition: height 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-.card-header {
+.card-modern:hover .card-color-bar {
+  height: 3px;
+  background: linear-gradient(90deg, var(--color-solid), var(--color-accent));
+}
+
+.card-inner {
+  padding: var(--space-6);
+  position: relative;
+  z-index: 1;
+}
+
+/* ====== Top Bar ====== */
+.card-top {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: var(--space-5);
+  margin-bottom: var(--space-4);
 }
 
-.ranking-badge {
-  display: flex;
+.rank-badge {
+  display: inline-flex;
   align-items: center;
-  gap: var(--space-1);
-  padding: var(--space-1) var(--space-3);
+  gap: 4px;
+  padding: 3px 10px;
   border-radius: var(--radius-full);
-  font-weight: var(--font-semibold);
   font-size: var(--text-xs);
-  letter-spacing: 0.25px;
+  font-weight: var(--font-bold);
+  letter-spacing: 0.2px;
 }
 
 .rank-gold {
@@ -223,8 +242,8 @@ const showAnalysis = () => {
 }
 
 .rank-silver {
-  background: var(--color-slate-200);
-  color: var(--color-text-secondary);
+  background: var(--color-slate-100);
+  color: var(--color-slate-600);
 }
 
 .rank-bronze {
@@ -232,90 +251,95 @@ const showAnalysis = () => {
   color: white;
 }
 
-.rank-normal {
+.rank-default {
   background: var(--color-background-alt);
   color: var(--color-text-secondary);
 }
 
-.ranking-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.icon-btn {
+.fav-btn {
   width: 32px;
   height: 32px;
   border-radius: var(--radius-full);
-  border: 1px solid var(--color-border);
-  background: var(--color-surface);
+  border: 1.5px solid var(--color-border-light);
+  background: white;
   color: var(--color-text-tertiary);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all var(--transition-fast);
+  transition: all 0.25s ease;
 }
 
-.icon-btn:hover {
-  color: var(--color-accent);
+.fav-btn:hover {
   border-color: var(--color-accent);
+  color: var(--color-accent);
+  transform: scale(1.08);
 }
 
-.icon-btn.is-active {
-  color: var(--color-accent);
-  border-color: var(--color-accent);
+.fav-btn--active {
   background: var(--color-accent-subtle);
+  border-color: var(--color-accent);
+  color: var(--color-accent);
 }
 
-.school-info {
-  margin-bottom: var(--space-5);
-}
-
-.school-name {
-  margin: 0 0 var(--space-2) 0;
+/* ====== Name & Meta ====== */
+.card-name {
+  margin: 0 0 var(--space-3) 0;
   font-size: var(--text-xl);
   font-weight: var(--font-bold);
-  color: var(--color-text-primary);
+  color: var(--color-solid);
+  letter-spacing: -0.3px;
   line-height: var(--leading-tight);
 }
 
-.school-meta {
-  display: flex;
+.card-meta {
+  display: inline-flex;
+  align-items: center;
   gap: var(--space-2);
+  margin-bottom: var(--space-4);
+  flex-wrap: wrap;
 }
 
-.meta-tag {
+.meta-pill {
   padding: 2px 10px;
   border-radius: var(--radius-full);
   font-size: var(--text-xs);
   font-weight: var(--font-medium);
-  background: var(--color-slate-100);
+  background: var(--color-slate-50);
   color: var(--color-slate-600);
-  letter-spacing: 0.25px;
+  letter-spacing: 0.15px;
 }
 
-.meta-tag--muted {
-  background: var(--color-surface-muted);
+.meta-text {
+  font-size: var(--text-xs);
   color: var(--color-text-tertiary);
 }
 
-.ai-reason {
+.meta-dot {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--color-slate-300);
+}
+
+/* ====== AI Reason ====== */
+.card-reason {
   background: var(--color-slate-50);
   border-radius: var(--radius-lg);
   padding: var(--space-4);
-  margin-bottom: var(--space-5);
+  margin-bottom: var(--space-4);
   border: 1px solid var(--color-border-light);
 }
 
-.reason-header {
+.reason-label {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
-  margin-bottom: var(--space-2);
-  color: var(--color-slate-600);
+  gap: var(--space-1);
   font-size: var(--text-xs);
   font-weight: var(--font-semibold);
+  color: var(--color-slate-500);
+  margin-bottom: var(--space-2);
+  letter-spacing: 0.2px;
 }
 
 .reason-text {
@@ -325,74 +349,82 @@ const showAnalysis = () => {
   line-height: var(--leading-normal);
 }
 
-.match-section {
-  margin-bottom: var(--space-5);
+/* ====== Match ====== */
+.card-match {
+  margin-bottom: var(--space-4);
 }
 
-.match-info {
+.match-left {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: baseline;
   margin-bottom: var(--space-2);
 }
 
-.match-label {
+.match-lbl {
   font-size: var(--text-sm);
   color: var(--color-text-secondary);
+  font-weight: var(--font-medium);
 }
 
-.match-score {
+.match-val {
   font-size: var(--text-xl);
   font-weight: var(--font-bold);
+  font-family: var(--font-family-mono);
+  letter-spacing: -0.5px;
 }
 
-.progress-track {
-  height: 6px;
+.match-bar-track {
+  height: 5px;
   background: var(--color-slate-100);
   border-radius: var(--radius-full);
   overflow: hidden;
 }
 
-.progress-fill {
+.match-bar-fill {
   height: 100%;
   border-radius: var(--radius-full);
-  transition: width 0.5s ease;
+  transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-.card-details {
+/* ====== Details ====== */
+.card-details-row {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: 1fr 1fr auto;
   gap: var(--space-3);
   padding: var(--space-4) 0;
   border-top: 1px solid var(--color-border-light);
   border-bottom: 1px solid var(--color-border-light);
-  margin-bottom: var(--space-5);
+  margin-bottom: var(--space-4);
 }
 
-.detail-item {
+.detail-cell {
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
 
-.detail-label {
-  font-size: var(--text-xs);
-  color: var(--color-text-tertiary);
-  font-weight: var(--font-medium);
-}
-
-.detail-value {
-  font-size: var(--text-sm);
-  color: var(--color-text-primary);
+.detail-key {
+  font-size: 10px;
   font-weight: var(--font-semibold);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
 }
 
-.card-actions {
+.detail-val {
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--color-text-primary);
+}
+
+/* ====== Actions ====== */
+.card-actions-row {
   display: flex;
   gap: var(--space-3);
 }
 
-.action-btn {
+.card-btn {
   flex: 1;
   display: flex;
   align-items: center;
@@ -403,38 +435,32 @@ const showAnalysis = () => {
   font-size: var(--text-sm);
   font-weight: var(--font-semibold);
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
   min-height: 38px;
   border: none;
 }
 
-.action-btn.primary {
+.card-btn--primary {
   background: var(--color-solid);
   color: white;
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.12);
 }
 
-.action-btn.primary:hover {
+.card-btn--primary:hover {
   background: var(--color-solid-hover);
   transform: translateY(-1px);
-  box-shadow: var(--shadow-md);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.18);
 }
 
-.action-btn.secondary {
+.card-btn--ghost {
   background: transparent;
   color: var(--color-text-secondary);
   border: 1.5px solid var(--color-border);
 }
 
-.action-btn.secondary:hover {
+.card-btn--ghost:hover {
   border-color: var(--color-solid);
   color: var(--color-solid);
   transform: translateY(-1px);
-}
-
-@media (max-width: 640px) {
-  .card-details {
-    grid-template-columns: 1fr;
-  }
 }
 </style>
