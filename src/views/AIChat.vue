@@ -1,114 +1,65 @@
 <template>
-  <div class="ac-page">
-    <div class="ac-noise" />
-
-    <div
-      class="ac-sidebar"
-      :class="{ 'ac-sidebar--collapsed': sidebarCollapsed }"
-    >
-      <div class="ac-sidebar__top">
-        <el-tooltip
-          :content="sidebarCollapsed ? '展开侧栏' : '收起侧栏'"
-          placement="bottom"
-          :show-after="300"
-        >
-          <button
-            class="ac-sidebar__toggle"
-            @click="sidebarCollapsed = !sidebarCollapsed"
-          >
-            <el-icon :size="18">
-              <component :is="sidebarCollapsed ? Expand : Fold" />
-            </el-icon>
+  <div class="ai-chat-page">
+    <div class="sidebar" :class="{ 'is-collapsed': sidebarCollapsed }">
+      <div class="sidebar-top">
+        <el-tooltip :content="sidebarCollapsed ? '展开侧栏' : '收起侧栏'" placement="bottom" :show-after="300">
+          <button class="sidebar-toggle" @click="sidebarCollapsed = !sidebarCollapsed">
+            <el-icon :size="18"><component :is="sidebarCollapsed ? Expand : Fold" /></el-icon>
           </button>
         </el-tooltip>
-        <el-tooltip
-          content="新对话"
-          placement="bottom"
-          :show-after="300"
-        >
-          <button
-            class="ac-sidebar__icon-btn"
-            @click="startNewChat"
-          >
-            <el-icon :size="18">
-              <Plus />
-            </el-icon>
+        <el-tooltip content="新对话" placement="bottom" :show-after="300">
+          <button class="new-chat-icon-btn" @click="startNewChat">
+            <el-icon :size="18"><Plus /></el-icon>
           </button>
         </el-tooltip>
         <template v-if="!sidebarCollapsed">
-          <button
-            class="ac-sidebar__new-btn"
-            @click="startNewChat"
-          >
-            <el-icon :size="16">
-              <Plus />
-            </el-icon>
+          <button class="new-chat-btn" @click="startNewChat">
+            <el-icon :size="16"><Plus /></el-icon>
             <span>新对话</span>
           </button>
         </template>
       </div>
 
-      <div
-        v-show="!sidebarCollapsed"
-        class="ac-sidebar__body"
-      >
-        <div
-          v-if="todayConversations.length > 0"
-          class="ac-conv-group"
-        >
-          <span class="ac-conv-group__label">今天</span>
-          <button
-            v-for="conv in todayConversations"
-            :key="conv.id"
-            class="ac-conv-item"
-            :class="{ 'ac-conv-item--active': currentConversationId === conv.id }"
-            @click="loadConversation(conv)"
-          >
-            <span class="ac-conv-item__text">{{ conv.title || '新对话' }}</span>
-          </button>
+      <div class="sidebar-content" v-show="!sidebarCollapsed">
+          <div v-if="todayConversations.length > 0" class="conversation-section">
+            <div class="section-label">今天</div>
+            <button
+              v-for="conv in todayConversations" :key="conv.id"
+              class="conv-item" :class="{ 'is-active': currentConversationId === conv.id }"
+              @click="loadConversation(conv)"
+            >
+              <span class="conv-text">{{ conv.title || '新对话' }}</span>
+            </button>
+          </div>
+
+          <div v-if="olderConversations.length > 0" class="conversation-section">
+            <div class="section-label">更早</div>
+            <button
+              v-for="conv in olderConversations" :key="conv.id"
+              class="conv-item" :class="{ 'is-active': currentConversationId === conv.id }"
+              @click="loadConversation(conv)"
+            >
+              <span class="conv-text">{{ conv.title || '新对话' }}</span>
+            </button>
+          </div>
+
+          <div v-if="filteredConversations.length === 0 && searchQuery" class="empty-hint">
+            未找到匹配
+          </div>
         </div>
 
-        <div
-          v-if="olderConversations.length > 0"
-          class="ac-conv-group"
-        >
-          <span class="ac-conv-group__label">更早</span>
-          <button
-            v-for="conv in olderConversations"
-            :key="conv.id"
-            class="ac-conv-item"
-            :class="{ 'ac-conv-item--active': currentConversationId === conv.id }"
-            @click="loadConversation(conv)"
-          >
-            <span class="ac-conv-item__text">{{ conv.title || '新对话' }}</span>
-          </button>
-        </div>
-
-        <div
-          v-if="filteredConversations.length === 0 && searchQuery"
-          class="ac-conv-empty"
-        >
-          未找到匹配
-        </div>
-      </div>
-
-      <div class="ac-sidebar__footer">
+      <div class="sidebar-bottom">
         <template v-if="!sidebarCollapsed">
-          <div class="ac-agent-group">
-            <span class="ac-agent-group__label">智能体</span>
-            <div class="ac-agent-list">
+          <div class="agent-section">
+            <div class="section-label">智能体</div>
+            <div class="agent-list">
               <button
-                v-for="agent in agents"
-                :key="agent.id"
-                class="ac-agent-row"
-                :class="{ 'ac-agent-row--active': currentAgentId === agent.id }"
+                v-for="agent in agents" :key="agent.id"
+                class="agent-row" :class="{ 'is-active': currentAgentId === agent.id }"
                 @click="selectAgent(agent.id)"
               >
-                <span
-                  class="ac-agent-row__dot"
-                  :style="{ background: agent.color }"
-                />
-                <span class="ac-agent-row__name">{{ agent.name }}</span>
+                <span class="agent-dot" :style="{ background: agent.color }"></span>
+                <span class="agent-label">{{ agent.name }}</span>
               </button>
             </div>
           </div>
@@ -116,252 +67,104 @@
       </div>
     </div>
 
-    <div class="ac-main">
-      <div class="ac-header">
-        <div class="ac-header__left">
-          <div class="ac-header__agent">
-            <div
-              class="ac-header__badge"
-              :style="{ background: currentAgent?.color }"
-            >
-              <el-icon :size="16">
-                <component :is="currentAgent?.icon" />
-              </el-icon>
+    <div class="main-chat">
+      <div class="chat-header">
+        <div class="header-left">
+          <div class="header-agent-info">
+            <div class="header-icon" :style="{ background: currentAgent?.color }">
+              <el-icon :size="16"><component :is="currentAgent?.icon" /></el-icon>
             </div>
-            <div class="ac-header__info">
-              <span class="ac-header__name">{{ currentAgent?.name }}</span>
-              <span class="ac-header__role">{{ currentAgent?.role }}</span>
+            <div class="header-text">
+              <span class="header-name">{{ currentAgent?.name }}</span>
+              <span class="header-role">{{ currentAgent?.role }}</span>
             </div>
           </div>
         </div>
-        <div class="ac-header__actions">
-          <el-tooltip
-            content="返回"
-            placement="bottom"
-            :show-after="300"
-          >
-            <button
-              class="ac-header__back"
-              @click="goBack"
-            >
-              <el-icon :size="16">
-                <ArrowLeft />
-              </el-icon>
+        <div class="header-actions">
+          <el-tooltip content="返回" placement="bottom" :show-after="300">
+            <button class="header-back-btn" @click="goBack">
+              <el-icon :size="16"><ArrowLeft /></el-icon>
             </button>
           </el-tooltip>
-          <el-dropdown
-            v-if="providers.length > 0"
-            trigger="click"
-            @command="(cmd) => selectedProvider = cmd"
-          >
-            <button class="ac-model-picker">
-              <span class="ac-model-picker__name">{{ currentProviderName }}</span>
-              <el-icon :size="12">
-                <ArrowDown />
-              </el-icon>
+          <el-dropdown v-if="providers.length > 0" trigger="click" @command="(cmd) => selectedProvider = cmd">
+            <button class="model-selector">
+              <span class="model-name">{{ currentProviderName }}</span>
+              <el-icon :size="12"><ArrowDown /></el-icon>
             </button>
             <template #dropdown>
               <el-dropdown-menu>
-                <el-dropdown-item
-                  v-for="p in providers"
-                  :key="p.id"
-                  :command="p.id"
-                  :class="{ 'is-active': selectedProvider === p.id }"
-                >
-                  <div class="ac-model-opt">
-                    <span>{{ p.name }}</span><el-icon
-                      v-if="selectedProvider === p.id"
-                      :size="12"
-                    >
-                      <Check />
-                    </el-icon>
-                  </div>
+                <el-dropdown-item v-for="p in providers" :key="p.id" :command="p.id" :class="{ 'is-active': selectedProvider === p.id }">
+                  <div class="model-option"><span>{{ p.name }}</span><el-icon v-if="selectedProvider === p.id" :size="12"><Check /></el-icon></div>
                 </el-dropdown-item>
               </el-dropdown-menu>
             </template>
           </el-dropdown>
+          <button v-else class="config-btn" @click="router.push('/ai-config')">
+            <el-icon :size="14"><Setting /></el-icon><span>配置模型</span>
+          </button>
         </div>
       </div>
 
-      <div
-        ref="messagesContainer"
-        class="ac-messages"
-        @scroll="handleUserScroll"
-      >
-        <div
-          v-if="messages.length === 0 && currentAgent"
-          class="ac-welcome"
-        >
-          <div class="ac-welcome__inner">
-            <div
-              class="ac-welcome__orb"
-              :style="{ background: currentAgent?.color }"
-            >
-              <el-icon :size="28">
-                <component :is="currentAgent?.icon" />
-              </el-icon>
+      <div ref="messagesContainer" class="chat-messages" @scroll="handleUserScroll">
+        <div v-if="messages.length === 0 && currentAgent" class="welcome-screen">
+          <div class="welcome-content">
+            <div class="welcome-icon" :style="{ background: currentAgent?.color }">
+              <el-icon :size="24"><component :is="currentAgent?.icon" /></el-icon>
             </div>
-            <h2 class="ac-welcome__title">
-              <span
-                v-for="(word, i) in welcomeWords"
-                :key="i"
-                class="ac-welcome__word"
-                :style="{ '--wi': i }"
-              >
-                <span class="ac-welcome__word-in">{{ word }}</span>
-              </span>
-            </h2>
-            <p class="ac-welcome__role">
-              {{ currentAgent.role }}
-            </p>
-            <p class="ac-welcome__desc">
-              {{ currentAgent.welcome }}
-            </p>
-            <div class="ac-welcome__prompts">
-              <button
-                v-for="(prompt, idx) in currentAgent.quickPrompts"
-                :key="idx"
-                class="ac-prompt-chip"
-                :style="{ '--delay': idx * 0.08 + 's' }"
-                @click="useQuickPrompt(prompt)"
-              >
-                {{ prompt }}
-              </button>
+            <h2 class="welcome-title">{{ currentAgent.name }}</h2>
+            <p class="welcome-subtitle">{{ currentAgent.role }}</p>
+            <p class="welcome-desc">{{ currentAgent.welcome }}</p>
+            <div class="quick-prompts">
+              <div class="prompts-list">
+                <button v-for="(prompt, idx) in currentAgent.quickPrompts" :key="idx"
+                        class="prompt-chip" @click="useQuickPrompt(prompt)">
+                  {{ prompt }}
+                </button>
+              </div>
             </div>
           </div>
         </div>
 
         <template v-else>
-          <div
-            v-for="msg in messages"
-            :key="msg.id"
-            class="ac-msg"
-            :class="{ 'ac-msg--user': msg.role === 'user' }"
-          >
-            <div class="ac-msg__bubble">
-              <div
-                class="ac-msg__avatar"
-                :style="{ background: msg.role === 'user' ? 'var(--color-solid)' : currentAgent?.color }"
-              >
-                <el-icon :size="14">
-                  <User v-if="msg.role === 'user'" /><component
-                    :is="currentAgent?.icon"
-                    v-else
-                  />
-                </el-icon>
+          <div v-for="msg in messages" :key="msg.id" class="message-wrapper" :class="{ 'is-user': msg.role === 'user' }">
+            <div class="message">
+              <div class="message-avatar" :style="{ background: msg.role === 'user' ? 'var(--color-solid)' : currentAgent?.color }">
+                <el-icon :size="14"><User v-if="msg.role === 'user'" /><component :is="currentAgent?.icon" v-else /></el-icon>
               </div>
-              <div class="ac-msg__body">
-                <div
-                  v-if="msg.reasoning"
-                  class="ac-reasoning"
-                  :class="{ 'ac-reasoning--thinking': msg.isThinking && !msg.content }"
-                >
-                  <div
-                    class="ac-reasoning__head"
-                    @click="msg.showReasoning = !msg.showReasoning"
-                  >
-                    <el-icon :size="12">
-                      <Cpu />
-                    </el-icon>
+              <div class="message-content">
+                <div v-if="msg.reasoning" class="reasoning-block" :class="{ 'is-thinking': msg.isThinking && !msg.content }">
+                  <div class="reasoning-header" @click="msg.showReasoning = !msg.showReasoning">
+                    <el-icon :size="12"><Cpu /></el-icon>
                     <span>{{ msg.isThinking && !msg.content ? '正在思考...' : '思考过程' }}</span>
-                    <span
-                      v-if="msg.isThinking && !msg.content"
-                      class="ac-reasoning__badge"
-                    >进行中</span>
-                    <el-icon
-                      :size="10"
-                      class="ac-reasoning__chevron"
-                      :class="{ 'ac-reasoning__chevron--open': msg.showReasoning }"
-                    >
-                      <ArrowDown />
-                    </el-icon>
+                    <span v-if="msg.isThinking && !msg.content" class="thinking-badge">进行中</span>
+                    <el-icon :size="10" class="reasoning-toggle" :class="{ 'is-expanded': msg.showReasoning }"><ArrowDown /></el-icon>
                   </div>
-                  <div
-                    v-show="msg.showReasoning"
-                    class="ac-reasoning__text"
-                  >
-                    {{ msg.reasoning }}
-                  </div>
+                  <div v-show="msg.showReasoning" class="reasoning-body">{{ msg.reasoning }}</div>
                 </div>
 
-                <div class="ac-msg__text">
-                  <div
-                    v-if="isGenerating && msg.role === 'assistant' && isLastMessage(msg) && !msg.content && !msg.reasoning"
-                    class="ac-typing"
-                  >
-                    <span class="ac-typing__dot" /><span class="ac-typing__dot" /><span class="ac-typing__dot" />
-                    <span class="ac-typing__label">{{ waitingText }}</span>
+                <div class="message-text">
+                  <div v-if="isGenerating && msg.role === 'assistant' && isLastMessage(msg) && !msg.content && !msg.reasoning" class="waiting-dots">
+                    <span class="dot" /><span class="dot" /><span class="dot" />
+                    <span class="waiting-label">{{ waitingText }}</span>
                   </div>
                   <template v-else>
                     <span v-html="renderMarkdown(msg.content)" />
-                    <span
-                      v-if="isGenerating && msg.role === 'assistant' && isLastMessage(msg)"
-                      class="ac-cursor"
-                    />
+                    <span v-if="isGenerating && msg.role === 'assistant' && isLastMessage(msg)" class="typing-cursor" />
                   </template>
                 </div>
 
-                <div
-                  v-if="msg.content && !isGenerating"
-                  class="ac-msg__tools"
-                >
-                  <el-tooltip
-                    content="复制"
-                    placement="top"
-                    :show-after="300"
-                  >
-                    <button
-                      class="ac-tool-btn"
-                      @click="copyMessage(msg)"
-                    >
-                      <el-icon :size="12">
-                        <DocumentCopy />
-                      </el-icon>
-                    </button>
+                <div v-if="msg.content && !isGenerating" class="message-actions">
+                  <el-tooltip content="复制" placement="top" :show-after="300">
+                    <button class="action-btn" @click="copyMessage(msg)"><el-icon :size="12"><DocumentCopy /></el-icon></button>
                   </el-tooltip>
                   <template v-if="msg.role === 'assistant'">
-                    <el-tooltip
-                      content="有帮助"
-                      placement="top"
-                      :show-after="300"
-                    >
-                      <button
-                        class="ac-tool-btn"
-                        :class="{ 'ac-tool-btn--on': msg.feedback === 'good' }"
-                        @click="setFeedback(msg, 'good')"
-                      >
-                        <el-icon :size="12">
-                          <Select />
-                        </el-icon>
-                      </button>
+                    <el-tooltip content="有帮助" placement="top" :show-after="300">
+                      <button class="action-btn" :class="{ 'is-active': msg.feedback === 'good' }" @click="setFeedback(msg, 'good')"><el-icon :size="12"><Select /></el-icon></button>
                     </el-tooltip>
-                    <el-tooltip
-                      content="无帮助"
-                      placement="top"
-                      :show-after="300"
-                    >
-                      <button
-                        class="ac-tool-btn"
-                        :class="{ 'ac-tool-btn--on': msg.feedback === 'bad' }"
-                        @click="setFeedback(msg, 'bad')"
-                      >
-                        <el-icon
-                          :size="12"
-                          style="transform: scaleY(-1)"
-                        >
-                          <Select />
-                        </el-icon>
-                      </button>
+                    <el-tooltip content="无帮助" placement="top" :show-after="300">
+                      <button class="action-btn" :class="{ 'is-active': msg.feedback === 'bad' }" @click="setFeedback(msg, 'bad')"><el-icon :size="12" style="transform: scaleY(-1)"><Select /></el-icon></button>
                     </el-tooltip>
-                    <button
-                      v-if="isLastMessage(msg)"
-                      class="ac-tool-btn ac-tool-btn--regen"
-                      @click="regenerateLastResponse()"
-                    >
-                      <el-icon :size="12">
-                        <RefreshRight />
-                      </el-icon><span>重新生成</span>
-                    </button>
+                    <button v-if="isLastMessage(msg)" class="action-btn regenerate-btn" @click="regenerateLastResponse()"><el-icon :size="12"><RefreshRight /></el-icon><span>重新生成</span></button>
                   </template>
                 </div>
               </div>
@@ -369,110 +172,45 @@
           </div>
         </template>
 
-        <div
-          v-if="isQueued"
-          class="ac-queue"
-        >
-          <el-icon :size="14">
-            <Clock />
-          </el-icon>
+        <div v-if="isQueued" class="queue-notice">
+          <el-icon :size="14"><Clock /></el-icon>
           <span>请求排队中，前方还有 {{ queuePosition }} 个任务...</span>
         </div>
 
-        <div
-          v-if="lastError"
-          class="ac-error"
-        >
-          <div class="ac-error__main">
-            <el-icon
-              :size="16"
-              class="ac-error__icon"
-            >
-              <WarningFilled />
-            </el-icon>
-            <div class="ac-error__info">
-              <span class="ac-error__title">{{ lastError.title }}</span>
-              <span class="ac-error__desc">{{ lastError.message }}</span>
+        <div v-if="lastError" class="error-banner">
+          <div class="error-content">
+            <el-icon :size="16" class="error-icon"><WarningFilled /></el-icon>
+            <div class="error-info">
+              <span class="error-title">{{ lastError.title }}</span>
+              <span class="error-desc">{{ lastError.message }}</span>
             </div>
           </div>
-          <div class="ac-error__actions">
-            <el-button
-              v-if="canRetry"
-              type="primary"
-              size="small"
-              @click="handleRetry"
-            >
-              重试 ({{ retryCount }}/{{ maxRetries }})
-            </el-button>
-            <el-button
-              size="small"
-              text
-              @click="clearError"
-            >
-              忽略
-            </el-button>
+          <div class="error-actions">
+            <el-button v-if="canRetry" type="primary" size="small" @click="handleRetry">重试 ({{ retryCount }}/{{ maxRetries }})</el-button>
+            <el-button size="small" text @click="clearError">忽略</el-button>
           </div>
         </div>
       </div>
 
-      <div class="ac-input-zone">
-        <div
-          class="ac-input-box"
-          :class="{ 'ac-input-box--focus': inputFocused }"
-        >
-          <textarea
-            ref="textareaRef"
-            v-model="inputMessage"
-            class="ac-input"
-            placeholder="输入您的问题，按 Enter 发送..."
-            :disabled="isLoading"
-            rows="1"
-            aria-label="AI对话输入框"
-            @input="autoResize"
-            @focus="inputFocused = true"
-            @blur="inputFocused = false"
-            @keydown.enter.exact.prevent="sendMessage"
-          />
-          <div class="ac-input-bar">
-            <div class="ac-input-bar__left">
-              <button
-                class="ac-toggle-btn"
-                :class="{ 'ac-toggle-btn--on': enableThinking }"
-                :disabled="isLoading"
-                @click="toggleThinking"
-              >
-                <el-icon :size="14">
-                  <Cpu />
-                </el-icon><span>深度思考</span>
+      <div class="input-section">
+        <div class="input-container">
+          <textarea v-model="inputMessage" class="chat-textarea" placeholder="输入您的问题，按 Enter 发送..." :disabled="isLoading" rows="1" aria-label="AI对话输入框" @input="autoResize" @keydown.enter.exact.prevent="sendMessage" />
+          <div class="input-toolbar">
+            <div class="toolbar-left">
+              <button class="toolbar-btn" :class="{ 'is-active': enableThinking }" :disabled="isLoading" @click="toggleThinking">
+                <el-icon :size="14"><Cpu /></el-icon><span>深度思考</span>
               </button>
             </div>
-            <div class="ac-input-bar__right">
-              <button
-                v-if="!isLoading"
-                class="ac-send-btn"
-                :class="{ 'ac-send-btn--ready': inputMessage.trim() }"
-                :disabled="!inputMessage.trim()"
-                @click="sendMessage"
-              >
-                <el-icon :size="16">
-                  <Promotion />
-                </el-icon>
+            <div class="toolbar-right">
+              <button v-if="!isLoading" class="send-btn" :class="{ 'is-active': inputMessage.trim() }" :disabled="!inputMessage.trim()" @click="sendMessage">
+                <el-icon :size="16"><Promotion /></el-icon>
               </button>
-              <button
-                v-else-if="stopButtonVisible"
-                class="ac-send-btn ac-send-btn--stop"
-                @click="stopGeneration"
-              >
-                <el-icon :size="16">
-                  <VideoPause />
-                </el-icon>
+              <button v-else-if="stopButtonVisible" class="send-btn is-stop" @click="stopGeneration">
+                <el-icon :size="16"><VideoPause /></el-icon>
               </button>
             </div>
           </div>
         </div>
-        <p class="ac-input-hint">
-          AI 生成内容仅供参考，重要决策请结合多方信息
-        </p>
       </div>
     </div>
   </div>
@@ -485,7 +223,7 @@ import { ElMessage } from 'element-plus'
 import {
   ArrowLeft, User, WarningFilled, Clock,
   Promotion, VideoPause, Search,
-  Cpu, ArrowDown, Check, Plus,
+  Cpu, ArrowDown, Check, Setting, Plus,
   School, DocumentCopy, OfficeBuilding, Stamp,
   Select, RefreshRight, Expand, Fold
 } from '@element-plus/icons-vue'
@@ -493,7 +231,6 @@ import { buildSystemPrompt } from '@/utils/ai-api'
 import { useAIStream } from '@/composables/useAIStream'
 import { useActiveStream } from '@/composables/useActiveStream'
 import { renderMarkdown } from '@/utils/markdown'
-import { DEFAULT_PROVIDER } from '@/composables/useAIConfig'
 
 const router = useRouter()
 const {
@@ -540,53 +277,25 @@ const currentAgent = computed(() => agents.value.find(a => a.id === currentAgent
 const selectedProvider = ref(null)
 const inputMessage = ref('')
 const messagesContainer = ref(null)
-const textareaRef = ref(null)
 const messages = ref([])
 const currentConversationId = ref(null)
 const lastError = ref(null)
 const userData = ref(null)
 const enableThinking = ref(false)
 const searchQuery = ref('')
-const inputFocused = ref(false)
 const CHAT_STATE_KEY = 'ai_chat_current_state'
 const currentStream = ref(null)
 let isRestoringState = false
 let isFreshEntry = true
-let userScrollLocked = false
-let lastUserScrollTime = 0
 
-const welcomeWords = computed(() => (currentAgent.value?.name || '').split(''))
-
-const scrollToBottom = (force = false) => {
-  if (!messagesContainer.value) return
-  if (force) {
-    messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight
-    return
-  }
-  if (userScrollLocked) return
-  if (Date.now() - lastUserScrollTime < 150) return
-  requestAnimationFrame(() => {
-    if (messagesContainer.value) {
-      messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight
-    }
-  })
-}
-
-const handleUserScrollInternal = () => {
-  if (!messagesContainer.value) return
-  lastUserScrollTime = Date.now()
-  requestAnimationFrame(() => {
-    if (!messagesContainer.value) return
-    const { scrollTop, scrollHeight, clientHeight } = messagesContainer.value
-    const distanceFromBottom = scrollHeight - scrollTop - clientHeight
-    const isAtBottom = distanceFromBottom < 60
-    if (!isAtBottom && distanceFromBottom > 80) {
-      userScrollLocked = true
-    } else if (isAtBottom) {
-      userScrollLocked = false
-    }
-  })
-}
+const { scrollToBottom, handleUserScroll: handleStreamScroll } = useAIStream({
+  taskId: `chat-${currentAgentId.value}`,
+  enableThinking: enableThinking.value,
+  autoRestore: false, autoScroll: true,
+  scrollContainer: () => messagesContainer.value,
+  onStateChange: (state) => { if (state === 'error') lastError.value = { title: '请求失败', message: '请检查网络连接或重试' } },
+  onQueueChange: (pos) => { /* queue position updated */ }
+})
 
 const loadUserData = () => {
   const saved = localStorage.getItem('assessment_form')
@@ -635,11 +344,11 @@ const olderConversations = computed(() => {
   return filteredConversations.value.filter(c => { const d = new Date(c.createdAt); d.setHours(0, 0, 0, 0); return d.getTime() < t.getTime() })
 })
 
-const providers = computed(() => { const s = localStorage.getItem('ai_providers'); return s ? JSON.parse(s) : [DEFAULT_PROVIDER] })
+const providers = computed(() => { const s = localStorage.getItem('ai_providers'); return s ? JSON.parse(s) : [] })
 const currentProviderName = computed(() => { const p = providers.value.find(p => p.id === selectedProvider.value); return p ? p.name : '选择模型' })
 const getAgentName = (id) => { const a = agents.value.find(a => a.id === id); return a ? a.name : 'AI助手' }
 
-const loadProviders = () => { const s = localStorage.getItem('ai_providers'); if (s) { const p = JSON.parse(s); if (p.length > 0) selectedProvider.value = p[0].id } else { selectedProvider.value = DEFAULT_PROVIDER.id } }
+const loadProviders = () => { const s = localStorage.getItem('ai_providers'); if (s) { const p = JSON.parse(s); if (p.length > 0) selectedProvider.value = p[0].id } }
 
 const selectAgent = (id) => {
   if (currentAgentId.value === id) return
@@ -658,45 +367,37 @@ const autoResize = (e) => { const t = e.target; t.style.height = 'auto'; t.style
 const sendMessage = async () => {
   isFreshEntry = false
   if (!inputMessage.value.trim()) { ElMessage.warning('请输入消息'); return }
+  if (!selectedProvider.value) { ElMessage.warning('请先配置AI提供商'); router.push('/ai-config'); return }
 
   const userMsg = { id: Date.now(), role: 'user', content: inputMessage.value, timestamp: Date.now() }
   messages.value.push(userMsg); inputMessage.value = ''; clearError(); scrollToBottom(true)
 
   const aiMsg = { id: Date.now() + 1, role: 'assistant', content: '', reasoning: '', showReasoning: false, isThinking: enableThinking.value, timestamp: Date.now() }
   messages.value.push(aiMsg); const aiIdx = messages.value.length - 1
-  let hasReasoningContent = false
 
   try {
     const systemPrompt = buildSystemPrompt(currentAgentId.value, userData.value)
     const apiMessages = [{ role: 'system', content: systemPrompt }, ...messages.value.filter(m => m.role === 'user' || m.role === 'assistant').map(m => ({ role: m.role, content: m.content }))]
 
-    const stream = useAIStream({
-      taskId: `chat-${currentAgentId.value}-${Date.now()}`,
-      enableThinking: enableThinking.value,
-      autoRestore: false,
-      autoScroll: false,
-      scrollContainer: () => messagesContainer.value,
-      onStream: (content, reasoning) => {
-        if (content) { messages.value[aiIdx].content = content; messages.value[aiIdx].isThinking = false }
-        if (enableThinking.value && reasoning) {
-          if (!hasReasoningContent && reasoning.length > 50) { hasReasoningContent = true; messages.value[aiIdx].showReasoning = true }
-          messages.value[aiIdx].reasoning = reasoning
-        }
-        if (content && content.length > 100 && hasReasoningContent) messages.value[aiIdx].showReasoning = false
-        scrollToBottom()
-      },
-      onComplete: (content, reasoning) => {
-        if (content) messages.value[aiIdx].content = content
-        if (enableThinking.value && reasoning) messages.value[aiIdx].reasoning = reasoning
-        messages.value[aiIdx].showReasoning = false; messages.value[aiIdx].isThinking = false
-      },
-      onError: (error) => {
-        lastError.value = { title: '请求失败', message: error }
-      }
-    })
-
+    const stream = useAIStream({ taskId: `chat-${currentAgentId.value}-${Date.now()}`, enableThinking: enableThinking.value, autoRestore: false, autoScroll: true, scrollContainer: () => messagesContainer.value })
     currentStream.value = stream
-    await stream.generateWithProvider(selectedProvider.value, apiMessages)
+    let hasReasoningContent = false
+
+    const pollInterval = setInterval(() => {
+      if (stream.content.value) { messages.value[aiIdx].content = stream.content.value; messages.value[aiIdx].isThinking = false }
+      if (enableThinking.value && stream.reasoning.value) {
+        if (!hasReasoningContent && stream.reasoning.value.length > 50) { hasReasoningContent = true; messages.value[aiIdx].showReasoning = true }
+        messages.value[aiIdx].reasoning = stream.reasoning.value
+      }
+      if (stream.content.value && stream.content.value.length > 100 && hasReasoningContent) messages.value[aiIdx].showReasoning = false
+      if (!stream.isStreaming.value && !stream.isThinking.value) clearInterval(pollInterval)
+    }, 100)
+
+    try { await stream.generateWithProvider(selectedProvider.value, apiMessages) } finally { clearInterval(pollInterval) }
+
+    if (stream.content.value) messages.value[aiIdx].content = stream.content.value
+    if (enableThinking.value && stream.reasoning.value) messages.value[aiIdx].reasoning = stream.reasoning.value
+    messages.value[aiIdx].showReasoning = false; messages.value[aiIdx].isThinking = false
     saveCurrentState()
   } catch (error) {
     lastError.value = { title: '请求失败', message: error.message || '请检查网络连接或重试' }
@@ -720,7 +421,7 @@ const regenerateLastResponse = async () => {
   const ui = messages.value.findLastIndex(m => m.role === 'user'); if (ui < 0) return
   lastUserMessageForRegen = messages.value[ui].content; messages.value.pop(); saveCurrentState(); inputMessage.value = lastUserMessageForRegen; await sendMessage()
 }
-const handleUserScroll = () => { if (currentStream.value) currentStream.value.handleUserScroll(); else handleUserScrollInternal() }
+const handleUserScroll = () => { if (!messagesContainer.value) return; if (currentStream.value) currentStream.value.handleUserScroll(); else handleStreamScroll() }
 const clearError = () => { lastError.value = null }
 const startNewChat = () => { if (messages.value.length > 0) saveConversation(); messages.value = []; currentConversationId.value = null; clearCurrentState(); ElMessage.success('已开始新对话') }
 const stopGeneration = () => { if (currentStream.value) { currentStream.value.stop(); currentStream.value = null } stopActiveGeneration(); saveCurrentState() }
@@ -749,1234 +450,648 @@ onUnmounted(() => { saveCurrentState(); if (currentStream.value) currentStream.v
 </script>
 
 <style scoped>
-/* ============================================
-   智途 AstroPath — AI Chat · Awwwards 重构
-   设计语言: 思想工坊 / 档案式新极简主义
-   色系: Slate(#0F172A) + Amber(#D97706)
-   命名: BEM · ac- 前缀
-   ============================================ */
-
-:root {
-  --ac-ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
-  --ac-ease-back-out: cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-/* ===== 页面根容器 ===== */
-.ac-page {
+.ai-chat-page {
   display: flex;
-  height: calc(100dvh - 64px);
-  margin-top: -20px;
+  height: 100vh;
   overflow: hidden;
-  position: relative;
-  background: #FFFFFF;
-}
-
-@media (max-width: 1199px) {
-  .ac-page {
-    height: calc(100dvh - 56px);
-    margin-top: -14px;
-  }
-}
-
-@media (max-width: 767px) {
-  .ac-page {
-    height: calc(100dvh - 52px);
-    margin-top: -10px;
-  }
-}
-
-/* ===== 全局噪点纹理 ===== */
-.ac-noise {
   position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 99999;
-  opacity: 0.03;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  background-repeat: repeat;
-  background-size: 256px 256px;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 100;
+  background: #FFFFFF;
 }
 
-/* ===== SIDEBAR ===== */
-.ac-sidebar {
-  width: 220px;
+.sidebar {
+  width: 200px;
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
-  background: #F8FAFC;
-  border-right: 1px solid rgba(15, 23, 42, 0.06);
-  transition: width 0.4s var(--ac-ease-out-expo), opacity 0.25s ease;
+  background: #F9FAFB;
+  transition: width 0.2s ease, opacity 0.15s ease;
   overflow: hidden;
-  position: relative;
 }
-
-.ac-sidebar::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  width: 1px;
-  background: linear-gradient(180deg, transparent, rgba(15, 23, 42, 0.08), transparent);
+.sidebar.is-collapsed {
+  width: 60px;
 }
-
-.ac-sidebar--collapsed {
-  width: 64px;
-}
-
-.ac-sidebar__top {
-  padding: 14px 12px;
+.sidebar-top {
+  padding: 12px;
   display: flex;
   align-items: center;
   gap: 8px;
   flex-shrink: 0;
-  border-bottom: 1px solid rgba(15, 23, 42, 0.04);
 }
-
-.ac-sidebar--collapsed .ac-sidebar__top {
-  padding: 12px 10px;
+.sidebar.is-collapsed .sidebar-top {
+  padding: 8px;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
 }
-
-.ac-sidebar__toggle {
-  width: 34px;
-  height: 34px;
-  border: 1px solid rgba(15, 23, 42, 0.08);
-  border-radius: 8px;
-  background: #FFFFFF;
-  color: var(--color-slate-400);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  transition: all 0.25s var(--ac-ease-back-out);
-}
-
-.ac-sidebar__toggle:hover {
-  background: var(--color-solid);
-  color: #FFFFFF;
-  border-color: var(--color-solid);
-  transform: rotate(180deg);
-}
-
-.ac-sidebar__new-btn {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 9px 14px;
-  border: 1px solid rgba(15, 23, 42, 0.1);
-  border-radius: 8px;
-  background: #FFFFFF;
-  color: var(--color-text-primary);
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.25s var(--ac-ease-out-expo);
-  letter-spacing: 0.01em;
-}
-
-.ac-sidebar__new-btn:hover {
-  border-color: var(--color-solid);
-  box-shadow: 0 2px 12px rgba(15, 23, 42, 0.08);
-}
-
-.ac-sidebar__icon-btn {
-  width: 34px;
-  height: 34px;
-  border: 1px solid rgba(15, 23, 42, 0.08);
-  border-radius: 8px;
+.sidebar-toggle {
+  width: 32px; height: 32px;
+  border: none; border-radius: 8px;
   background: transparent;
-  color: var(--color-slate-400);
+  color: #6b7280;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
-  transition: all 0.25s var(--ac-ease-back-out);
+  transition: all 0.15s ease;
 }
-
-.ac-sidebar__icon-btn:hover {
-  background: rgba(15, 23, 42, 0.06);
-  color: var(--color-solid);
-}
-
-.ac-sidebar:not(.ac-sidebar--collapsed) .ac-sidebar__icon-btn {
-  display: none;
-}
-
-/* Sidebar body - conversation list */
-.ac-sidebar__body {
+.sidebar-toggle:hover { background: #e5e7eb; color: #374151; }
+.new-chat-btn {
   flex: 1;
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding: 8px;
-  opacity: 1;
-  transition: opacity 0.25s ease;
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 14px;
+  border: 1px solid #e5e7eb; border-radius: 8px;
+  background: #FFFFFF;
+  color: #374151;
+  font-size: 13px; font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
 }
-
-.ac-sidebar--collapsed .ac-sidebar__body {
-  opacity: 0;
-  pointer-events: none;
+.new-chat-btn:hover { background: #f3f4f6; border-color: #d1d5db; }
+.new-chat-icon-btn {
+  width: 32px; height: 32px;
+  border: none; border-radius: 8px;
+  background: transparent;
+  color: #6b7280;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
 }
+.new-chat-icon-btn:hover { background: #e5e7eb; color: #374151; }
+.sidebar:not(.is-collapsed) .new-chat-icon-btn { display: none; }
 
-.ac-conv-group {
-  margin-bottom: 20px;
+.sidebar-content {
+  flex: 1; overflow-y: auto; overflow-x: hidden;
+  padding: 0 8px;
+  opacity: 1; transition: opacity 0.15s ease;
 }
+.sidebar.is-collapsed .sidebar-content { opacity: 0; pointer-events: none; }
 
-.ac-conv-group__label {
-  display: block;
-  padding: 14px 10px 6px;
-  font-family: var(--font-family-mono);
-  font-size: 10px;
+.conversation-section { margin-bottom: 16px; }
+.section-label {
+  padding: 16px 12px 6px;
+  font-size: 11px;
   font-weight: 600;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: var(--color-slate-400);
+  color: #9ca3af;
 }
 
-.ac-conv-item {
+.conv-item {
   display: block;
   width: 100%;
   text-align: left;
-  padding: 10px 12px;
-  border: 1px solid transparent;
-  border-radius: 8px;
+  padding: 9px 12px;
+  border: none; border-radius: 8px;
   background: transparent;
   cursor: pointer;
-  transition: all 0.2s var(--ac-ease-out-expo);
-  margin-bottom: 2px;
+  transition: all 0.12s ease;
+  margin-bottom: 1px;
 }
-
-.ac-conv-item__text {
+.conv-item .conv-text {
   display: block;
   font-size: 13px;
-  font-weight: 500;
-  color: var(--color-slate-600);
+  color: #374151;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  line-height: 1.5;
-  letter-spacing: 0.01em;
+  line-height: 1.4;
 }
+.conv-item:hover { background: #e5e7eb; }
+.conv-item.is-active { background: #e5e7eb; }
+.conv-item.is-active .conv-text { color: #1f2937; font-weight: 600; }
 
-.ac-conv-item:hover {
-  background: rgba(15, 23, 42, 0.04);
-  border-color: rgba(15, 23, 42, 0.06);
-}
-
-.ac-conv-item--active {
-  background: rgba(15, 23, 42, 0.05);
-  border-color: rgba(15, 23, 42, 0.1);
-}
-
-.ac-conv-item--active .ac-conv-item__text {
-  color: var(--color-text-primary);
-  font-weight: 700;
-}
-
-.ac-conv-empty {
-  padding: 32px 12px;
+.empty-hint {
+  padding: 24px 12px;
   text-align: center;
-  font-family: var(--font-family-mono);
-  font-size: 11px;
-  color: var(--color-slate-400);
-  letter-spacing: 1px;
+  color: #9ca3af;
+  font-size: 12px;
 }
 
-/* Sidebar footer - agent list */
-.ac-sidebar__footer {
+.sidebar-bottom {
   flex-shrink: 0;
-  padding: 10px 8px 12px;
-  border-top: 1px solid rgba(15, 23, 42, 0.04);
+  padding: 8px;
+  border-top: 1px solid #f3f4f6;
 }
-
-.ac-agent-group { margin-bottom: 4px; }
-
-.ac-agent-group__label {
-  display: block;
-  padding: 8px 10px 6px;
-  font-family: var(--font-family-mono);
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: var(--color-slate-400);
-}
-
-.ac-agent-list {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.ac-agent-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-  padding: 9px 10px;
-  border: 1px solid transparent;
-  border-radius: 8px;
+.agent-section { margin-bottom: 8px; }
+.agent-list { display: flex; flex-direction: column; gap: 1px; }
+.agent-row {
+  display: flex; align-items: center; gap: 10px;
+  width: 100%; padding: 8px 10px;
+  border: none; border-radius: 8px;
   background: transparent;
   cursor: pointer;
-  transition: all 0.2s var(--ac-ease-out-expo);
+  transition: all 0.12s ease;
 }
-
-.ac-agent-row:hover {
-  background: rgba(15, 23, 42, 0.04);
-  border-color: rgba(15, 23, 42, 0.06);
+.agent-row:hover { background: #e5e7eb; }
+.agent-row.is-active { background: #FFFFFF; box-shadow: 0 1px 2px rgba(0,0,0,0.04); }
+.agent-dot {
+  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
 }
-
-.ac-agent-row--active {
-  background: #FFFFFF;
-  border-color: rgba(15, 23, 42, 0.08);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+.agent-label {
+  font-size: 13px; font-weight: 500; color: #374151;
 }
+.agent-row.is-active .agent-label { color: #1f2937; font-weight: 600; }
 
-.ac-agent-row__dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  flex-shrink: 0;
-  transition: transform 0.3s var(--ac-ease-back-out);
-}
+.main-chat { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
 
-.ac-agent-row--active .ac-agent-row__dot {
-  transform: scale(1.3);
-}
-
-.ac-agent-row__name {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--color-slate-600);
-  letter-spacing: 0.01em;
-}
-
-.ac-agent-row--active .ac-agent-row__name {
-  color: var(--color-text-primary);
-  font-weight: 700;
-}
-
-/* ===== MAIN AREA ===== */
-.ac-main {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  position: relative;
-  background: #FFFFFF;
-}
-
-/* ===== HEADER ===== */
-.ac-header {
+.chat-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 36px;
+  padding: 14px 32px;
   flex-shrink: 0;
-  min-height: 60px;
-  border-bottom: 1px solid rgba(15, 23, 42, 0.05);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  background: rgba(255, 255, 255, 0.85);
-  position: relative;
-  z-index: 10;
+  min-height: 56px;
 }
 
-.ac-header::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 36px;
-  right: 36px;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(15, 23, 42, 0.06), transparent);
+.header-left { display: flex; align-items: center; gap: 10px; }
+.header-back-btn {
+  width: 32px; height: 32px;
+  border: none; border-radius: 8px;
+  background: transparent; color: #6b7280;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: all 0.12s ease;
 }
+.header-back-btn:hover { background: #f3f4f6; color: #374151; }
+.header-agent-info { display: flex; align-items: center; gap: 10px; }
 
-.ac-header__left {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.ac-header__back {
-  width: 34px;
-  height: 34px;
-  border: 1px solid rgba(15, 23, 42, 0.08);
+.header-icon {
+  width: 30px;
+  height: 30px;
   border-radius: 8px;
-  background: transparent;
-  color: var(--color-slate-400);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.25s var(--ac-ease-back-out);
-}
-
-.ac-header__back:hover {
-  background: var(--color-solid);
-  color: #FFFFFF;
-  border-color: var(--color-solid);
-  transform: translateX(-2px);
-}
-
-.ac-header__agent {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.ac-header__badge {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s var(--ac-ease-back-out);
 }
 
-.ac-header__agent:hover .ac-header__badge {
-  transform: scale(1.08) rotate(-3deg);
+.header-text { display: flex; flex-direction: column; }
+.header-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1f2937;
 }
+.header-role { font-size: 11px; color: #9ca3af; }
 
-.ac-header__info {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-}
+.header-actions { display: flex; align-items: center; }
 
-.ac-header__name {
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--color-text-primary);
-  letter-spacing: -0.02em;
-}
-
-.ac-header__role {
-  font-family: var(--font-family-mono);
-  font-size: 11px;
-  color: var(--color-accent);
-  font-weight: 500;
-  letter-spacing: 0.5px;
-}
-
-.ac-header__actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.ac-model-picker {
+.model-selector {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 7px 14px;
-  border: 1px solid rgba(15, 23, 42, 0.1);
-  border-radius: 24px;
+  padding: 6px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 20px;
   background: transparent;
-  color: var(--color-slate-500);
-  font-family: var(--font-family-mono);
-  font-size: 11px;
-  font-weight: 600;
+  color: #6b7280;
+  font-size: 12px;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.25s var(--ac-ease-out-expo);
-  letter-spacing: 0.3px;
+  transition: all 0.15s ease;
 }
-
-.ac-model-picker:hover {
-  border-color: var(--color-solid);
-  color: var(--color-solid);
-  background: rgba(15, 23, 42, 0.03);
+.model-selector:hover {
+  border-color: #d1d5db;
+  background: #f9fafb;
 }
+.model-name { max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.model-option { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-width: 140px; }
 
-.ac-model-picker__name {
-  max-width: 120px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.ac-model-opt {
+.config-btn {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  min-width: 140px;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 20px;
+  background: transparent;
+  color: #6b7280;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s ease;
 }
+.config-btn:hover { border-color: #d1d5db; color: #374151; }
 
-/* ===== MESSAGES AREA ===== */
-.ac-messages {
+.chat-messages {
   flex: 1;
   overflow-y: auto;
   padding: 40px 60px;
-  scroll-behavior: smooth;
 }
 
-.ac-messages::-webkit-scrollbar {
-  width: 4px;
-}
-
-.ac-messages::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.ac-messages::-webkit-scrollbar-thumb {
-  background: rgba(15, 23, 42, 0.1);
-  border-radius: 4px;
-}
-
-.ac-messages::-webkit-scrollbar-thumb:hover {
-  background: rgba(15, 23, 42, 0.2);
-}
-
-/* ===== WELCOME SCREEN ===== */
-.ac-welcome {
+.welcome-screen {
   min-height: calc(100% - 48px);
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 80px 40px;
-  position: relative;
+  padding: 60px 40px;
 }
 
-.ac-welcome::before {
-  content: '';
-  position: absolute;
-  inset: 40%;
-  width: 320px;
-  height: 320px;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(217, 119, 6, 0.06) 0%, transparent 70%);
-  transform: translate(-50%, -50%);
-  pointer-events: none;
-  animation: acGlowPulse 4s ease-in-out infinite alternate;
-}
-
-@keyframes acGlowPulse {
-  0% { opacity: 0.6; transform: translate(-50%, -50%) scale(0.95); }
-  100% { opacity: 1; transform: translate(-50%, -50%) scale(1.05); }
-}
-
-.ac-welcome__inner {
+.welcome-content {
   text-align: center;
   max-width: 640px;
   width: 100%;
-  position: relative;
-  z-index: 2;
+  animation: welcomeIn 0.5s ease both;
 }
 
-.ac-welcome__orb {
-  width: 56px;
-  height: 56px;
-  border-radius: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  margin: 0 auto 28px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
-  animation: acOrbIn 0.8s var(--ac-ease-out-expo) both;
-}
-
-@keyframes acOrbIn {
-  from { opacity: 0; transform: scale(0.7) translateY(16px); }
-  to { opacity: 1; transform: scale(1) translateY(0); }
-}
-
-/* 分词标题动画 */
-.ac-welcome__title {
-  font-size: clamp(32px, 5vw, 52px);
-  font-weight: 800;
-  color: var(--color-text-primary);
-  line-height: 1.1;
-  letter-spacing: -0.03em;
-  margin: 0 0 8px;
-  display: flex;
-  justify-content: center;
-  gap: 0.12em;
-  flex-wrap: wrap;
-}
-
-.ac-welcome__word {
-  display: inline-block;
-  overflow: hidden;
-}
-
-.ac-welcome__word-in {
-  display: inline-block;
-  transform: translateY(110%);
-  opacity: 0;
-  animation: acWordReveal 0.65s var(--ac-ease-out-expo) both;
-  animation-delay: calc(var(--wi) * 0.07s + 0.35s);
-}
-
-@keyframes acWordReveal {
-  from { transform: translateY(110%); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
-}
-
-.ac-welcome__role {
-  font-family: var(--font-family-mono);
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--color-accent);
-  letter-spacing: 3px;
-  text-transform: uppercase;
-  margin: 0 0 20px;
-  opacity: 0;
-  animation: acFadeUp 0.6s var(--ac-ease-out-expo) 0.7s both;
-}
-
-.ac-welcome__desc {
-  font-size: 15px;
-  line-height: 1.75;
-  color: var(--color-slate-500);
-  margin: 0 0 40px;
-  max-width: 480px;
-  margin-left: auto;
-  margin-right: auto;
-  opacity: 0;
-  animation: acFadeUp 0.6s var(--ac-ease-out-expo) 0.85s both;
-}
-
-@keyframes acFadeUp {
-  from { opacity: 0; transform: translateY(16px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* Quick prompts */
-.ac-welcome__prompts {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  justify-content: center;
-  opacity: 0;
-  animation: acFadeUp 0.6s var(--ac-ease-out-expo) 1s both;
-}
-
-.ac-prompt-chip {
-  padding: 11px 20px;
-  background: transparent;
-  border: 1px solid rgba(15, 23, 42, 0.1);
-  border-radius: 24px;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--color-slate-600);
-  cursor: pointer;
-  transition: all 0.3s var(--ac-ease-back-out);
-  opacity: 0;
-  animation: acChipIn 0.5s var(--ac-ease-out-expo) both;
-  animation-delay: var(--delay);
-  letter-spacing: 0.01em;
-}
-
-@keyframes acChipIn {
-  from { opacity: 0; transform: translateY(10px) scale(0.95); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
-}
-
-.ac-prompt-chip:hover {
-  border-color: var(--color-solid);
-  color: var(--color-solid);
-  background: rgba(15, 23, 42, 0.03);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.08);
-}
-
-.ac-prompt-chip:active {
-  transform: translateY(0) scale(0.98);
-}
-
-/* ===== MESSAGE BUBBLES ===== */
-.ac-msg {
-  margin-bottom: 28px;
-  display: flex;
-  justify-content: flex-start;
-  opacity: 0;
-  animation: acMsgIn 0.45s var(--ac-ease-out-expo) both;
-}
-
-@keyframes acMsgIn {
+@keyframes welcomeIn {
   from { opacity: 0; transform: translateY(12px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
-.ac-msg--user {
-  justify-content: flex-end;
-}
-
-.ac-msg__bubble {
+.welcome-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
   display: flex;
-  gap: 10px;
-  max-width: 76%;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  margin: 0 auto 24px;
 }
 
-.ac-msg--user .ac-msg__bubble {
-  flex-direction: row-reverse;
+.welcome-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0 0 4px 0;
+  letter-spacing: -0.3px;
 }
 
-.ac-msg__avatar {
-  width: 30px;
-  height: 30px;
-  border-radius: 9px;
+.welcome-subtitle {
+  font-size: 14px;
+  color: #D97706;
+  font-weight: 500;
+  margin: 0 0 16px 0;
+}
+
+.welcome-desc {
+  font-size: 15px;
+  line-height: 1.7;
+  color: #6b7280;
+  margin: 0 0 36px 0;
+  max-width: 480px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.quick-prompts { text-align: center; }
+
+.prompts-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+
+.prompt-chip {
+  padding: 10px 18px;
+  background: transparent;
+  border: 1px solid #e5e7eb;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  animation: chipIn 0.4s ease both;
+}
+.prompt-chip:nth-child(1) { animation-delay: 0.05s; }
+.prompt-chip:nth-child(2) { animation-delay: 0.1s; }
+.prompt-chip:nth-child(3) { animation-delay: 0.15s; }
+
+@keyframes chipIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.prompt-chip:hover {
+  border-color: #374151;
+  color: #374151;
+  background: #f9fafb;
+}
+
+.message-wrapper {
+  margin-bottom: 32px;
+  display: flex;
+  justify-content: flex-start;
+  animation: msgIn 0.3s ease both;
+}
+
+@keyframes msgIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.message-wrapper.is-user { justify-content: flex-end; }
+
+.message { display: flex; gap: 10px; max-width: 78%; }
+.message-wrapper.is-user .message { flex-direction: row-reverse; }
+
+.message-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
   flex-shrink: 0;
   margin-top: 2px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-.ac-msg__body {
-  background: #F8FAFC;
-  border-radius: 14px;
-  padding: 16px 20px;
-  border: 1px solid rgba(15, 23, 42, 0.04);
-  transition: background 0.2s ease;
-  min-width: 0;
+.message-content {
+  background: #F7F7F8;
+  border-radius: 12px;
+  padding: 14px 18px;
 }
 
-.ac-msg--user .ac-msg__body {
-  background: var(--color-solid);
-  color: #FFFFFF;
-  border-color: transparent;
-  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.15);
+.message-wrapper.is-user .message-content {
+  background: #374151;
+  color: white;
+  border-radius: 12px;
+  padding: 14px 18px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
 }
 
-.ac-msg__text {
-  font-size: 15px;
+.message-text {
+  font-size: 15.5px;
   line-height: 1.75;
-  color: var(--color-text-primary);
-  word-break: break-word;
+  color: #1f2937;
 }
+.message-wrapper.is-user .message-text { color: #f9fafb; }
 
-.ac-msg--user .ac-msg__text {
-  color: #F1F5F9;
-}
-
-.ac-msg__text :deep(p) { margin: 0 0 14px 0; }
-.ac-msg__text :deep(p:last-child) { margin-bottom: 0; }
-.ac-msg__text :deep(ul), .ac-msg__text :deep(ol) { margin: 14px 0; padding-left: 22px; }
-.ac-msg__text :deep(li) { margin-bottom: 5px; }
-.ac-msg__text :deep(code) {
-  background: rgba(15, 23, 42, 0.06);
+.message-text :deep(p) { margin: 0 0 14px 0; }
+.message-text :deep(p:last-child) { margin-bottom: 0; }
+.message-text :deep(ul), .message-text :deep(ol) { margin: 14px 0; padding-left: 22px; }
+.message-text :deep(li) { margin-bottom: 5px; }
+.message-text :deep(code) {
+  background: #e5e7eb;
   padding: 2px 6px;
   border-radius: 4px;
   font-family: var(--font-family-mono);
   font-size: 13px;
-  border: 1px solid rgba(15, 23, 42, 0.06);
 }
-.ac-msg--user .ac-msg__text :deep(code) {
+.message-wrapper.is-user .message-text :deep(code) {
   background: rgba(255, 255, 255, 0.12);
-  border-color: rgba(255, 255, 255, 0.08);
-  color: #E2E8F0;
 }
 
-/* Typing indicator */
-.ac-typing {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 2px 0;
-}
-
-.ac-typing__dot {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: var(--color-slate-400);
-  opacity: 0.35;
-  animation: acDotBounce 1.4s ease-in-out infinite;
-}
-
-.ac-typing__dot:nth-child(1) { animation-delay: 0s; }
-.ac-typing__dot:nth-child(2) { animation-delay: 0.16s; }
-.ac-typing__dot:nth-child(3) { animation-delay: 0.32s; }
-
-.ac-typing__label {
-  font-family: var(--font-family-mono);
-  font-size: 11px;
-  color: var(--color-slate-400);
-  margin-left: 4px;
-  letter-spacing: 0.5px;
-}
-
-@keyframes acDotBounce {
-  0%, 80%, 100% { transform: scale(0.6); opacity: 0.35; }
-  40% { transform: scale(1); opacity: 1; }
-}
-
-/* Typing cursor */
-.ac-cursor {
-  display: inline-block;
-  width: 2px;
-  height: 17px;
-  background: var(--color-solid);
-  margin-left: 2px;
-  vertical-align: middle;
-  animation: acCursorBlink 1s step-end infinite;
-}
-
-@keyframes acCursorBlink {
-  0%, 50% { opacity: 1; }
-  51%, 100% { opacity: 0; }
-}
-
-/* Reasoning block */
-.ac-reasoning {
+.reasoning-block {
   margin-bottom: 12px;
-  background: rgba(15, 23, 42, 0.02);
-  border: 1px solid rgba(15, 23, 42, 0.06);
-  border-left: 3px solid var(--color-accent);
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  border-left: 3px solid #D97706;
   border-radius: 8px;
   overflow: hidden;
-  transition: all 0.25s var(--ac-ease-out-expo);
 }
 
-.ac-reasoning--thinking {
-  border-left-color: var(--color-slate-300);
-  background: rgba(15, 23, 42, 0.015);
+.reasoning-block.is-thinking {
+  border-left-color: #6b7280;
+  background: #f9fafb;
 }
 
-.ac-reasoning__head {
+.reasoning-header {
   display: flex;
   align-items: center;
   gap: 6px;
   padding: 10px 14px;
   cursor: pointer;
-  font-family: var(--font-family-mono);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
-  color: var(--color-accent);
+  color: #D97706;
   user-select: none;
-  transition: background 0.2s ease;
+  transition: background 0.12s ease;
+}
+.reasoning-block.is-thinking .reasoning-header { color: #6b7280; }
+.reasoning-header:hover { background: rgba(0, 0, 0, 0.02); }
+
+.thinking-badge {
+  padding: 2px 8px;
+  background: #6b7280;
+  color: white;
+  border-radius: 20px;
+  font-size: 10px;
+  font-weight: 600;
   letter-spacing: 0.3px;
 }
 
-.ac-reasoning--thinking .ac-reasoning__head {
-  color: var(--color-slate-400);
-}
-
-.ac-reasoning__head:hover {
-  background: rgba(15, 23, 42, 0.03);
-}
-
-.ac-reasoning__badge {
-  padding: 2px 8px;
-  background: var(--color-slate-500);
-  color: white;
-  border-radius: 20px;
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-  animation: acBadgePulse 1.5s ease-in-out infinite;
-}
-
-@keyframes acBadgePulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.6; }
-}
-
-.ac-reasoning__chevron {
+.reasoning-toggle {
   margin-left: auto;
-  transition: transform 0.3s var(--ac-ease-out-expo);
+  transition: transform 0.2s ease;
 }
+.reasoning-toggle.is-expanded { transform: rotate(180deg); }
 
-.ac-reasoning__chevron--open {
-  transform: rotate(180deg);
-}
-
-.ac-reasoning__text {
+.reasoning-body {
   padding: 0 14px 12px;
-  font-family: var(--font-family-mono);
-  font-size: 11.5px;
-  line-height: 1.75;
-  color: var(--color-slate-500);
+  font-size: 12px;
+  line-height: 1.7;
+  color: #6b7280;
   white-space: pre-wrap;
-  border-top: 1px solid rgba(15, 23, 42, 0.05);
+  border-top: 1px solid #e5e7eb;
   margin-top: 0;
   padding-top: 10px;
 }
 
-/* Message action tools */
-.ac-msg__tools {
+.typing-cursor {
+  display: inline-block;
+  width: 2px;
+  height: 16px;
+  background: #374151;
+  margin-left: 2px;
+  animation: blink 1s infinite;
+  vertical-align: middle;
+}
+
+.waiting-dots { display: flex; align-items: center; gap: 6px; padding: 2px 0; }
+.waiting-dots .dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #9ca3af;
+  opacity: 0.4;
+  animation: dotBounce 1.4s ease-in-out infinite;
+}
+.waiting-dots .dot:nth-child(1) { animation-delay: 0s; }
+.waiting-dots .dot:nth-child(2) { animation-delay: 0.16s; }
+.waiting-dots .dot:nth-child(3) { animation-delay: 0.32s; }
+.waiting-label { font-size: 12px; color: #9ca3af; margin-left: 4px; }
+
+@keyframes dotBounce {
+  0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+  40% { transform: scale(1); opacity: 1; }
+}
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+.message-actions {
   display: flex;
   align-items: center;
   gap: 2px;
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px solid rgba(15, 23, 42, 0.05);
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
   opacity: 0;
-  transition: opacity 0.25s var(--ac-ease-out-expo);
+  transition: opacity 0.2s ease;
 }
-
-.ac-msg__body:hover .ac-msg__tools {
-  opacity: 1;
-}
-
-.ac-msg--user .ac-msg__tools {
+.message-content:hover .message-actions { opacity: 1; }
+.message-wrapper.is-user .message-actions {
   justify-content: flex-end;
   border-top-color: rgba(255, 255, 255, 0.1);
 }
 
-.ac-tool-btn {
+.action-btn {
   display: flex;
   align-items: center;
   gap: 4px;
-  padding: 5px 9px;
+  padding: 5px 8px;
   border: none;
   border-radius: 6px;
   background: transparent;
-  color: var(--color-slate-400);
+  color: #9ca3af;
   font-size: 12px;
   cursor: pointer;
-  transition: all 0.2s var(--ac-ease-back-out);
+  transition: all 0.12s ease;
 }
+.action-btn:hover { background: #e5e7eb; color: #6b7280; }
+.message-wrapper.is-user .action-btn:hover { background: rgba(255, 255, 255, 0.1); color: rgba(255, 255, 255, 0.7); }
+.action-btn.is-active { color: #374151; background: #f3f4f6; }
+.message-wrapper.is-user .action-btn.is-active { color: white; background: rgba(255, 255, 255, 0.12); }
 
-.ac-tool-btn:hover {
-  background: rgba(15, 23, 42, 0.06);
-  color: var(--color-slate-700);
-}
-
-.ac-msg--user .ac-tool-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.8);
-}
-
-.ac-tool-btn--on {
-  color: var(--color-solid);
-  background: rgba(15, 23, 42, 0.06);
-}
-
-.ac-msg--user .ac-tool-btn--on {
-  color: white;
-  background: rgba(255, 255, 255, 0.12);
-}
-
-.ac-tool-btn--regen {
+.regenerate-btn {
   margin-left: 8px;
   padding-left: 10px;
-  border-left: 1px solid rgba(15, 23, 42, 0.08);
-  font-weight: 600;
-  font-size: 11.5px;
+  border-left: 1px solid #e5e7eb;
+  font-weight: 500;
 }
 
-/* ===== QUEUE NOTICE ===== */
-.ac-queue {
+.queue-notice {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 12px 18px;
-  background: rgba(217, 119, 6, 0.05);
-  border: 1px solid rgba(217, 119, 6, 0.15);
-  border-radius: 10px;
+  gap: 8px;
+  padding: 10px 16px;
+  background: #fffbeb;
+  border: 1px solid #fcd34d;
+  border-radius: 8px;
   margin-bottom: 16px;
   font-size: 13px;
-  color: var(--color-accent);
-  font-weight: 500;
-  animation: acFadeUp 0.4s var(--ac-ease-out-expo) both;
+  color: #d97706;
 }
 
-/* ===== ERROR BANNER ===== */
-.ac-error {
-  background: rgba(220, 38, 38, 0.03);
-  border-top: 1px solid rgba(220, 38, 38, 0.12);
-  padding: 14px 20px;
+.error-banner {
+  background: #fef2f2;
+  border-top: 1px solid #fecaca;
+  padding: 12px 20px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  animation: acFadeUp 0.4s var(--ac-ease-out-expo) both;
+}
+.error-content { display: flex; align-items: center; gap: 10px; flex: 1; }
+.error-icon { color: #dc2626; flex-shrink: 0; }
+.error-info { display: flex; flex-direction: column; gap: 2px; }
+.error-title { font-size: 13px; font-weight: 600; color: #dc2626; }
+.error-desc { font-size: 12px; color: #6b7280; }
+.error-actions { display: flex; gap: 8px; flex-shrink: 0; }
+
+.input-section {
+  padding: 16px 32px 24px;
 }
 
-.ac-error__main {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex: 1;
-}
-
-.ac-error__icon {
-  color: #DC2626;
-  flex-shrink: 0;
-}
-
-.ac-error__info {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.ac-error__title {
-  font-size: 13px;
-  font-weight: 700;
-  color: #DC2626;
-  letter-spacing: 0.01em;
-}
-
-.ac-error__desc {
-  font-size: 12px;
-  color: var(--color-slate-500);
-}
-
-.ac-error__actions {
-  display: flex;
-  gap: 8px;
-  flex-shrink: 0;
-}
-
-/* ===== INPUT ZONE ===== */
-.ac-input-zone {
-  padding: 16px 36px 24px;
-  position: relative;
-}
-
-.ac-input-zone::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 36px;
-  right: 36px;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(15, 23, 42, 0.06), transparent);
-}
-
-.ac-input-box {
+.input-container {
   background: #FFFFFF;
-  border: 1px solid rgba(15, 23, 42, 0.1);
-  border-radius: 14px;
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
   overflow: hidden;
-  transition: all 0.35s var(--ac-ease-out-expo);
-  box-shadow:
-    0 1px 3px rgba(0, 0, 0, 0.03),
-    0 4px 16px rgba(0, 0, 0, 0.02);
-  position: relative;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
-.ac-input-box::before {
-  content: '';
-  position: absolute;
-  inset: -1px;
-  border-radius: 15px;
-  background: radial-gradient(ellipse at 50% 0%, rgba(217, 119, 6, 0.08) 0%, transparent 60%);
-  opacity: 0;
-  transition: opacity 0.4s var(--ac-ease-out-expo);
-  pointer-events: none;
-  z-index: 0;
+.input-container:focus-within {
+  border-color: #d1d5db;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
 }
 
-.ac-input-box--focus {
-  border-color: rgba(15, 23, 42, 0.18);
-  box-shadow:
-    0 2px 8px rgba(0, 0, 0, 0.04),
-    0 8px 32px rgba(0, 0, 0, 0.04);
-}
-
-.ac-input-box--focus::before {
-  opacity: 1;
-}
-
-.ac-input {
+.chat-textarea {
   width: 100%;
-  min-height: 26px;
+  min-height: 24px;
   max-height: 200px;
   border: none;
   outline: none;
   resize: none;
   font-size: 15px;
   line-height: 1.6;
-  color: var(--color-text-primary);
+  color: #1f2937;
   background: transparent;
   font-family: var(--font-family-base);
-  padding: 16px 18px;
-  position: relative;
-  z-index: 1;
+  padding: 14px 18px;
 }
+.chat-textarea::placeholder { color: #9ca3af; }
+.chat-textarea:disabled { opacity: 0.6; cursor: not-allowed; }
 
-.ac-input::placeholder {
-  color: var(--color-slate-400);
-  font-style: italic;
-}
-
-.ac-input:disabled {
-  opacity: 0.55;
-  cursor: not-allowed;
-}
-
-/* Input toolbar */
-.ac-input-bar {
+.input-toolbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 12px 10px;
-  position: relative;
-  z-index: 1;
+  padding: 8px 14px;
 }
 
-.ac-input-bar__left {
+.toolbar-left { display: flex; align-items: center; gap: 4px; }
+.toolbar-right { display: flex; align-items: center; }
+
+.toolbar-btn {
   display: flex;
   align-items: center;
   gap: 4px;
-}
-
-.ac-input-bar__right {
-  display: flex;
-  align-items: center;
-}
-
-.ac-toggle-btn {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  padding: 5px 11px;
-  border: 1px solid transparent;
+  padding: 5px 10px;
+  border: none;
   border-radius: 6px;
   background: transparent;
-  color: var(--color-slate-400);
-  font-size: 11.5px;
-  font-weight: 600;
+  color: #6b7280;
+  font-size: 12px;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.25s var(--ac-ease-out-expo);
-  letter-spacing: 0.2px;
+  transition: all 0.12s ease;
 }
+.toolbar-btn:hover:not(:disabled) { background: #f3f4f6; color: #374151; }
+.toolbar-btn.is-active { background: #f3f4f6; color: #374151; }
+.toolbar-btn:disabled { opacity: 0.45; cursor: not-allowed; }
 
-.ac-toggle-btn:hover:not(:disabled) {
-  background: rgba(15, 23, 42, 0.04);
-  color: var(--color-slate-600);
-}
-
-.ac-toggle-btn--on {
-  background: rgba(217, 119, 6, 0.08);
-  color: var(--color-accent);
-  border-color: rgba(217, 119, 6, 0.15);
-}
-
-.ac-toggle-btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-/* Send button */
-.ac-send-btn {
+.send-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 34px;
-  height: 34px;
+  width: 32px;
+  height: 32px;
   border: none;
-  border-radius: 9px;
-  background: var(--color-slate-200);
-  color: var(--color-slate-400);
+  border-radius: 8px;
+  background: #e5e7eb;
+  color: #9ca3af;
   cursor: not-allowed;
-  transition: all 0.3s var(--ac-ease-back-out);
+  transition: all 0.15s ease;
 }
 
-.ac-send-btn--ready {
-  background: var(--color-solid);
-  color: #FFFFFF;
-  cursor: pointer;
-  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.2);
-}
-
-.ac-send-btn--ready:hover {
-  background: var(--color-slate-800);
-  transform: translateY(-2px) scale(1.04);
-  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.25);
-}
-
-.ac-send-btn--ready:active {
-  transform: translateY(0) scale(0.98);
-}
-
-.ac-send-btn--stop {
-  background: #DC2626;
+.send-btn.is-active {
+  background: #374151;
   color: white;
   cursor: pointer;
-  animation: acStopPulse 1.5s ease-in-out infinite;
 }
 
-.ac-send-btn--stop:hover {
-  background: #B91C1C;
+.send-btn.is-active:hover {
+  background: #1f2937;
+  transform: translateY(-1px);
 }
 
-@keyframes acStopPulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.3); }
-  50% { box-shadow: 0 0 0 6px rgba(220, 38, 38, 0); }
-}
+.send-btn.is-stop { background: #dc2626; color: white; cursor: pointer; }
+.send-btn.is-stop:hover { background: #b91c1c; }
 
-/* Input hint text */
-.ac-input-hint {
-  text-align: center;
-  font-family: var(--font-family-mono);
-  font-size: 10px;
-  color: var(--color-slate-400);
-  letter-spacing: 0.5px;
-  margin: 10px 0 0;
-  opacity: 0.7;
-}
-
-/* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
-  .ac-sidebar {
-    display: none;
-  }
-
-  .ac-messages {
-    padding: 24px 20px;
-  }
-
-  .ac-input-zone {
-    padding: 12px 16px 16px;
-  }
-
-  .ac-msg__bubble {
-    max-width: 94%;
-  }
-
-  .ac-header {
-    padding: 14px 20px;
-  }
-
-  .ac-input-zone::before,
-  .ac-header::after {
-    left: 16px;
-    right: 16px;
-  }
-
-  .ac-welcome {
-    padding: 48px 20px;
-  }
-
-  .ac-welcome__title {
-    font-size: clamp(26px, 7vw, 38px);
-  }
-
-  .ac-welcome__prompts {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .ac-prompt-chip {
-    text-align: center;
-  }
-}
-
-/* ===== REDUCED MOTION ===== */
-@media (prefers-reduced-motion: reduce) {
-  .ac-page *,
-  .ac-page *::before,
-  .ac-page *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
+  .sidebar { display: none; }
+  .chat-messages { padding: 24px 20px; }
+  .input-section { padding: 12px 16px 16px; }
+  .message { max-width: 92%; }
+  .welcome-title { font-size: 22px; }
+  .welcome-icon { width: 44px; height: 44px; }
+  .prompts-list { flex-direction: column; align-items: stretch; }
+  .chat-header { padding: 14px 20px; }
+  .input-section { padding: 12px 20px 20px; }
 }
 </style>
