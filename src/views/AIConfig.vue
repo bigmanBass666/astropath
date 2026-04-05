@@ -548,6 +548,8 @@ export default {
         const isActive = (val) => val === this.modelValue
         return h('div', {
           id: this.id || undefined,
+          role: 'combobox',
+          'aria-labelledby': this.id ? undefined : undefined,
           class: ['custom-select', { 'custom-select--open': this.open }]
         }, [
           h('button', {

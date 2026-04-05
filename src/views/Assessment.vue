@@ -446,7 +446,7 @@
       <el-form ref="competitionFormRef" :model="currentCompetition" :rules="competitionRules" label-position="top" class="dlg-form">
         <el-form-item label="竞赛名称" prop="name"><el-input v-model="currentCompetition.name" placeholder="请输入竞赛名称" /></el-form-item>
         <el-form-item label="竞赛级别" prop="level">
-          <el-select v-model="currentCompetition.level" placeholder="请选择级别" style="width:100%">
+          <el-select v-model="currentCompetition.level" placeholder="请选择级别" style="width:100%" aria-label="竞赛级别">
             <el-option label="国家级" value="国家级" /><el-option label="省级" value="省级" /><el-option label="校级" value="校级" /><el-option label="其他" value="其他" />
           </el-select>
         </el-form-item>
@@ -484,6 +484,7 @@ import { renderMarkdown } from '@/utils/markdown'
 import { useAIStream } from '@/composables/useAIStream'
 import { useActiveStream } from '@/composables/useActiveStream'
 import { useGlobalAIState } from '@/composables/useGlobalAIState'
+import { DEFAULT_PROVIDER } from '@/composables/useAIConfig'
 
 const router = useRouter()
 const currentStep = ref(0)
@@ -594,9 +595,9 @@ globalAIState.clearActiveStream()
 const _btnDisabled = ref(false)
 
 const selectedProvider = ref(null)
-const providers = computed(() => { try { return JSON.parse(localStorage.getItem('ai_providers') || '[]') } catch { return [] } })
+const providers = computed(() => { try { return JSON.parse(localStorage.getItem('ai_providers') || '[]') } catch { return [DEFAULT_PROVIDER] } })
 const currentProviderName = computed(() => providers.value.find(p => p.id === selectedProvider.value)?.name || '选择AI模型')
-const loadProviders = () => { try { const p = JSON.parse(localStorage.getItem('ai_providers') || '[]'); if (p.length > 0) selectedProvider.value = p[0].id } catch {} }
+const loadProviders = () => { try { const p = JSON.parse(localStorage.getItem('ai_providers') || '[]'); if (p.length > 0) selectedProvider.value = p[0].id; else selectedProvider.value = DEFAULT_PROVIDER.id } catch {} }
 
 const showReasoning = ref(true), showAiContent = ref(true), showAiSection = ref(true)
 const animatedScore = ref('0.0')

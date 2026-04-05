@@ -215,6 +215,9 @@
                     ref="editorRef"
                     class="rich-editor"
                     contenteditable="true"
+                    role="textbox"
+                    aria-label="文书编辑器"
+                    aria-multiline="true"
                     :data-placeholder="'在此编辑文书内容...'"
                     @input="onEditorInput"
                     @keydown="onEditorKeydown"
@@ -519,7 +522,7 @@
           <el-input v-model="newItem.name" placeholder="如：作品集" />
         </el-form-item>
         <el-form-item label="所属分类">
-          <el-select v-model="newItem.category" style="width: 100%;">
+          <el-select v-model="newItem.category" style="width: 100%;" aria-label="材料分类">
             <el-option label="必需材料" value="required" />
             <el-option label="推荐材料" value="recommended" />
             <el-option label="可选材料" value="optional" />
@@ -608,6 +611,7 @@ import {
 } from '@element-plus/icons-vue'
 import { sendMessageToAI } from '@/utils/ai-api'
 import { sanitizeHtml } from '@/utils/markdown'
+import { DEFAULT_PROVIDER } from '@/composables/useAIConfig'
 
 const activeTab = ref('essay')
 const currentEssayType = ref('ps')
@@ -677,7 +681,7 @@ const newItem = reactive({
 
 const providers = computed(() => {
   const saved = localStorage.getItem('ai_providers')
-  return saved ? JSON.parse(saved) : []
+  return saved ? JSON.parse(saved) : [DEFAULT_PROVIDER]
 })
 
 const heroStats = computed(() => [
@@ -693,6 +697,8 @@ onMounted(() => {
     if (parsed.length > 0) {
       selectedProvider.value = parsed[0].id
     }
+  } else {
+    selectedProvider.value = DEFAULT_PROVIDER.id
   }
   const savedContent = localStorage.getItem('essay_current_content')
   if (savedContent && editorRef.value) {
