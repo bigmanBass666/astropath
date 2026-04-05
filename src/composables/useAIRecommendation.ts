@@ -497,7 +497,7 @@ ${JSON.stringify(schoolsList, null, 2)}
     const sorted = filtered.sort((a: SchoolWithMatch, b: SchoolWithMatch) => (b.match || 0) - (a.match || 0)).slice(0, 8)
 
     const recommendations: AIRecommendation[] = sorted.map((school: SchoolWithMatch, index: number) => ({
-      schoolId: school.id,
+      schoolId: school.id ?? 0,
       schoolName: school.name,
       aiReason: buildPersonalizedReason(school, assessment),
       matchScore: school.match || 50,

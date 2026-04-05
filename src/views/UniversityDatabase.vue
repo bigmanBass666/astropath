@@ -7,7 +7,7 @@
           class="ud-toast"
           :class="'ud-toast--' + toast.type"
         >
-          <span class="ud-toast__icon">{{ toastIcons[toast.type] }}</span>
+          <span class="ud-toast__icon">{{ toastIcons[toast.type as keyof typeof toastIcons] }}</span>
           <span class="ud-toast__msg">{{ toast.message }}</span>
         </div>
       </Transition>
@@ -30,7 +30,10 @@
           <span>UNIVERSITY DATABASE</span>
         </div>
 
-        <h1 ref="heroTitleRef" class="ud-hero__title">
+        <h1
+          ref="heroTitleRef"
+          class="ud-hero__title"
+        >
           <span
             v-for="(word, i) in heroWords"
             :key="i"
@@ -51,7 +54,23 @@
           @keyup.enter="handleHeroSearch"
         >
           <div class="ud-search__icon">
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="8.5" cy="8.5" r="6" stroke="currentColor" stroke-width="1.5"/><path d="M13 13L17 17" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 20 20"
+              fill="none"
+            ><circle
+              cx="8.5"
+              cy="8.5"
+              r="6"
+              stroke="currentColor"
+              stroke-width="1.5"
+            /><path
+              d="M13 13L17 17"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+            /></svg>
           </div>
           <input
             v-model="heroSearchKeyword"
@@ -66,7 +85,18 @@
             @click="handleHeroSearch"
           >
             <span>搜索</span>
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7H11M8 4L11 7L8 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 14 14"
+              fill="none"
+            ><path
+              d="M3 7H11M8 4L11 7L8 10"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            /></svg>
           </button>
         </div>
 
@@ -99,7 +129,6 @@
       :class="{ 'ud-content--visible': contentVisible }"
     >
       <div class="ud-container">
-
         <!-- Tab 导航 -->
         <nav class="ud-tabs">
           <button
@@ -108,7 +137,10 @@
             @click="activeTab = 'schools'; currentSchoolPage = 1"
           >
             <span class="ud-tab__text">院校搜索</span>
-            <span v-if="activeTab === 'schools'" class="ud-tab__line" />
+            <span
+              v-if="activeTab === 'schools'"
+              class="ud-tab__line"
+            />
           </button>
           <button
             class="ud-tab"
@@ -116,13 +148,19 @@
             @click="activeTab = 'majors'; currentMajorPage = 1"
           >
             <span class="ud-tab__text">专业搜索</span>
-            <span v-if="activeTab === 'majors'" class="ud-tab__line" />
+            <span
+              v-if="activeTab === 'majors'"
+              class="ud-tab__line"
+            />
           </button>
           <div class="ud-tabs__bg" />
         </nav>
 
         <!-- ===== TAB 1: 院校搜索 ===== -->
-        <div v-show="activeTab === 'schools'" class="ud-panel">
+        <div
+          v-show="activeTab === 'schools'"
+          class="ud-panel"
+        >
           <div class="ud-filters">
             <div class="ud-filter__row">
               <span class="ud-filter__key">国家</span>
@@ -130,14 +168,18 @@
                 class="ud-chip"
                 :class="{ 'ud-chip--on': !filterCountry }"
                 @click="filterCountry = ''"
-              >ALL</button>
+              >
+                ALL
+              </button>
               <button
                 v-for="country in uniqueCountries.slice(0, 4)"
                 :key="country"
                 class="ud-chip"
                 :class="{ 'ud-chip--on': filterCountry === country }"
                 @click="filterCountry = filterCountry === country ? '' : country"
-              >{{ country }}</button>
+              >
+                {{ country }}
+              </button>
             </div>
 
             <div class="ud-filter__row">
@@ -146,22 +188,30 @@
                 class="ud-chip"
                 :class="{ 'ud-chip--on': !filterRankRange }"
                 @click="filterRankRange = ''"
-              >ALL</button>
+              >
+                ALL
+              </button>
               <button
                 class="ud-chip"
                 :class="{ 'ud-chip--on': filterRankRange === 'top10' }"
                 @click="toggleRankFilter('top10')"
-              >TOP 10</button>
+              >
+                TOP 10
+              </button>
               <button
                 class="ud-chip"
                 :class="{ 'ud-chip--on': filterRankRange === 'top20' }"
                 @click="toggleRankFilter('top20')"
-              >TOP 30</button>
+              >
+                TOP 30
+              </button>
               <button
                 class="ud-chip"
                 :class="{ 'ud-chip--on': filterRankRange === 'top50' }"
                 @click="toggleRankFilter('top50')"
-              >TOP 50</button>
+              >
+                TOP 50
+              </button>
             </div>
 
             <div class="ud-filter__row">
@@ -170,26 +220,34 @@
                 class="ud-chip"
                 :class="{ 'ud-chip--on': !filterMajor }"
                 @click="filterMajor = ''"
-              >ALL</button>
+              >
+                ALL
+              </button>
               <button
                 v-for="major in uniqueMajors.slice(0, 3)"
                 :key="major"
                 class="ud-chip"
                 :class="{ 'ud-chip--on': filterMajor === major }"
                 @click="filterMajor = filterMajor === major ? '' : major"
-              >{{ major }}</button>
+              >
+                {{ major }}
+              </button>
 
               <div class="ud-filter__sorts">
                 <button
                   class="ud-chip ud-chip--sort"
                   :class="{ 'ud-chip--on': sortBy === 'qs_rank' }"
                   @click="sortBy = sortBy === 'qs_rank' ? '' : 'qs_rank'"
-                >RANK ↓</button>
+                >
+                  RANK ↓
+                </button>
                 <button
                   class="ud-chip ud-chip--sort"
                   :class="{ 'ud-chip--on': sortBy === 'acceptance_rate' }"
                   @click="sortBy = sortBy === 'acceptance_rate' ? '' : 'acceptance_rate'"
-                >RATE ↑</button>
+                >
+                  RATE ↑
+                </button>
               </div>
             </div>
           </div>
@@ -201,14 +259,66 @@
                 :class="{ 'ud-view-btn--on': viewMode === 'card' }"
                 @click="viewMode = 'card'"
               >
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><rect x="2" y="2" width="5" height="5" rx="1"/><rect x="9" y="2" width="5" height="5" rx="1"/><rect x="2" y="9" width="5" height="5" rx="1"/><rect x="9" y="9" width="5" height="5" rx="1"/></svg>
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 16 16"
+                  fill="currentColor"
+                ><rect
+                  x="2"
+                  y="2"
+                  width="5"
+                  height="5"
+                  rx="1"
+                /><rect
+                  x="9"
+                  y="2"
+                  width="5"
+                  height="5"
+                  rx="1"
+                /><rect
+                  x="2"
+                  y="9"
+                  width="5"
+                  height="5"
+                  rx="1"
+                /><rect
+                  x="9"
+                  y="9"
+                  width="5"
+                  height="5"
+                  rx="1"
+                /></svg>
               </button>
               <button
                 class="ud-view-btn"
                 :class="{ 'ud-view-btn--on': viewMode === 'list' }"
                 @click="viewMode = 'list'"
               >
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><rect x="2" y="3" width="12" height="2" rx="1"/><rect x="2" y="7" width="12" height="2" rx="1"/><rect x="2" y="11" width="12" height="2" rx="1"/></svg>
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 16 16"
+                  fill="currentColor"
+                ><rect
+                  x="2"
+                  y="3"
+                  width="12"
+                  height="2"
+                  rx="1"
+                /><rect
+                  x="2"
+                  y="7"
+                  width="12"
+                  height="2"
+                  rx="1"
+                /><rect
+                  x="2"
+                  y="11"
+                  width="12"
+                  height="2"
+                  rx="1"
+                /></svg>
               </button>
             </div>
             <span class="ud-toolbar__count">
@@ -216,7 +326,10 @@
             </span>
           </div>
 
-          <transition name="ud-fade" mode="out-in">
+          <transition
+            name="ud-fade"
+            mode="out-in"
+          >
             <div
               v-if="filteredSchools.length > 0 && viewMode === 'card'"
               key="card"
@@ -231,11 +344,19 @@
                 @mouseleave="onCardHover($event, false)"
                 @click="showDetail(school)"
               >
-                <div class="ud-card__accent" :class="'ud-card__accent--' + school.rankType" />
+                <div
+                  class="ud-card__accent"
+                  :class="'ud-card__accent--' + school.rankType"
+                />
                 <div class="ud-card__body">
                   <div class="ud-card__head">
-                    <h3 class="ud-card__name">{{ school.name }}</h3>
-                    <span class="ud-card__rank" :class="'ud-card__rank--' + school.rankType">
+                    <h3 class="ud-card__name">
+                      {{ school.name }}
+                    </h3>
+                    <span
+                      class="ud-card__rank"
+                      :class="'ud-card__rank--' + school.rankType"
+                    >
                       {{ school.ranking }}
                     </span>
                   </div>
@@ -264,10 +385,10 @@
                 <div class="ud-card__foot">
                   <button
                     class="ud-card__action"
-                    :class="{ 'ud-card__action--added': shortlisted.includes(school.id) }"
+                    :class="{ 'ud-card__action--added': shortlisted.includes(school.id ?? -1) }"
                     @click.stop="addToShortlist(school)"
                   >
-                    {{ shortlisted.includes(school.id) ? '✓ 已收藏' : '+ 收藏' }}
+                    {{ shortlisted.includes(school.id ?? -1) ? '✓ 已收藏' : '+ 收藏' }}
                   </button>
                 </div>
               </div>
@@ -284,41 +405,78 @@
                 class="ud-table"
                 @row-click="showDetail"
               >
-                <el-table-column prop="name" label="院校名称" min-width="200">
+                <el-table-column
+                  prop="name"
+                  label="院校名称"
+                  min-width="200"
+                >
                   <template #default="scope">
                     <div class="ud-list-name">
                       <span class="ud-list-name__txt">{{ scope.row.name }}</span>
-                      <span class="ud-list-name__rank" :class="'ud-list-name__rank--' + scope.row.rankType">
+                      <span
+                        class="ud-list-name__rank"
+                        :class="'ud-list-name__rank--' + scope.row.rankType"
+                      >
                         {{ scope.row.ranking }}
                       </span>
                     </div>
                   </template>
                 </el-table-column>
-                <el-table-column prop="country" label="国家/地区" width="100" />
-                <el-table-column prop="major" label="热门专业" width="150" />
-                <el-table-column prop="tuition" label="学费" width="100" />
-                <el-table-column prop="acceptanceRate" label="录取率" width="90">
+                <el-table-column
+                  prop="country"
+                  label="国家/地区"
+                  width="100"
+                />
+                <el-table-column
+                  prop="major"
+                  label="热门专业"
+                  width="150"
+                />
+                <el-table-column
+                  prop="tuition"
+                  label="学费"
+                  width="100"
+                />
+                <el-table-column
+                  prop="acceptanceRate"
+                  label="录取率"
+                  width="90"
+                >
                   <template #default="scope">
                     <span :class="{ 'ud-rate--low': parseFloat(scope.row.acceptanceRate) < 20 }">
                       {{ scope.row.acceptanceRate }}
                     </span>
                   </template>
                 </el-table-column>
-                <el-table-column label="操作" width="170" fixed="right">
+                <el-table-column
+                  label="操作"
+                  width="170"
+                  fixed="right"
+                >
                   <template #default="scope">
                     <button
                       class="ud-tbl-btn ud-tbl-btn--primary"
                       :class="{ 'ud-tbl-btn--added': shortlisted.includes(scope.row.id) }"
                       @click.stop="addToShortlist(scope.row)"
-                    >{{ shortlisted.includes(scope.row.id) ? '已收藏' : '收藏' }}</button>
-                    <button class="ud-tbl-btn" @click.stop="showDetail(scope.row)">详情</button>
+                    >
+                      {{ shortlisted.includes(scope.row.id) ? '已收藏' : '收藏' }}
+                    </button>
+                    <button
+                      class="ud-tbl-btn"
+                      @click.stop="showDetail(scope.row)"
+                    >
+                      详情
+                    </button>
                   </template>
                 </el-table-column>
               </el-table>
             </div>
           </transition>
 
-          <div v-if="totalSchools.length > 0" class="ud-pagination">
+          <div
+            v-if="totalSchools.length > 0"
+            class="ud-pagination"
+          >
             <el-pagination
               v-model:current-page="currentSchoolPage"
               v-model:page-size="schoolPageSize"
@@ -331,17 +489,41 @@
             />
           </div>
 
-          <div v-else class="ud-empty">
+          <div
+            v-else
+            class="ud-empty"
+          >
             <div class="ud-empty__icon">
-              <svg width="48" height="48" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="20" cy="20" r="13"/><path d="M30 30L40 40" stroke-linecap="round"/></svg>
+              <svg
+                width="48"
+                height="48"
+                viewBox="0 0 48 48"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+              ><circle
+                cx="20"
+                cy="20"
+                r="13"
+              /><path
+                d="M30 30L40 40"
+                stroke-linecap="round"
+              /></svg>
             </div>
-            <div class="ud-empty__title">暂无匹配的院校</div>
-            <div class="ud-empty__desc">尝试调整筛选条件或搜索其他关键词</div>
+            <div class="ud-empty__title">
+              暂无匹配的院校
+            </div>
+            <div class="ud-empty__desc">
+              尝试调整筛选条件或搜索其他关键词
+            </div>
           </div>
         </div>
 
         <!-- ===== TAB 2: 专业搜索 ===== -->
-        <div v-show="activeTab === 'majors'" class="ud-panel">
+        <div
+          v-show="activeTab === 'majors'"
+          class="ud-panel"
+        >
           <div class="ud-filters">
             <div class="ud-filter__row">
               <span class="ud-filter__key">类别</span>
@@ -349,14 +531,18 @@
                 class="ud-chip"
                 :class="{ 'ud-chip--on': !filterCategory }"
                 @click="filterCategory = ''"
-              >ALL</button>
+              >
+                ALL
+              </button>
               <button
                 v-for="cat in uniqueCategories"
                 :key="cat"
                 class="ud-chip"
                 :class="{ 'ud-chip--on': filterCategory === cat }"
                 @click="filterCategory = filterCategory === cat ? '' : cat"
-              >{{ cat }}</button>
+              >
+                {{ cat }}
+              </button>
             </div>
 
             <div class="ud-filter__row">
@@ -365,25 +551,50 @@
                 class="ud-chip"
                 :class="{ 'ud-chip--on': !filterDegreeType }"
                 @click="filterDegreeType = ''"
-              >ALL</button>
+              >
+                ALL
+              </button>
               <button
                 class="ud-chip"
                 :class="{ 'ud-chip--on': filterDegreeType === '本科' }"
                 @click="filterDegreeType = filterDegreeType === '本科' ? '' : '本科'"
-              >本科</button>
+              >
+                本科
+              </button>
               <button
                 class="ud-chip"
                 :class="{ 'ud-chip--on': filterDegreeType === '硕士' }"
                 @click="filterDegreeType = filterDegreeType === '硕士' ? '' : '硕士'"
-              >硕士</button>
+              >
+                硕士
+              </button>
               <button
                 class="ud-chip"
                 :class="{ 'ud-chip--on': filterDegreeType === '博士' }"
                 @click="filterDegreeType = filterDegreeType === '博士' ? '' : '博士'"
-              >博士</button>
+              >
+                博士
+              </button>
 
               <div class="ud-micro-search">
-                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" class="ud-micro-search__icon"><circle cx="6" cy="6" r="4.5" stroke="currentColor" stroke-width="1.5"/><path d="M9.5 9.5L12.5 12.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 14 14"
+                  fill="none"
+                  class="ud-micro-search__icon"
+                ><circle
+                  cx="6"
+                  cy="6"
+                  r="4.5"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                /><path
+                  d="M9.5 9.5L12.5 12.5"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                /></svg>
                 <input
                   v-model="majorSearchKeyword"
                   placeholder="搜索专业..."
@@ -399,54 +610,84 @@
             </span>
           </div>
 
-          <div v-if="filteredMajors.length > 0" class="ud-grid ud-grid--majors">
+          <div
+            v-if="filteredMajors.length > 0"
+            class="ud-grid ud-grid--majors"
+          >
             <el-checkbox-group v-model="selectedMajors">
-            <div
-              v-for="major in filteredMajors"
-              :key="major.id"
-              class="ud-major"
-              :class="'ud-major--' + getCategoryClass(major.category)"
-              @mouseenter="onMajorHover($event, true)"
-              @mouseleave="onMajorHover($event, false)"
-              @click="goToMajorDetail(major)"
-            >
-              <div class="ud-major__accent" />
-              <div class="ud-major__body">
-                <div class="ud-major__head">
-                  <div class="ud-major__check" @click.stop>
-                    <el-checkbox :value="major.id">
-                      <span class="ud-major__check-lbl">对比</span>
-                    </el-checkbox>
+              <div
+                v-for="(major, idx) in filteredMajors"
+                :key="major.id"
+                class="ud-major"
+                :class="'ud-major--' + getCategoryClass(major.category)"
+                @mouseenter="onMajorHover($event, true)"
+                @mouseleave="onMajorHover($event, false)"
+                @click="goToMajorDetail(major)"
+              >
+                <div class="ud-major__accent" />
+                <div
+                  class="ud-major__compare"
+                  @click.stop
+                >
+                  <el-checkbox :value="major.id" />
+                </div>
+                <div class="ud-major__body">
+                  <div class="ud-major__head">
+                    <span class="ud-major__idx">{{ String(idx + 1).padStart(2, '0') }}</span>
+                    <span class="ud-major__cat">{{ major.category }}</span>
                   </div>
-                  <span class="ud-major__cat" :class="'ud-major__cat--' + getCategoryTagClass(major.category)">
-                    {{ major.category }}
-                  </span>
+                  <div class="ud-major__name">
+                    <span class="ud-major__name-cn">{{ parseMajorName(major.name).chinese }}</span>
+                    <span
+                      v-if="parseMajorName(major.name).english"
+                      class="ud-major__name-en"
+                    >
+                      / {{ parseMajorName(major.name).english }}
+                    </span>
+                  </div>
+                  <div class="ud-major__meta">
+                    <span class="ud-major__degree">{{ major.degreeType }}</span>
+                  </div>
+                  <div class="ud-major__data">
+                    <div class="ud-data-cell">
+                      <span class="ud-data-cell__lbl">DURATION</span>
+                      <span class="ud-data-cell__val">{{ formatDuration(major.duration) }}</span>
+                    </div>
+                    <div class="ud-data-cell">
+                      <span class="ud-data-cell__lbl">SALARY</span>
+                      <span class="ud-data-cell__val ud-data-cell--accent">{{ formatMajorSalary(major.salaryRange) }}</span>
+                    </div>
+                  </div>
                 </div>
-                <div class="ud-major__name">
-                  <span class="ud-major__name-cn">{{ parseMajorName(major.name).chinese }}</span>
-                  <span v-if="parseMajorName(major.name).english" class="ud-major__name-en">
-                    {{ parseMajorName(major.name).english }}
-                  </span>
-                </div>
-                <div class="ud-major__meta">
-                  <span class="ud-major__dot" />{{ major.degreeType }} · {{ major.duration }}
-                </div>
-                <div class="ud-major__salary">
-                  <span class="ud-major__salary-lbl">AVG SALARY</span>
-                  <span class="ud-major__salary-val">{{ major.salaryRange }}</span>
+                <div class="ud-major__foot">
+                  <button
+                    class="ud-major__action"
+                    @click.stop="goToMajorDetail(major)"
+                  >
+                    DETAILS
+                    <svg
+                      width="12"
+                      height="12"
+                      viewBox="0 0 12 12"
+                      fill="none"
+                      style="margin-left:6px;flex-shrink:0"
+                    ><path
+                      d="M3 6H9M7 3L10 6L7 9"
+                      stroke="currentColor"
+                      stroke-width="1.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    /></svg>
+                  </button>
                 </div>
               </div>
-              <div class="ud-major__foot">
-                <button class="ud-major__link" @click.stop="goToMajorDetail(major)">
-                  查看详情
-                  <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style="margin-left:6px;flex-shrink:0"><path d="M3 7H11M8 4L11 7L8 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                </button>
-              </div>
-            </div>
             </el-checkbox-group>
           </div>
 
-          <div v-if="totalMajors.length > 0" class="ud-pagination">
+          <div
+            v-if="totalMajors.length > 0"
+            class="ud-pagination"
+          >
             <el-pagination
               v-model:current-page="currentMajorPage"
               v-model:page-size="majorPageSize"
@@ -459,22 +700,48 @@
             />
           </div>
 
-          <div v-else class="ud-empty">
+          <div
+            v-else
+            class="ud-empty"
+          >
             <div class="ud-empty__icon">
-              <svg width="48" height="48" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 14H36M12 24H36M12 34H28" stroke-linecap="round"/></svg>
+              <svg
+                width="48"
+                height="48"
+                viewBox="0 0 48 48"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+              ><path
+                d="M12 14H36M12 24H36M12 34H28"
+                stroke-linecap="round"
+              /></svg>
             </div>
-            <div class="ud-empty__title">暂无匹配的专业</div>
-            <div class="ud-empty__desc">尝试调整筛选条件或搜索其他关键词</div>
+            <div class="ud-empty__title">
+              暂无匹配的专业
+            </div>
+            <div class="ud-empty__desc">
+              尝试调整筛选条件或搜索其他关键词
+            </div>
           </div>
 
-          <div v-if="selectedMajors.length > 0" class="ud-compare-bar">
+          <div
+            v-if="selectedMajors.length > 0"
+            class="ud-compare-bar"
+          >
             <span class="ud-compare-bar__info">
               已选择 <strong>{{ selectedMajors.length }}</strong> 个专业进行对比
             </span>
-            <button class="ud-compare-bar__btn ud-compare-bar__btn--primary" @click="showCompare">
+            <button
+              class="ud-compare-bar__btn ud-compare-bar__btn--primary"
+              @click="showCompare"
+            >
               开始对比
             </button>
-            <button class="ud-compare-bar__btn" @click="clearSelection">
+            <button
+              class="ud-compare-bar__btn"
+              @click="clearSelection"
+            >
               清空选择
             </button>
           </div>
@@ -482,25 +749,57 @@
           <!-- ===== 自定义对比模态框 ===== -->
           <Teleport to="body">
             <Transition name="ud-modal">
-              <div v-if="compareVisible" class="ud-modal" @click.self="compareVisible = false" @wheel.stop>
+              <div
+                v-if="compareVisible"
+                class="ud-modal"
+                @click.self="compareVisible = false"
+                @wheel.stop
+              >
                 <div class="ud-modal__box">
                   <!-- 头部 -->
                   <header class="ud-modal__head">
                     <div class="ud-modal__head-left">
                       <span class="ud-modal__num">COMPARE</span>
-                      <h3 class="ud-modal__title">专业对比</h3>
+                      <h3 class="ud-modal__title">
+                        专业对比
+                      </h3>
                       <span class="ud-modal__count">{{ majorsToCompare.length }} 个专业</span>
                     </div>
-                    <button class="ud-modal__close" @click="compareVisible = false">
-                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 4L12 12M12 4L4 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                    <button
+                      class="ud-modal__close"
+                      @click="compareVisible = false"
+                    >
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 16 16"
+                        fill="none"
+                      ><path
+                        d="M4 4L12 12M12 4L4 12"
+                        stroke="currentColor"
+                        stroke-width="1.5"
+                        stroke-linecap="round"
+                      /></svg>
                     </button>
                   </header>
 
                   <!-- 表格内容 -->
                   <div class="ud-modal__body">
-                    <div v-if="majorsToCompare.length > 0" class="ud-compare-wrap">
-                      <el-table :data="compareTableData" border class="ud-compare-table">
-                        <el-table-column prop="field" label="对比项" min-width="140" fixed>
+                    <div
+                      v-if="majorsToCompare.length > 0"
+                      class="ud-compare-wrap"
+                    >
+                      <el-table
+                        :data="compareTableData"
+                        border
+                        class="ud-compare-table"
+                      >
+                        <el-table-column
+                          prop="field"
+                          label="对比项"
+                          min-width="140"
+                          fixed
+                        >
                           <template #default="scope">
                             <strong>{{ scope.row.field }}</strong>
                           </template>
@@ -523,228 +822,67 @@
 
                   <!-- 底部 -->
                   <footer class="ud-modal__foot">
-                    <button class="ud-btn ud-btn--ghost" @click="clearSelection">清空选择</button>
-                    <button class="ud-btn ud-btn--primary" @click="compareVisible = false">完成</button>
+                    <button
+                      class="ud-btn ud-btn--ghost"
+                      @click="clearSelection"
+                    >
+                      清空选择
+                    </button>
+                    <button
+                      class="ud-btn ud-btn--primary"
+                      @click="compareVisible = false"
+                    >
+                      完成
+                    </button>
                   </footer>
                 </div>
               </div>
             </Transition>
           </Teleport>
         </div>
-
       </div>
     </section>
   </div>
 </template>
 
-<script setup>
-import { ref, computed, watch, onMounted, onUnmounted, reactive, nextTick } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
-import { majorsData } from '@/data/majors'
-import { schoolsData } from '@/data/schools'
+<script setup lang="ts">
+import { onMounted, onUnmounted } from 'vue'
+import { useDatabaseState } from '@/composables/useDatabaseState'
 
-const router = useRouter()
-const route = useRoute()
+const {
+  refs,
+  visibility,
+  tabs,
+  search,
+  pagination,
+  favorites,
+  majors,
+  ui,
+  data: dbData,
+  actions
+} = useDatabaseState()
 
-const heroRef = ref(null)
-const contentRef = ref(null)
-const heroTitleRef = ref(null)
-const heroVisible = ref(false)
-const contentVisible = ref(false)
-const searchFocused = ref(false)
+const { heroRef, contentRef } = refs
+const { heroVisible, contentVisible, searchFocused } = visibility
+const { activeTab, viewMode } = tabs
+const { heroSearchKeyword, filterCountry, filterRankRange, filterMajor, sortBy } = search
+const { currentSchoolPage, schoolPageSize, currentMajorPage, majorPageSize } = pagination
+const { shortlisted } = favorites
+const { majorSearchKeyword, filterDegreeType, filterCategory, selectedMajors, compareVisible, majorsToCompare, compareTableData } = majors
+const { hotTags, toastIcons, toast, heroWords, heroStats } = ui
+const { uniqueMajors, uniqueCountries, uniqueCategories, totalMajors, filteredMajors, totalSchools, filteredSchools } = dbData
+const {
+  getCategoryClass,
+  handleHeroSearch, searchByTag, toggleRankFilter, clearSelection,
+  showCompare, showDetail, goToMajorDetail, addToShortlist,
+  handleSchoolSizeChange, handleSchoolPageChange,
+  handleMajorSizeChange, handleMajorPageChange,
+  onCardHover, onMajorHover, parseMajorName, formatMajorSalary, formatDuration,
+  initFromStorage
+} = actions
 
-const activeTab = ref('schools')
-const heroSearchKeyword = ref('')
-const searchKeyword = ref('')
-const filterCountry = ref('')
-const filterRankRange = ref('')
-const filterMajor = ref('')
-const sortBy = ref('')
-const viewMode = ref('card')
-const currentSchoolPage = ref(1)
-const schoolPageSize = ref(12)
-const currentMajorPage = ref(1)
-const majorPageSize = ref(12)
-const shortlisted = ref([])
-
-const majorSearchKeyword = ref('')
-const filterDegreeType = ref('')
-const filterCategory = ref('')
-const selectedMajors = ref([])
-const compareVisible = ref(false)
-const majorsToCompare = ref([])
-const compareTableData = ref([])
-
-const hotTags = ['计算机科学', '商科', '人工智能', '医学', '工程学', '法学']
-
-const toastIcons = { success: '✓', error: '✕', warning: '!', info: 'ℹ' }
-const toast = reactive({ visible: false, message: '', type: 'info' })
-let toastTimer = null
-
-function showToast(message, type = 'info', duration = 3000) {
-  if (toastTimer) clearTimeout(toastTimer)
-  toast.message = message
-  toast.type = type
-  toast.visible = true
-  toastTimer = setTimeout(() => { toast.visible = false }, duration)
-}
-
-const heroWords = ['院校', '数据库']
-const allSchools = ref(schoolsData.map(school => ({ ...school, rankType: getRankType(school.ranking) })))
-const allMajors = ref(majorsData)
-
-function getRankType(ranking) {
-  const rankNum = parseInt(ranking.match(/\d+/)?.[0] || '999')
-  if (rankNum <= 10) return 'danger'
-  if (rankNum <= 20) return 'warning'
-  if (rankNum <= 50) return 'success'
-  return 'info'
-}
-
-const uniqueMajors = computed(() => Array.from(new Set(allSchools.value.map(s => s.major))))
-const uniqueCountries = computed(() => Array.from(new Set(allSchools.value.map(s => s.country))).sort())
-const uniqueCategories = computed(() => Array.from(new Set(allMajors.value.map(m => m.category))))
-
-const heroStats = computed(() => [
-  { value: allSchools.value.length + '+', label: '院校数据' },
-  { value: uniqueCountries.value.length, label: '覆盖国家' },
-  { value: uniqueMajors.value.length, label: '热门专业' },
-])
-
-const totalMajors = computed(() => {
-  let result = allMajors.value
-  if (majorSearchKeyword.value) {
-    const kw = majorSearchKeyword.value.toLowerCase()
-    result = result.filter(m => m.name.toLowerCase().includes(kw) || m.category.toLowerCase().includes(kw) || m.career.toLowerCase().includes(kw))
-  }
-  if (filterDegreeType.value) result = result.filter(m => m.degreeType.includes(filterDegreeType.value))
-  if (filterCategory.value) result = result.filter(m => m.category === filterCategory.value)
-  return result
-})
-
-const filteredMajors = computed(() => {
-  const start = (currentMajorPage.value - 1) * majorPageSize.value
-  return totalMajors.value.slice(start, start + majorPageSize.value)
-})
-
-function getCategoryTagClass(category) {
-  return { '工科': 'primary', '商科': 'success', '社科': 'warning', '理科': 'info', '文科': 'danger' }[category] || 'info'
-}
-
-const getCategoryClass = (category) => {
-  return { '工科': 'engineering', '商科': 'business', '社科': 'social', '理科': 'science', '文科': 'arts' }[category] || 'default'
-}
-
-const getRankNumber = (ranking) => parseInt(ranking.match(/(\d+)/)?.[1]) || 999
-
-const parseMajorName = (name) => {
-  const match = name.match(/^(.+?)\s*\((.+)\)$/)
-  return match ? { chinese: match[1], english: match[2] } : { chinese: name, english: '' }
-}
-
-const totalSchools = computed(() => {
-  let result = allSchools.value
-  if (searchKeyword.value) {
-    const kw = searchKeyword.value.toLowerCase()
-    result = result.filter(s => s.name.toLowerCase().includes(kw) || s.major.toLowerCase().includes(kw))
-  }
-  if (filterCountry.value) result = result.filter(s => s.country === filterCountry.value)
-  if (filterMajor.value) result = result.filter(s => s.major === filterMajor.value)
-  if (filterRankRange.value) {
-    result = result.filter(s => {
-      const rn = getRankNumber(s.ranking)
-      return { top10: rn <= 10, top20: rn <= 20, top50: rn <= 50, top100: rn <= 100 }[filterRankRange.value] ?? true
-    })
-  }
-  if (sortBy.value) {
-    result = [...result].sort((a, b) => {
-      if (sortBy.value === 'qs_rank') return getRankNumber(a.ranking) - getRankNumber(b.ranking)
-      if (sortBy.value === 'acceptance_rate') return parseFloat(a.acceptanceRate) - parseFloat(b.acceptanceRate)
-      if (sortBy.value === 'tuition') return a.tuition.localeCompare(b.tuition)
-      return 0
-    })
-  }
-  return result
-})
-
-const filteredSchools = computed(() => {
-  const start = (currentSchoolPage.value - 1) * schoolPageSize.value
-  return totalSchools.value.slice(start, start + schoolPageSize.value)
-})
-
-const handleHeroSearch = () => {
-  searchKeyword.value = heroSearchKeyword.value
-  activeTab.value = 'schools'
-  currentSchoolPage.value = 1
-  showToast(`找到 ${totalSchools.value.length} 所学校`, 'success')
-}
-
-const searchByTag = (tag) => {
-  heroSearchKeyword.value = tag
-  searchKeyword.value = tag
-  activeTab.value = 'schools'
-  currentSchoolPage.value = 1
-  showToast(`按「${tag}」搜索，找到 ${totalSchools.value.length} 所学校`, 'success')
-}
-
-const toggleRankFilter = (val) => { filterRankRange.value = filterRankRange.value === val ? '' : val }
-
-const clearSelection = () => { selectedMajors.value = []; showToast('已清空选择', 'info') }
-
-const showCompare = () => {
-  majorsToCompare.value = allMajors.value.filter(m => selectedMajors.value.includes(m.id))
-  buildCompareTableData()
-  compareVisible.value = true
-}
-
-const buildCompareTableData = () => {
-  const majors = majorsToCompare.value
-  if (!majors.length) return
-  const fields = [
-    { field: '专业名称', key: 'name' },
-    { field: '专业类别', key: 'category' },
-    { field: '学位类型', key: 'degreeType' },
-    { field: '学制', key: 'duration' },
-    { field: '核心课程', key: 'courses', format: (v) => v ? v.slice(0, 4).join('、') : '-' },
-    { field: '就业方向', key: 'career', format: (v) => v || '-' },
-    { field: '平均薪资', key: 'salaryRange' },
-  ]
-  compareTableData.value = fields.map(f => {
-    const row = { field: f.field }
-    majors.forEach(m => { row['major_' + m.id] = f.format ? f.format(m[f.key]) : m[f.key] })
-    return row
-  })
-}
-
-const showDetail = (school) => { router.push('/school-detail/' + school.id + '?from=database') }
-const goToMajorDetail = (major) => { router.push(`/major-detail/${major.id}`) }
-
-const addToShortlist = (school) => {
-  const idx = shortlisted.value.indexOf(school.id)
-  if (idx > -1) {
-    shortlisted.value.splice(idx, 1)
-    localStorage.setItem('school_favorites', JSON.stringify(shortlisted.value))
-    showToast(`已将 ${school.name} 从选校清单移除`, 'info')
-  } else {
-    shortlisted.value.push(school.id)
-    localStorage.setItem('school_favorites', JSON.stringify(shortlisted.value))
-    showToast(`已将 ${school.name} 加入选校清单`, 'success')
-  }
-}
-
-const handleSchoolSizeChange = (val) => { schoolPageSize.value = val; currentSchoolPage.value = 1 }
-const handleSchoolPageChange = (val) => { currentSchoolPage.value = val }
-const handleMajorSizeChange = (val) => { majorPageSize.value = val; currentMajorPage.value = 1 }
-const handleMajorPageChange = (val) => { currentMajorPage.value = val }
-
-watch(activeTab, () => {
-  if (activeTab.value === 'schools') currentSchoolPage.value = 1
-  else currentMajorPage.value = 1
-})
-
-let heroObserver = null
-let contentObserver = null
-let cardObservers = []
+let heroObserver: IntersectionObserver | null = null
+let contentObserver: IntersectionObserver | null = null
 
 const setupObservers = () => {
   heroObserver = new IntersectionObserver(
@@ -757,55 +895,20 @@ const setupObservers = () => {
   )
 }
 
-const onCardHover = (e, entering) => {
-  const card = e.currentTarget
-  if (entering) {
-    const rect = card.getBoundingClientRect()
-    const x = e.clientX - rect.left - rect.width / 2
-    const y = e.clientY - rect.top - rect.height / 2
-    card.style.setProperty('--mx', `${x * 0.06}deg`)
-    card.style.setProperty('--my', `${-y * 0.06}deg`)
-  } else {
-    card.style.setProperty('--mx', '0deg')
-    card.style.setProperty('--my', '0deg')
-  }
-}
-
-const onMajorHover = (e, entering) => {
-  const card = e.currentTarget
-  if (entering) {
-    const rect = card.getBoundingClientRect()
-    const x = e.clientX - rect.left - rect.width / 2
-    const y = e.clientY - rect.top - rect.height / 2
-    card.style.setProperty('--mx', `${x * 0.05}deg`)
-    card.style.setProperty('--my', `${-y * 0.05}deg`)
-  } else {
-    card.style.setProperty('--mx', '0deg')
-    card.style.setProperty('--my', '0deg')
-  }
-}
-
 onMounted(() => {
-  const saved = localStorage.getItem('school_favorites')
-  if (saved) shortlisted.value = JSON.parse(saved)
-  if (route.query.tab === 'majors') activeTab.value = 'majors'
-
+  initFromStorage()
   setTimeout(() => { heroVisible.value = true }, 100)
   setupObservers()
-
   requestAnimationFrame(() => {
     if (heroRef.value) heroObserver?.observe(heroRef.value)
     if (contentRef.value) contentObserver?.observe(contentRef.value)
   })
-
   setTimeout(() => { if (!contentVisible.value) contentVisible.value = true }, 800)
 })
 
 onUnmounted(() => {
   heroObserver?.disconnect()
   contentObserver?.disconnect()
-  cardObservers.forEach(o => o.disconnect())
-  if (toastTimer) clearTimeout(toastTimer)
 })
 </script>
 
@@ -1642,6 +1745,9 @@ onUnmounted(() => {
    专业卡片
    ============================================ */
 .ud-grid--majors { /* 继承 ud-grid */ }
+.ud-grid--majors :deep(.el-checkbox-group) {
+  display: contents;
+}
 
 .ud-major {
   --mx: 0deg;
@@ -1667,7 +1773,8 @@ onUnmounted(() => {
 .ud-major:hover {
   box-shadow:
     0 20px 50px -12px rgba(15, 23, 42, 0.15),
-    0 8px 20px -8px rgba(15, 23, 42, 0.06);
+    0 8px 20px -8px rgba(15, 23, 42, 0.06),
+    0 0 0 1px rgba(217, 119, 6, 0.08);
   border-color: rgba(15, 23, 42, 0.12);
 }
 
@@ -1677,9 +1784,9 @@ onUnmounted(() => {
   left: 0;
   right: 0;
   height: 3px;
-  transition: height 0.3s ease;
+  transition: height 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
-.ud-major:hover .ud-major__accent { height: 4px; }
+.ud-major:hover .ud-major__accent { height: 5px; }
 
 .ud-major--engineering .ud-major__accent { background: linear-gradient(135deg, #334155, #475569); }
 .ud-major--business .ud-major__accent { background: linear-gradient(135deg, #059669, #10B981); }
@@ -1698,97 +1805,199 @@ onUnmounted(() => {
   height: 24px;
 }
 
-.ud-major__check { flex-shrink: 0; }
-.ud-major__check :deep(.el-checkbox__label) { font-size: 11px; color: var(--color-text-tertiary); font-family: var(--font-family-mono); }
-.ud-major__check-lbl { font-size: 11px; letter-spacing: 0.5px; }
+.ud-major__compare {
+  position: absolute;
+  top: 14px;
+  left: 16px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1.5px solid var(--color-border);
+  background: #fff;
+  z-index: 2;
+  cursor: pointer;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+.ud-major__compare:hover { border-color: var(--color-accent); }
+.ud-major__compare :deep(.el-checkbox) { margin: 0; }
+.ud-major__compare :deep(.el-checkbox__input) { display: none; }
+.ud-major__compare :deep(.el-checkbox__label) {
+  padding-left: 0;
+  display: block;
+  width: 26px;
+  height: 26px;
+}
+.ud-major__compare::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  transform: translate(-50%, -50%) scale(0);
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.ud-major__compare:has(.el-checkbox.is-checked) {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.12);
+  animation: ud-check-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.ud-major__compare:has(.el-checkbox.is-checked)::after {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+  transition-delay: 0.1s;
+}
+@keyframes ud-check-pop {
+  0% { transform: scale(1); }
+  35% { transform: scale(0.82); }
+  70% { transform: scale(1.06); }
+  100% { transform: scale(1); }
+}
+
+.ud-major__body { flex: 1; display: flex; flex-direction: column; }
+
+.ud-major__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+  height: 24px;
+  padding-left: 32px;
+}
+
+.ud-major__idx {
+  font-family: var(--font-family-mono);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-text-tertiary);
+  letter-spacing: 1.5px;
+  opacity: 0.5;
+}
 
 .ud-major__cat {
-  font-family: var(--font-family-mono);
-  font-size: 10px;
-  font-weight: 700;
-  padding: 3px 10px;
-  border-radius: 100px;
-  letter-spacing: 0.5px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--color-text-tertiary);
+  opacity: 0.6;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
-.ud-major__cat--primary { background: #F1F5F9; color: #334155; }
-.ud-major__cat--success { background: #ECFDF5; color: #059669; }
-.ud-major__cat--warning { background: #FFFBEB; color: #D97706; }
-.ud-major__cat--info { background: #F0F9FF; color: #0284C7; }
-.ud-major__cat--danger { background: #FEF2F2; color: #DC2626; }
+.ud-major:hover .ud-major__cat {
+  opacity: 1;
+  color: var(--color-accent);
+}
 
 .ud-major__name {
-  margin: 0 0 8px;
-  line-height: 1.3;
+  margin: 0 0 6px;
+  line-height: 1.25;
   display: flex;
-  align-items: baseline;
-  gap: 8px;
-  overflow: hidden;
+  flex-direction: column;
+  gap: 2px;
+  position: relative;
+  padding-bottom: 10px;
 }
+.ud-major__name::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 32px;
+  height: 2px;
+  background: var(--color-accent);
+  transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  border-radius: 1px;
+}
+.ud-major:hover .ud-major__name::after {
+  width: 56px;
+}
+
 .ud-major__name-cn {
-  font-size: 17px;
+  font-size: 19px;
   font-weight: 700;
   color: var(--color-text-primary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
 }
+
 .ud-major__name-en {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 400;
+  font-style: italic;
   color: var(--color-text-tertiary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  flex-shrink: 1;
-  min-width: 0;
   font-family: var(--font-family-mono);
+  letter-spacing: 0.02em;
+  opacity: 0.7;
 }
 
 .ud-major__meta {
   margin: 0 0 14px;
-  font-size: 13px;
-  color: var(--color-text-secondary);
+  height: 22px;
   display: flex;
   align-items: center;
-  gap: 6px;
-  height: 20px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.ud-major__dot {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: var(--color-accent);
-  flex-shrink: 0;
 }
 
-.ud-major__salary {
-  margin-top: auto;
-  padding: 14px;
+.ud-major__degree {
+  font-family: var(--font-family-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 4px;
   background: var(--color-background-alt);
-  border-radius: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
+  color: var(--color-text-secondary);
   border: 1px solid var(--color-border-light);
 }
-.ud-major__salary-lbl {
-  font-family: var(--font-family-mono);
-  font-size: 9px;
-  font-weight: 700;
-  color: var(--color-text-tertiary);
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
+
+.ud-major__data {
+  display: flex;
+  gap: 12px;
+  margin-top: auto;
+  padding: 18px 14px 11px 20px;
+  background: linear-gradient(135deg, #FAFBFC 0%, #F8FAFC 100%);
+  border-radius: 12px;
+  border: 1px solid var(--color-border-light);
+  position: relative;
+  overflow: hidden;
+  align-items: center;
 }
-.ud-major__salary-val {
-  font-family: var(--font-family-mono);
-  font-size: 14px;
-  font-weight: 700;
+.ud-major__data::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 12px;
+  bottom: 12px;
+  width: 3px;
+  background: var(--color-accent);
+  border-radius: 2px;
+  opacity: 0.7;
+}
+.ud-major__data .ud-data-cell:first-child {
+  flex: 0.9;
+}
+.ud-major__data .ud-data-cell:last-child {
+  flex: 1.1;
+}
+.ud-major__data .ud-data-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.ud-major__data .ud-data-cell__val {
+  font-size: 12px;
+  white-space: normal;
+  word-break: break-all;
+  line-height: 2.0;
+}
+.ud-data-cell--accent {
   color: var(--color-accent);
-  letter-spacing: -0.01em;
+  font-weight: 800;
 }
 
 .ud-major__foot {
@@ -1797,28 +2006,29 @@ onUnmounted(() => {
   border-top: 1px solid var(--color-border-light);
   display: flex;
   justify-content: flex-end;
-  height: 32px;
+  height: 36px;
   align-items: center;
 }
 
-.ud-major__link {
+.ud-major__action {
   font-family: var(--font-family-mono);
-  font-weight: 600;
-  font-size: 12px;
-  color: var(--color-slate-600);
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 4px 8px;
+  font-weight: 700;
+  font-size: 11px;
+  padding: 8px 20px;
   border-radius: 8px;
+  border: 1.5px solid var(--color-solid);
+  background: var(--color-solid);
+  color: #FFFFFF;
+  cursor: pointer;
   transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  letter-spacing: 0.08em;
   display: inline-flex;
   align-items: center;
-  letter-spacing: 0.02em;
 }
-.ud-major__link:hover {
-  color: var(--color-solid);
-  transform: translateX(4px);
+.ud-major__action:hover {
+  background: var(--color-solid-hover);
+  transform: translateY(-1px) translateX(2px);
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.12);
 }
 
 
@@ -2156,7 +2366,7 @@ onUnmounted(() => {
   .ud-chip::before { transition: none; }
   .ud-tag:hover { transform: none; }
   .ud-card__action:hover { transform: none; }
-  .ud-major__link:hover { transform: none; }
+  .ud-major__action:hover { transform: none; }
   .ud-search--focus { transform: none; }
   .ud-search__btn:hover { transform: none; }
   .ud-hero__label,
