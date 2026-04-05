@@ -289,7 +289,7 @@ ${JSON.stringify(schoolsList, null, 2)}
     assessment: any,
     preference: UserPreference,
     providerId: string,
-    onStream?: (content: string) => void
+    _onStream?: (content: string) => void
   ): Promise<{ recommendations: AIRecommendation[], summary: string }> => {
     globalState.startRecommendation(assessment, preference, providerId)
 
@@ -356,7 +356,7 @@ ${JSON.stringify(schoolsList, null, 2)}
     assessment: any,
     schoolId: number,
     providerId: string,
-    onStream?: (content: string) => void
+    _onStream?: (content: string) => void
   ): Promise<SchoolAnalysis> => {
     globalState.startAnalysis(schoolId, assessment, providerId)
 
@@ -412,12 +412,7 @@ ${JSON.stringify(schoolsList, null, 2)}
 
     const userGPA = assessment.basic?.gpa || 3.0
     const userUni = assessment.basic?.university || 'regular'
-    const userLang = assessment.basic?.language || ''
-    const userAvgScore = assessment.academic?.averageScore || 75
-    const researchCount = assessment.academic?.research?.length || 0
-    const internshipCount = assessment.practice?.internships?.length || 0
 
-    const gpaGap = (userGPA - criteria.minGPA).toFixed(1)
     const prefGap = (criteria.preferredGPA - userGPA).toFixed(1)
     const uniMatches = criteria.universityTier.includes(userUni)
     const rateNum = criteria.acceptanceRateNum * 100
