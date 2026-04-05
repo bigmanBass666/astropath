@@ -12,5 +12,17 @@ export default defineConfig({
   server: {
     port: 3000,
     host: true
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-vue': ['vue', 'vue-router'],
+          'vendor-ui': ['element-plus', '@element-plus/icons-vue'],
+          'vendor-chart': ['echarts', 'vue-echarts'],
+          'vendor-markdown': ['marked', 'dompurify'],
+        }
+      }
+    }
   }
 })

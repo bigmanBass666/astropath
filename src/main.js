@@ -2,7 +2,6 @@ import { createApp } from 'vue'
 import { createRouter, createWebHashHistory } from 'vue-router'
 import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
-import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 import App from './App.vue'
 import './styles/index.css'
 
@@ -78,11 +77,6 @@ const routes = [
 
 const app = createApp(App)
 
-// 注册所有Element Plus图标
-for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
-  app.component(key, component)
-}
-
 const router = createRouter({
   history: createWebHashHistory(),
   routes,
@@ -92,28 +86,17 @@ const router = createRouter({
   }
 })
 
-// 路由守卫：设置页面标题（必须在 app.use(router) 之前注册）
+app.use(router)
+app.use(ElementPlus)
+
 router.beforeEach((to) => {
-  document.title = `${to.meta.title || '首页'} - 一站式智能留学规划平台`
+  document.title = `${to.meta.title || '首页'} - 智途 AstroPath`
   return true
 })
 
-// 每次路由切换后强制滚动到顶部（解决 hash 模式滚动位置残留问题）
 router.afterEach(() => {
-  // 多重保险：立即执行 + 延迟执行
-  const scrollToTop = () => {
-    window.scrollTo(0, 0)
-    document.documentElement.scrollTop = 0
-    document.body.scrollTop = 0
-  }
-  scrollToTop()
-  requestAnimationFrame(scrollToTop)
-  setTimeout(scrollToTop, 50)
-  setTimeout(scrollToTop, 150)
+  window.scrollTo({ top: 0, behavior: 'instant' })
 })
-
-app.use(router)
-app.use(ElementPlus)
 
 app.config.globalProperties.$router = router
 app.mount('#app')

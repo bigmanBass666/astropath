@@ -607,8 +607,6 @@ import {
   ArrowLeft, ArrowDown, InfoFilled
 } from '@element-plus/icons-vue'
 import { sendMessageToAI } from '@/utils/ai-api'
-import { jsPDF } from 'jspdf'
-import 'jspdf/dist/jspdf.umd.min.js'
 import { sanitizeHtml } from '@/utils/markdown'
 
 const activeTab = ref('essay')
@@ -1239,7 +1237,8 @@ const previewAndExportPDF = () => {
   pdfPreviewVisible.value = true
 }
 
-const downloadPDF = () => {
+const downloadPDF = async () => {
+  const { default: jsPDF } = await import('jspdf')
   const doc = new jsPDF()
   const pageWidth = doc.internal.pageSize.getWidth()
   const pageHeight = doc.internal.pageSize.getHeight()
