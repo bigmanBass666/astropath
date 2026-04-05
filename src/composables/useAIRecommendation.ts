@@ -3,6 +3,7 @@ import { schoolsData, getAllSchoolsWithMatch } from '@/utils/recommendationEngin
 import { useGlobalRecommendationState } from './useGlobalRecommendationState'
 import { useAIStream } from './useAIStream'
 import type { UserPreference, AIRecommendation, SchoolAnalysis, AIRecommendationResponse, AIAnalysisResponse } from '@/types/recommendation'
+import type { AssessmentForm, ResearchItem, InternshipItem, CompetitionItem } from '@/types/index'
 
 type PriorityKey = 'ranking' | 'major' | 'career' | 'location' | 'cost'
 type SchoolWithMatch = ReturnType<typeof getAllSchoolsWithMatch>[0]
@@ -64,7 +65,7 @@ export function useAIRecommendation() {
     return analysisStreams.get(schoolId)!
   }
 
-  const buildRecommendationPrompt = (assessment: any, preference: UserPreference): string => {
+  const buildRecommendationPrompt = (assessment: AssessmentForm, preference: UserPreference): string => {
     const userProfile = {
       gpa: assessment.basic?.gpa || 3.0,
       university: assessment.basic?.university || 'regular',
@@ -93,7 +94,7 @@ export function useAIRecommendation() {
       ? preference.excludedCountries.join('、')
       : '无'
 
-    const schoolsList = schoolsData.map((s: any) => ({
+    const schoolsList = schoolsData.map((s) => ({
       id: s.id,
       name: s.name,
       country: s.country,
@@ -125,9 +126,9 @@ export function useAIRecommendation() {
 - 专业: ${userProfile.majors}
 - 均分: ${userProfile.averageScore}/100
 - 语言成绩: ${userProfile.language}
-- 科研经历: ${userProfile.researchCount}项 ${userProfile.researchCount > 0 ? JSON.stringify(userProfile.researchDetails.map((r: any) => r.name || r.title)) : ''}
-- 实习经历: ${userProfile.internshipCount}项 ${userProfile.internshipCount > 0 ? JSON.stringify(userProfile.internshipDetails.map((i: any) => i.company || i.name)) : ''}
-- 竞赛获奖: ${userProfile.competitionCount}项 ${userProfile.competitionCount > 0 ? JSON.stringify(userProfile.competitionDetails.map((c: any) => c.name)) : ''}
+- 科研经历: ${userProfile.researchCount}项 ${userProfile.researchCount > 0 ? JSON.stringify(userProfile.researchDetails.map((r: ResearchItem) => r.name || r.title)) : ''}
+- 实习经历: ${userProfile.internshipCount}项 ${userProfile.internshipCount > 0 ? JSON.stringify(userProfile.internshipDetails.map((i: InternshipItem) => i.company || i.name)) : ''}
+- 竞赛获奖: ${userProfile.competitionCount}项 ${userProfile.competitionCount > 0 ? JSON.stringify(userProfile.competitionDetails.map((c: CompetitionItem) => c.name)) : ''}
 
 【用户偏好】
 - 最看重: ${prioritiesText}
@@ -185,8 +186,8 @@ ${JSON.stringify(schoolsList, null, 2)}
 }`
   }
 
-  const buildAnalysisPrompt = (assessment: any, schoolId: number): string => {
-    const school = schoolsData.find((s: any) => s.id === schoolId)
+  const buildAnalysisPrompt = (assessment: AssessmentForm, schoolId: number): string => {
+    const school = schoolsData.find((s) => s.id === schoolId)
     if (!school) throw new Error('School not found')
 
     const userProfile = {
@@ -229,9 +230,9 @@ ${JSON.stringify(schoolsList, null, 2)}
 - 专业: ${userProfile.majors}
 - 均分: ${userProfile.averageScore}/100
 - 语言成绩: ${userProfile.language}
-- 科研经历: ${userProfile.researchCount}项 ${userProfile.researchCount > 0 ? JSON.stringify(userProfile.researchDetails.map((r: any) => r.name || r.title)) : ''}
-- 实习经历: ${userProfile.internshipCount}项 ${userProfile.internshipCount > 0 ? JSON.stringify(userProfile.internshipDetails.map((i: any) => i.company || i.name)) : ''}
-- 竞赛获奖: ${userProfile.competitionCount}项 ${userProfile.competitionCount > 0 ? JSON.stringify(userProfile.competitionDetails.map((c: any) => c.name)) : ''}
+- 科研经历: ${userProfile.researchCount}项 ${userProfile.researchCount > 0 ? JSON.stringify(userProfile.researchDetails.map((r: ResearchItem) => r.name || r.title)) : ''}
+- 实习经历: ${userProfile.internshipCount}项 ${userProfile.internshipCount > 0 ? JSON.stringify(userProfile.internshipDetails.map((i: InternshipItem) => i.company || i.name)) : ''}
+- 竞赛获奖: ${userProfile.competitionCount}项 ${userProfile.competitionCount > 0 ? JSON.stringify(userProfile.competitionDetails.map((c: CompetitionItem) => c.name)) : ''}
 
 【学校信息】
 - 名称: ${school.name}
@@ -286,7 +287,7 @@ ${JSON.stringify(schoolsList, null, 2)}
   }
 
   const generateRecommendations = async (
-    assessment: any,
+    assessment: AssessmentForm,
     preference: UserPreference,
     providerId: string,
     _onStream?: (content: string) => void
@@ -325,15 +326,15 @@ ${JSON.stringify(schoolsList, null, 2)}
         throw new Error('无法解析AI响应')
       }
 
-      const recommendations: AIRecommendation[] = parsed.recommendations.map((rec: any) => {
-        const school = schoolsData.find((s: any) => s.id === rec.schoolId)
+      const recommendations: AIRecommendation[] = parsed.recommendations.map((rec: { schoolId: number; ranking: number; category: string; aiReason: string; matchScore: number }) => {
+        const school = schoolsData.find((s) => s.id === rec.schoolId)
         return {
           schoolId: rec.schoolId,
           schoolName: school?.name || '未知学校',
           aiReason: rec.aiReason,
           matchScore: rec.matchScore,
           ranking: rec.ranking,
-          category: rec.category
+          category: (rec.category as 'core' | 'alternative') || 'core'
         }
       })
 
@@ -348,12 +349,16 @@ ${JSON.stringify(schoolsList, null, 2)}
       const errorMsg = err instanceof Error ? err.message : '生成推荐失败'
       globalState.setError(errorMsg)
 
-      return generateFallbackRecommendations(assessment)
+      return generateFallbackRecommendations(assessment, {
+        priorities: ['ranking'],
+        excludedCountries: [],
+        specialRequirements: ''
+      })
     }
   }
 
   const generateAnalysis = async (
-    assessment: any,
+    assessment: AssessmentForm,
     schoolId: number,
     providerId: string,
     _onStream?: (content: string) => void
@@ -406,7 +411,7 @@ ${JSON.stringify(schoolsList, null, 2)}
     }
   }
 
-  const buildPersonalizedReason = (school: SchoolWithMatch, assessment: any): string => {
+  const buildPersonalizedReason = (school: SchoolWithMatch, assessment: AssessmentForm): string => {
     const criteria = school.admissionCriteria
     if (!criteria) return `${school.name}在${school.major}领域实力突出，综合匹配度${school.match}%，值得重点考虑。`
 
@@ -484,7 +489,7 @@ ${JSON.stringify(schoolsList, null, 2)}
     return selected.join('。') + '。'
   }
 
-  const generateFallbackRecommendations = (assessment: any): { recommendations: AIRecommendation[], summary: string } => {
+  const generateFallbackRecommendations = (assessment: AssessmentForm, _preference: UserPreference): { recommendations: AIRecommendation[], summary: string } => {
     const schoolsWithMatch = getAllSchoolsWithMatch(assessment)
 
     const filtered = schoolsWithMatch.filter((s: SchoolWithMatch) => s.match && s.match > 50)
@@ -508,8 +513,8 @@ ${JSON.stringify(schoolsList, null, 2)}
     return { recommendations, summary }
   }
 
-  const generateFallbackAnalysis = (assessment: any, schoolId: number): SchoolAnalysis => {
-    const school = schoolsData.find((s: any) => s.id === schoolId)
+  const generateFallbackAnalysis = (assessment: AssessmentForm, schoolId: number): SchoolAnalysis => {
+    const school = schoolsData.find((s) => s.id === schoolId)
     if (!school) {
       return {
         schoolId,

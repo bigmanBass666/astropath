@@ -35,6 +35,8 @@ npm-debug.log*
 # Vue/Vite specific
 .vite/
 *.local
+*.bak
+*.bak.*
 
 # Element-Plus
 element-plus/
@@ -44,3 +46,6 @@ echarts/
 
 # Testing artifacts (written to /tmp by the coding agent — not the project dir)
 # Nothing needed here: code.md instructs agents to write all test scripts to /tmp
+
+# Local Netlify folder
+.netlify

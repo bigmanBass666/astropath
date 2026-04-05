@@ -3,6 +3,8 @@
  * 支持多provider切换：OpenAI、Anthropic、国内供应商、其他
  */
 
+import { DEFAULT_PROVIDER } from '@/composables/useAIConfig'
+
 const _debug = import.meta.env.DEV ? (...args) => console.log(...args) : () => {}
 
 const EMPTY_USER_GUIDANCE_PROMPT = `【⚠️ 重要：用户尚未填写背景信息】
@@ -29,7 +31,7 @@ export class AIError extends Error {
 // 获取所有已配置的provider
 export function getProviders() {
   const saved = localStorage.getItem('ai_providers')
-  return saved ? JSON.parse(saved) : []
+  return saved ? JSON.parse(saved) : [DEFAULT_PROVIDER]
 }
 
 // 根据ID获取provider配置
@@ -39,7 +41,7 @@ export function getProviderById(id) {
 }
 
 // 发送消息到AI API
-export async function sendMessageToAI(providerId, messages, options = {}, externalSignal = null) {
+export async function sendMessageToAI(providerId, messages, options = {}, externalSignal) {
   const provider = getProviderById(providerId)
 
   if (!provider) {

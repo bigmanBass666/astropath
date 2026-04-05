@@ -1,6 +1,19 @@
 import { computed, onMounted, onUnmounted, reactive, ref, watch, type ComputedRef } from 'vue'
 import { sendMessageToAI, AIError } from '@/utils/ai-api'
-import { useGlobalAIState, type AIStreamState, type ActiveStreamInfo } from './useGlobalAIState'
+import { useGlobalAIState, type AIStreamState, type ActiveStreamInfo, type ChatMessage, type AIStreamOptions } from './useGlobalAIState'
+import { DEFAULT_PROVIDER } from './useAIConfig'
+
+export interface StreamMessage {
+  role: 'system' | 'user' | 'assistant'
+  content: string | Array<{ type: 'text'; text: string } | { type: 'image_url'; image_url: { url: string } }>
+}
+
+export interface GenerateOptions extends AIStreamOptions {
+  temperature?: number
+  max_tokens?: number
+  stream?: boolean
+  thinking?: boolean
+}
 
 export interface UseAIStreamOptions {
   taskId: string
@@ -38,8 +51,8 @@ export interface AIStreamResult {
   canRetry: ComputedRef<boolean>
   retryCount: ComputedRef<number>
   userScrolledUp: ReturnType<typeof ref<boolean>>
-  generate: (messages: unknown[], options?: unknown) => Promise<string>
-  generateWithProvider: (providerId: string, messages: unknown[], options?: unknown) => Promise<string>
+  generate: (messages: StreamMessage[], options?: GenerateOptions) => Promise<string>
+  generateWithProvider: (providerId: string, messages: StreamMessage[], options?: GenerateOptions) => Promise<string>
   stop: () => void
   reset: () => void
   retry: () => Promise<string>
@@ -71,9 +84,9 @@ export function useAIStream(options: UseAIStreamOptions): AIStreamResult {
   const actualEnableThinking = enableThinking ?? globalState.getConfig().defaultEnableThinking
 
   let abortController: AbortController | null = null
-  let lastMessages: unknown[] = []
+  let lastMessages: StreamMessage[] = []
   let lastProviderId: string | null = null
-  let lastOptions: unknown = {}
+  let lastOptions: GenerateOptions = {} as GenerateOptions
 
   const userScrolledUp = ref(false)
   let userScrollLocked = false
@@ -119,37 +132,31 @@ export function useAIStream(options: UseAIStreamOptions): AIStreamResult {
     onQueueChange?.(newPos)
   })
 
-  const getDefaultProvider = (): string | null => {
+  const getDefaultProvider = (): string => {
     const providers = JSON.parse(localStorage.getItem('ai_providers') || '[]')
-    return providers.length > 0 ? providers[0].id : null
+    return providers.length > 0 ? providers[0].id : DEFAULT_PROVIDER.id
   }
 
   const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 
-  const generate = async (messages: unknown[], requestOptions?: unknown): Promise<string> => {
+  const generate = async (messages: StreamMessage[], requestOptions?: GenerateOptions): Promise<string> => {
     const providerId = getDefaultProvider()
-    if (!providerId) {
-      const errorMsg = '请先配置AI模型'
-      globalState.errorTask(taskId, errorMsg)
-      onError?.(errorMsg)
-      throw new Error(errorMsg)
-    }
     return generateWithProvider(providerId, messages, requestOptions)
   }
 
   const generateWithProvider = async (
     providerId: string,
-    messages: unknown[],
-    requestOptions?: unknown
+    messages: StreamMessage[],
+    requestOptions?: GenerateOptions
   ): Promise<string> => {
     lastMessages = messages
     lastProviderId = providerId
-    lastOptions = requestOptions
+    lastOptions = requestOptions ?? ({} as GenerateOptions)
 
     globalState.initTask(taskId, {
       providerId,
-      messages: messages as any[],
-      options: requestOptions as any,
+      messages: messages as ChatMessage[],
+      options: requestOptions ?? {},
       priority
     })
 
@@ -181,24 +188,24 @@ export function useAIStream(options: UseAIStreamOptions): AIStreamResult {
 
   const executeGeneration = async (
     providerId: string,
-    messages: unknown[],
-    requestOptions?: unknown
+    messages: StreamMessage[],
+    requestOptions?: GenerateOptions
   ): Promise<string> => {
     const runtimeConfig = globalState.getConfig()
-    
-    const defaultOpts: Record<string, any> = {
+
+    const defaultOpts: Record<string, unknown> = {
       temperature: runtimeConfig.defaultTemperature,
       stream: true,
       enableThinking: actualEnableThinking
     }
-    
+
     if (runtimeConfig.defaultMaxTokens && runtimeConfig.defaultMaxTokens > 0) {
       defaultOpts['maxTokens'] = runtimeConfig.defaultMaxTokens
     }
-    
+
     const finalOptions = {
       ...defaultOpts,
-      ...(requestOptions as Record<string, any>),
+      ...(requestOptions ?? {}),
       requestTimeout: actualEnableThinking ? runtimeConfig.timeout * 2 : runtimeConfig.timeout
     }
 
@@ -217,7 +224,7 @@ export function useAIStream(options: UseAIStreamOptions): AIStreamResult {
         providerId,
         messages,
         finalOptions,
-        abortController.signal as any
+        abortController.signal
       )
 
       let idleTimer: ReturnType<typeof setTimeout> | null = null
@@ -233,7 +240,7 @@ export function useAIStream(options: UseAIStreamOptions): AIStreamResult {
 
       resetIdleTimer()
 
-      for await (const chunk of stream as AsyncIterable<{ type: string; content: any }>) {
+      for await (const chunk of stream as AsyncIterable<{ type: string; content: string }>) {
         if (!globalState.isTaskActive(taskId)) break
 
         if (chunk.type === 'reasoning' && chunk.content) {
