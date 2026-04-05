@@ -88,7 +88,7 @@ const router = createRouter({
   routes,
   scrollBehavior(_to, _from, savedPosition) {
     if (savedPosition) return savedPosition
-    return { top: 0 }
+    return { top: 0, left: 0, behavior: 'instant' }
   }
 })
 
@@ -96,6 +96,20 @@ const router = createRouter({
 router.beforeEach((to) => {
   document.title = `${to.meta.title || '首页'} - 一站式智能留学规划平台`
   return true
+})
+
+// 每次路由切换后强制滚动到顶部（解决 hash 模式滚动位置残留问题）
+router.afterEach(() => {
+  // 多重保险：立即执行 + 延迟执行
+  const scrollToTop = () => {
+    window.scrollTo(0, 0)
+    document.documentElement.scrollTop = 0
+    document.body.scrollTop = 0
+  }
+  scrollToTop()
+  requestAnimationFrame(scrollToTop)
+  setTimeout(scrollToTop, 50)
+  setTimeout(scrollToTop, 150)
 })
 
 app.use(router)

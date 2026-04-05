@@ -1,5 +1,5 @@
 <template>
-  <div class="constellation-wrapper">
+  <div class="constellation-awwwards">
     <canvas
       ref="canvasRef"
       class="constellation-canvas"
@@ -67,7 +67,7 @@ const draw = () => {
   const h = displaySize
   const cx = w / 2
   const cy = h / 2
-  const radius = Math.min(w, h) / 2 - 50
+  const radius = Math.min(w, h) / 2 - 55
 
   ctx.clearRect(0, 0, w, h)
 
@@ -85,26 +85,26 @@ const draw = () => {
       else ctx.lineTo(px, py)
     }
     ctx.closePath()
-    ctx.strokeStyle = level === 4 ? 'rgba(15,23,42,0.06)' : 'rgba(15,23,42,0.03)'
+    ctx.strokeStyle = level === 4 ? 'rgba(15,23,42,0.05)' : 'rgba(15,23,42,0.025)'
     ctx.lineWidth = 1
     ctx.stroke()
   }
 
   for (let i = 0; i < n; i++) {
     for (let j = i + 1; j < n; j++) {
-      const nx1 = nodes[i].baseX + Math.sin(time * 0.8 + i) * 3
-      const ny1 = nodes[i].baseY + Math.cos(time * 0.8 + i) * 3
-      const nx2 = nodes[j].baseX + Math.sin(time * 0.8 + j) * 3
-      const ny2 = nodes[j].baseY + Math.cos(time * 0.8 + j) * 3
+      const nx1 = nodes[i].baseX + Math.sin(time * 0.8 + i) * 3.5
+      const ny1 = nodes[i].baseY + Math.cos(time * 0.8 + i) * 3.5
+      const nx2 = nodes[j].baseX + Math.sin(time * 0.8 + j) * 3.5
+      const ny2 = nodes[j].baseY + Math.cos(time * 0.8 + j) * 3.5
 
       const lineOpacity = props.active
-        ? 0.12 + Math.sin(time * 1.5 + i + j) * 0.08
+        ? 0.14 + Math.sin(time * 1.5 + i + j) * 0.09
         : 0.06 + Math.sin(time * 0.8 + i + j) * 0.03
 
       ctx.beginPath()
       ctx.moveTo(nx1, ny1)
       ctx.lineTo(nx2, ny2)
-      ctx.strokeStyle = `rgba(15,23,42,${Math.max(0.02, lineOpacity)})`
+      ctx.strokeStyle = `rgba(217,119,6,${Math.max(0.02, lineOpacity)})`
       ctx.lineWidth = 1
       ctx.stroke()
     }
@@ -113,36 +113,36 @@ const draw = () => {
   nodes.forEach((node, i) => {
     const dim = props.dimensions[i]
     const pulseScale = props.active
-      ? 1 + Math.sin(time * 2.5 + i * 0.8) * 0.18
+      ? 1 + Math.sin(time * 2.5 + i * 0.8) * 0.22
       : 1 + Math.sin(time * 1.2 + i * 0.6) * 0.08
-    const nodeRadius = (dim.value / 100) * 10 + 4
+    const nodeRadius = (dim.value / 100) * 11 + 4.5
     const r = nodeRadius * pulseScale
-    const nx = node.baseX + Math.sin(time * 0.8 + i) * 3
-    const ny = node.baseY + Math.cos(time * 0.8 + i) * 3
+    const nx = node.baseX + Math.sin(time * 0.8 + i) * 3.5
+    const ny = node.baseY + Math.cos(time * 0.8 + i) * 3.5
 
-    const glowGrad = ctx.createRadialGradient(nx, ny, 0, nx, ny, r * 3)
-    glowGrad.addColorStop(0, props.active ? 'rgba(217,119,6,0.12)' : 'rgba(15,23,42,0.08)')
+    const glowGrad = ctx.createRadialGradient(nx, ny, 0, nx, ny, r * 4)
+    glowGrad.addColorStop(0, props.active ? 'rgba(217,119,6,0.18)' : 'rgba(15,23,42,0.08)')
     glowGrad.addColorStop(1, 'transparent')
     ctx.beginPath()
-    ctx.arc(nx, ny, r * 3, 0, Math.PI * 2)
+    ctx.arc(nx, ny, r * 4, 0, Math.PI * 2)
     ctx.fillStyle = glowGrad
     ctx.fill()
 
     ctx.beginPath()
     ctx.arc(nx, ny, r, 0, Math.PI * 2)
-    ctx.fillStyle = props.active ? 'rgba(217,119,6,0.85)' : 'rgba(15,23,42,0.75)'
+    ctx.fillStyle = props.active ? 'rgba(217,119,6,0.9)' : 'rgba(15,23,42,0.7)'
     ctx.fill()
 
     ctx.beginPath()
-    ctx.arc(nx, ny, r * 0.45, 0, Math.PI * 2)
-    ctx.fillStyle = 'rgba(255,255,255,0.7)'
+    ctx.arc(nx, ny, r * 0.42, 0, Math.PI * 2)
+    ctx.fillStyle = 'rgba(255,255,255,0.75)'
     ctx.fill()
 
-    const labelR = radius + 24
+    const labelR = radius + 28
     const lx = cx + Math.cos((i * Math.PI * 2) / n - Math.PI / 2) * labelR
     const ly = cy + Math.sin((i * Math.PI * 2) / n - Math.PI / 2) * labelR
-    ctx.fillStyle = props.active ? 'rgba(15,23,42,0.7)' : 'rgba(15,23,42,0.45)'
-    ctx.font = '11px var(--font-family-base)'
+    ctx.fillStyle = props.active ? 'rgba(15,23,42,0.75)' : 'rgba(15,23,42,0.4)'
+    ctx.font = `${props.active ? '600' : '500'} 11px var(--font-family-base)`
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
     ctx.fillText(dim.label, lx, ly)
@@ -163,7 +163,7 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-.constellation-wrapper {
+.constellation-awwwards {
   position: relative;
   display: flex;
   align-items: center;
@@ -179,10 +179,10 @@ onUnmounted(() => {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 60%;
-  height: 60%;
+  width: 65%;
+  height: 65%;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(217, 119, 6, 0.06) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(217, 119, 6, 0.08), transparent 70%);
   transform: translate(-50%, -50%);
   pointer-events: none;
   z-index: 0;

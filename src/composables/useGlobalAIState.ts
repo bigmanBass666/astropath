@@ -354,30 +354,28 @@ export function useGlobalAIState() {
   }
 
   const resetTask = (taskId: string) => {
-    if (globalState.tasks[taskId]) {
-      const queueIndex = globalState.queue.indexOf(taskId)
-      if (queueIndex >= 0) {
-        globalState.queue.splice(queueIndex, 1)
-      }
-      
-      globalState.tasks[taskId] = {
-        id: taskId,
-        state: 'idle',
-        content: '',
-        reasoning: '',
-        error: null,
-        showReasoning: true,
-        timestamp: Date.now(),
-        providerId: null,
-        messages: [],
-        options: {},
-        retryCount: 0,
-        maxRetries: globalState.config.retryAttempts,
-        priority: 0,
-        queuePosition: 0
-      }
-      scheduleSave(true)
+    const queueIndex = globalState.queue.indexOf(taskId)
+    if (queueIndex >= 0) {
+      globalState.queue.splice(queueIndex, 1)
     }
+    
+    globalState.tasks[taskId] = {
+      id: taskId,
+      state: 'idle',
+      content: '',
+      reasoning: '',
+      error: null,
+      showReasoning: true,
+      timestamp: Date.now(),
+      providerId: null,
+      messages: [],
+      options: {},
+      retryCount: 0,
+      maxRetries: globalState.config.retryAttempts,
+      priority: 0,
+      queuePosition: 0
+    }
+    scheduleSave(true)
   }
 
   const startConnecting = (taskId: string) => {

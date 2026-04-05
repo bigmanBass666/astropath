@@ -1,18 +1,18 @@
 <template>
-  <div class="rec-list-modern">
-    <div class="rec-intro">
-      <div class="intro-avatar">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+  <div class="rec-awwwards">
+    <div class="rec-intro-block">
+      <div class="intro-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
       </div>
-      <div class="intro-text">
-        <p class="intro-main">
+      <div class="intro-body">
+        <p class="intro-main-text">
           基于你的背景和需求，为你精选了
           <strong>{{ coreRecommendations.length }}</strong> 所核心推荐学校
           <span v-if="alternativeRecommendations.length > 0">和 <strong>{{ alternativeRecommendations.length }}</strong> 个备选方案</span>
         </p>
         <p
           v-if="summary"
-          class="intro-summary"
+          class="intro-summary-text"
         >
           {{ summary }}
         </p>
@@ -23,12 +23,12 @@
       v-if="coreRecommendations.length > 0"
       class="rec-section"
     >
-      <div class="section-header">
-        <h4 class="section-title-modern">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="var(--color-accent)" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-          核心推荐
-        </h4>
-        <span class="section-count">{{ coreRecommendations.length }} 所</span>
+      <div class="sec-header">
+        <div class="sec-title-row">
+          <span class="sec-star">★</span>
+          <h4 class="sec-title">核心推荐</h4>
+        </div>
+        <span class="sec-count">{{ coreRecommendations.length }} 所</span>
       </div>
       <div class="cards-grid">
         <SchoolCard
@@ -48,12 +48,12 @@
       v-if="alternativeRecommendations.length > 0"
       class="rec-section rec-section--alt"
     >
-      <div class="section-header">
-        <h4 class="section-title-modern section-title-modern--muted">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-          备选方案
-        </h4>
-        <span class="section-count section-count--muted">{{ alternativeRecommendations.length }} 所</span>
+      <div class="sec-header sec-header--muted">
+        <div class="sec-title-row sec-title-row--muted">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+          <h4 class="sec-title sec-title--muted">备选方案</h4>
+        </div>
+        <span class="sec-count sec-count--muted">{{ alternativeRecommendations.length }} 所</span>
       </div>
       <div class="cards-grid cards-grid--alt">
         <SchoolCard
@@ -70,9 +70,12 @@
     </div>
 
     <div class="rec-footer">
-      <div class="ai-input-box">
-        <div class="ai-input-inner" :class="{ 'ai-input-inner--focused': isFocused }">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="ai-icon-static"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      <div class="ai-input-area">
+        <div
+          class="ai-input-inner"
+          :class="{ 'ai-input-inner--focus': isFocused }"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2" class="ai-static-icon"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
           <input
             ref="inputEl"
             v-model="adjustInput"
@@ -84,30 +87,30 @@
             @blur="isFocused = false"
           >
           <button
-            class="ai-send"
-            :class="{ 'ai-send--active': adjustInput.trim() }"
+            class="ai-send-btn"
+            :class="{ 'ai-send-btn--active': adjustInput.trim() }"
             @click="submitAdjust"
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
           </button>
         </div>
       </div>
 
-      <div class="action-row">
+      <div class="action-bar">
         <button
           class="act-btn act-btn--ghost"
           @click="$emit('reset')"
         >
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
           重新填写偏好
         </button>
         <button
           class="act-btn act-btn--solid"
-          :class="{ 'act-btn--disabled': favorites.length < 2 }"
+          :class="{ 'act-btn--off': favorites.length < 2 }"
           :disabled="favorites.length < 2"
           @click="$emit('compare')"
         >
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
           对比收藏
           <span
             v-if="favorites.length > 0"
@@ -120,7 +123,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import SchoolCard from './SchoolCard.vue'
 
 const props = defineProps({
@@ -154,8 +157,8 @@ const CATEGORY_MAP = {
 
 const displayCategory = (cat) => CATEGORY_MAP[cat] || cat
 
-const coreRecommendations = props.recommendations.filter(r => displayCategory(r.category) === 'core')
-const alternativeRecommendations = props.recommendations.filter(r => displayCategory(r.category) === 'alternative')
+const coreRecommendations = computed(() => props.recommendations.filter(r => displayCategory(r.category) === 'core'))
+const alternativeRecommendations = computed(() => props.recommendations.filter(r => displayCategory(r.category) === 'alternative'))
 
 const submitAdjust = () => {
   if (!adjustInput.value.trim()) return
@@ -165,116 +168,129 @@ const submitAdjust = () => {
 </script>
 
 <style scoped>
-.rec-list-modern {
-  padding: var(--space-6) 0;
+.rec-awwwards {
+  padding: 32px 0;
 }
 
-/* ====== Intro ====== */
-.rec-intro {
+/* ====== Intro Block ====== */
+.rec-intro-block {
   display: flex;
-  gap: var(--space-4);
-  padding: var(--space-6);
-  background: white;
-  border: 1px solid var(--color-border-light);
-  border-radius: var(--radius-2xl);
-  margin-bottom: var(--space-8);
+  gap: 18px;
+  padding: 28px;
+  background: #FFFFFF;
+  border: 1px solid #F1F5F9;
+  border-radius: 20px;
+  margin-bottom: 40px;
 }
 
-.intro-avatar {
-  width: 42px;
-  height: 42px;
-  border-radius: var(--radius-lg);
-  background: var(--color-solid);
+.intro-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: #0F172A;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
 }
 
-.intro-text {
+.intro-body {
   flex: 1;
   min-width: 0;
 }
 
-.intro-main {
-  margin: 0 0 var(--space-2) 0;
-  font-size: var(--text-base);
-  color: var(--color-text-primary);
-  line-height: var(--leading-normal);
+.intro-main-text {
+  margin: 0 0 8px 0;
+  font-size: 15px;
+  color: #334155;
+  line-height: 1.65;
 }
 
-.intro-main strong {
-  color: var(--color-solid);
-  font-weight: var(--font-bold);
+.intro-main-text strong {
+  color: #0F172A;
+  font-weight: 800;
 }
 
-.intro-summary {
+.intro-summary-text {
   margin: 0;
-  font-size: var(--text-sm);
-  color: var(--color-text-secondary);
-  line-height: var(--leading-relaxed);
+  font-size: 13px;
+  color: #64748B;
+  line-height: 1.7;
 }
 
 /* ====== Section ====== */
 .rec-section {
-  margin-bottom: var(--space-10);
+  margin-bottom: 48px;
 }
 
 .rec-section--alt {
   opacity: 0.92;
 }
 
-.section-header {
+.sec-header {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
-  margin-bottom: var(--space-6);
+  gap: 12px;
+  margin-bottom: 26px;
 }
 
-.section-title-modern {
+.sec-header--muted {
+  opacity: 0.7;
+}
+
+.sec-title-row {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
-  font-size: var(--text-lg);
-  font-weight: var(--font-bold);
-  color: var(--color-solid);
-  letter-spacing: -0.25px;
+  gap: 10px;
+}
+
+.sec-title-row--muted .sec-star {
+  display: none;
+}
+
+.sec-star {
+  color: #D97706;
+  font-size: 18px;
+}
+
+.sec-title {
+  font-size: 17px;
+  font-weight: 800;
+  color: #0F172A;
+  letter-spacing: -0.3px;
   margin: 0;
 }
 
-.section-title-modern--muted {
-  color: var(--color-text-secondary);
+.sec-title--muted {
+  color: #64748B;
+  font-weight: 700;
 }
 
-.section-title-modern--muted svg {
-  stroke: var(--color-text-tertiary);
+.sec-count {
+  font-size: 11px;
+  font-weight: 700;
+  color: #94A3B8;
+  background: #F1F5F9;
+  padding: 3px 11px;
+  border-radius: 100px;
+  letter-spacing: 0.3px;
 }
 
-.section-count {
-  font-size: var(--text-xs);
-  font-weight: var(--font-medium);
-  color: var(--color-text-muted);
-  background: var(--color-slate-100);
-  padding: 2px 10px;
-  border-radius: var(--radius-full);
-  letter-spacing: 0.2px;
-}
-
-.section-count--muted {
+.sec-count--muted {
   background: transparent;
-  border: 1px solid var(--color-border-light);
+  border: 1px solid #E2E8F0;
 }
 
-/* ====== Cards Grid (staggered) ====== */
+/* ====== Cards Grid ====== */
 .cards-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: var(--space-6);
+  gap: 24px;
 }
 
-.cards-grid--alt .school-card-wrap:nth-child(3n+1) { transform: translateY(8px); }
+.cards-grid--alt .school-card-wrap:nth-child(3n+1) { transform: translateY(10px); }
 .cards-grid--alt .school-card-wrap:nth-child(3n+2) { transform: translateY(0); }
-.cards-grid--alt .school-card-wrap:nth-child(3n) { transform: translateY(-8px); }
+.cards-grid--alt .school-card-wrap:nth-child(3n) { transform: translateY(-10px); }
 
 @media (max-width: 1024px) {
   .cards-grid { grid-template-columns: repeat(2, 1fr); }
@@ -287,35 +303,34 @@ const submitAdjust = () => {
 
 /* ====== Footer ====== */
 .rec-footer {
-  margin-top: var(--space-10);
-  padding-top: var(--space-8);
-  border-top: 1px solid var(--color-border-light);
+  margin-top: 48px;
+  padding-top: 36px;
+  border-top: 1px solid #F1F5F9;
 }
 
 /* ====== AI Input ====== */
-.ai-input-box {
-  margin-bottom: var(--space-6);
+.ai-input-area {
+  margin-bottom: 28px;
 }
 
 .ai-input-inner {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
-  padding: var(--space-2) var(--space-2) var(--space-2) var(--space-5);
-  background: white;
-  border: 1.5px solid var(--color-border);
-  border-radius: var(--radius-xl);
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-  box-shadow: var(--shadow-sm);
+  gap: 14px;
+  padding: 8px 8px 8px 22px;
+  background: #fff;
+  border: 1.5px solid #E2E8F0;
+  border-radius: 18px;
+  transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.03);
 }
 
 .ai-input-inner:focus-within {
-  border-color: var(--color-solid);
-  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.08), 0 0 0 3px rgba(15, 23, 42, 0.04);
+  border-color: #0F172A;
+  box-shadow: 0 6px 24px rgba(15,23,42,0.08), 0 0 0 4px rgba(15,23,42,0.04);
 }
 
-.ai-icon-static {
-  color: var(--color-slate-400);
+.ai-static-icon {
   flex-shrink: 0;
 }
 
@@ -323,91 +338,92 @@ const submitAdjust = () => {
   flex: 1;
   border: none;
   background: transparent;
-  font-size: var(--text-base);
-  color: var(--color-text-primary);
+  font-size: 15px;
+  color: #0F172A;
   outline: none;
-  padding: var(--space-2) 0;
-  min-height: 22px;
+  padding: 8px 0;
+  min-height: 24px;
   font-family: var(--font-family-base);
 }
 
 .ai-field::placeholder {
-  color: var(--color-text-muted);
+  color: #CBD5E1;
 }
 
-.ai-send {
+.ai-send-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: 42px;
+  height: 42px;
   border: none;
-  border-radius: var(--radius-full);
-  background: var(--color-slate-100);
-  color: var(--color-text-muted);
+  border-radius: 12px;
+  background: #F1F5F9;
+  color: #CBD5E1;
   cursor: not-allowed;
-  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
   flex-shrink: 0;
 }
 
-.ai-send--active {
-  background: var(--color-solid);
-  color: white;
+.ai-send-btn--active {
+  background: #0F172A;
+  color: #fff;
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.2);
+  box-shadow: 0 3px 10px rgba(15,23,42,0.22);
 }
 
-.ai-send--active:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.28);
+.ai-send-btn--active:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(15,23,42,0.3);
 }
 
-/* ====== Action Row ====== */
-.action-row {
+/* ====== Action Bar ====== */
+.action-bar {
   display: flex;
   justify-content: center;
-  gap: var(--space-4);
+  gap: 14px;
 }
 
 .act-btn {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-3) var(--space-6);
+  gap: 8px;
+  padding: 12px 24px;
   border: none;
-  border-radius: var(--radius-lg);
-  font-size: var(--text-sm);
-  font-weight: var(--font-semibold);
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 700;
   cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-  min-height: 42px;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  min-height: 44px;
+  letter-spacing: 0.2px;
 }
 
 .act-btn--ghost {
-  background: var(--color-slate-100);
-  color: var(--color-text-secondary);
+  background: #F1F5F9;
+  color: #64748B;
 }
 
 .act-btn--ghost:hover {
-  background: var(--color-slate-200);
-  transform: translateY(-1px);
+  background: #E2E8F0;
+  transform: translateY(-2px);
 }
 
 .act-btn--solid {
-  background: var(--color-solid);
+  background: #0F172A;
   color: white;
-  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.15);
+  box-shadow: 0 3px 10px rgba(15,23,42,0.15);
 }
 
-.act-btn--solid:hover:not(.act-btn--disabled) {
-  background: var(--color-solid-hover);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.2);
+.act-btn--solid:hover:not(.act-btn--off) {
+  background: #1E293B;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(15,23,42,0.22);
 }
 
-.act-btn--disabled {
-  background: var(--color-slate-100);
-  color: var(--color-text-muted);
+.act-btn--off {
+  background: #F1F5F9;
+  color: #CBD5E1;
   cursor: not-allowed;
   box-shadow: none;
 }
@@ -416,12 +432,12 @@ const submitAdjust = () => {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 20px;
-  height: 20px;
-  padding: 0 6px;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: var(--radius-full);
-  font-size: var(--text-xs);
-  font-weight: var(--font-bold);
+  min-width: 22px;
+  height: 22px;
+  padding: 0 7px;
+  background: rgba(255,255,255,0.18);
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 800;
 }
 </style>

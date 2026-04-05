@@ -103,6 +103,7 @@ export function useAIStream(options: UseAIStreamOptions): AIStreamResult {
   const hasContent = computed(() => content.value.length > 0)
   const hasReasoning = computed(() => reasoning.value.length > 0)
   const isLoading = computed(() => isConnecting.value || isStreaming.value || isThinking.value || isQueued.value)
+
   const waitingPhase = computed<'connecting' | 'processing' | 'ready'>(() => {
     if (hasContent.value || hasReasoning.value) return 'ready'
     if (isThinking.value || isStreaming.value) return 'processing'

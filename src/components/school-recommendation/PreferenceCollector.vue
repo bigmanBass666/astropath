@@ -1,15 +1,15 @@
 <template>
-  <div class="pref-modern">
+  <div class="pref-awwwards">
     <div
       ref="headerEl"
       class="pref-header reveal-up"
     >
-      <div class="pref-avatar">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      <div class="header-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
       </div>
-      <div>
-        <h3 class="pref-greeting">AI 选校助手</h3>
-        <p class="pref-desc">你好！我是你的专属选校顾问。</p>
+      <div class="header-text">
+        <p class="header-title">AI 选校助手</p>
+        <p class="header-sub">你好！我是你的专属选校顾问。</p>
       </div>
     </div>
 
@@ -18,102 +18,85 @@
       ref="summaryEl"
       class="pref-summary reveal-up"
     >
-      <span class="summary-label">已了解你的背景</span>
+      <div class="summary-bar">
+        <span class="summary-label">已了解你的背景</span>
+      </div>
       <div class="summary-chips">
-        <span class="chip chip--solid">{{ assessment.basic?.gpa || 'N/A' }} GPA</span>
-        <span class="chip chip--accent">{{ getUniversityLabel(assessment.basic?.university) }}</span>
-        <span class="chip">{{ assessment.academic?.averageScore || 'N/A' }} 均分</span>
-        <span class="chip">{{ assessment.academic?.degree || '本科' }}</span>
+        <span class="s-chip s-chip--dark">{{ assessment.basic?.gpa || 'N/A' }} GPA</span>
+        <span class="s-chip s-chip--warm">{{ getUniversityLabel(assessment.basic?.university) }}</span>
+        <span class="s-chip">{{ assessment.academic?.averageScore || 'N/A' }} 均分</span>
+        <span class="s-chip">{{ assessment.academic?.degree || '本科' }}</span>
       </div>
     </div>
 
-    <div class="pref-form">
-      <p ref="introEl" class="form-intro reveal-up">为了给你最合适的推荐，请告诉我：</p>
+    <p ref="introEl" class="pref-intro reveal-up">为了给你最合适的推荐，请告诉我：</p>
 
-      <div
-        ref="card1El"
-        class="step-card reveal-up"
-        :class="{ 'step-card--focus': currentFocus === 1 }"
-      >
-        <div class="step-indicator">
-          <div class="step-num">1</div>
-          <div class="step-line" />
-        </div>
-        <div class="step-body">
-          <label class="step-label">
-            你目前最看重什么？
-            <span class="label-hint">可多选</span>
-          </label>
-          <div class="option-grid">
-            <button
-              v-for="opt in priorityOptions"
-              :key="opt.value"
-              class="option-pill"
-              :class="{ 'option-pill--active': selectedPriorities.includes(opt.value) }"
-              @click="togglePriority(opt.value)"
-            >
-              <span class="pill-icon">{{ getIcon(opt.icon) }}</span>
-              {{ opt.label }}
-            </button>
-          </div>
+    <div
+      ref="card1El"
+      class="step-card reveal-up"
+      :class="{ 'step-card--active': currentFocus === 1 }"
+    >
+      <div class="step-num-badge">01</div>
+      <div class="step-content">
+        <label class="step-q">
+          你目前最看重什么？
+          <span class="q-hint">可多选</span>
+        </label>
+        <div class="option-grid">
+          <button
+            v-for="opt in priorityOptions"
+            :key="opt.value"
+            class="opt-btn"
+            :class="{ 'opt-btn--on': selectedPriorities.includes(opt.value) }"
+            @click="togglePriority(opt.value)"
+          >
+            <span class="opt-icon">{{ getIcon(opt.icon) }}</span>
+            {{ opt.label }}
+          </button>
         </div>
       </div>
+    </div>
 
-      <div
-        ref="card2El"
-        class="step-card reveal-up"
-        :class="{ 'step-card--focus': currentFocus === 2 }"
-      >
-        <div class="step-indicator">
-          <div class="step-num">2</div>
-          <div class="step-line" />
-        </div>
-        <div class="step-body">
-          <label class="step-label">
-            有想避开的国家/地区吗？
-          </label>
-          <div class="country-grid">
-            <button
-              :class="['country-pill', { 'country-pill--active': excludedCountries.length === 0 }]"
-              @click="clearExcludedCountries"
-            >
-              无限制
-            </button>
-            <button
-              v-for="c in availableCountries"
-              :key="c"
-              :class="['country-pill', { 'country-pill--active': excludedCountries.includes(c) }]"
-              @click="toggleCountry(c)"
-            >
-              {{ c }}
-            </button>
-          </div>
+    <div
+      ref="card2El"
+      class="step-card reveal-up"
+      :class="{ 'step-card--active': currentFocus === 2 }"
+    >
+      <div class="step-num-badge">02</div>
+      <div class="step-content">
+        <label class="step-q">有想避开的国家/地区吗？</label>
+        <div class="country-grid">
+          <button
+            :class="['c-btn', { 'c-btn--on': excludedCountries.length === 0 }]"
+            @click="clearExcludedCountries"
+          >无限制</button>
+          <button
+            v-for="c in availableCountries"
+            :key="c"
+            :class="['c-btn', { 'c-btn--on': excludedCountries.includes(c) }]"
+            @click="toggleCountry(c)"
+          >{{ c }}</button>
         </div>
       </div>
+    </div>
 
-      <div
-        ref="card3El"
-        class="step-card reveal-up"
-        :class="{ 'step-card--focus': currentFocus === 3 }"
-      >
-        <div class="step-indicator">
-          <div class="step-num">3</div>
-        </div>
-        <div class="step-body">
-          <label class="step-label">
-            还有什么特别的要求？
-            <span class="label-hint label-hint--muted">选填</span>
-          </label>
-          <el-input
-            v-model="specialRequirements"
-            type="textarea"
-            :rows="3"
-            placeholder="例如：我想去加州的学校、希望学费在3万美元以内..."
-            class="modern-textarea"
-            @focus="currentFocus = 3"
-            @blur="currentFocus = -1"
-          />
-        </div>
+    <div
+      ref="card3El"
+      class="step-card reveal-up"
+    >
+      <div class="step-num-badge">03</div>
+      <div class="step-content">
+        <label class="step-q">
+          还有什么特别的要求？
+          <span class="q-hint q-hint--muted">选填</span>
+        </label>
+        <el-input
+          v-model="specialRequirements"
+          type="textarea"
+          :rows="3"
+          placeholder="例如：我想去加州的学校、希望学费在3万美元以内..."
+          class="aww-textarea"
+        />
       </div>
     </div>
 
@@ -122,76 +105,79 @@
       class="pref-actions reveal-up"
     >
       <button
-        class="submit-main"
-        :class="{ 'submit-main--loading': loading, 'submit-main--ready': !loading && selectedPriorities.length > 0 }"
+        class="submit-btn"
+        :class="{
+          'submit-btn--loading': loading,
+          'submit-btn--ready': !loading && selectedPriorities.length > 0
+        }"
         :disabled="loading || selectedPriorities.length === 0"
         @click="submitPreferences"
       >
-        <span v-if="!loading" class="submit-icon-wrap">
+        <span v-if="!loading" class="sb-icon">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/></svg>
         </span>
-        <span v-else class="spin-wrapper">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="spin-icon"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+        <span v-else class="sb-spin">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="spin-svg"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
         </span>
         {{ loading ? '生成中...' : '开始智能推荐' }}
       </button>
 
       <div
         v-if="loading"
-        class="progress-panel"
+        class="progress-box"
       >
-        <div class="progress-track">
+        <div class="prog-track">
           <div
-            class="progress-fill"
+            class="prog-fill"
             :style="{ width: stepProgress + '%' }"
           />
         </div>
-        <div class="steps-row">
+        <div class="steps-dots">
           <div
             v-for="(si, idx) in visibleSteps"
             :key="si.step"
-            class="step-dot-item"
+            class="sd-item"
             :class="{
-              'step-dot-item--active': currentStep === si.step,
-              'step-dot-item--done': getStepIndex(si.step) < getStepIndex(currentStep)
+              'sd-item--live': currentStep === si.step,
+              'sd-item--done': getStepIndex(si.step) < getStepIndex(currentStep)
             }"
           >
-            <div class="dot-circle">
+            <div class="sd-circle">
               <svg
                 v-if="getStepIndex(si.step) < getStepIndex(currentStep)"
                 width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
               ><polyline points="20 6 9 17 4 12"/></svg>
               <span v-else>{{ idx + 1 }}</span>
             </div>
-            <span class="dot-label">{{ si.label }}</span>
+            <span class="sd-label">{{ si.label }}</span>
           </div>
         </div>
-        <p class="progress-msg">{{ stepLabels[currentStep as RecommendationStep] }}</p>
+        <p class="prog-msg">{{ stepLabels[currentStep as RecommendationStep] }}</p>
 
         <div
           v-if="isStreaming && streamingContent"
-          class="stream-panel"
+          class="stream-box"
         >
           <div
             v-if="hasReasoningContent(streamingContent)"
             class="stream-block"
           >
-            <div class="stream-head stream-head--think">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="spin-icon-mini"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
+            <div class="stream-tag stream-tag--think">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="spin-svg-mini"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
               AI思考过程
             </div>
-            <pre class="stream-body stream-body--think">{{ getReasoningContent(streamingContent) }}</pre>
+            <pre class="stream-text stream-text--think">{{ getReasoningContent(streamingContent) }}</pre>
           </div>
           <div
             v-if="hasMainContent(streamingContent)"
             class="stream-block"
-            :class="{ 'stream-block--bordered': hasReasoningContent(streamingContent) }"
+            :class="{ 'stream-block--split': hasReasoningContent(streamingContent) }"
           >
-            <div class="stream-head stream-head--result">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            <div class="stream-tag stream-tag--result">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
               生成结果
             </div>
-            <pre class="stream-body">{{ getMainContent(streamingContent) }}</pre>
+            <pre class="stream-text">{{ getMainContent(streamingContent) }}</pre>
           </div>
         </div>
       </div>
@@ -365,7 +351,7 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.pref-modern {
+.pref-awwwards {
   max-width: 680px;
   margin: 0 auto;
 }
@@ -374,45 +360,45 @@ onMounted(() => {
 .pref-header {
   display: flex;
   align-items: center;
-  gap: var(--space-5);
-  margin-bottom: var(--space-8);
-  padding-bottom: var(--space-6);
-  border-bottom: 1px solid var(--color-border-light);
+  gap: 20px;
+  margin-bottom: 40px;
+  padding-bottom: 28px;
+  border-bottom: 1px solid #F1F5F9;
 }
 
-.pref-avatar {
+.header-icon {
   width: 52px;
   height: 52px;
-  border-radius: var(--radius-xl);
-  background: var(--color-solid);
+  border-radius: 16px;
+  background: #0F172A;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
+  box-shadow: 0 4px 14px rgba(15,23,42,0.18);
 }
 
-.pref-greeting {
-  margin: 0 0 2px 0;
-  font-size: var(--text-lg);
-  font-weight: var(--font-bold);
-  color: var(--color-solid);
-  letter-spacing: -0.3px;
+.header-title {
+  margin: 0 0 3px 0;
+  font-size: 19px;
+  font-weight: 700;
+  color: #0F172A;
+  letter-spacing: -0.4px;
 }
 
-.pref-desc {
+.header-sub {
   margin: 0;
-  font-size: var(--text-sm);
-  color: var(--color-text-secondary);
+  font-size: 13px;
+  color: #64748B;
 }
 
 /* ====== Summary ====== */
 .pref-summary {
-  background: linear-gradient(135deg, var(--color-slate-50) 0%, rgba(248,250,252,0.6) 100%);
-  border: 1px solid var(--color-border-light);
-  border-radius: var(--radius-2xl);
-  padding: var(--space-5) var(--space-6);
-  margin-bottom: var(--space-8);
+  background: linear-gradient(135deg, #F8FAFC 0%, rgba(248,250,252,0.5) 100%);
+  border: 1px solid #F1F5F9;
+  border-radius: 20px;
+  padding: 20px 24px;
+  margin-bottom: 36px;
   position: relative;
   overflow: hidden;
 }
@@ -420,75 +406,73 @@ onMounted(() => {
 .pref-summary::before {
   content: '';
   position: absolute;
-  top: 0;
   left: 0;
+  top: 0;
+  bottom: 0;
   width: 3px;
-  height: 100%;
-  background: linear-gradient(180deg, var(--color-accent), transparent);
+  background: linear-gradient(180deg, #D97706, transparent);
   border-radius: 0 2px 2px 0;
 }
 
+.summary-bar {
+  margin-bottom: 14px;
+}
+
 .summary-label {
-  font-size: var(--text-xs);
-  font-weight: var(--font-semibold);
-  color: var(--color-slate-500);
-  letter-spacing: 0.3px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #94A3B8;
+  letter-spacing: 1.8px;
   text-transform: uppercase;
   display: block;
-  margin-bottom: var(--space-3);
 }
 
 .summary-chips {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-2);
+  gap: 8px;
 }
 
-.chip {
-  padding: 4px 12px;
-  border-radius: var(--radius-full);
-  font-size: var(--text-xs);
-  font-weight: var(--font-medium);
-  background: var(--color-slate-100);
-  color: var(--color-slate-600);
+.s-chip {
+  padding: 5px 13px;
+  border-radius: 100px;
+  font-size: 12px;
+  font-weight: 600;
+  background: #F1F5F9;
+  color: #64748B;
   letter-spacing: 0.15px;
 }
 
-.chip--solid {
-  background: var(--color-solid);
-  color: white;
+.s-chip--dark {
+  background: #0F172A;
+  color: #fff;
 }
 
-.chip--accent {
-  background: var(--color-accent-subtle);
-  color: var(--color-accent);
+.s-chip--warm {
+  background: #FEF3C7;
+  color: #B45309;
 }
 
-/* ====== Form ====== */
-.pref-form {
-  margin-bottom: var(--space-8);
+/* ====== Intro ====== */
+.pref-intro {
+  font-size: 17px;
+  font-weight: 600;
+  color: #0F172A;
+  margin: 0 0 28px 0;
+  letter-spacing: -0.2px;
 }
 
-.form-intro {
-  font-size: var(--text-base);
-  font-weight: var(--font-medium);
-  color: var(--color-text-primary);
-  margin: 0 0 var(--space-6) 0;
-  letter-spacing: -0.15px;
-}
-
-/* ====== Step Card ====== */
+/* ====== Step Card — Awwwards Style ====== */
 .step-card {
   display: flex;
-  gap: var(--space-4);
-  padding: var(--space-6);
-  background: white;
-  border: 1px solid var(--color-border-light);
-  border-radius: var(--radius-2xl);
-  margin-bottom: var(--space-4);
-  transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  gap: 20px;
+  padding: 28px;
+  background: #FFFFFF;
+  border: 1px solid #F1F5F9;
+  border-radius: 20px;
+  margin-bottom: 16px;
+  transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.45s cubic-bezier(0.34, 1.56, 0.64, 1), border-color 0.35s ease;
   position: relative;
-  overflow: hidden;
 }
 
 .step-card::before {
@@ -498,136 +482,106 @@ onMounted(() => {
   top: 0;
   bottom: 0;
   width: 3px;
-  background: var(--color-slate-200);
+  background: #E2E8F0;
   transition: background 0.35s ease;
   border-radius: 0 2px 2px 0;
 }
 
-.step-card::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(ellipse at 100% 0%, rgba(15,23,42,0.015) 0%, transparent 60%);
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.35s ease;
+.step-card:focus-within::before {
+  background: #0F172A;
 }
 
-.step-card--focus::before {
-  background: var(--color-solid);
+.step-card:focus-within {
+  border-color: rgba(15,23,42,0.1);
+  box-shadow: 0 8px 32px rgba(15,23,42,0.06);
 }
 
-.step-card--focus {
-  border-color: rgba(15, 23, 42, 0.12);
-  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.06);
-}
-
-.step-card--focus::after {
-  opacity: 1;
-}
-
-.step-indicator {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  flex-shrink: 0;
-  padding-top: 2px;
-}
-
-.step-num {
-  width: 28px;
-  height: 28px;
-  border-radius: var(--radius-full);
-  background: var(--color-slate-100);
-  color: var(--color-slate-500);
-  font-size: var(--text-xs);
-  font-weight: var(--font-bold);
+.step-num-badge {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  background: #F8FAFC;
+  color: #94A3B8;
+  font-size: 13px;
+  font-weight: 800;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s ease;
   flex-shrink: 0;
+  transition: all 0.35s ease;
 }
 
-.step-card--focus .step-num {
-  background: var(--color-solid);
-  color: white;
-  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.2);
+.step-card:focus-within .step-num-badge {
+  background: #0F172A;
+  color: #fff;
+  box-shadow: 0 4px 12px rgba(15,23,42,0.2);
 }
 
-.step-line {
-  width: 1px;
-  flex: 1;
-  min-height: 16px;
-  background: var(--color-border-light);
-  margin-top: var(--space-2);
-}
-
-.step-body {
+.step-content {
   flex: 1;
   min-width: 0;
 }
 
-.step-label {
-  font-size: var(--text-base);
-  font-weight: var(--font-semibold);
-  color: var(--color-text-primary);
+.step-q {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0F172A;
   display: flex;
   align-items: baseline;
-  gap: var(--space-2);
-  margin-bottom: var(--space-4);
+  gap: 8px;
+  margin-bottom: 16px;
 }
 
-.label-hint {
-  font-size: var(--text-xs);
-  font-weight: var(--font-normal);
-  color: var(--color-accent);
-  background: var(--color-accent-subtle);
-  padding: 1px 8px;
-  border-radius: var(--radius-sm);
+.q-hint {
+  font-size: 10px;
+  font-weight: 600;
+  color: #D97706;
+  background: #FEF3C7;
+  padding: 2px 8px;
+  border-radius: 4px;
 }
 
-.label-hint--muted {
-  color: var(--color-text-muted);
-  background: var(--color-slate-100);
+.q-hint--muted {
+  color: #94A3B8;
+  background: #F1F5F9;
 }
 
 /* ====== Option Grid ====== */
 .option-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-2);
+  gap: 8px;
 }
 
-.option-pill {
+.opt-btn {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 7px 16px;
-  border: 1.5px solid var(--color-border);
-  border-radius: var(--radius-full);
-  font-size: var(--text-sm);
-  font-weight: var(--font-medium);
-  color: var(--color-text-secondary);
-  background: white;
+  gap: 7px;
+  padding: 9px 18px;
+  border: 1.5px solid #E2E8F0;
+  border-radius: 100px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #64748B;
+  background: #FFF;
   cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-.option-pill:hover {
-  border-color: var(--color-solid);
-  color: var(--color-solid);
+.opt-btn:hover {
+  border-color: #0F172A;
+  color: #0F172A;
 }
 
-.option-pill--active {
-  background: var(--color-solid);
-  border-color: var(--color-solid);
-  color: white;
-  transform: scale(1.02);
-  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.15);
+.opt-btn--on {
+  background: #0F172A;
+  border-color: #0F172A;
+  color: #fff;
+  transform: scale(1.03);
+  box-shadow: 0 4px 14px rgba(15,23,42,0.18);
 }
 
-.pill-icon {
+.opt-icon {
   font-size: 14px;
   line-height: 1;
 }
@@ -636,45 +590,47 @@ onMounted(() => {
 .country-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-2);
+  gap: 8px;
 }
 
-.country-pill {
-  padding: 6px 14px;
-  border: 1.5px solid var(--color-border);
-  border-radius: var(--radius-full);
-  font-size: var(--text-sm);
-  font-weight: var(--font-medium);
-  color: var(--color-text-secondary);
-  background: white;
+.c-btn {
+  padding: 8px 16px;
+  border: 1.5px solid #E2E8F0;
+  border-radius: 100px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #64748B;
+  background: #FFF;
   cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-.country-pill:hover {
-  border-color: var(--color-solid);
-  color: var(--color-solid);
+.c-btn:hover {
+  border-color: #0F172A;
+  color: #0F172A;
 }
 
-.country-pill--active {
-  background: var(--color-solid);
-  border-color: var(--color-solid);
-  color: white;
+.c-btn--on {
+  background: #0F172A;
+  border-color: #0F172A;
+  color: #fff;
 }
 
 /* ====== Textarea ====== */
-.modern-textarea :deep(.el-textarea__inner) {
-  border-radius: var(--radius-lg);
-  border: 1.5px solid var(--color-border);
+.aww-textarea :deep(.el-textarea__inner) {
+  border-radius: 14px;
+  border: 1.5px solid #E2E8F0;
   font-family: var(--font-family-base);
-  font-size: var(--text-sm);
+  font-size: 14px;
   resize: none;
-  transition: all 0.25s ease;
+  transition: all 0.3s ease;
+  background: #FAFAF9;
 }
 
-.modern-textarea :deep(.el-textarea__inner:focus) {
-  border-color: var(--color-solid);
-  box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.06);
+.aww-textarea :deep(.el-textarea__inner:focus) {
+  border-color: #0F172A;
+  box-shadow: 0 0 0 4px rgba(15,23,42,0.05);
+  background: #fff;
 }
 
 /* ====== Actions ====== */
@@ -682,86 +638,76 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--space-6);
+  gap: 28px;
+  margin-top: 12px;
 }
 
-.submit-main {
+.submit-btn {
   position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: var(--space-3);
-  padding: 15px 40px;
-  font-size: var(--text-base);
-  font-weight: var(--font-semibold);
+  gap: 12px;
+  padding: 17px 48px;
+  font-size: 15px;
+  font-weight: 700;
   border: none;
-  border-radius: var(--radius-xl);
+  border-radius: 16px;
   cursor: pointer;
   overflow: hidden;
-  transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
-  min-height: 54px;
-  letter-spacing: 0.2px;
+  transition: all 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+  min-height: 56px;
+  letter-spacing: 0.3px;
 }
 
-.submit-main:not(:disabled) {
-  background: var(--color-solid);
+.submit-btn:not(:disabled) {
+  background: #0F172A;
   color: white;
-  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.18);
+  box-shadow: 0 6px 20px rgba(15,23,42,0.2);
 }
 
-.submit-main:not(:disabled).submit-main--ready:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 28px rgba(15, 23, 42, 0.22);
+.submit-btn:not(:disabled).submit-btn--ready:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 36px rgba(15,23,42,0.28);
 }
 
-.submit-main:not(:disabled)::after {
+.submit-btn:not(:disabled)::after {
   content: '';
   position: absolute;
   bottom: 0;
   left: 50%;
   transform: translateX(-50%);
-  width: 60%;
+  width: 50%;
   height: 2px;
-  background: linear-gradient(90deg, transparent, var(--color-accent), transparent);
+  background: linear-gradient(90deg, transparent, #D97706, transparent);
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.35s ease;
 }
 
-.submit-main:not(:disabled).submit-main--ready:hover::after {
+.submit-btn:not(:disabled).submit-btn--ready:hover::after {
   opacity: 1;
 }
 
-.submit-main:disabled {
-  background: var(--color-slate-100);
-  color: var(--color-text-muted);
+.submit-btn:disabled {
+  background: #F1F5F9;
+  color: #CBD5E1;
   cursor: not-allowed;
   box-shadow: none;
 }
 
-.submit-main:active:not(:disabled) {
+.submit-btn:active:not(:disabled) {
   transform: scale(0.97);
 }
 
-.submit-main--loading {
-  background: var(--color-solid);
-  color: white;
-}
-
-.submit-icon-wrap {
+.sb-icon, .sb-spin {
   display: flex;
   align-items: center;
 }
 
-.spin-wrapper {
-  display: flex;
-  align-items: center;
-}
-
-.spin-icon {
+.spin-svg {
   animation: spin 1s linear infinite;
 }
-
-.spin-icon-mini {
+.spin-svg-mini {
   animation: spin 1s linear infinite;
 }
 
@@ -770,82 +716,77 @@ onMounted(() => {
   to { transform: rotate(360deg); }
 }
 
-/* ====== Progress Panel ====== */
-.progress-panel {
+/* ====== Progress Box ====== */
+.progress-box {
   width: 100%;
   max-width: 520px;
-  padding: var(--space-6);
-  background: var(--color-background-alt);
-  border-radius: var(--radius-2xl);
-  border: 1px solid var(--color-border-light);
+  padding: 28px;
+  background: #FAFAF9;
+  border-radius: 20px;
+  border: 1px solid #F1F5F9;
 }
 
-.progress-track {
-  height: 5px;
-  background: var(--color-slate-200);
-  border-radius: var(--radius-full);
+.prog-track {
+  height: 4px;
+  background: #E2E8F0;
+  border-radius: 100px;
   overflow: hidden;
-  margin-bottom: var(--space-5);
+  margin-bottom: 22px;
 }
 
-.progress-fill {
+.prog-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--color-solid), var(--color-accent));
-  border-radius: var(--radius-full);
-  transition: width 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  background: linear-gradient(90deg, #0F172A, #D97706);
+  border-radius: 100px;
+  transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-.steps-row {
+.steps-dots {
   display: flex;
   justify-content: space-between;
-  margin-bottom: var(--space-4);
+  margin-bottom: 18px;
 }
 
-.step-dot-item {
+.sd-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--space-1);
-  opacity: 0.4;
-  transition: opacity 0.25s ease;
+  gap: 7px;
+  opacity: 0.35;
+  transition: opacity 0.3s ease;
 }
 
-.step-dot-item--active {
-  opacity: 1;
-}
+.sd-item--live { opacity: 1; }
+.sd-item--done { opacity: 0.65; }
 
-.step-dot-item--done {
-  opacity: 0.7;
-}
-
-.dot-circle {
-  width: 26px;
-  height: 26px;
-  border-radius: var(--radius-full);
-  background: var(--color-slate-200);
+.sd-circle {
+  width: 28px;
+  height: 28px;
+  border-radius: 100px;
+  background: #E2E8F0;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 10px;
-  font-weight: var(--font-bold);
-  color: var(--color-slate-500);
-  transition: all 0.25s ease;
+  font-weight: 800;
+  color: #94A3B8;
+  transition: all 0.3s ease;
 }
 
-.step-dot-item--active .dot-circle {
-  background: var(--color-solid);
-  color: white;
-  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.2);
+.sd-item--live .sd-circle {
+  background: #0F172A;
+  color: #fff;
+  box-shadow: 0 3px 10px rgba(15,23,42,0.22);
 }
 
-.step-dot-item--done .dot-circle {
-  background: var(--color-success);
-  color: white;
+.sd-item--done .sd-circle {
+  background: #059669;
+  color: #fff;
 }
 
-.dot-label {
+.sd-label {
   font-size: 10px;
-  color: var(--color-slate-500);
+  color: #94A3B8;
   text-align: center;
   max-width: 56px;
   line-height: 1.3;
@@ -854,82 +795,76 @@ onMounted(() => {
   text-overflow: ellipsis;
 }
 
-.step-dot-item--active .dot-label {
-  color: var(--color-solid);
-  font-weight: var(--font-semibold);
+.sd-item--live .sd-label {
+  color: #0F172A;
+  font-weight: 700;
 }
 
-.progress-msg {
+.prog-msg {
   text-align: center;
   margin: 0;
-  font-size: var(--text-sm);
-  color: var(--color-slate-600);
-  font-weight: var(--font-medium);
+  font-size: 13px;
+  color: #64748B;
+  font-weight: 600;
 }
 
-/* ====== Stream Panel ====== */
-.stream-panel {
-  margin-top: var(--space-4);
+/* ====== Stream Box ====== */
+.stream-box {
+  margin-top: 18px;
 }
 
 .stream-block {
-  background: white;
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--color-border-light);
+  background: #fff;
+  border-radius: 14px;
+  border: 1px solid #F1F5F9;
   overflow: hidden;
 }
 
-.stream-block--bordered {
+.stream-block--split {
   border-top: none;
   border-top-left-radius: 0;
   border-top-right-radius: 0;
   margin-top: -1px;
 }
 
-.stream-head {
+.stream-tag {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-3) var(--space-4);
-  font-size: var(--text-xs);
-  font-weight: var(--font-semibold);
-  letter-spacing: 0.2px;
+  gap: 7px;
+  padding: 11px 16px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
 }
 
-.stream-head--think {
-  color: var(--color-info);
-  background: var(--color-info-bg);
+.stream-tag--think {
+  color: #0284C7;
+  background: #F0F9FF;
 }
 
-.stream-head--result {
-  color: var(--color-success);
-  background: var(--color-success-bg);
+.stream-tag--result {
+  color: #059669;
+  background: #ECFDF5;
 }
 
-.stream-body {
+.stream-text {
   margin: 0;
-  padding: var(--space-3) var(--space-4);
+  padding: 13px 16px;
   font-family: var(--font-family-mono);
-  font-size: var(--text-xs);
-  line-height: var(--leading-relaxed);
-  color: var(--color-slate-700);
+  font-size: 11px;
+  line-height: 1.75;
+  color: #475569;
   white-space: pre-wrap;
   word-break: break-all;
-  max-height: 120px;
+  max-height: 130px;
   overflow-y: auto;
-  background: var(--color-background-alt);
+  background: #FAFAF9;
 }
 
-.stream-body::-webkit-scrollbar {
-  width: 3px;
-}
+.stream-text::-webkit-scrollbar { width: 3px; }
+.stream-text::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 2px; }
 
-.stream-body::-webkit-scrollbar-thumb {
-  background: var(--color-slate-300);
-  border-radius: 2px;
-}
-
-.stream-body--think {
-  color: var(--color-slate-600);
+.stream-text--think {
+  color: #64748B;
 }
 </style>

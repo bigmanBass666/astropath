@@ -437,12 +437,12 @@ ${JSON.stringify(schoolsList, null, 2)}
       '加州理工学院': ['师生比极低精英教育', '前沿科学研究圣地', '小而精的学术社区']
     }
 
-    const卖点 = sellingPoints[school.name] || [
+    const sellingPointList = sellingPoints[school.name] || [
       `${school.major}专业实力强劲`,
       `${school.ranking.replace('QS #', 'QS排名')}位居前列`,
       school.description.slice(0, 20) + (school.description.length > 20 ? '...' : '')
     ]
-    parts.push(卖点[Math.floor(Math.random() * 卖点.length)])
+    parts.push(sellingPointList[Math.floor(Math.random() * sellingPointList.length)])
 
     if (userGPA >= criteria.preferredGPA) {
       parts.push(`你的GPA ${userGPA} 已超过该校偏好值 ${criteria.preferredGPA}，学术背景有竞争力`)

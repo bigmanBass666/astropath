@@ -1,22 +1,32 @@
 <template>
   <div class="page-root">
+    <div class="bg-grid" />
+    <div class="bg-glow" />
+
     <section class="hero-full">
       <div class="hero-inner">
         <div class="hero-content">
-          <h1 class="hero-title">AI 配置管理</h1>
+          <div class="hero-tag">
+            <span class="tag-dot" />
+            <span>AI Configuration</span>
+          </div>
+          <h1 class="hero-title">
+            <span class="title-line title-line-1">AI</span>
+            <span class="title-line title-line-2">配置管理</span>
+          </h1>
           <p class="hero-desc">管理 AI 供应商连接配置，支持多供应商切换与连接测试</p>
         </div>
         <div class="hero-stats">
-          <div class="stat-mini">
+          <div class="stat-chip stat-chip--primary">
             <span class="stat-value">{{ providers.length }}</span>
             <span class="stat-label">已配置</span>
           </div>
-          <div class="stat-mini">
+          <div class="stat-chip stat-chip--success">
             <span class="stat-value">{{ connectedCount }}</span>
             <span class="stat-label">已连接</span>
           </div>
-          <div class="stat-mini">
-            <span class="stat-value stat-value-warning">{{ errorCount }}</span>
+          <div class="stat-chip stat-chip--danger">
+            <span class="stat-value">{{ errorCount }}</span>
             <span class="stat-label">异常</span>
           </div>
         </div>
@@ -24,93 +34,100 @@
     </section>
 
     <main class="main-content">
-      <section class="config-section data-full">
+      <section class="config-section">
         <div class="section-header">
           <div class="section-header-text">
-            <h2 class="section-title">AI 供应商配置</h2>
+            <h2 class="section-title">
+              <span class="title-num">01</span>
+              AI 供应商配置
+            </h2>
             <p class="section-subtitle">配置和管理您的 AI 模型接入点</p>
           </div>
           <button
             class="btn btn-primary btn-sm"
             @click="testAllConnections"
           >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>
             测试全部连接
           </button>
         </div>
 
-        <div class="table-wrapper">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>供应商名称</th>
-                <th>类型</th>
-                <th>Base URL</th>
-                <th>API Key</th>
-                <th>模型名称</th>
-                <th>状态</th>
-                <th class="col-actions">操作</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr
-                v-for="(provider, index) in providers"
-                :key="provider.id"
-              >
-                <td class="cell-name">{{ provider.name }}</td>
-                <td>
-                  <span class="badge badge-type">{{ provider.type }}</span>
-                </td>
-                <td class="cell-mono" :title="provider.baseUrl">{{ provider.baseUrl }}</td>
-                <td class="cell-key">{{ '*'.repeat(provider.apiKey?.length || 0) }}</td>
-                <td class="cell-mono" :title="provider.model">{{ provider.model }}</td>
-                <td>
-                  <span
-                    v-if="provider.status === 'testing'"
-                    class="badge badge-testing"
-                  >测试中</span>
-                  <span
-                    v-else-if="provider.status === 'connected'"
-                    class="badge badge-connected"
-                  >已连接</span>
-                  <span
-                    v-else-if="provider.status === 'error'"
-                    class="badge badge-error"
-                  >连接失败</span>
-                  <span
-                    v-else
-                    class="badge badge-untested"
-                  >未测试</span>
-                </td>
-                <td class="cell-actions">
-                  <button
-                    class="btn btn-ghost btn-xs"
-                    @click="editProvider(index)"
-                  >编辑</button>
-                  <button
-                    class="btn btn-ghost-danger btn-xs"
-                    @click="removeProvider(index)"
-                  >删除</button>
-                  <button
-                    class="btn btn-primary btn-xs"
-                    :disabled="provider.status === 'testing'"
-                    @click="testConnection(index)"
-                  >{{ provider.status === 'testing' ? '测试中...' : '测试' }}</button>
-                </td>
-              </tr>
-              <tr v-if="providers.length === 0">
-                <td colspan="7">
-                  <div class="empty-state">
-                    <svg class="empty-icon" viewBox="0 0 48 48" fill="none">
-                      <circle cx="24" cy="24" r="20" stroke="currentColor" stroke-width="2" opacity=".3"/>
-                      <path d="M24 14v16m0 0l-6-6m6 6l6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity=".4"/>
-                    </svg>
-                    <p class="empty-title">暂无供应商配置</p>
-                    <p class="empty-desc">请在下方添加您的第一个 AI 供应商配置</p>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+        <div class="table-glass">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th><span class="th-inner">供应商名称</span></th>
+                  <th><span class="th-inner">类型</span></th>
+                  <th><span class="th-inner">Base URL</span></th>
+                  <th><span class="th-inner">API Key</span></th>
+                  <th><span class="th-inner">模型名称</span></th>
+                  <th><span class="th-inner">状态</span></th>
+                  <th><span class="th-inner">操作</span></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  v-for="(provider, index) in providers"
+                  :key="provider.id"
+                  class="provider-row"
+                >
+                  <td class="cell-name">{{ provider.name }}</td>
+                  <td>
+                    <span class="badge badge-type">{{ provider.type }}</span>
+                  </td>
+                  <td class="cell-mono" :title="provider.baseUrl">{{ provider.baseUrl }}</td>
+                  <td class="cell-key">{{ '*'.repeat(provider.apiKey?.length || 0) }}</td>
+                  <td class="cell-mono" :title="provider.model">{{ provider.model }}</td>
+                  <td>
+                    <span
+                      v-if="provider.status === 'testing'"
+                      class="status-badge status-testing"
+                    ><i class="pulse-dot" /><span>测试中</span></span>
+                    <span
+                      v-else-if="provider.status === 'connected'"
+                      class="status-badge status-connected"
+                    ><i class="status-dot" /><span>已连接</span></span>
+                    <span
+                      v-else-if="provider.status === 'error'"
+                      class="status-badge status-error"
+                    ><i class="status-dot" /><span>连接失败</span></span>
+                    <span
+                      v-else
+                      class="status-badge status-untested"
+                    ><i class="status-dot status-dot--muted" /><span>未测试</span></span>
+                  </td>
+                  <td class="cell-actions">
+                    <button
+                      class="btn-action btn-edit"
+                      @click="editProvider(index)"
+                    >编辑</button>
+                    <button
+                      class="btn-action btn-delete"
+                      @click="removeProvider(index)"
+                    >删除</button>
+                    <button
+                      class="btn-action btn-test"
+                      :disabled="provider.status === 'testing'"
+                      @click="testConnection(index)"
+                    >{{ provider.status === 'testing' ? '测试中...' : '测试' }}</button>
+                  </td>
+                </tr>
+                <tr v-if="providers.length === 0">
+                  <td colspan="7">
+                    <div class="empty-state">
+                      <div class="empty-icon-wrap">
+                        <svg class="empty-icon" viewBox="0 0 48 48" fill="none">
+                          <circle cx="24" cy="24" r="20" stroke="currentColor" stroke-width="1.5" opacity=".2"/>
+                          <path d="M24 14v16m0 0l-6-6m6 6l6-6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity=".3"/>
+                        </svg>
+                      </div>
+                      <p class="empty-title">暂无供应商配置</p>
+                      <p class="empty-desc">请在下方添加您的第一个 AI 供应商配置</p>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
         </div>
 
         <div class="warning-banner">
@@ -129,7 +146,10 @@
       <section class="config-section form-section form-comfortable">
         <div class="section-header">
           <div class="section-header-text">
-            <h2 class="section-title">自定义配置</h2>
+            <h2 class="section-title">
+              <span class="title-num">02</span>
+              自定义配置
+            </h2>
             <p class="section-subtitle">添加新的 AI 供应商</p>
           </div>
         </div>
@@ -192,105 +212,115 @@
           <div class="form-footer">
             <button
               type="submit"
-              class="btn btn-primary"
-            >保存配置</button>
+              class="btn btn-primary btn-submit"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14m-7-7h14"/></svg>
+              保存配置
+            </button>
           </div>
         </form>
       </section>
     </main>
 
     <Teleport to="body">
-      <div
-        v-if="toast.visible"
-        class="toast-notification"
-        :class="'toast-' + toast.type"
-      >
-        <span class="toast-icon">{{ toastIcons[toast.type] }}</span>
-        <span class="toast-message">{{ toast.message }}</span>
-      </div>
+      <Transition name="toast">
+        <div
+          v-if="toast.visible"
+          class="toast-notification"
+          :class="'toast-' + toast.type"
+        >
+          <span class="toast-icon">{{ toastIcons[toast.type] }}</span>
+          <span class="toast-message">{{ toast.message }}</span>
+          <div class="toast-timer" />
+        </div>
+      </Transition>
     </Teleport>
 
     <Teleport to="body">
-      <div
-        v-if="editVisible"
-        class="modal-backdrop"
-        @click.self="editVisible = false"
-      >
+      <Transition name="modal">
         <div
-          class="modal-panel"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="modal-heading"
+          v-if="editVisible"
+          class="modal-backdrop"
+          @click.self="editVisible = false"
         >
-          <header class="modal-head">
-            <h3 id="modal-heading" class="modal-heading">编辑供应商</h3>
-            <button
-              class="btn-icon"
-              aria-label="关闭"
-              @click="editVisible = false"
-            >✕</button>
-          </header>
-          <div class="modal-body">
-            <form @submit.prevent="saveEdit">
-              <div class="form-field">
-                <label class="form-label" for="edit-name">供应商名称</label>
-                <input
-                  id="edit-name"
-                  v-model="editingProvider.name"
-                  type="text"
-                  class="form-input"
-                />
-              </div>
-              <div class="form-field">
-                <label class="form-label" for="edit-type">类型</label>
-                <CustomSelect
-                  id="edit-type"
-                  v-model="editingProvider.type"
-                  :options="typeOptions"
-                  placeholder="选择类型"
-                />
-              </div>
-              <div class="form-field">
-                <label class="form-label" for="edit-url">Base URL</label>
-                <input
-                  id="edit-url"
-                  v-model="editingProvider.baseUrl"
-                  type="text"
-                  class="form-input"
-                />
-              </div>
-              <div class="form-field">
-                <label class="form-label" for="edit-key">API Key</label>
-                <input
-                  id="edit-key"
-                  v-model="editingProvider.apiKey"
-                  type="password"
-                  class="form-input"
-                />
-              </div>
-              <div class="form-field">
-                <label class="form-label" for="edit-model">模型名称</label>
-                <input
-                  id="edit-model"
-                  v-model="editingProvider.model"
-                  type="text"
-                  class="form-input"
-                />
-              </div>
-            </form>
+          <div
+            class="modal-panel"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="modal-heading"
+          >
+            <header class="modal-head">
+              <h3 id="modal-heading" class="modal-heading">编辑供应商</h3>
+              <button
+                class="btn-close"
+                aria-label="关闭"
+                @click="editVisible = false"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+              </button>
+            </header>
+            <div class="modal-body">
+              <form @submit.prevent="saveEdit">
+                <div class="form-field">
+                  <label class="form-label" for="edit-name">供应商名称</label>
+                  <input
+                    id="edit-name"
+                    v-model="editingProvider.name"
+                    type="text"
+                    class="form-input"
+                  />
+                </div>
+                <div class="form-field">
+                  <label class="form-label" for="edit-type">类型</label>
+                  <CustomSelect
+                    id="edit-type"
+                    v-model="editingProvider.type"
+                    :options="typeOptions"
+                    placeholder="选择类型"
+                  />
+                </div>
+                <div class="form-field">
+                  <label class="form-label" for="edit-url">Base URL</label>
+                  <input
+                    id="edit-url"
+                    v-model="editingProvider.baseUrl"
+                    type="text"
+                    class="form-input"
+                  />
+                </div>
+                <div class="form-field">
+                  <label class="form-label" for="edit-key">API Key</label>
+                  <input
+                    id="edit-key"
+                    v-model="editingProvider.apiKey"
+                    type="password"
+                    class="form-input"
+                  />
+                </div>
+                <div class="form-field">
+                  <label class="form-label" for="edit-model">模型名称</label>
+                  <input
+                    id="edit-model"
+                    v-model="editingProvider.model"
+                    type="text"
+                    class="form-input"
+                  />
+                </div>
+              </form>
+            </div>
+            <footer class="modal-foot">
+              <button
+                class="btn btn-cancel"
+                @click="editVisible = false"
+              >取消</button>
+              <button
+                class="btn btn-primary"
+                @click="saveEdit"
+              >保存更改</button>
+            </footer>
           </div>
-          <footer class="modal-foot">
-            <button
-              class="btn btn-secondary"
-              @click="editVisible = false"
-            >取消</button>
-            <button
-              class="btn btn-primary"
-              @click="saveEdit"
-            >保存</button>
-          </footer>
         </div>
-      </div>
+      </Transition>
     </Teleport>
   </div>
 </template>
@@ -555,25 +585,51 @@ export default {
 .page-root {
   width: 100%;
   min-height: 100vh;
-  background: var(--color-slate-50);
+  background: #F8FAFC;
+  color: #0F172A;
+  position: relative;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.bg-grid {
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(217, 119, 6, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(217, 119, 6, 0.04) 1px, transparent 1px);
+  background-size: 56px 56px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.bg-glow {
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 50% at 20% 0%, rgba(217, 119, 6, 0.07), transparent),
+    radial-gradient(ellipse 60% 40% at 80% 100%, rgba(241, 245, 249, 0.8), transparent);
+  pointer-events: none;
+  z-index: 0;
 }
 
 .hero-full {
-  width: 100%;
-  background: var(--color-surface);
-  border-bottom: 1px solid var(--color-border-light);
+  position: relative;
+  z-index: 1;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.06);
 }
 
 .hero-inner {
-  max-width: 1440px;
+  max-width: 1280px;
   margin: 0 auto;
-  padding: 0 var(--space-10);
+  padding: 0 40px;
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  gap: var(--space-8);
-  padding-top: var(--space-12);
-  padding-bottom: var(--space-12);
+  gap: 40px;
+  padding-top: 56px;
+  padding-bottom: 48px;
 }
 
 .hero-content {
@@ -581,104 +637,159 @@ export default {
   min-width: 0;
 }
 
-.hero-title {
-  font-size: var(--text-4xl);
-  font-weight: var(--font-bold);
-  color: var(--color-text-primary);
-  letter-spacing: -1px;
-  line-height: var(--leading-tight);
-  margin: 0 0 var(--space-3) 0;
+.hero-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px 6px 10px;
+  background: #FFFBEB;
+  border: 1px solid rgba(217, 119, 6, 0.18);
+  border-radius: 9999px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #B45309;
+  margin-bottom: 28px;
 }
 
-.hero-title::after {
-  content: '';
+.tag-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #D97706;
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.8); }
+}
+
+.hero-title {
+  font-size: clamp(36px, 5vw, 52px);
+  font-weight: 700;
+  color: #0F172A;
+  letter-spacing: -1.5px;
+  line-height: 1.08;
+  margin: 0 0 16px 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.title-line-1 {
+  color: rgba(15, 23, 42, 0.3);
+  font-weight: 300;
+  font-size: 0.55em;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.title-line-2 {
   display: block;
-  width: 48px;
-  height: 3px;
-  background: var(--color-solid);
-  border-radius: 2px;
-  margin-top: var(--space-4);
 }
 
 .hero-desc {
-  font-size: var(--text-base);
-  color: var(--color-text-secondary);
-  line-height: var(--leading-normal);
-  margin: var(--space-4) 0 0 0;
+  font-size: 15px;
+  color: #64748B;
+  line-height: 1.6;
+  margin: 0;
+  max-width: 420px;
 }
 
 .hero-stats {
   display: flex;
-  gap: var(--space-6);
+  gap: 12px;
   flex-shrink: 0;
 }
 
-.stat-mini {
+.stat-chip {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--space-1);
-  padding: var(--space-4) var(--space-6);
-  background: var(--color-surface-muted);
-  border-radius: var(--radius-xl);
-  border: 1px solid var(--color-border-light);
-  min-width: 72px;
+  gap: 4px;
+  padding: 16px 22px;
+  background: #FFFFFF;
+  border: 1px solid rgba(15, 23, 42, 0.07);
+  border-radius: 14px;
+  min-width: 76px;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03), 0 4px 12px rgba(15, 23, 42, 0.03);
 }
+
+.stat-chip::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(255,255,255,0.8), transparent);
+  pointer-events: none;
+}
+
+.stat-chip:hover {
+  border-color: rgba(15, 23, 42, 0.14);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(15, 23, 42, 0.06), 0 12px 28px rgba(15, 23, 42, 0.06);
+}
+
+.stat-chip--primary:hover { box-shadow: 0 4px 8px rgba(217, 119, 6, 0.1), 0 12px 28px rgba(217, 119, 6, 0.08); }
+.stat-chip--success:hover { box-shadow: 0 4px 8px rgba(5, 150, 105, 0.08), 0 12px 28px rgba(5, 150, 105, 0.06); }
+.stat-chip--danger:hover { box-shadow: 0 4px 8px rgba(220, 38, 38, 0.08), 0 12px 28px rgba(220, 38, 38, 0.06); }
 
 .stat-value {
-  font-size: var(--text-2xl);
-  font-weight: var(--font-bold);
-  color: var(--color-solid);
+  font-size: 26px;
+  font-weight: 700;
   line-height: 1;
   letter-spacing: -0.5px;
+  font-variant-numeric: tabular-nums;
 }
 
-.stat-value-warning {
-  color: var(--color-danger);
-}
+.stat-chip--primary .stat-value { color: #D97706; }
+.stat-chip--success .stat-value { color: #059669; }
+.stat-chip--danger .stat-value { color: #DC2626; }
 
 .stat-label {
-  font-size: var(--text-xs);
-  font-weight: var(--font-medium);
-  color: var(--color-text-tertiary);
+  font-size: 10px;
+  font-weight: 500;
+  color: #94A3B8;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 1.2px;
 }
 
 .main-content {
-  max-width: 1440px;
+  position: relative;
+  z-index: 1;
+  max-width: 1280px;
   margin: 0 auto;
-  padding: 0 var(--space-10);
-  padding-top: var(--space-10);
-  padding-bottom: var(--space-16);
+  padding: 0 40px;
+  padding-top: 44px;
+  padding-bottom: 80px;
 }
 
 .config-section {
-  margin-bottom: var(--space-8);
+  margin-bottom: 0;
 }
 
-.data-full {
-  max-width: 1600px;
-  margin-left: calc(-1 * var(--space-10));
-  margin-right: calc(-1 * var(--space-10));
-  padding-left: var(--space-10);
-  padding-right: var(--space-10);
+.table-section {
+  width: 100%;
 }
 
 .form-comfortable {
-  max-width: 960px;
+  max-width: 720px;
 }
 
 .form-section {
-  padding-top: var(--space-10);
+  padding-top: 40px;
 }
 
 .section-header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: var(--space-4);
-  margin-bottom: var(--space-6);
+  gap: 20px;
+  margin-bottom: 24px;
 }
 
 .section-header-text {
@@ -686,272 +797,357 @@ export default {
 }
 
 .section-title {
-  font-size: var(--text-xl);
-  font-weight: var(--font-semibold);
-  color: var(--color-text-primary);
-  margin: 0 0 var(--space-1) 0;
-  line-height: var(--leading-tight);
+  font-size: 17px;
+  font-weight: 600;
+  color: #0F172A;
+  margin: 0 0 6px 0;
+  line-height: 1.3;
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.title-num {
+  font-size: 11px;
+  font-weight: 700;
+  color: #D97706;
+  letter-spacing: 1.5px;
+  font-variant-numeric: tabular-nums;
 }
 
 .section-subtitle {
-  font-size: var(--text-sm);
-  color: var(--color-text-tertiary);
+  font-size: 13px;
+  color: #94A3B8;
   margin: 0;
-  line-height: var(--leading-normal);
+  line-height: 1.5;
+  margin-left: 23px;
 }
 
-.table-wrapper {
-  background: var(--color-surface);
-  border-radius: var(--radius-xl);
-  border: 1px solid var(--color-border);
-  overflow-x: auto;
+.table-glass {
+  background: #FFFFFF;
+  border: 1px solid rgba(15, 23, 42, 0.07);
+  border-radius: 16px;
+  overflow: auto;
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.03),
+    0 8px 32px rgba(15, 23, 42, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
 }
 
 .data-table {
   width: 100%;
+  min-width: 800px;
   border-collapse: collapse;
-  font-size: var(--text-sm);
+  font-size: 13px;
 }
 
 .data-table thead {
-  background: var(--color-surface-muted);
+  background: #F8FAFC;
 }
 
 .data-table th {
-  font-size: var(--text-xs);
-  font-weight: var(--font-semibold);
-  color: var(--color-text-secondary);
+  font-size: 10px;
+  font-weight: 600;
+  color: #94A3B8;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 1.2px;
   text-align: left;
-  padding: var(--space-3) var(--space-5);
-  border-bottom: 1px solid var(--color-border);
+  padding: 14px 20px;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.06);
   white-space: nowrap;
 }
 
+.th-inner {
+  display: block;
+}
+
 .data-table td {
-  padding: var(--space-3) var(--space-5);
-  color: var(--color-text-primary);
-  border-bottom: 1px solid var(--color-border-light);
+  padding: 16px 20px;
+  color: #334155;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.04);
   vertical-align: middle;
+  transition: all 0.2s ease;
 }
 
 .data-table tbody tr:last-child td {
   border-bottom: none;
 }
 
-.data-table tbody tr {
-  transition: background-color var(--transition-fast);
+.provider-row {
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.data-table tbody tr:hover {
-  background: var(--color-slate-50);
+.provider-row:hover {
+  background: linear-gradient(90deg, rgba(217, 119, 6, 0.1) 0 3px, rgba(217, 119, 6, 0.02) 3px);
 }
 
-.col-actions {
-  width: 180px;
+.provider-row:hover td {
+  color: #0F172A;
+}
+
+.cell-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
 }
 
 .cell-name {
-  font-weight: var(--font-medium);
+  font-weight: 500;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #0F172A;
+}
+
+.cell-mono {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #64748B;
+  font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', monospace;
+  font-size: 11.5px;
+  letter-spacing: -0.2px;
+}
+
+.cell-key {
+  font-family: 'JetBrains Mono', 'Fira Code', 'SF Mono', monospace;
+  font-size: 11.5px;
+  color: #CBD5E1;
+  letter-spacing: 1.5px;
   max-width: 200px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.cell-mono {
-  max-width: 220px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  color: var(--color-text-secondary);
-  font-family: var(--font-family-mono);
-  font-size: var(--text-xs);
-}
-
-.cell-key {
-  font-family: var(--font-family-mono);
-  font-size: var(--text-xs);
-  color: var(--color-text-muted);
-  letter-spacing: 1px;
-}
-
-.cell-actions {
-  white-space: nowrap;
-}
-
-.badge {
+.status-badge {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  padding: 2px 10px;
-  border-radius: var(--radius-full);
-  font-size: var(--text-xs);
-  font-weight: var(--font-medium);
-  letter-spacing: 0.25px;
-  line-height: 1.6;
+  gap: 7px;
+  padding: 5px 12px;
+  border-radius: 9999px;
+  font-size: 11.5px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
   white-space: nowrap;
 }
 
-.badge-type {
-  background: var(--color-slate-100);
-  color: var(--color-slate-700);
+.status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
 }
 
-.badge-testing {
-  background: var(--color-warning-bg);
-  color: var(--color-warning);
+.status-dot--muted {
+  background: #CBD5E1;
 }
 
-.badge-connected {
-  background: var(--color-success-bg);
-  color: var(--color-success);
+.pulse-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #D97706;
+  flex-shrink: 0;
+  animation: pulse-ring 1.4s ease-in-out infinite;
 }
 
-.badge-error {
-  background: var(--color-danger-bg);
-  color: var(--color-danger);
+@keyframes pulse-ring {
+  0% { box-shadow: 0 0 0 0 rgba(217, 119, 6, 0.4); }
+  70% { box-shadow: 0 0 0 6px rgba(217, 119, 6, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(217, 119, 6, 0); }
 }
 
-.badge-untested {
-  background: var(--color-info-bg);
-  color: var(--color-info);
+.status-testing {
+  background: #FFFBEB;
+  color: #B45309;
+  border: 1px solid rgba(217, 119, 6, 0.15);
+}
+
+.status-testing .status-dot { background: #D97706; }
+
+.status-connected {
+  background: #ECFDF5;
+  color: #059669;
+  border: 1px solid rgba(5, 150, 105, 0.12);
+}
+
+.status-connected .status-dot { background: #059669; }
+
+.status-error {
+  background: #FEF2F2;
+  color: #DC2626;
+  border: 1px solid rgba(220, 38, 38, 0.12);
+}
+
+.status-error .status-dot { background: #DC2626; }
+
+.status-untested {
+  background: #F8FAFC;
+  color: #94A3B8;
+  border: 1px solid rgba(148, 163, 184, 0.15);
 }
 
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: var(--space-2);
+  gap: 8px;
   cursor: pointer;
   border: none;
-  transition: all var(--transition-fast);
-  font-family: var(--font-family-base);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  font-family: inherit;
   white-space: nowrap;
+  position: relative;
+  overflow: hidden;
 }
 
 .btn:focus-visible {
-  outline: 2px solid var(--color-solid);
+  outline: 2px solid #D97706;
   outline-offset: 2px;
 }
 
 .btn:disabled {
-  opacity: 0.5;
+  opacity: 0.45;
   cursor: not-allowed;
   transform: none !important;
 }
 
 .btn-primary {
-  background: var(--color-solid);
-  color: var(--color-text-inverse);
-  font-weight: var(--font-semibold);
-  border-radius: var(--radius-lg);
-  padding: 10px 24px;
-  min-height: 44px;
-  font-size: var(--text-base);
-  box-shadow: var(--shadow-sm);
+  background: linear-gradient(135deg, #D97706, #B45309);
+  color: #FFFFFF;
+  font-weight: 600;
+  border-radius: 10px;
+  padding: 10px 22px;
+  min-height: 40px;
+  font-size: 13px;
+  letter-spacing: 0.3px;
+  box-shadow: 0 1px 3px rgba(217, 119, 6, 0.25), 0 4px 12px rgba(217, 119, 6, 0.15);
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: var(--color-solid-hover);
   transform: translateY(-1px);
-  box-shadow: var(--shadow-md);
+  box-shadow: 0 2px 6px rgba(217, 119, 6, 0.35), 0 8px 20px rgba(217, 119, 6, 0.2);
+  filter: brightness(1.06);
 }
 
 .btn-primary:active:not(:disabled) {
   transform: translateY(0);
 }
 
-.btn-secondary {
+.btn-submit {
+  padding: 12px 28px;
+  font-size: 14px;
+  border-radius: 10px;
+}
+
+.btn-cancel {
+  background: #FFFFFF;
+  color: #64748B;
+  font-weight: 500;
+  border-radius: 10px;
+  padding: 10px 22px;
+  min-height: 40px;
+  font-size: 13px;
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.btn-cancel:hover {
+  border-color: rgba(15, 23, 42, 0.2);
+  color: #334155;
+  background: #F8FAFC;
+  box-shadow: 0 2px 4px rgba(15, 23, 42, 0.06);
+}
+
+.btn-action {
   background: transparent;
-  color: var(--color-text-primary);
-  font-weight: var(--font-semibold);
-  border-radius: var(--radius-lg);
-  padding: 10px 24px;
-  min-height: 44px;
-  font-size: var(--text-base);
-  border: 1.5px solid var(--color-border);
+  font-weight: 500;
+  border-radius: 5px;
+  padding: 4px 8px;
+  min-height: 24px;
+  font-size: 11px;
+  border: 1px solid transparent;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  flex-shrink: 0;
 }
 
-.btn-secondary:hover {
-  border-color: var(--color-solid);
-  color: var(--color-solid);
-  transform: translateY(-1px);
+.btn-edit {
+  color: #64748B;
+}
+.btn-edit:hover {
+  color: #D97706;
+  background: #FFFBEB;
+  border-color: rgba(217, 119, 6, 0.15);
 }
 
-.btn-ghost {
-  background: transparent;
-  color: var(--color-text-secondary);
-  font-weight: var(--font-medium);
-  border-radius: var(--radius-md);
-  padding: 6px 14px;
-  min-height: 34px;
-  font-size: var(--text-sm);
+.btn-delete {
+  color: #64748B;
+}
+.btn-delete:hover {
+  color: #DC2626;
+  background: #FEF2F2;
+  border-color: rgba(220, 38, 38, 0.12);
 }
 
-.btn-ghost:hover {
-  background: var(--color-slate-100);
-  color: var(--color-text-primary);
+.btn-test {
+  color: #FFFFFF;
+  background: linear-gradient(135deg, #D97706, #B45309);
+  border-color: transparent;
+  box-shadow: 0 1px 3px rgba(217, 119, 6, 0.2);
 }
-
-.btn-ghost-danger {
-  background: transparent;
-  color: var(--color-danger);
-  font-weight: var(--font-medium);
-  border-radius: var(--radius-md);
-  padding: 6px 14px;
-  min-height: 34px;
-  font-size: var(--text-sm);
-}
-
-.btn-ghost-danger:hover {
-  background: var(--color-danger-bg);
-  color: var(--color-danger);
+.btn-test:hover:not(:disabled) {
+  background: linear-gradient(135deg, #F59E0B, #D97706);
+  box-shadow: 0 2px 6px rgba(217, 119, 6, 0.3), 0 6px 16px rgba(217, 119, 6, 0.15);
 }
 
 .btn-sm {
-  padding: 8px 16px;
+  padding: 8px 18px;
   min-height: 36px;
-  font-size: var(--text-sm);
-  border-radius: var(--radius-lg);
+  font-size: 12px;
+  border-radius: 10px;
 }
 
 .btn-xs {
   padding: 5px 12px;
   min-height: 30px;
-  font-size: var(--text-xs);
-  border-radius: var(--radius-md);
+  font-size: 11px;
+  border-radius: 8px;
 }
 
-.btn-icon {
+.btn-close {
   width: 32px;
   height: 32px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: none;
-  background: transparent;
-  color: var(--color-text-muted);
-  border-radius: var(--radius-md);
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  background: #FFFFFF;
+  color: #94A3B8;
+  border-radius: 8px;
   cursor: pointer;
-  font-size: var(--text-base);
-  transition: all var(--transition-fast);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.btn-icon:hover {
-  background: var(--color-slate-100);
-  color: var(--color-text-primary);
+.btn-close:hover {
+  background: #FEF2F2;
+  border-color: rgba(220, 38, 38, 0.2);
+  color: #DC2626;
+  transform: rotate(90deg);
 }
 
 .warning-banner {
   display: flex;
-  gap: var(--space-4);
-  margin-top: var(--space-6);
-  padding: var(--space-5) var(--space-6);
-  background: var(--color-warning-bg);
-  border-radius: var(--radius-lg);
-  border-left: 3px solid var(--color-warning);
+  gap: 16px;
+  margin-top: 24px;
+  padding: 18px 22px;
+  background: #FFFBEB;
+  border-radius: 12px;
+  border: 1px solid rgba(217, 119, 6, 0.15);
+  border-left: 3px solid #D97706;
 }
 
 .warning-mark {
@@ -961,12 +1157,12 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: var(--radius-full);
-  background: var(--color-warning);
-  color: white;
-  font-size: var(--text-xs);
-  font-weight: var(--font-bold);
-  margin-top: 2px;
+  border-radius: 50%;
+  background: rgba(217, 119, 6, 0.12);
+  color: #B45309;
+  font-size: 12px;
+  font-weight: 700;
+  margin-top: 1px;
 }
 
 .warning-body {
@@ -975,81 +1171,85 @@ export default {
 }
 
 .warning-head {
-  font-size: var(--text-sm);
-  font-weight: var(--font-semibold);
-  color: var(--color-text-primary);
-  margin: 0 0 var(--space-1) 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #92400E;
+  margin: 0 0 4px 0;
 }
 
 .warning-detail {
-  font-size: var(--text-sm);
-  color: var(--color-warning);
-  line-height: var(--leading-normal);
+  font-size: 13px;
+  color: #78716C;
+  line-height: 1.6;
   margin: 0;
 }
 
 .warning-detail strong {
-  color: var(--color-text-primary);
-  font-weight: var(--font-semibold);
+  color: #DC2626;
+  font-weight: 600;
 }
 
 .section-divider {
   height: 1px;
-  background: var(--color-divider);
-  margin: 0 var(--space-10);
+  background: linear-gradient(90deg, transparent, rgba(15, 23, 42, 0.08), transparent);
+  margin: 40px 0;
 }
 
 .provider-form {
-  max-width: 600px;
+  max-width: 520px;
 }
 
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: var(--space-5);
+  gap: 20px;
 }
 
 .form-field {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
-  margin-bottom: var(--space-5);
+  gap: 8px;
+  margin-bottom: 20px;
 }
 
 .form-label {
-  font-size: var(--text-sm);
-  font-weight: var(--font-medium);
-  color: var(--color-text-secondary);
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748B;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 .form-input {
   width: 100%;
-  padding: 10px 14px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  font-size: var(--text-base);
-  font-family: var(--font-family-base);
-  background: var(--color-surface);
-  color: var(--color-text-primary);
-  transition: all var(--transition-fast);
-  min-height: 44px;
+  padding: 12px 16px;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 10px;
+  font-size: 14px;
+  font-family: inherit;
+  background: #FFFFFF;
+  color: #0F172A;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  min-height: 46px;
   box-sizing: border-box;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
 }
 
 .form-input:focus {
   outline: none;
-  border-color: var(--color-solid);
-  box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.08);
+  border-color: #D97706;
+  box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.1), 0 0 20px rgba(217, 119, 6, 0.06);
+  background: #FFFFFF;
 }
 
 .form-input::placeholder {
-  color: var(--color-text-muted);
+  color: #CBD5E1;
 }
 
 .form-footer {
-  margin-top: var(--space-6);
+  margin-top: 28px;
   display: flex;
-  gap: var(--space-3);
+  gap: 12px;
 }
 
 .empty-state {
@@ -1057,146 +1257,246 @@ export default {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: var(--space-12) var(--space-6);
+  padding: 60px 24px;
   text-align: center;
 }
 
+.empty-icon-wrap {
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #F8FAFC;
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  margin-bottom: 20px;
+}
+
 .empty-icon {
-  width: 48px;
-  height: 48px;
-  color: var(--color-slate-300);
-  margin-bottom: var(--space-4);
+  width: 28px;
+  height: 28px;
+  color: #CBD5E1;
 }
 
 .empty-title {
-  font-size: var(--text-lg);
-  font-weight: var(--font-semibold);
-  color: var(--color-text-primary);
-  margin: 0 0 var(--space-2) 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #64748B;
+  margin: 0 0 8px 0;
 }
 
 .empty-desc {
-  font-size: var(--text-sm);
-  color: var(--color-text-secondary);
+  font-size: 13px;
+  color: #94A3B8;
   margin: 0;
-  max-width: 320px;
+  max-width: 300px;
 }
 
 .toast-notification {
   position: fixed;
-  top: 24px;
-  left: 50%;
-  transform: translateX(-50%);
+  bottom: 24px;
+  right: 24px;
   z-index: 9999;
   display: flex;
   align-items: center;
-  gap: var(--space-3);
-  padding: 12px 20px;
-  border-radius: var(--radius-lg);
-  font-size: var(--text-sm);
-  font-weight: var(--font-medium);
-  box-shadow: var(--shadow-lg);
-  animation: toast-in 250ms ease;
+  gap: 10px;
+  padding: 12px 18px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 500;
   pointer-events: auto;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow:
+    0 4px 16px rgba(15, 23, 42, 0.08),
+    0 1px 3px rgba(15, 23, 42, 0.04);
+  max-width: 360px;
 }
 
-@keyframes toast-in {
-  from { opacity: 0; transform: translateX(-50%) translateY(-12px); }
-  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+.toast-notification::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 18px;
+  right: 18px;
+  height: 2px;
+  background: currentColor;
+  opacity: 0.25;
+  border-radius: 1px;
+  animation: toast-progress 3s linear forwards;
+}
+
+@keyframes toast-progress {
+  from { width: 100%; }
+  to { width: 0%; }
 }
 
 .toast-success {
-  background: var(--color-success);
-  color: white;
+  background: #F0FDF4;
+  color: #166534;
+  border-color: rgba(22, 101, 52, 0.12);
 }
 
 .toast-error {
-  background: var(--color-danger);
-  color: white;
+  background: #FEF2F2;
+  color: #991B1B;
+  border-color: rgba(153, 27, 27, 0.12);
 }
 
 .toast-warning {
-  background: var(--color-warning);
-  color: white;
+  background: #FFFBEB;
+  color: #92400E;
+  border-color: rgba(146, 64, 14, 0.12);
 }
 
 .toast-info {
-  background: var(--color-solid);
-  color: white;
+  background: #F8FAFC;
+  color: #334155;
+  border-color: rgba(51, 65, 85, 0.1);
 }
 
 .toast-icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 20px;
-  height: 20px;
-  border-radius: var(--radius-full);
-  background: rgba(255, 255, 255, 0.25);
-  font-size: var(--text-xs);
-  font-weight: var(--font-bold);
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  font-size: 10px;
+  font-weight: 700;
   flex-shrink: 0;
+}
+
+.toast-success .toast-icon {
+  background: #166534;
+  color: #FFFFFF;
+}
+
+.toast-error .toast-icon {
+  background: #991B1B;
+  color: #FFFFFF;
+}
+
+.toast-warning .toast-icon {
+  background: #92400E;
+  color: #FFFFFF;
+}
+
+.toast-info .toast-icon {
+  background: #334155;
+  color: #FFFFFF;
 }
 
 .toast-message {
   white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.toast-timer {
+  display: none;
+}
+
+.toast-enter-active {
+  animation: toast-in 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.toast-leave-active {
+  animation: toast-out 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(12px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes toast-out {
+  from { opacity: 1; transform: translateY(0) scale(1); }
+  to { opacity: 0; transform: translateY(8px) scale(0.97); }
 }
 
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.4);
-  backdrop-filter: blur(4px);
+  background: rgba(15, 23, 42, 0.3);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   z-index: 1000;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--space-4);
-  animation: fade-in 200ms ease;
+  padding: 24px;
 }
 
-@keyframes fade-in {
+.modal-enter-active {
+  animation: modal-overlay-in 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modal-leave-active {
+  animation: modal-overlay-out 0.2s ease;
+}
+
+@keyframes modal-overlay-in {
   from { opacity: 0; }
   to { opacity: 1; }
 }
 
+@keyframes modal-overlay-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
 .modal-panel {
-  background: var(--color-surface);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-2xl);
-  max-width: 560px;
+  background: #FFFFFF;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 18px;
+  box-shadow:
+    0 24px 64px rgba(15, 23, 42, 0.15),
+    0 0 1px rgba(15, 23, 42, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  max-width: 540px;
   width: 100%;
   max-height: 85vh;
   overflow-y: auto;
-  animation: slide-up 250ms ease;
 }
 
-@keyframes slide-up {
-  from { opacity: 0; transform: translateY(16px); }
-  to { opacity: 1; transform: translateY(0); }
+.modal-panel {
+  animation: panel-in 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .modal-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--space-6) var(--space-8);
-  border-bottom: 1px solid var(--color-border-light);
+  padding: 24px 28px;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.06);
 }
 
 .modal-heading {
-  font-size: var(--text-lg);
-  font-weight: var(--font-semibold);
-  color: var(--color-text-primary);
+  font-size: 17px;
+  font-weight: 600;
+  color: #0F172A;
   margin: 0;
+  letter-spacing: -0.3px;
 }
 
 .modal-body {
-  padding: var(--space-8);
+  padding: 28px;
 }
 
 .modal-body .form-field {
-  margin-bottom: var(--space-5);
+  margin-bottom: 20px;
 }
 
 .modal-body .form-field:last-child {
@@ -1207,9 +1507,9 @@ export default {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: var(--space-3);
-  padding: var(--space-5) var(--space-8);
-  border-top: 1px solid var(--color-border-light);
+  gap: 12px;
+  padding: 20px 28px;
+  border-top: 1px solid rgba(15, 23, 42, 0.06);
 }
 
 :deep(.custom-select) {
@@ -1222,32 +1522,33 @@ export default {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-2);
-  padding: 10px 14px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  font-size: var(--text-base);
-  font-family: var(--font-family-base);
-  background: var(--color-surface);
-  color: var(--color-text-primary);
+  gap: 10px;
+  padding: 12px 16px;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  border-radius: 10px;
+  font-size: 14px;
+  font-family: inherit;
+  background: #FFFFFF;
+  color: #0F172A;
   cursor: pointer;
   text-align: left;
-  transition: all var(--transition-fast);
-  min-height: 44px;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  min-height: 46px;
   box-sizing: border-box;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
 }
 
 :deep(.custom-select-trigger:focus) {
   outline: none;
-  border-color: var(--color-solid);
-  box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.08);
+  border-color: #D97706;
+  box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.1);
 }
 
 :deep(.custom-select--open .custom-select-trigger) {
-  border-color: var(--color-solid);
+  border-color: #D97706;
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 0;
-  box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.08);
+  box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.1);
 }
 
 :deep(.custom-select-value) {
@@ -1259,13 +1560,13 @@ export default {
 }
 
 :deep(.custom-select-placeholder) {
-  color: var(--color-text-muted);
+  color: #CBD5E1;
 }
 
 :deep(.custom-select-arrow) {
   flex-shrink: 0;
-  color: var(--color-text-muted);
-  transition: transform var(--transition-fast);
+  color: #94A3B8;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 :deep(.custom-select-arrow--rotate) {
@@ -1279,47 +1580,48 @@ export default {
   right: 0;
   z-index: 100;
   margin-top: -1px;
-  background: var(--color-surface);
-  border: 1px solid var(--color-solid);
+  background: #FFFFFF;
+  border: 1px solid #D97706;
   border-top: none;
-  border-radius: 0 0 var(--radius-md) var(--radius-md);
-  box-shadow: var(--shadow-lg);
+  border-radius: 0 0 10px 10px;
+  box-shadow: 0 12px 40px rgba(15, 23, 42, 0.12), 0 0 1px rgba(217, 119, 6, 0.15);
   list-style: none;
-  padding: var(--space-2) 0;
+  padding: 8px 0;
   margin: 0;
   max-height: 220px;
   overflow-y: auto;
 }
 
 :deep(.custom-select-option) {
-  padding: 10px 14px;
-  font-size: var(--text-base);
-  color: var(--color-text-primary);
+  padding: 10px 16px;
+  font-size: 13px;
+  color: #334155;
   cursor: pointer;
-  transition: background-color var(--transition-fast);
+  transition: all 0.15s ease;
   list-style: none;
 }
 
 :deep(.custom-select-option:hover) {
-  background: var(--color-slate-50);
+  background: #FFFBEB;
+  color: #0F172A;
 }
 
 :deep(.custom-select-option--active) {
-  color: var(--color-solid);
-  font-weight: var(--font-semibold);
-  background: rgba(15, 23, 42, 0.04);
+  color: #D97706;
+  font-weight: 600;
+  background: rgba(217, 119, 6, 0.05);
 }
 
 .select-dropdown-enter-active {
-  animation: dropdown-in 150ms ease;
+  animation: dropdown-in 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .select-dropdown-leave-active {
-  animation: dropdown-out 100ms ease;
+  animation: dropdown-out 0.15s ease;
 }
 
 @keyframes dropdown-in {
-  from { opacity: 0; transform: translateY(-4px); }
+  from { opacity: 0; transform: translateY(-6px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
@@ -1330,39 +1632,27 @@ export default {
 
 @media (min-width: 1600px) {
   .hero-inner {
-    max-width: 1760px;
+    max-width: 1400px;
   }
 
   .main-content {
-    max-width: 1760px;
-  }
-
-  .data-full {
-    max-width: 1760px;
-  }
-
-  .table-wrapper {
-    border-radius: var(--radius-xl);
+    max-width: 1400px;
   }
 }
 
 @media (min-width: 1200px) and (max-width: 1599px) {
   .hero-inner {
-    max-width: 1360px;
+    max-width: 1100px;
   }
 
   .main-content {
-    max-width: 1360px;
-  }
-
-  .data-full {
-    max-width: 1360px;
+    max-width: 1100px;
   }
 }
 
 @media (min-width: 768px) and (max-width: 1199px) {
   .hero-inner {
-    padding: var(--space-10) 0;
+    padding: 40px 0;
   }
 
   .hero-inner,
@@ -1370,21 +1660,9 @@ export default {
     max-width: 100%;
   }
 
-  .data-full {
-    max-width: 100%;
-    margin-left: 0;
-    margin-right: 0;
-  }
-
   .main-content {
-    padding-top: var(--space-8);
-    padding-bottom: var(--space-12);
-  }
-
-  .page-hero-flex {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--space-6);
+    padding-top: 32px;
+    padding-bottom: 64px;
   }
 
   .hero-stats {
@@ -1392,7 +1670,7 @@ export default {
     justify-content: flex-start;
   }
 
-  .stat-mini {
+  .stat-chip {
     flex: 1;
     max-width: 120px;
   }
@@ -1400,35 +1678,43 @@ export default {
 
 @media (max-width: 767px) {
   .hero-inner {
-    padding: var(--space-8) var(--space-5);
+    padding: 32px 20px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 24px;
   }
 
   .hero-title {
-    font-size: var(--text-2xl);
+    font-size: 28px;
   }
 
   .hero-stats {
-    gap: var(--space-3);
+    gap: 8px;
+    width: 100%;
   }
 
-  .stat-mini {
-    padding: var(--space-3) var(--space-4);
-    min-width: 56px;
+  .stat-chip {
+    padding: 12px 16px;
+    min-width: 64px;
   }
 
   .stat-value {
-    font-size: var(--text-xl);
+    font-size: 20px;
   }
 
   .main-content {
-    padding: 0 var(--space-5);
-    padding-top: var(--space-6);
-    padding-bottom: var(--space-10);
+    padding: 0 20px;
+    padding-top: 28px;
+    padding-bottom: 56px;
   }
 
   .section-header {
     flex-direction: column;
-    gap: var(--space-3);
+    gap: 12px;
+  }
+
+  .section-subtitle {
+    margin-left: 0;
   }
 
   .form-row {
@@ -1437,7 +1723,7 @@ export default {
 
   .data-table th,
   .data-table td {
-    padding: var(--space-2) var(--space-3);
+    padding: 12px 14px;
   }
 
   .col-actions {
@@ -1448,32 +1734,32 @@ export default {
   .cell-actions {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--space-1);
+    gap: 6px;
   }
 
   .modal-panel {
     max-width: 100%;
-    max-height: 90vh;
-    border-radius: var(--radius-lg);
+    max-height: 92vh;
+    border-radius: 14px;
   }
 
   .modal-head,
   .modal-foot {
-    padding: var(--space-4) var(--space-5);
+    padding: 18px 20px;
   }
 
   .modal-body {
-    padding: var(--space-5);
+    padding: 20px;
   }
 
   .warning-banner {
     flex-direction: column;
-    gap: var(--space-3);
-    padding: var(--space-4);
+    gap: 12px;
+    padding: 16px;
   }
 
   .section-divider {
-    margin: 0 var(--space-5);
+    margin: 28px 0;
   }
 
   .toast-notification {
@@ -1490,8 +1776,14 @@ export default {
 @media (prefers-reduced-motion: reduce) {
   .modal-backdrop,
   .modal-panel,
-  .toast-notification {
+  .toast-notification,
+  .provider-row,
+  .provider-row::before,
+  .stat-chip,
+  .tag-dot,
+  .pulse-dot {
     animation: none;
+    transition: opacity 0.15s ease;
   }
 
   .select-dropdown-enter-active,
