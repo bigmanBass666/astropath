@@ -153,13 +153,13 @@
               <!-- 工具栏 -->
               <div class="editor-toolbar">
                 <div class="toolbar-left">
-                  <el-select v-model="currentEssayType" size="small" class="tool-select">
+                  <el-select v-model="currentEssayType" size="small" class="tool-select" aria-label="文书类型">
                     <el-option label="个人陈述" value="ps" />
                     <el-option label="简历" value="cv" />
                     <el-option label="推荐信" value="reference" />
                     <el-option label="研究计划" value="research" />
                   </el-select>
-                  <el-select v-model="selectedProvider" size="small" class="tool-select">
+                  <el-select v-model="selectedProvider" size="small" class="tool-select" aria-label="AI供应商选择">
                     <el-option v-for="p in providers" :key="p.id" :label="p.name" :value="p.id" />
                   </el-select>
                   <div class="toolbar-sep" />
@@ -326,6 +326,7 @@
                       v-model="selectedCountry"
                       size="small"
                       class="country-select-inline"
+                      aria-label="目标国家选择"
                       @click.stop
                     >
                       <el-option v-for="country in countries" :key="country" :label="country" :value="country" />
@@ -344,7 +345,7 @@
                         >
                           <td class="col-check">
                             <label class="custom-checkbox">
-                              <input type="checkbox" v-model="item.completed" @change="updateProgress" />
+                              <input type="checkbox" v-model="item.completed" @change="updateProgress" :aria-label="'完成: ' + item.name" />
                               <span class="checkmark" />
                             </label>
                           </td>
@@ -436,7 +437,7 @@
                     @click="handleTaskClick(stage, task)"
                   >
                     <label class="task-check">
-                      <input type="checkbox" v-model="task.completed" @click.stop @change="saveProgressData" />
+                      <input type="checkbox" v-model="task.completed" @click.stop @change="saveProgressData" :aria-label="'完成: ' + task.name" />
                       <span class="task-checkmark" />
                     </label>
                     <span class="task-label">{{ task.name }}</span>

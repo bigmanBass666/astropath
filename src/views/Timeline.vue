@@ -161,7 +161,7 @@
                       :class="{ completed: task.completed }"
                     >
                       <label class="dp-checkbox" @mouseenter="cursorExpanded = true" @mouseleave="cursorExpanded = false">
-                        <input type="checkbox" :checked="task.completed" @change="toggleTask(selectedMilestone.id, task.id)">
+                        <input type="checkbox" :checked="task.completed" @change="toggleTask(selectedMilestone.id, task.id)" :aria-label="'标记完成: ' + task.title">
                         <span class="check-box" />
                       </label>
                       <span class="dp-task-name">{{ task.title }}</span>
@@ -266,18 +266,18 @@
             </div>
             <div class="modal-body-premium">
               <div class="fg-group">
-                <label class="fg-label">任务标题</label>
-                <input v-model="taskForm.title" type="text" class="fg-input" placeholder="请输入任务标题">
+                <label class="fg-label" for="task-title">任务标题</label>
+                <input id="task-title" v-model="taskForm.title" type="text" class="fg-input" placeholder="请输入任务标题">
               </div>
               <div class="fg-group">
-                <label class="fg-label">所属阶段</label>
-                <select v-model="taskForm.milestoneId" class="fg-input fg-select">
+                <label class="fg-label" for="task-milestone">所属阶段</label>
+                <select id="task-milestone" v-model="taskForm.milestoneId" class="fg-input fg-select">
                   <option v-for="m in milestones" :key="m.id" :value="m.id">{{ m.title }}</option>
                 </select>
               </div>
               <div class="fg-group">
-                <label class="fg-label">截止日期</label>
-                <input v-model="taskForm.deadline" type="date" class="fg-input">
+                <label class="fg-label" for="task-deadline">截止日期</label>
+                <input id="task-deadline" v-model="taskForm.deadline" type="date" class="fg-input">
               </div>
               <div class="fg-group">
                 <label class="fg-label">优先级</label>
@@ -292,16 +292,16 @@
                 </label>
               </div>
               <div v-if="taskForm.reminderEnabled" class="fg-group">
-                <label class="fg-label">提前提醒</label>
-                <select v-model="taskForm.reminderDays" class="fg-input fg-select">
+                <label class="fg-label" for="task-reminder-days">提前提醒</label>
+                <select id="task-reminder-days" v-model="taskForm.reminderDays" class="fg-input fg-select">
                   <option :value="1">提前1天</option>
                   <option :value="3">提前3天</option>
                   <option :value="7">提前7天</option>
                 </select>
               </div>
               <div class="fg-group">
-                <label class="fg-label">描述</label>
-                <textarea v-model="taskForm.description" class="fg-input fg-textarea" rows="3" placeholder="可选：添加任务描述..." />
+                <label class="fg-label" for="task-desc">描述</label>
+                <textarea id="task-desc" v-model="taskForm.description" class="fg-input fg-textarea" rows="3" placeholder="可选：添加任务描述..." />
               </div>
             </div>
             <div class="modal-footer-premium">

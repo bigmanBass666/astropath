@@ -511,7 +511,8 @@ export default {
       props: {
         modelValue: { type: [String, Number], default: '' },
         options: { type: Array, required: true },
-        placeholder: { type: String, default: '请选择' }
+        placeholder: { type: String, default: '请选择' },
+        id: { type: String, default: '' }
       },
       emits: ['update:modelValue'],
       data() {
@@ -546,6 +547,7 @@ export default {
       render() {
         const isActive = (val) => val === this.modelValue
         return h('div', {
+          id: this.id || undefined,
           class: ['custom-select', { 'custom-select--open': this.open }]
         }, [
           h('button', {
