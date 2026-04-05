@@ -294,7 +294,7 @@ const { scrollToBottom, handleUserScroll: handleStreamScroll } = useAIStream({
   autoRestore: false, autoScroll: true,
   scrollContainer: () => messagesContainer.value,
   onStateChange: (state) => { if (state === 'error') lastError.value = { title: '请求失败', message: '请检查网络连接或重试' } },
-  onQueueChange: (pos) => { console.log('Queue position:', pos) }
+  onQueueChange: (pos) => { /* queue position updated */ }
 })
 
 const loadUserData = () => {
