@@ -66,7 +66,7 @@
                   @click="currentView = view.value"
                 >{{ view.label }}</button>
               </div>
-              <select v-model="mode" class="mode-select" @change="handleModeChange">
+              <select id="view-mode" name="view-mode" v-model="mode" class="mode-select" @change="handleModeChange">
                 <option value="compact">紧凑</option>
                 <option value="normal">常规</option>
                 <option value="relaxed">宽松</option>
@@ -287,7 +287,7 @@
               </div>
               <div class="fg-group">
                 <label class="fg-check-wrap">
-                  <input v-model="taskForm.reminderEnabled" type="checkbox" class="fg-check">
+                  <input id="task-reminder" name="task-reminder" v-model="taskForm.reminderEnabled" type="checkbox" class="fg-check">
                   启用提醒
                 </label>
               </div>

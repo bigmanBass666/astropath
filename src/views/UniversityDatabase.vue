@@ -400,6 +400,7 @@
           </div>
 
           <div v-if="filteredMajors.length > 0" class="ud-grid ud-grid--majors">
+            <el-checkbox-group v-model="selectedMajors">
             <div
               v-for="major in filteredMajors"
               :key="major.id"
@@ -442,6 +443,7 @@
                 </button>
               </div>
             </div>
+            </el-checkbox-group>
           </div>
 
           <div v-if="totalMajors.length > 0" class="ud-pagination">
