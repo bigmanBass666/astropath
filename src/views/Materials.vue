@@ -598,7 +598,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, nextTick, watch } from 'vue'
+import { ref, reactive, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   Plus, Right, Document, DocumentCopy, Message,
@@ -708,7 +708,11 @@ onMounted(() => {
     Object.assign(allItems.value, JSON.parse(savedChecklist))
   }
   loadProgressData()
-  initScrollAnimations()
+  scrollObserver = initScrollAnimations()
+})
+
+onUnmounted(() => {
+  if (scrollObserver) scrollObserver.disconnect()
 })
 
 const wordCount = computed(() => {
@@ -3479,5 +3483,16 @@ watch([selectedEssayType, selectedTemplate, activeTab], () => {
   .overview-meta {
     justify-content: center;
   }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal-up, .reveal-scale { opacity: 1; transform: none; transition: none; }
+  .essay-card, .material-card, .progress-card { transition: none; }
+  .tab-btn { transition: none; }
+  .floating-toolbar button { transition: none; }
+  .fade-enter-active,
+  .fade-leave-active,
+  .fade-enter-from,
+  .fade-leave-to { transition: none; }
 }
 </style>

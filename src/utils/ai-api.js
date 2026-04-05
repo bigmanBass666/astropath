@@ -3,6 +3,8 @@
  * 支持多provider切换：OpenAI、Anthropic、国内供应商、其他
  */
 
+const _debug = import.meta.env.DEV ? (...args) => console.log(...args) : () => {}
+
 const EMPTY_USER_GUIDANCE_PROMPT = `【⚠️ 重要：用户尚未填写背景信息】
 
 用户还没有在系统中填写个人背景信息（GPA、院校、语言成绩等），所以你目前无法提供个性化的选校建议或评估。
@@ -99,14 +101,14 @@ export async function sendMessageToAI(providerId, messages, options = {}, extern
     // 处理流式或非流式响应
     if (options.stream) {
       const contentType = response.headers.get('content-type') || ''
-      console.log('[AI API] Response content-type:', contentType)
+      _debug('[AI API] Response content-type:', contentType)
       
       // 检查是否是流式响应
       if (contentType.includes('text/event-stream') || contentType.includes('application/stream+json')) {
         return handleStreamResponse(response)
       } else {
         // API 可能不支持流式输出，返回的是普通 JSON
-        console.log('[AI API] API did not return stream format, falling back to normal response')
+        _debug('[AI API] API did not return stream format, falling back to normal response')
         return handleNonStreamAsStream(response)
       }
     } else {
@@ -128,7 +130,7 @@ export async function sendMessageToAI(providerId, messages, options = {}, extern
 
 // 构建请求体
 function buildRequestBody(provider, messages, options) {
-  console.log('[AI API] buildRequestBody options:', options)
+  _debug('[AI API] buildRequestBody options:', options)
   
   const baseBody = {
     model: provider.model || 'gpt-3.5-turbo',
@@ -192,8 +194,8 @@ function buildRequestBody(provider, messages, options) {
     return anthropicBody
   }
 
-  console.log('[AI API] Final request body:', JSON.stringify(baseBody, null, 2))
-  console.log('[AI API] enableThinking:', options.enableThinking, 'has thinking field:', !!baseBody.thinking)
+  _debug('[AI API] Final request body:', JSON.stringify(baseBody, null, 2))
+  _debug('[AI API] enableThinking:', options.enableThinking, 'has thinking field:', !!baseBody.thinking)
   return baseBody
 }
 
@@ -212,7 +214,7 @@ async function* handleNonStreamAsStream(response) {
   const data = await response.json()
   const fullContent = data.choices?.[0]?.message?.content || ''
   
-  console.log('[AI API] Converting non-stream response to stream, content length:', fullContent.length)
+  _debug('[AI API] Converting non-stream response to stream, content length:', fullContent.length)
   
   if (!fullContent) {
     return
@@ -269,8 +271,8 @@ function splitIntoChunks(text) {
 
 // 处理流式响应
 async function* handleStreamResponse(response) {
-  console.log('[AI API] Starting stream response handling')
-  console.log('[AI API] Response headers:', Object.fromEntries(response.headers.entries()))
+  _debug('[AI API] Starting stream response handling')
+  _debug('[AI API] Response headers:', Object.fromEntries(response.headers.entries()))
   
   const reader = response.body.getReader()
   const decoder = new TextDecoder()
@@ -279,15 +281,15 @@ async function* handleStreamResponse(response) {
 
   while (true) {
     const { done, value } = await reader.read()
-    console.log('[AI API] Read chunk:', { done, valueLength: value?.length })
+    _debug('[AI API] Read chunk:', { done, valueLength: value?.length })
     
     if (done) {
-      console.log('[AI API] Stream done, total chunks:', chunkCount)
+      _debug('[AI API] Stream done, total chunks:', chunkCount)
       break
     }
 
     const decodedValue = decoder.decode(value, { stream: true })
-    console.log('[AI API] Decoded value:', decodedValue.substring(0, 200))
+    _debug('[AI API] Decoded value:', decodedValue.substring(0, 200))
     
     buffer += decodedValue
     const lines = buffer.split('\n')
@@ -297,7 +299,7 @@ async function* handleStreamResponse(response) {
       const trimmedLine = line.trim()
       if (!trimmedLine) continue
       
-      console.log('[AI API] Processing line:', trimmedLine.substring(0, 100))
+      _debug('[AI API] Processing line:', trimmedLine.substring(0, 100))
       
       // 尝试多种格式解析
       let data = null
@@ -317,13 +319,13 @@ async function* handleStreamResponse(response) {
       
       if (data) {
         if (data === '[DONE]') {
-          console.log('[AI API] Received [DONE] signal')
+          _debug('[AI API] Received [DONE] signal')
           return
         }
 
         try {
           const parsed = JSON.parse(data)
-          console.log('[AI API] Parsed data:', parsed)
+                    _debug('[AI API] Parsed data:', parsed)
           
           // 处理推理内容 - 支持多种字段名
           const delta = parsed.choices?.[0]?.delta
@@ -335,7 +337,7 @@ async function* handleStreamResponse(response) {
           
           if (reasoningContent) {
             chunkCount++
-            console.log('[AI API] Yielding reasoning chunk #', chunkCount, ':', reasoningContent)
+            _debug('[AI API] Yielding reasoning chunk #', chunkCount, ':', reasoningContent)
             yield { type: 'reasoning', content: reasoningContent }
           }
           
@@ -349,7 +351,7 @@ async function* handleStreamResponse(response) {
           
           if (content) {
             chunkCount++
-            console.log('[AI API] Yielding content chunk #', chunkCount, ':', content)
+            _debug('[AI API] Yielding content chunk #', chunkCount, ':', content)
             yield { type: 'content', content }
           }
         } catch (e) {

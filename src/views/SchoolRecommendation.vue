@@ -537,8 +537,8 @@ const showAnalysis = async (recommendation) => {
     recommendation.schoolId,
     defaultProvider.id,
     (streamContent) => {
-      console.log('Analysis streaming:', streamContent.substring(0, 100) + '...')
-    }
+        /* analysis streaming progress */
+      }
   )
   currentAnalysis.value = analysis
 }

@@ -318,7 +318,7 @@
 <script setup>
 import { ref, computed, reactive, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { CircleCheck, Calendar, Plus, Bell, Back, RefreshRight, DocumentAdd, Delete, ArrowDown, ArrowUp } from '@element-plus/icons-vue'
+import { Plus, Bell, Back, RefreshRight, DocumentAdd, Delete, ArrowDown, ArrowUp } from '@element-plus/icons-vue'
 import * as echarts from 'echarts'
 
 const currentView = ref('chart')
@@ -604,8 +604,9 @@ const initChart = () => {
   if (!chartRef.value) return
   chartInstance = echarts.init(chartRef.value)
   updateChart()
-  window.addEventListener('resize', () => chartInstance?.resize())
 }
+const handleChartResize = () => chartInstance?.resize()
+window.addEventListener('resize', handleChartResize)
 const updateChart = () => {
   if (!chartInstance) return
   const cats = milestones.value.map(m => m.title)
@@ -676,11 +677,13 @@ const animateCounter = (targets) => {
 
 const handleScroll = () => { toolbarScrolled.value = window.scrollY > 200 }
 
+let reminderIntervalId = null
+
 onMounted(() => {
   loadFromStorage()
   if (milestones.value.length > 0) selectedMilestone.value = milestones.value[0]
   requestNotificationPermission()
-  setInterval(checkTaskReminders, 3600000)
+  reminderIntervalId = setInterval(checkTaskReminders, 3600000)
   checkTaskReminders()
   if (currentView.value === 'chart') initChart()
   window.addEventListener('scroll', handleScroll, { passive: true })
@@ -692,9 +695,11 @@ onMounted(() => {
 
 onUnmounted(() => {
   chartInstance?.dispose()
-  window.removeEventListener('resize', () => chartInstance?.resize())
+  window.removeEventListener('resize', handleChartResize)
   window.removeEventListener('scroll', handleScroll)
   if (rafId) cancelAnimationFrame(rafId)
+  if (reminderIntervalId) clearInterval(reminderIntervalId)
+  if (scrollObserver) scrollObserver.disconnect()
 })
 
 let scrollObserver = null
@@ -2150,5 +2155,17 @@ const refreshObservations = () => {
   .ms-card { padding: 18px; }
   .kanban-col-premium { min-height: 300px; }
   .cursor-dot, .cursor-ring { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-on-scroll { opacity: 1; transform: none; transition: none; }
+  .cursor-dot, .cursor-ring { display: none !important; }
+  .ms-card { transition: none; }
+  .milestone-item-premium { transition: none; }
+  .view-btn, .btn-icon, .btn-primary-cta { transition: none; }
+  .dialog-premium-enter-active,
+  .dialog-premium-leave-active,
+  .dialog-premium-enter-active .modal-premium,
+  .dialog-premium-leave-active .modal-premium { transition: none; }
 }
 </style>

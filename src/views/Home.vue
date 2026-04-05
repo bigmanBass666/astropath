@@ -369,6 +369,7 @@ const scrollToNextSection = () => {
 
 // 星座网络Canvas动画
 let networkAnimationId = null
+let cleanupNetworkAnimation = null
 
 const initNetworkAnimation = () => {
   if (!networkCanvas.value) return
@@ -476,13 +477,13 @@ onMounted(() => {
   intersectionObserver = setupIntersectionObserver()
 
   // 初始化星座网络动画
-  initNetworkAnimation()
+  cleanupNetworkAnimation = initNetworkAnimation()
 })
 
 onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll)
   if (typingInterval) clearInterval(typingInterval)
-  if (networkAnimationId) cancelAnimationFrame(networkAnimationId)
+  if (cleanupNetworkAnimation) cleanupNetworkAnimation()
   if (intersectionObserver) intersectionObserver.disconnect()
 })
 </script>
