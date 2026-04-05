@@ -414,7 +414,7 @@
               <div class="ud-major__body">
                 <div class="ud-major__head">
                   <div class="ud-major__check" @click.stop>
-                    <el-checkbox :label="major.id">
+                    <el-checkbox :value="major.id">
                       <span class="ud-major__check-lbl">对比</span>
                     </el-checkbox>
                   </div>
