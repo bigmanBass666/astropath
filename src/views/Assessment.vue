@@ -63,10 +63,10 @@
 
         <!-- Name: Hero Input -->
         <div class="name-block">
-          <label class="nb-label">你的姓名</label>
+          <label class="nb-label" for="assess-name">你的姓名</label>
           <el-form ref="basicFormRef" :model="form.basic" :rules="basicRules" label-position="top" class="nb-form">
             <el-form-item prop="name">
-              <el-input v-model="form.basic.name" placeholder="输入姓名..." size="large" class="name-input" />
+              <el-input id="assess-name" v-model="form.basic.name" placeholder="输入姓名..." size="large" class="name-input" />
             </el-form-item>
           </el-form>
           <p class="nb-hint">用于生成个性化评估报告</p>
@@ -75,12 +75,12 @@
         <!-- Two-col row: Age + University -->
         <div class="row-2">
           <div class="field-block fb-left">
-            <label class="fb-label">年龄</label>
-            <el-input-number v-model="form.basic.age" :min="16" :max="50" controls-position="right" size="large" style="width:100%" />
+            <label class="fb-label" for="assess-age">年龄</label>
+            <el-input-number id="assess-age" v-model="form.basic.age" :min="16" :max="50" controls-position="right" size="large" style="width:100%" />
           </div>
           <div class="field-block fb-right">
-            <label class="fb-label">在读院校类型</label>
-            <el-select v-model="form.basic.university" placeholder="选择院校" size="large" style="width:100%">
+            <label class="fb-label" for="assess-university">在读院校类型</label>
+            <el-select id="assess-university" v-model="form.basic.university" placeholder="选择院校" size="large" style="width:100%">
               <el-option label="985 院校" value="985" />
               <el-option label="211 院校" value="211" />
               <el-option label="普通本科" value="regular" />
@@ -93,7 +93,7 @@
         <div class="gpa-block">
           <div class="gb-top">
             <div class="gb-info">
-              <label class="fb-label">GPA 绩点</label>
+              <label class="fb-label" for="assess-gpa">GPA 绩点</label>
               <p class="gb-desc">4.0 满分制，拖动滑块调整</p>
             </div>
             <div class="gb-display">
@@ -102,7 +102,7 @@
             </div>
           </div>
           <div class="gb-slider-wrap">
-            <el-slider v-model="form.basic.gpa" :min="0" :max="4" :step="0.1" :show-tooltip="true" />
+            <el-slider id="assess-gpa" v-model="form.basic.gpa" :min="0" :max="4" :step="0.1" :show-tooltip="true" />
           </div>
           <div class="gb-scale">
             <span>0</span><span>1.0</span><span>2.0</span><span>3.0</span><span>4.0</span>
@@ -111,8 +111,8 @@
 
         <!-- Language -->
         <div class="lang-block">
-          <label class="fb-label">语言成绩</label>
-          <el-input v-model="form.basic.language" placeholder="如：雅思 7.0 / 托福 100" size="large" />
+          <label class="fb-label" for="assess-language">语言成绩</label>
+          <el-input id="assess-language" v-model="form.basic.language" placeholder="如：雅思 7.0 / 托福 100" size="large" />
           <p class="lb-hint">填写已获得的语言考试成绩，留空则不纳入评估</p>
         </div>
 
@@ -150,9 +150,9 @@
 
         <!-- Score -->
         <div class="field-block" style="margin-bottom:28px;">
-          <label class="fb-label">均分</label>
+          <label class="fb-label" for="assess-score">均分</label>
           <div class="score-inline">
-            <el-input-number v-model="form.academic.averageScore" :min="0" :max="100" controls-position="right" size="large" style="flex:1" />
+            <el-input-number id="assess-score" v-model="form.academic.averageScore" :min="0" :max="100" controls-position="right" size="large" style="flex:1" />
             <span class="si-suffix">/ 100</span>
           </div>
         </div>

@@ -194,7 +194,7 @@
 
       <div class="input-section">
         <div class="input-container">
-          <textarea v-model="inputMessage" class="chat-textarea" placeholder="输入您的问题，按 Enter 发送..." :disabled="isLoading" rows="1" @input="autoResize" @keydown.enter.exact.prevent="sendMessage" />
+          <textarea v-model="inputMessage" class="chat-textarea" placeholder="输入您的问题，按 Enter 发送..." :disabled="isLoading" rows="1" aria-label="AI对话输入框" @input="autoResize" @keydown.enter.exact.prevent="sendMessage" />
           <div class="input-toolbar">
             <div class="toolbar-left">
               <button class="toolbar-btn" :class="{ 'is-active': enableThinking }" :disabled="isLoading" @click="toggleThinking">
