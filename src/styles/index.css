@@ -1,3 +1,6 @@
+/* Google Fonts - Playfair Display for headings */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+
 /* 全局样式重置 */
 * {
   margin: 0;
@@ -28,9 +31,6 @@ html, body {
 #app {
   height: 100%;
 }
-
-/* Google Fonts - Playfair Display for headings */
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
 
 /* Element Plus Dialog body padding reset — padding controlled by scoped .school-detail */
 .el-dialog__body {

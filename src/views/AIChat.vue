@@ -1,64 +1,117 @@
 <template>
   <div class="ai-chat-page">
-    <div class="sidebar" :class="{ 'is-collapsed': sidebarCollapsed }">
+    <div
+      class="sidebar"
+      :class="{ 'is-collapsed': sidebarCollapsed }"
+    >
       <div class="sidebar-top">
-        <el-tooltip :content="sidebarCollapsed ? '展开侧栏' : '收起侧栏'" placement="bottom" :show-after="300">
-          <button class="sidebar-toggle" @click="sidebarCollapsed = !sidebarCollapsed">
-            <el-icon :size="18"><component :is="sidebarCollapsed ? Expand : Fold" /></el-icon>
+        <el-tooltip
+          :content="sidebarCollapsed ? '展开侧栏' : '收起侧栏'"
+          placement="bottom"
+          :show-after="300"
+        >
+          <button
+            class="sidebar-toggle"
+            @click="sidebarCollapsed = !sidebarCollapsed"
+          >
+            <el-icon :size="18">
+              <component :is="sidebarCollapsed ? Expand : Fold" />
+            </el-icon>
           </button>
         </el-tooltip>
-        <el-tooltip content="新对话" placement="bottom" :show-after="300">
-          <button class="new-chat-icon-btn" @click="startNewChat">
-            <el-icon :size="18"><Plus /></el-icon>
+        <el-tooltip
+          content="新对话"
+          placement="bottom"
+          :show-after="300"
+        >
+          <button
+            class="new-chat-icon-btn"
+            @click="startNewChat"
+          >
+            <el-icon :size="18">
+              <Plus />
+            </el-icon>
           </button>
         </el-tooltip>
         <template v-if="!sidebarCollapsed">
-          <button class="new-chat-btn" @click="startNewChat">
-            <el-icon :size="16"><Plus /></el-icon>
+          <button
+            class="new-chat-btn"
+            @click="startNewChat"
+          >
+            <el-icon :size="16">
+              <Plus />
+            </el-icon>
             <span>新对话</span>
           </button>
         </template>
       </div>
 
-      <div class="sidebar-content" v-show="!sidebarCollapsed">
-          <div v-if="todayConversations.length > 0" class="conversation-section">
-            <div class="section-label">今天</div>
-            <button
-              v-for="conv in todayConversations" :key="conv.id"
-              class="conv-item" :class="{ 'is-active': currentConversationId === conv.id }"
-              @click="loadConversation(conv)"
-            >
-              <span class="conv-text">{{ conv.title || '新对话' }}</span>
-            </button>
+      <div
+        v-show="!sidebarCollapsed"
+        class="sidebar-content"
+      >
+        <div
+          v-if="todayConversations.length > 0"
+          class="conversation-section"
+        >
+          <div class="section-label">
+            今天
           </div>
-
-          <div v-if="olderConversations.length > 0" class="conversation-section">
-            <div class="section-label">更早</div>
-            <button
-              v-for="conv in olderConversations" :key="conv.id"
-              class="conv-item" :class="{ 'is-active': currentConversationId === conv.id }"
-              @click="loadConversation(conv)"
-            >
-              <span class="conv-text">{{ conv.title || '新对话' }}</span>
-            </button>
-          </div>
-
-          <div v-if="filteredConversations.length === 0 && searchQuery" class="empty-hint">
-            未找到匹配
-          </div>
+          <button
+            v-for="conv in todayConversations"
+            :key="conv.id"
+            class="conv-item"
+            :class="{ 'is-active': currentConversationId === conv.id }"
+            @click="loadConversation(conv)"
+          >
+            <span class="conv-text">{{ conv.title || '新对话' }}</span>
+          </button>
         </div>
+
+        <div
+          v-if="olderConversations.length > 0"
+          class="conversation-section"
+        >
+          <div class="section-label">
+            更早
+          </div>
+          <button
+            v-for="conv in olderConversations"
+            :key="conv.id"
+            class="conv-item"
+            :class="{ 'is-active': currentConversationId === conv.id }"
+            @click="loadConversation(conv)"
+          >
+            <span class="conv-text">{{ conv.title || '新对话' }}</span>
+          </button>
+        </div>
+
+        <div
+          v-if="filteredConversations.length === 0 && searchQuery"
+          class="empty-hint"
+        >
+          未找到匹配
+        </div>
+      </div>
 
       <div class="sidebar-bottom">
         <template v-if="!sidebarCollapsed">
           <div class="agent-section">
-            <div class="section-label">智能体</div>
+            <div class="section-label">
+              智能体
+            </div>
             <div class="agent-list">
               <button
-                v-for="agent in agents" :key="agent.id"
-                class="agent-row" :class="{ 'is-active': currentAgentId === agent.id }"
+                v-for="agent in agents"
+                :key="agent.id"
+                class="agent-row"
+                :class="{ 'is-active': currentAgentId === agent.id }"
                 @click="selectAgent(agent.id)"
               >
-                <span class="agent-dot" :style="{ background: agent.color }"></span>
+                <span
+                  class="agent-dot"
+                  :style="{ background: agent.color }"
+                />
                 <span class="agent-label">{{ agent.name }}</span>
               </button>
             </div>
@@ -71,8 +124,13 @@
       <div class="chat-header">
         <div class="header-left">
           <div class="header-agent-info">
-            <div class="header-icon" :style="{ background: currentAgent?.color }">
-              <el-icon :size="16"><component :is="currentAgent?.icon" /></el-icon>
+            <div
+              class="header-icon"
+              :style="{ background: currentAgent?.color }"
+            >
+              <el-icon :size="16">
+                <component :is="currentAgent?.icon" />
+              </el-icon>
             </div>
             <div class="header-text">
               <span class="header-name">{{ currentAgent?.name }}</span>
@@ -81,43 +139,89 @@
           </div>
         </div>
         <div class="header-actions">
-          <el-tooltip content="返回" placement="bottom" :show-after="300">
-            <button class="header-back-btn" @click="goBack">
-              <el-icon :size="16"><ArrowLeft /></el-icon>
+          <el-tooltip
+            content="返回"
+            placement="bottom"
+            :show-after="300"
+          >
+            <button
+              class="header-back-btn"
+              @click="goBack"
+            >
+              <el-icon :size="16">
+                <ArrowLeft />
+              </el-icon>
             </button>
           </el-tooltip>
-          <el-dropdown v-if="providers.length > 0" trigger="click" @command="(cmd) => selectedProvider = cmd">
+          <el-dropdown
+            v-if="providers.length > 0"
+            trigger="click"
+            @command="(cmd) => selectedProvider = cmd"
+          >
             <button class="model-selector">
               <span class="model-name">{{ currentProviderName }}</span>
-              <el-icon :size="12"><ArrowDown /></el-icon>
+              <el-icon :size="12">
+                <ArrowDown />
+              </el-icon>
             </button>
             <template #dropdown>
               <el-dropdown-menu>
-                <el-dropdown-item v-for="p in providers" :key="p.id" :command="p.id" :class="{ 'is-active': selectedProvider === p.id }">
-                  <div class="model-option"><span>{{ p.name }}</span><el-icon v-if="selectedProvider === p.id" :size="12"><Check /></el-icon></div>
+                <el-dropdown-item
+                  v-for="p in providers"
+                  :key="p.id"
+                  :command="p.id"
+                  :class="{ 'is-active': selectedProvider === p.id }"
+                >
+                  <div class="model-option">
+                    <span>{{ p.name }}</span><el-icon
+                      v-if="selectedProvider === p.id"
+                      :size="12"
+                    >
+                      <Check />
+                    </el-icon>
+                  </div>
                 </el-dropdown-item>
               </el-dropdown-menu>
             </template>
           </el-dropdown>
-          <button v-else class="config-btn" @click="router.push('/ai-config')">
-            <el-icon :size="14"><Setting /></el-icon><span>配置模型</span>
-          </button>
         </div>
       </div>
 
-      <div ref="messagesContainer" class="chat-messages" @scroll="handleUserScroll">
-        <div v-if="messages.length === 0 && currentAgent" class="welcome-screen">
+      <div
+        ref="messagesContainer"
+        class="chat-messages"
+        @scroll="handleUserScroll"
+      >
+        <div
+          v-if="messages.length === 0 && currentAgent"
+          class="welcome-screen"
+        >
           <div class="welcome-content">
-            <div class="welcome-icon" :style="{ background: currentAgent?.color }">
-              <el-icon :size="24"><component :is="currentAgent?.icon" /></el-icon>
+            <div
+              class="welcome-icon"
+              :style="{ background: currentAgent?.color }"
+            >
+              <el-icon :size="24">
+                <component :is="currentAgent?.icon" />
+              </el-icon>
             </div>
-            <h2 class="welcome-title">{{ currentAgent.name }}</h2>
-            <p class="welcome-subtitle">{{ currentAgent.role }}</p>
-            <p class="welcome-desc">{{ currentAgent.welcome }}</p>
+            <h2 class="welcome-title">
+              {{ currentAgent.name }}
+            </h2>
+            <p class="welcome-subtitle">
+              {{ currentAgent.role }}
+            </p>
+            <p class="welcome-desc">
+              {{ currentAgent.welcome }}
+            </p>
             <div class="quick-prompts">
               <div class="prompts-list">
-                <button v-for="(prompt, idx) in currentAgent.quickPrompts" :key="idx"
-                        class="prompt-chip" @click="useQuickPrompt(prompt)">
+                <button
+                  v-for="(prompt, idx) in currentAgent.quickPrompts"
+                  :key="idx"
+                  class="prompt-chip"
+                  @click="useQuickPrompt(prompt)"
+                >
                   {{ prompt }}
                 </button>
               </div>
@@ -126,45 +230,136 @@
         </div>
 
         <template v-else>
-          <div v-for="msg in messages" :key="msg.id" class="message-wrapper" :class="{ 'is-user': msg.role === 'user' }">
+          <div
+            v-for="msg in messages"
+            :key="msg.id"
+            class="message-wrapper"
+            :class="{ 'is-user': msg.role === 'user' }"
+          >
             <div class="message">
-              <div class="message-avatar" :style="{ background: msg.role === 'user' ? 'var(--color-solid)' : currentAgent?.color }">
-                <el-icon :size="14"><User v-if="msg.role === 'user'" /><component :is="currentAgent?.icon" v-else /></el-icon>
+              <div
+                class="message-avatar"
+                :style="{ background: msg.role === 'user' ? 'var(--color-solid)' : currentAgent?.color }"
+              >
+                <el-icon :size="14">
+                  <User v-if="msg.role === 'user'" /><component
+                    :is="currentAgent?.icon"
+                    v-else
+                  />
+                </el-icon>
               </div>
               <div class="message-content">
-                <div v-if="msg.reasoning" class="reasoning-block" :class="{ 'is-thinking': msg.isThinking && !msg.content }">
-                  <div class="reasoning-header" @click="msg.showReasoning = !msg.showReasoning">
-                    <el-icon :size="12"><Cpu /></el-icon>
+                <div
+                  v-if="msg.reasoning"
+                  class="reasoning-block"
+                  :class="{ 'is-thinking': msg.isThinking && !msg.content }"
+                >
+                  <div
+                    class="reasoning-header"
+                    @click="msg.showReasoning = !msg.showReasoning"
+                  >
+                    <el-icon :size="12">
+                      <Cpu />
+                    </el-icon>
                     <span>{{ msg.isThinking && !msg.content ? '正在思考...' : '思考过程' }}</span>
-                    <span v-if="msg.isThinking && !msg.content" class="thinking-badge">进行中</span>
-                    <el-icon :size="10" class="reasoning-toggle" :class="{ 'is-expanded': msg.showReasoning }"><ArrowDown /></el-icon>
+                    <span
+                      v-if="msg.isThinking && !msg.content"
+                      class="thinking-badge"
+                    >进行中</span>
+                    <el-icon
+                      :size="10"
+                      class="reasoning-toggle"
+                      :class="{ 'is-expanded': msg.showReasoning }"
+                    >
+                      <ArrowDown />
+                    </el-icon>
                   </div>
-                  <div v-show="msg.showReasoning" class="reasoning-body">{{ msg.reasoning }}</div>
+                  <div
+                    v-show="msg.showReasoning"
+                    class="reasoning-body"
+                  >
+                    {{ msg.reasoning }}
+                  </div>
                 </div>
 
                 <div class="message-text">
-                  <div v-if="isGenerating && msg.role === 'assistant' && isLastMessage(msg) && !msg.content && !msg.reasoning" class="waiting-dots">
+                  <div
+                    v-if="isGenerating && msg.role === 'assistant' && isLastMessage(msg) && !msg.content && !msg.reasoning"
+                    class="waiting-dots"
+                  >
                     <span class="dot" /><span class="dot" /><span class="dot" />
                     <span class="waiting-label">{{ waitingText }}</span>
                   </div>
                   <template v-else>
                     <span v-html="renderMarkdown(msg.content)" />
-                    <span v-if="isGenerating && msg.role === 'assistant' && isLastMessage(msg)" class="typing-cursor" />
+                    <span
+                      v-if="isGenerating && msg.role === 'assistant' && isLastMessage(msg)"
+                      class="typing-cursor"
+                    />
                   </template>
                 </div>
 
-                <div v-if="msg.content && !isGenerating" class="message-actions">
-                  <el-tooltip content="复制" placement="top" :show-after="300">
-                    <button class="action-btn" @click="copyMessage(msg)"><el-icon :size="12"><DocumentCopy /></el-icon></button>
+                <div
+                  v-if="msg.content && !isGenerating"
+                  class="message-actions"
+                >
+                  <el-tooltip
+                    content="复制"
+                    placement="top"
+                    :show-after="300"
+                  >
+                    <button
+                      class="action-btn"
+                      @click="copyMessage(msg)"
+                    >
+                      <el-icon :size="12">
+                        <DocumentCopy />
+                      </el-icon>
+                    </button>
                   </el-tooltip>
                   <template v-if="msg.role === 'assistant'">
-                    <el-tooltip content="有帮助" placement="top" :show-after="300">
-                      <button class="action-btn" :class="{ 'is-active': msg.feedback === 'good' }" @click="setFeedback(msg, 'good')"><el-icon :size="12"><Select /></el-icon></button>
+                    <el-tooltip
+                      content="有帮助"
+                      placement="top"
+                      :show-after="300"
+                    >
+                      <button
+                        class="action-btn"
+                        :class="{ 'is-active': msg.feedback === 'good' }"
+                        @click="setFeedback(msg, 'good')"
+                      >
+                        <el-icon :size="12">
+                          <Select />
+                        </el-icon>
+                      </button>
                     </el-tooltip>
-                    <el-tooltip content="无帮助" placement="top" :show-after="300">
-                      <button class="action-btn" :class="{ 'is-active': msg.feedback === 'bad' }" @click="setFeedback(msg, 'bad')"><el-icon :size="12" style="transform: scaleY(-1)"><Select /></el-icon></button>
+                    <el-tooltip
+                      content="无帮助"
+                      placement="top"
+                      :show-after="300"
+                    >
+                      <button
+                        class="action-btn"
+                        :class="{ 'is-active': msg.feedback === 'bad' }"
+                        @click="setFeedback(msg, 'bad')"
+                      >
+                        <el-icon
+                          :size="12"
+                          style="transform: scaleY(-1)"
+                        >
+                          <Select />
+                        </el-icon>
+                      </button>
                     </el-tooltip>
-                    <button v-if="isLastMessage(msg)" class="action-btn regenerate-btn" @click="regenerateLastResponse()"><el-icon :size="12"><RefreshRight /></el-icon><span>重新生成</span></button>
+                    <button
+                      v-if="isLastMessage(msg)"
+                      class="action-btn regenerate-btn"
+                      @click="regenerateLastResponse()"
+                    >
+                      <el-icon :size="12">
+                        <RefreshRight />
+                      </el-icon><span>重新生成</span>
+                    </button>
                   </template>
                 </div>
               </div>
@@ -172,41 +367,97 @@
           </div>
         </template>
 
-        <div v-if="isQueued" class="queue-notice">
-          <el-icon :size="14"><Clock /></el-icon>
+        <div
+          v-if="isQueued"
+          class="queue-notice"
+        >
+          <el-icon :size="14">
+            <Clock />
+          </el-icon>
           <span>请求排队中，前方还有 {{ queuePosition }} 个任务...</span>
         </div>
 
-        <div v-if="lastError" class="error-banner">
+        <div
+          v-if="lastError"
+          class="error-banner"
+        >
           <div class="error-content">
-            <el-icon :size="16" class="error-icon"><WarningFilled /></el-icon>
+            <el-icon
+              :size="16"
+              class="error-icon"
+            >
+              <WarningFilled />
+            </el-icon>
             <div class="error-info">
               <span class="error-title">{{ lastError.title }}</span>
               <span class="error-desc">{{ lastError.message }}</span>
             </div>
           </div>
           <div class="error-actions">
-            <el-button v-if="canRetry" type="primary" size="small" @click="handleRetry">重试 ({{ retryCount }}/{{ maxRetries }})</el-button>
-            <el-button size="small" text @click="clearError">忽略</el-button>
+            <el-button
+              v-if="canRetry"
+              type="primary"
+              size="small"
+              @click="handleRetry"
+            >
+              重试 ({{ retryCount }}/{{ maxRetries }})
+            </el-button>
+            <el-button
+              size="small"
+              text
+              @click="clearError"
+            >
+              忽略
+            </el-button>
           </div>
         </div>
       </div>
 
       <div class="input-section">
         <div class="input-container">
-          <textarea v-model="inputMessage" class="chat-textarea" placeholder="输入您的问题，按 Enter 发送..." :disabled="isLoading" rows="1" aria-label="AI对话输入框" @input="autoResize" @keydown.enter.exact.prevent="sendMessage" />
+          <textarea
+            v-model="inputMessage"
+            class="chat-textarea"
+            placeholder="输入您的问题，按 Enter 发送..."
+            :disabled="isLoading"
+            rows="1"
+            aria-label="AI对话输入框"
+            @input="autoResize"
+            @keydown.enter.exact.prevent="sendMessage"
+          />
           <div class="input-toolbar">
             <div class="toolbar-left">
-              <button class="toolbar-btn" :class="{ 'is-active': enableThinking }" :disabled="isLoading" @click="toggleThinking">
-                <el-icon :size="14"><Cpu /></el-icon><span>深度思考</span>
+              <button
+                class="toolbar-btn"
+                :class="{ 'is-active': enableThinking }"
+                :disabled="isLoading"
+                @click="toggleThinking"
+              >
+                <el-icon :size="14">
+                  <Cpu />
+                </el-icon><span>深度思考</span>
               </button>
             </div>
             <div class="toolbar-right">
-              <button v-if="!isLoading" class="send-btn" :class="{ 'is-active': inputMessage.trim() }" :disabled="!inputMessage.trim()" @click="sendMessage">
-                <el-icon :size="16"><Promotion /></el-icon>
+              <button
+                v-if="!isLoading"
+                class="send-btn"
+                :class="{ 'is-active': inputMessage.trim() }"
+                :disabled="!inputMessage.trim()"
+                @click="sendMessage"
+              >
+                <el-icon :size="16">
+                  <Promotion />
+                </el-icon>
               </button>
-              <button v-else-if="stopButtonVisible" class="send-btn is-stop" @click="stopGeneration">
-                <el-icon :size="16"><VideoPause /></el-icon>
+              <button
+                v-else-if="stopButtonVisible"
+                class="send-btn is-stop"
+                @click="stopGeneration"
+              >
+                <el-icon :size="16">
+                  <VideoPause />
+                </el-icon>
               </button>
             </div>
           </div>
@@ -223,7 +474,7 @@ import { ElMessage } from 'element-plus'
 import {
   ArrowLeft, User, WarningFilled, Clock,
   Promotion, VideoPause, Search,
-  Cpu, ArrowDown, Check, Setting, Plus,
+  Cpu, ArrowDown, Check, Plus,
   School, DocumentCopy, OfficeBuilding, Stamp,
   Select, RefreshRight, Expand, Fold
 } from '@element-plus/icons-vue'
@@ -231,6 +482,7 @@ import { buildSystemPrompt } from '@/utils/ai-api'
 import { useAIStream } from '@/composables/useAIStream'
 import { useActiveStream } from '@/composables/useActiveStream'
 import { renderMarkdown } from '@/utils/markdown'
+import { DEFAULT_PROVIDER } from '@/composables/useAIConfig'
 
 const router = useRouter()
 const {
@@ -344,11 +596,11 @@ const olderConversations = computed(() => {
   return filteredConversations.value.filter(c => { const d = new Date(c.createdAt); d.setHours(0, 0, 0, 0); return d.getTime() < t.getTime() })
 })
 
-const providers = computed(() => { const s = localStorage.getItem('ai_providers'); return s ? JSON.parse(s) : [] })
+const providers = computed(() => { const s = localStorage.getItem('ai_providers'); return s ? JSON.parse(s) : [DEFAULT_PROVIDER] })
 const currentProviderName = computed(() => { const p = providers.value.find(p => p.id === selectedProvider.value); return p ? p.name : '选择模型' })
 const getAgentName = (id) => { const a = agents.value.find(a => a.id === id); return a ? a.name : 'AI助手' }
 
-const loadProviders = () => { const s = localStorage.getItem('ai_providers'); if (s) { const p = JSON.parse(s); if (p.length > 0) selectedProvider.value = p[0].id } }
+const loadProviders = () => { const s = localStorage.getItem('ai_providers'); if (s) { const p = JSON.parse(s); if (p.length > 0) selectedProvider.value = p[0].id } else { selectedProvider.value = DEFAULT_PROVIDER.id } }
 
 const selectAgent = (id) => {
   if (currentAgentId.value === id) return
@@ -367,7 +619,6 @@ const autoResize = (e) => { const t = e.target; t.style.height = 'auto'; t.style
 const sendMessage = async () => {
   isFreshEntry = false
   if (!inputMessage.value.trim()) { ElMessage.warning('请输入消息'); return }
-  if (!selectedProvider.value) { ElMessage.warning('请先配置AI提供商'); router.push('/ai-config'); return }
 
   const userMsg = { id: Date.now(), role: 'user', content: inputMessage.value, timestamp: Date.now() }
   messages.value.push(userMsg); inputMessage.value = ''; clearError(); scrollToBottom(true)
@@ -655,21 +906,6 @@ onUnmounted(() => { saveCurrentState(); if (currentStream.value) currentStream.v
 .model-name { max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .model-option { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-width: 140px; }
 
-.config-btn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  border: 1px solid #e5e7eb;
-  border-radius: 20px;
-  background: transparent;
-  color: #6b7280;
-  font-size: 12px;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-.config-btn:hover { border-color: #d1d5db; color: #374151; }
-
 .chat-messages {
   flex: 1;
   overflow-y: auto;
@@ -681,7 +917,7 @@ onUnmounted(() => { saveCurrentState(); if (currentStream.value) currentStream.v
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 60px 40px;
+  padding: 32px 40px;
 }
 
 .welcome-content {
@@ -704,7 +940,7 @@ onUnmounted(() => { saveCurrentState(); if (currentStream.value) currentStream.v
   align-items: center;
   justify-content: center;
   color: white;
-  margin: 0 auto 24px;
+  margin: 0 auto 16px;
 }
 
 .welcome-title {
@@ -726,7 +962,7 @@ onUnmounted(() => { saveCurrentState(); if (currentStream.value) currentStream.v
   font-size: 15px;
   line-height: 1.7;
   color: #6b7280;
-  margin: 0 0 36px 0;
+  margin: 0 0 24px 0;
   max-width: 480px;
   margin-left: auto;
   margin-right: auto;

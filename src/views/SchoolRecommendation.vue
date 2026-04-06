@@ -14,15 +14,29 @@
           <span class="marquee-text">ASSESSMENT REQUIRED</span>
         </div>
         <div class="empty-content">
-          <p class="empty-numeral">01</p>
-          <h2 class="empty-title">请先完成背景评估</h2>
-          <p class="empty-desc">系统需要您的背景信息才能进行精准推荐</p>
+          <p class="empty-numeral">
+            01
+          </p>
+          <h2 class="empty-title">
+            请先完成背景评估
+          </h2>
+          <p class="empty-desc">
+            系统需要您的背景信息才能进行精准推荐
+          </p>
           <button
             class="btn-cta"
             @click="router.push('/assessment')"
           >
             <span class="btn-text">去评估</span>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="btn-arrow"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              class="btn-arrow"
+            ><path d="M5 12h14M12 5l7 7-7 7" /></svg>
           </button>
         </div>
       </div>
@@ -137,7 +151,9 @@
                 <span class="r-title-line r-title-line--sub">结果报告</span>
               </h2>
 
-              <p class="results-sub">基于您的背景，为您推荐以下院校</p>
+              <p class="results-sub">
+                基于您的背景，为您推荐以下院校
+              </p>
 
               <div class="stats-showcase">
                 <div class="stat-item stat-item--hero">
@@ -186,17 +202,23 @@
                   class="f-btn"
                   :class="{ 'f-btn--on': activeFilter === 'all' }"
                   @click="activeFilter = 'all'"
-                >全部</button>
+                >
+                  全部
+                </button>
                 <button
                   class="f-btn"
                   :class="{ 'f-btn--on': activeFilter === 'core' }"
                   @click="activeFilter = 'core'"
-                >核心推荐</button>
+                >
+                  核心推荐
+                </button>
                 <button
                   class="f-btn"
                   :class="{ 'f-btn--on': activeFilter === 'alternative' }"
                   @click="activeFilter = 'alternative'"
-                >备选方案</button>
+                >
+                  备选方案
+                </button>
               </div>
               <div class="sort-wrap">
                 <span class="sort-lbl">排序</span>
@@ -204,9 +226,15 @@
                   v-model="sortBy"
                   class="sort-select"
                 >
-                  <option value="match-desc">匹配度 ↓</option>
-                  <option value="match-asc">匹配度 ↑</option>
-                  <option value="ranking">排名</option>
+                  <option value="match-desc">
+                    匹配度 ↓
+                  </option>
+                  <option value="match-asc">
+                    匹配度 ↑
+                  </option>
+                  <option value="ranking">
+                    排名
+                  </option>
                 </select>
               </div>
             </div>

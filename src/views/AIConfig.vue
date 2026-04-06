@@ -14,7 +14,9 @@
             <span class="title-line title-line-1">AI</span>
             <span class="title-line title-line-2">配置管理</span>
           </h1>
-          <p class="hero-desc">管理 AI 供应商连接配置，支持多供应商切换与连接测试</p>
+          <p class="hero-desc">
+            管理 AI 供应商连接配置，支持多供应商切换与连接测试
+          </p>
         </div>
         <div class="hero-stats">
           <div class="stat-chip stat-chip--primary">
@@ -41,103 +43,174 @@
               <span class="title-num">01</span>
               AI 供应商配置
             </h2>
-            <p class="section-subtitle">配置和管理您的 AI 模型接入点</p>
+            <p class="section-subtitle">
+              配置和管理您的 AI 模型接入点
+            </p>
           </div>
           <button
             class="btn btn-primary btn-sm"
             @click="testAllConnections"
           >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            ><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2" /></svg>
             测试全部连接
           </button>
         </div>
 
-        <div class="table-glass">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th><span class="th-inner">供应商名称</span></th>
-                  <th><span class="th-inner">类型</span></th>
-                  <th><span class="th-inner">Base URL</span></th>
-                  <th><span class="th-inner">API Key</span></th>
-                  <th><span class="th-inner">模型名称</span></th>
-                  <th><span class="th-inner">状态</span></th>
-                  <th><span class="th-inner">操作</span></th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr
-                  v-for="(provider, index) in providers"
-                  :key="provider.id"
-                  class="provider-row"
-                >
-                  <td class="cell-name">{{ provider.name }}</td>
-                  <td>
-                    <span class="badge badge-type">{{ provider.type }}</span>
-                  </td>
-                  <td class="cell-mono" :title="provider.baseUrl">{{ provider.baseUrl }}</td>
-                  <td class="cell-key">{{ '*'.repeat(provider.apiKey?.length || 0) }}</td>
-                  <td class="cell-mono" :title="provider.model">{{ provider.model }}</td>
-                  <td>
-                    <span
-                      v-if="provider.status === 'testing'"
-                      class="status-badge status-testing"
-                    ><i class="pulse-dot" /><span>测试中</span></span>
-                    <span
-                      v-else-if="provider.status === 'connected'"
-                      class="status-badge status-connected"
-                    ><i class="status-dot" /><span>已连接</span></span>
-                    <span
-                      v-else-if="provider.status === 'error'"
-                      class="status-badge status-error"
-                    ><i class="status-dot" /><span>连接失败</span></span>
-                    <span
-                      v-else
-                      class="status-badge status-untested"
-                    ><i class="status-dot status-dot--muted" /><span>未测试</span></span>
-                  </td>
-                  <td class="cell-actions">
-                    <button
-                      class="btn-action btn-edit"
-                      @click="editProvider(index)"
-                    >编辑</button>
-                    <button
-                      class="btn-action btn-delete"
-                      @click="removeProvider(index)"
-                    >删除</button>
-                    <button
-                      class="btn-action btn-test"
-                      :disabled="provider.status === 'testing'"
-                      @click="testConnection(index)"
-                    >{{ provider.status === 'testing' ? '测试中...' : '测试' }}</button>
-                  </td>
-                </tr>
-                <tr v-if="providers.length === 0">
-                  <td colspan="7">
-                    <div class="empty-state">
-                      <div class="empty-icon-wrap">
-                        <svg class="empty-icon" viewBox="0 0 48 48" fill="none">
-                          <circle cx="24" cy="24" r="20" stroke="currentColor" stroke-width="1.5" opacity=".2"/>
-                          <path d="M24 14v16m0 0l-6-6m6 6l6-6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity=".3"/>
-                        </svg>
-                      </div>
-                      <p class="empty-title">暂无供应商配置</p>
-                      <p class="empty-desc">请在下方添加您的第一个 AI 供应商配置</p>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+        <div class="security-notice">
+          <div class="notice-glass">
+            <div class="notice-noise" />
+            <div class="notice-accent" />
+            <div class="notice-icon-wrap">
+              <svg
+                class="notice-icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                <path d="M12 8v4m0 4h.01" />
+              </svg>
+            </div>
+            <div class="notice-content">
+              <span class="notice-label">SECURITY NOTICE</span>
+              <span class="notice-divider" />
+              <span class="notice-text">
+                当前使用开发者测试 API Key（<span class="notice-model">GLM-4.7-Flash</span>），<span class="notice-emphasis">请勿用于其他用途</span>。
+              </span>
+            </div>
+          </div>
         </div>
 
-        <div class="warning-banner">
-          <div class="warning-mark">!</div>
-          <div class="warning-body">
-            <p class="warning-head">当前使用的是开发者个人测试 API Key（智谱 GLM-4.7-Flash）</p>
-            <p class="warning-detail">
-              本 Key 为个人账号提供，仅用于比赛演示和体验，<strong>请勿用于其他用途或频繁调用</strong>。如需长期使用，请在下方「自定义配置」中填入您自己的 API Key。
-            </p>
-          </div>
+        <div class="table-glass">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th><span class="th-inner">供应商名称</span></th>
+                <th><span class="th-inner">类型</span></th>
+                <th><span class="th-inner">Base URL</span></th>
+                <th><span class="th-inner">API Key</span></th>
+                <th><span class="th-inner">模型名称</span></th>
+                <th><span class="th-inner">状态</span></th>
+                <th><span class="th-inner">操作</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="(provider, index) in providers"
+                :key="provider.id"
+                class="provider-row"
+              >
+                <td class="cell-name">
+                  {{ provider.name }}
+                </td>
+                <td>
+                  <span class="badge badge-type">{{ provider.type }}</span>
+                </td>
+                <td
+                  class="cell-mono"
+                  :title="provider.baseUrl"
+                >
+                  {{ provider.baseUrl }}
+                </td>
+                <td class="cell-key">
+                  {{ '*'.repeat(provider.apiKey?.length || 0) }}
+                </td>
+                <td
+                  class="cell-mono"
+                  :title="provider.model"
+                >
+                  {{ provider.model }}
+                </td>
+                <td>
+                  <span
+                    v-if="provider.status === 'testing'"
+                    class="status-badge status-testing"
+                  ><i class="pulse-dot" /><span>测试中</span></span>
+                  <span
+                    v-else-if="provider.status === 'connected'"
+                    class="status-badge status-connected"
+                  ><i class="status-dot" /><span>已连接</span></span>
+                  <span
+                    v-else-if="provider.status === 'error'"
+                    class="status-badge status-error"
+                  ><i class="status-dot" /><span>连接失败</span></span>
+                  <span
+                    v-else
+                    class="status-badge status-untested"
+                  ><i class="status-dot status-dot--muted" /><span>未测试</span></span>
+                </td>
+                <td class="cell-actions">
+                  <button
+                    class="btn-action btn-edit"
+                    @click="editProvider(index)"
+                  >
+                    编辑
+                  </button>
+                  <button
+                    class="btn-action btn-delete"
+                    @click="removeProvider(index)"
+                  >
+                    删除
+                  </button>
+                  <button
+                    class="btn-action btn-test"
+                    :disabled="provider.status === 'testing'"
+                    @click="testConnection(index)"
+                  >
+                    {{ provider.status === 'testing' ? '测试中...' : '测试' }}
+                  </button>
+                </td>
+              </tr>
+              <tr v-if="providers.length === 0">
+                <td colspan="7">
+                  <div class="empty-state">
+                    <div class="empty-icon-wrap">
+                      <svg
+                        class="empty-icon"
+                        viewBox="0 0 48 48"
+                        fill="none"
+                      >
+                        <circle
+                          cx="24"
+                          cy="24"
+                          r="20"
+                          stroke="currentColor"
+                          stroke-width="1.5"
+                          opacity=".2"
+                        />
+                        <path
+                          d="M24 14v16m0 0l-6-6m6 6l6-6"
+                          stroke="currentColor"
+                          stroke-width="1.5"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          opacity=".3"
+                        />
+                      </svg>
+                    </div>
+                    <p class="empty-title">
+                      暂无供应商配置
+                    </p>
+                    <p class="empty-desc">
+                      请在下方添加您的第一个 AI 供应商配置
+                    </p>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </section>
 
@@ -150,7 +223,9 @@
               <span class="title-num">02</span>
               自定义配置
             </h2>
-            <p class="section-subtitle">添加新的 AI 供应商</p>
+            <p class="section-subtitle">
+              添加新的 AI 供应商
+            </p>
           </div>
         </div>
 
@@ -160,17 +235,23 @@
         >
           <div class="form-row">
             <div class="form-field">
-              <label class="form-label" for="prov-name">供应商名称</label>
+              <label
+                class="form-label"
+                for="prov-name"
+              >供应商名称</label>
               <input
                 id="prov-name"
                 v-model="newProvider.name"
                 type="text"
                 class="form-input"
                 placeholder="如：OpenAI、Anthropic"
-              />
+              >
             </div>
             <div class="form-field">
-              <label class="form-label" for="prov-type">类型</label>
+              <label
+                class="form-label"
+                for="prov-type"
+              >类型</label>
               <CustomSelect
                 id="prov-type"
                 v-model="newProvider.type"
@@ -180,41 +261,59 @@
             </div>
           </div>
           <div class="form-field">
-            <label class="form-label" for="prov-url">Base URL</label>
+            <label
+              class="form-label"
+              for="prov-url"
+            >Base URL</label>
             <input
               id="prov-url"
               v-model="newProvider.baseUrl"
               type="text"
               class="form-input"
               placeholder="https://api.openai.com/v1"
-            />
+            >
           </div>
           <div class="form-field">
-            <label class="form-label" for="prov-key">API Key</label>
+            <label
+              class="form-label"
+              for="prov-key"
+            >API Key</label>
             <input
               id="prov-key"
               v-model="newProvider.apiKey"
               type="password"
               class="form-input"
               placeholder="sk-..."
-            />
+            >
           </div>
           <div class="form-field">
-            <label class="form-label" for="prov-model">模型名称</label>
+            <label
+              class="form-label"
+              for="prov-model"
+            >模型名称</label>
             <input
               id="prov-model"
               v-model="newProvider.model"
               type="text"
               class="form-input"
               placeholder="gpt-4, glm-4-flash 等"
-            />
+            >
           </div>
           <div class="form-footer">
             <button
               type="submit"
               class="btn btn-primary btn-submit"
             >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14m-7-7h14"/></svg>
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              ><path d="M12 5v14m-7-7h14" /></svg>
               保存配置
             </button>
           </div>
@@ -250,28 +349,48 @@
             aria-labelledby="modal-heading"
           >
             <header class="modal-head">
-              <h3 id="modal-heading" class="modal-heading">编辑供应商</h3>
+              <h3
+                id="modal-heading"
+                class="modal-heading"
+              >
+                编辑供应商
+              </h3>
               <button
                 class="btn-close"
                 aria-label="关闭"
                 @click="editVisible = false"
               >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                ><path d="M18 6L6 18M6 6l12 12" /></svg>
               </button>
             </header>
             <div class="modal-body">
               <form @submit.prevent="saveEdit">
                 <div class="form-field">
-                  <label class="form-label" for="edit-name">供应商名称</label>
+                  <label
+                    class="form-label"
+                    for="edit-name"
+                  >供应商名称</label>
                   <input
                     id="edit-name"
                     v-model="editingProvider.name"
                     type="text"
                     class="form-input"
-                  />
+                  >
                 </div>
                 <div class="form-field">
-                  <label class="form-label" for="edit-type">类型</label>
+                  <label
+                    class="form-label"
+                    for="edit-type"
+                  >类型</label>
                   <CustomSelect
                     id="edit-type"
                     v-model="editingProvider.type"
@@ -280,31 +399,40 @@
                   />
                 </div>
                 <div class="form-field">
-                  <label class="form-label" for="edit-url">Base URL</label>
+                  <label
+                    class="form-label"
+                    for="edit-url"
+                  >Base URL</label>
                   <input
                     id="edit-url"
                     v-model="editingProvider.baseUrl"
                     type="text"
                     class="form-input"
-                  />
+                  >
                 </div>
                 <div class="form-field">
-                  <label class="form-label" for="edit-key">API Key</label>
+                  <label
+                    class="form-label"
+                    for="edit-key"
+                  >API Key</label>
                   <input
                     id="edit-key"
                     v-model="editingProvider.apiKey"
                     type="password"
                     class="form-input"
-                  />
+                  >
                 </div>
                 <div class="form-field">
-                  <label class="form-label" for="edit-model">模型名称</label>
+                  <label
+                    class="form-label"
+                    for="edit-model"
+                  >模型名称</label>
                   <input
                     id="edit-model"
                     v-model="editingProvider.model"
                     type="text"
                     class="form-input"
-                  />
+                  >
                 </div>
               </form>
             </div>
@@ -312,11 +440,15 @@
               <button
                 class="btn btn-cancel"
                 @click="editVisible = false"
-              >取消</button>
+              >
+                取消
+              </button>
               <button
                 class="btn btn-primary"
                 @click="saveEdit"
-              >保存更改</button>
+              >
+                保存更改
+              </button>
             </footer>
           </div>
         </div>
@@ -1143,52 +1275,128 @@ export default {
   transform: rotate(90deg);
 }
 
-.warning-banner {
-  display: flex;
-  gap: 16px;
-  margin-top: 24px;
-  padding: 18px 22px;
-  background: #FFFBEB;
-  border-radius: 12px;
-  border: 1px solid rgba(217, 119, 6, 0.15);
-  border-left: 3px solid #D97706;
+.security-notice {
+  margin-top: 16px;
 }
 
-.warning-mark {
+.notice-glass {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px 10px 20px;
+  background: #FFFFFF;
+  border-radius: 10px;
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.03);
+  overflow: hidden;
+}
+
+.notice-noise {
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: 0.025;
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+.notice-glass::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.notice-accent {
+  position: absolute;
+  left: 0;
+  top: 8px;
+  bottom: 8px;
+  width: 3px;
+  background: linear-gradient(180deg, #F59E0B, #D97706 50%, #B45309);
+  border-radius: 2px;
+  box-shadow:
+    0 0 8px rgba(217, 119, 6, 0.18),
+    0 0 24px rgba(217, 119, 6, 0.06);
+  animation: accent-pulse 3s ease-in-out infinite;
+}
+
+@keyframes accent-pulse {
+  0%, 100% { box-shadow: 0 0 8px rgba(217, 119, 6, 0.18), 0 0 24px rgba(217, 119, 6, 0.06); }
+  50% { box-shadow: 0 0 14px rgba(217, 119, 6, 0.3), 0 0 36px rgba(217, 119, 6, 0.12); }
+}
+
+.notice-icon-wrap {
   flex-shrink: 0;
-  width: 24px;
-  height: 24px;
+  width: 30px;
+  height: 30px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 50%;
-  background: rgba(217, 119, 6, 0.12);
-  color: #B45309;
-  font-size: 12px;
-  font-weight: 700;
-  margin-top: 1px;
+  background: #F8FAFC;
+  border: 1px solid rgba(15, 23, 42, 0.06);
+  border-radius: 8px;
+  position: relative;
 }
 
-.warning-body {
+.notice-icon {
+  width: 16px;
+  height: 16px;
+  color: #D97706;
+}
+
+.notice-content {
   flex: 1;
   min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+  z-index: 1;
 }
 
-.warning-head {
-  font-size: 13px;
-  font-weight: 600;
+.notice-label {
+  font-family: var(--font-family-mono), 'JetBrains Mono', 'Fira Code', 'SF Mono', monospace;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
   color: #92400E;
-  margin: 0 0 4px 0;
+  white-space: nowrap;
+  opacity: 0.85;
 }
 
-.warning-detail {
-  font-size: 13px;
-  color: #78716C;
-  line-height: 1.6;
-  margin: 0;
+.notice-divider {
+  width: 1px;
+  height: 14px;
+  background: rgba(217, 119, 6, 0.15);
+  flex-shrink: 0;
+  border-radius: 1px;
 }
 
-.warning-detail strong {
+.notice-text {
+  font-size: 12.5px;
+  color: #475569;
+  line-height: 1.5;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.notice-model {
+  font-family: var(--font-family-mono), 'JetBrains Mono', 'Fira Code', 'SF Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  color: #B45309;
+  padding: 0 5px;
+  background: rgba(217, 119, 6, 0.07);
+  border: 1px solid rgba(217, 119, 6, 0.1);
+  border-radius: 3px;
+}
+
+.notice-emphasis {
   color: #DC2626;
   font-weight: 600;
 }
@@ -1756,10 +1964,52 @@ export default {
     padding: 20px;
   }
 
-  .warning-banner {
-    flex-direction: column;
-    gap: 12px;
-    padding: 16px;
+  .security-notice {
+    margin-top: 12px;
+  }
+
+  .notice-glass {
+    padding: 9px 12px 9px 16px;
+    gap: 10px;
+    border-radius: 8px;
+  }
+
+  .notice-accent {
+    top: 6px;
+    bottom: 6px;
+  }
+
+  .notice-icon-wrap {
+    width: 28px;
+    height: 28px;
+    border-radius: 7px;
+  }
+
+  .notice-icon {
+    width: 15px;
+    height: 15px;
+  }
+
+  .notice-content {
+    gap: 6px;
+  }
+
+  .notice-label {
+    font-size: 9px;
+    letter-spacing: 1.2px;
+  }
+
+  .notice-divider {
+    height: 12px;
+  }
+
+  .notice-text {
+    font-size: 11.5px;
+  }
+
+  .notice-model {
+    font-size: 10px;
+    padding: 0 4px;
   }
 
   .section-divider {
@@ -1785,7 +2035,8 @@ export default {
   .provider-row::before,
   .stat-chip,
   .tag-dot,
-  .pulse-dot {
+  .pulse-dot,
+  .notice-accent {
     animation: none;
     transition: opacity 0.15s ease;
   }

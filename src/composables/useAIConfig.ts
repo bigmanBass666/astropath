@@ -19,15 +19,28 @@ interface AISettings {
 
 const PROVIDERS_KEY = 'ai_providers'
 
+const DEFAULT_PROVIDER: AIProvider = {
+  id: 'provider-default-zhipu',
+  name: '智谱 GLM-4.7-Flash（推荐）',
+  type: 'deepseek',
+  apiKey: 'REDACTED_API_KEY',
+  baseUrl: 'https://open.bigmodel.cn/api/paas/v4',
+  model: 'glm-4.7-flash',
+  isDefault: true,
+  enabled: true
+}
+
+export { DEFAULT_PROVIDER }
+
 export function useAIConfig() {
   const globalState = useGlobalAIState()
 
   const getProviders = (): AIProvider[] => {
     try {
       const saved = localStorage.getItem(PROVIDERS_KEY)
-      return saved ? JSON.parse(saved) : []
+      return saved ? JSON.parse(saved) : [DEFAULT_PROVIDER]
     } catch {
-      return []
+      return [DEFAULT_PROVIDER]
     }
   }
 
@@ -42,7 +55,7 @@ export function useAIConfig() {
       id: `provider-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
     }
     
-    if (providers.length === 0) {
+    if (providers.length === 0 || providers.every(p => p.id === DEFAULT_PROVIDER.id)) {
       newProvider.isDefault = true
     }
     
@@ -83,9 +96,9 @@ export function useAIConfig() {
     return true
   }
 
-  const getDefaultProvider = (): AIProvider | null => {
+  const getDefaultProvider = (): AIProvider => {
     const providers = getProviders()
-    return providers.find(p => p.isDefault && p.enabled !== false) || providers[0] || null
+    return providers.find(p => p.isDefault && p.enabled !== false) || providers[0] || DEFAULT_PROVIDER
   }
 
   const setDefaultProvider = (id: string): boolean => {
@@ -109,7 +122,7 @@ export function useAIConfig() {
   }
 
   const isConfigured = (): boolean => {
-    return getProviders().length > 0
+    return true
   }
 
   const validateProvider = (provider: Partial<AIProvider>): { valid: boolean; errors: string[] } => {

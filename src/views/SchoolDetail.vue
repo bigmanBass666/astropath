@@ -14,27 +14,50 @@
         <div class="sd-hero__inner">
           <!-- 返回导航 -->
           <nav class="sd-breadcrumb">
-            <button class="sd-back" @click="router.back()">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8L10 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <button
+              class="sd-back"
+              @click="router.back()"
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+                fill="none"
+              ><path
+                d="M10 12L6 8L10 4"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              /></svg>
               <span>{{ backLabel }}</span>
             </button>
           </nav>
 
           <!-- 主内容区：排名徽章 + 名称 + 元信息 -->
           <div class="sd-hero__content">
-
             <!-- 排名徽章 — 视觉锚点 -->
-            <div class="sd-rank-badge" :class="'sd-rank-badge--' + rankType">
+            <div
+              class="sd-rank-badge"
+              :class="'sd-rank-badge--' + rankType"
+            >
               <span class="sd-rank-badge__label">RANKING</span>
               <span class="sd-rank-badge__value">
                 {{ rankNumber }}
-                <sup v-if="refIndex('ranking')" class="sd-ref" @click.stop="openRef(school.sources.ranking.url)">{{ refIndex('ranking') }}</sup>
+                <sup
+                  v-if="refIndex('ranking')"
+                  class="sd-ref"
+                  @click.stop="openRef(school.sources.ranking.url)"
+                >{{ refIndex('ranking') }}</sup>
               </span>
               <span class="sd-rank-badge__source">{{ rankSource }}</span>
             </div>
 
             <!-- 院校名称 -->
-            <h1 ref="titleRef" class="sd-title">
+            <h1
+              ref="titleRef"
+              class="sd-title"
+            >
               <span
                 v-for="(word, i) in nameWords"
                 :key="i"
@@ -49,12 +72,23 @@
             <div class="sd-meta-row">
               <span class="sd-country">{{ school.country }}</span>
               <span class="sd-dot" />
-              <span v-if="school.type" class="sd-type">{{ school.type }}</span>
-              <span v-if="school.students" class="sd-students">{{ school.students }}</span>
+              <span
+                v-if="school.type"
+                class="sd-type"
+              >{{ school.type }}</span>
+              <span
+                v-if="school.students"
+                class="sd-students"
+              >{{ school.students }}</span>
             </div>
 
             <!-- 描述 -->
-            <p v-if="school.description" class="sd-desc">{{ school.description }}</p>
+            <p
+              v-if="school.description"
+              class="sd-desc"
+            >
+              {{ school.description }}
+            </p>
 
             <!-- 收藏按钮 -->
             <button
@@ -62,7 +96,19 @@
               :class="{ 'sd-fav--active': isFavorite }"
               @click="toggleFavorite"
             >
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 13L3 8.5C1.5 7 1.5 4.5 3 3C4.5 1.5 7 1.5 8 3C9 1.5 11.5 1.5 13 3C14.5 4.5 14.5 7 13 8.5L8 13Z" :fill="isFavorite ? 'currentColor' : 'none'" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+                fill="none"
+              ><path
+                d="M8 13L3 8.5C1.5 7 1.5 4.5 3 3C4.5 1.5 7 1.5 8 3C9 1.5 11.5 1.5 13 3C14.5 4.5 14.5 7 13 8.5L8 13Z"
+                :fill="isFavorite ? 'currentColor' : 'none'"
+                stroke="currentColor"
+                stroke-width="1.4"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              /></svg>
               {{ isFavorite ? '已收藏' : '收藏院校' }}
             </button>
           </div>
@@ -70,17 +116,32 @@
       </header>
 
       <!-- ===== 关键指标条 — 数据驱动 Wow Moment ===== -->
-      <section ref="metricsRef" class="sd-metrics" :class="{ 'sd-metrics--visible': metricsVisible }">
+      <section
+        ref="metricsRef"
+        class="sd-metrics"
+        :class="{ 'sd-metrics--visible': metricsVisible }"
+      >
         <div class="sd-container">
           <div class="sd-metrics__grid">
             <div class="sd-metric">
               <span class="sd-metric__lbl">TUITION</span>
-              <span class="sd-metric__val">{{ school.tuition }}<sup v-if="refIndex('tuition')" class="sd-ref sd-ref--light" @click.stop="openRef(school.sources.tuition.url)">{{ refIndex('tuition') }}</sup></span>
+              <span class="sd-metric__val">{{ school.tuition }}<sup
+                v-if="refIndex('tuition')"
+                class="sd-ref sd-ref--light"
+                @click.stop="openRef(school.sources.tuition.url)"
+              >{{ refIndex('tuition') }}</sup></span>
               <span class="sd-metric__sub">预估年学费</span>
             </div>
             <div class="sd-metric sd-metric--divider">
               <span class="sd-metric__lbl">ACCEPTANCE RATE</span>
-              <span class="sd-metric__val" :class="{ 'sd-metric__val--low': acceptanceRateNum < 10 }">{{ school.acceptanceRate }}<sup v-if="refIndex('acceptance')" class="sd-ref sd-ref--light" @click.stop="openRef(school.sources.acceptance.url)">{{ refIndex('acceptance') }}</sup></span>
+              <span
+                class="sd-metric__val"
+                :class="{ 'sd-metric__val--low': acceptanceRateNum < 10 }"
+              >{{ school.acceptanceRate }}<sup
+                v-if="refIndex('acceptance')"
+                class="sd-ref sd-ref--light"
+                @click.stop="openRef(school.sources.acceptance.url)"
+              >{{ refIndex('acceptance') }}</sup></span>
               <span class="sd-metric__sub">录取率</span>
             </div>
             <div class="sd-metric">
@@ -99,14 +160,15 @@
         :class="{ 'sd-body--visible': contentVisible }"
       >
         <div class="sd-container">
-
           <!-- 双栏：概况 + 费用 -->
           <div class="sd-grid">
             <!-- 左栏：院校概况 -->
             <section class="sd-section">
               <header class="sd-sec-head">
                 <span class="sd-sec-num">01</span>
-                <h2 class="sd-sec-title">院校概况</h2>
+                <h2 class="sd-sec-title">
+                  院校概况
+                </h2>
               </header>
               <dl class="sd-dl">
                 <div class="sd-dl__row">
@@ -115,7 +177,13 @@
                 </div>
                 <div class="sd-dl__row">
                   <dt>世界排名</dt>
-                  <dd><strong>{{ school.ranking }}</strong><sup v-if="refIndex('ranking')" class="sd-ref" @click.stop="openRef(school.sources.ranking.url)">{{ refIndex('ranking') }}</sup></dd>
+                  <dd>
+                    <strong>{{ school.ranking }}</strong><sup
+                      v-if="refIndex('ranking')"
+                      class="sd-ref"
+                      @click.stop="openRef(school.sources.ranking.url)"
+                    >{{ refIndex('ranking') }}</sup>
+                  </dd>
                 </div>
                 <div class="sd-dl__row">
                   <dt>热门专业</dt>
@@ -124,17 +192,33 @@
                 <div class="sd-dl__row">
                   <dt>录取难度</dt>
                   <dd>
-                    <span class="sd-diff-tag" :class="'sd-diff-tag--' + diffClass">{{ difficultyText }}</span>
+                    <span
+                      class="sd-diff-tag"
+                      :class="'sd-diff-tag--' + diffClass"
+                    >{{ difficultyText }}</span>
                     <span class="sd-diff-pct">匹配度 {{ school.match }}%</span>
                   </dd>
                 </div>
-                <div v-if="school.deadline" class="sd-dl__row">
+                <div
+                  v-if="school.deadline"
+                  class="sd-dl__row"
+                >
                   <dt>申请截止</dt>
                   <dd>{{ school.deadline }}</dd>
                 </div>
-                <div v-if="school.website" class="sd-dl__row">
+                <div
+                  v-if="school.website"
+                  class="sd-dl__row"
+                >
                   <dt>官网</dt>
-                  <dd><a :href="school.website" target="_blank" rel="noopener noreferrer" class="sd-link">{{ school.website.replace('https://', '') }} ↗</a></dd>
+                  <dd>
+                    <a
+                      :href="school.website"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="sd-link"
+                    >{{ school.website.replace('https://', '') }} ↗</a>
+                  </dd>
                 </div>
               </dl>
             </section>
@@ -143,16 +227,30 @@
             <section class="sd-section">
               <header class="sd-sec-head">
                 <span class="sd-sec-num">02</span>
-                <h2 class="sd-sec-title">费用与录取</h2>
+                <h2 class="sd-sec-title">
+                  费用与录取
+                </h2>
               </header>
               <dl class="sd-dl">
                 <div class="sd-dl__row">
                   <dt>预估学费</dt>
-                  <dd><strong>{{ school.tuition }}</strong><sup v-if="refIndex('tuition')" class="sd-ref" @click.stop="openRef(school.sources.tuition.url)">{{ refIndex('tuition') }}</sup><span class="sd-note">/ 年</span></dd>
+                  <dd>
+                    <strong>{{ school.tuition }}</strong><sup
+                      v-if="refIndex('tuition')"
+                      class="sd-ref"
+                      @click.stop="openRef(school.sources.tuition.url)"
+                    >{{ refIndex('tuition') }}</sup><span class="sd-note">/ 年</span>
+                  </dd>
                 </div>
                 <div class="sd-dl__row">
                   <dt>录取率</dt>
-                  <dd :class="{ 'sd-rate--low': acceptanceRateNum < 10 }"><strong>{{ school.acceptanceRate }}</strong><sup v-if="refIndex('acceptance')" class="sd-ref" @click.stop="openRef(school.sources.acceptance.url)">{{ refIndex('acceptance') }}</sup></dd>
+                  <dd :class="{ 'sd-rate--low': acceptanceRateNum < 10 }">
+                    <strong>{{ school.acceptanceRate }}</strong><sup
+                      v-if="refIndex('acceptance')"
+                      class="sd-ref"
+                      @click.stop="openRef(school.sources.acceptance.url)"
+                    >{{ refIndex('acceptance') }}</sup>
+                  </dd>
                 </div>
                 <div class="sd-dl__note-row">
                   <span class="sd-note-icon">ℹ</span>
@@ -166,7 +264,9 @@
           <section class="sd-section sd-section--full">
             <header class="sd-sec-head">
               <span class="sd-sec-num">03</span>
-              <h2 class="sd-sec-title">专业设置</h2>
+              <h2 class="sd-sec-title">
+                专业设置
+              </h2>
               <span class="sd-sec-sub">热门专业方向</span>
             </header>
             <div class="sd-program">
@@ -174,7 +274,9 @@
                 <span class="sd-program__name">{{ school.major }}</span>
                 <span class="sd-program__tag">HOT</span>
               </div>
-              <p class="sd-program__desc">该院校在{{ school.major }}领域具有较强的学术实力和研究资源。</p>
+              <p class="sd-program__desc">
+                该院校在{{ school.major }}领域具有较强的学术实力和研究资源。
+              </p>
               <div class="sd-program__highlight">
                 <span class="sd-hl-icon">◆</span>
                 <span>{{ programHighlight }}</span>
@@ -186,18 +288,33 @@
           <section class="sd-section sd-section--full">
             <header class="sd-sec-head">
               <span class="sd-sec-num">04</span>
-              <h2 class="sd-sec-title">申请要求</h2>
-              <sup v-if="refIndex('requirements')" class="sd-ref sd-ref--head" @click.stop="openRef(school.sources.requirements.url)">{{ refIndex('requirements') }}</sup>
+              <h2 class="sd-sec-title">
+                申请要求
+              </h2>
+              <sup
+                v-if="refIndex('requirements')"
+                class="sd-ref sd-ref--head"
+                @click.stop="openRef(school.sources.requirements.url)"
+              >{{ refIndex('requirements') }}</sup>
             </header>
             <div class="sd-reqs">
               <div class="sd-reqs__block">
-                <h3 class="sd-reqs__subtitle">学术要求</h3>
+                <h3 class="sd-reqs__subtitle">
+                  学术要求
+                </h3>
                 <ul class="sd-reqs__list">
-                  <li v-for="(req, i) in school.requirements" :key="i">{{ req }}</li>
+                  <li
+                    v-for="(req, i) in school.requirements"
+                    :key="i"
+                  >
+                    {{ req }}
+                  </li>
                 </ul>
               </div>
               <div class="sd-reqs__block">
-                <h3 class="sd-reqs__subtitle">其他材料</h3>
+                <h3 class="sd-reqs__subtitle">
+                  其他材料
+                </h3>
                 <ul class="sd-reqs__list">
                   <li>个人陈述（Statement of Purpose）</li>
                   <li>推荐信（2-3封）</li>
@@ -210,25 +327,86 @@
 
           <!-- 底部操作栏 -->
           <footer class="sd-actions">
-            <button class="sd-btn sd-btn--ghost" @click="router.push('/school-recommendation')">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M14 14L10 10M11 7A4 4 0 1 0 7 3a4 4 0 0 0 4 4z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            <button
+              class="sd-btn sd-btn--ghost"
+              @click="router.push('/school-recommendation')"
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+                fill="none"
+              ><path
+                d="M14 14L10 10M11 7A4 4 0 1 0 7 3a4 4 0 0 0 4 4z"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+              /></svg>
               匹配度分析
             </button>
-            <button class="sd-btn sd-btn--ghost" @click="router.push('/timeline')">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 2v6l4 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5"/></svg>
+            <button
+              class="sd-btn sd-btn--ghost"
+              @click="router.push('/timeline')"
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+                fill="none"
+              ><path
+                d="M8 2v6l4 2"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+              /><circle
+                cx="8"
+                cy="8"
+                r="6"
+                stroke="currentColor"
+                stroke-width="1.5"
+              /></svg>
               时间规划
             </button>
-            <button class="sd-btn sd-btn--primary" @click="startChat">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M14 8c0 3.31-2.69 6-6 6-.58 0-1.14-.08-1.67-.23L4 15l.75-2.27C3.93 11.73 3.44 10.42 3.44 9c0-3.31 2.69-6 6-6s6 2.69 6 6v1z" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="6" cy="7" r="0.8" fill="currentColor"/><circle cx="10" cy="7" r="0.8" fill="currentColor"/></svg>
+            <button
+              class="sd-btn sd-btn--primary"
+              @click="startChat"
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+                fill="none"
+              ><path
+                d="M14 8c0 3.31-2.69 6-6 6-.58 0-1.14-.08-1.67-.23L4 15l.75-2.27C3.93 11.73 3.44 10.42 3.44 9c0-3.31 2.69-6 6-6s6 2.69 6 6v1z"
+                stroke="currentColor"
+                stroke-width="1.3"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              /><circle
+                cx="6"
+                cy="7"
+                r="0.8"
+                fill="currentColor"
+              /><circle
+                cx="10"
+                cy="7"
+                r="0.8"
+                fill="currentColor"
+              /></svg>
               AI 顾问咨询
             </button>
           </footer>
 
           <!-- ===== 引用列表 ===== -->
-          <section v-if="refList.length > 0" class="sd-references">
+          <section
+            v-if="refList.length > 0"
+            class="sd-references"
+          >
             <header class="sd-sec-head">
               <span class="sd-sec-num">REF</span>
-              <h2 class="sd-sec-title">数据来源</h2>
+              <h2 class="sd-sec-title">
+                数据来源
+              </h2>
             </header>
             <ol class="sd-ref-list">
               <li
@@ -240,22 +418,40 @@
                   class="sd-ref-item__num"
                   @click.stop="openRef(ref.url)"
                 >[{{ ref.index }}]</span>
-                <a :href="ref.url" target="_blank" rel="noopener noreferrer" class="sd-ref-item__link">{{ ref.label }}</a>
+                <a
+                  :href="ref.url"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="sd-ref-item__link"
+                >{{ ref.label }}</a>
                 <span class="sd-ref-item__arrow">↗</span>
               </li>
             </ol>
           </section>
-
         </div>
       </main>
     </template>
 
     <!-- 未找到 -->
-    <div v-else class="sd-error">
-      <div class="sd-error__icon">404</div>
-      <div class="sd-error__title">院校未找到</div>
-      <div class="sd-error__desc">未找到对应的院校信息</div>
-      <button class="sd-btn sd-btn--primary" @click="router.push('/university-database')">返回院校数据库</button>
+    <div
+      v-else
+      class="sd-error"
+    >
+      <div class="sd-error__icon">
+        404
+      </div>
+      <div class="sd-error__title">
+        院校未找到
+      </div>
+      <div class="sd-error__desc">
+        未找到对应的院校信息
+      </div>
+      <button
+        class="sd-btn sd-btn--primary"
+        @click="router.push('/university-database')"
+      >
+        返回院校数据库
+      </button>
     </div>
   </div>
 </template>
@@ -409,9 +605,15 @@ function startChat() {
 }
 
 onMounted(() => {
-  // 强制滚动到页面顶部
-  window.scrollTo(0, 0)
-  document.documentElement.scrollTop = 0
+  const resetScroll = () => {
+    const appMain = document.querySelector('.app-main')
+    if (appMain) appMain.scrollTo({ top: 0, left: 0, behavior: 'instant' })
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
+    document.documentElement.scrollTop = 0
+    document.body.scrollTop = 0
+  }
+  resetScroll()
+  requestAnimationFrame(resetScroll)
 
   setTimeout(() => { heroVisible.value = true }, 60)
   setupObservers()

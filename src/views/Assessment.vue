@@ -11,7 +11,18 @@
         <div class="hero-ring hero-ring--1" />
         <div class="hero-ring hero-ring--2" />
         <div class="hero-line-art">
-          <svg viewBox="0 0 200 200" fill="none"><path d="M100 0L200 100L100 200L0 100Z" stroke="rgba(15,23,42,.08)" stroke-width=".5"/><path d="M100 30L170 100L100 170L30 100Z" stroke="rgba(217,119,6,.1)" stroke-width=".7"/></svg>
+          <svg
+            viewBox="0 0 200 200"
+            fill="none"
+          ><path
+            d="M100 0L200 100L100 200L0 100Z"
+            stroke="rgba(15,23,42,.08)"
+            stroke-width=".5"
+          /><path
+            d="M100 30L170 100L100 170L30 100Z"
+            stroke="rgba(217,119,6,.1)"
+            stroke-width=".7"
+          /></svg>
         </div>
       </div>
 
@@ -23,11 +34,19 @@
           <span class="ht-line ht-line--1">背景</span>
           <span class="ht-line ht-line--2">评估</span>
         </h1>
-        <p class="hero-sub">AI 智能解析背景，为你生成专属留学路线图</p>
+        <p class="hero-sub">
+          AI 智能解析背景，为你生成专属留学路线图
+        </p>
         <div class="hero-metric">
-          <div class="hm-item"><span class="hm-n">55+</span><span class="hm-l">精选院校</span></div>
-          <div class="hm-div" /><div class="hm-item"><span class="hm-n">6</span><span class="hm-l">核心场景</span></div>
-          <div class="hm-div" /><div class="hm-item"><span class="hm-n">AI</span><span class="hm-l">智能协同</span></div>
+          <div class="hm-item">
+            <span class="hm-n">55+</span><span class="hm-l">精选院校</span>
+          </div>
+          <div class="hm-div" /><div class="hm-item">
+            <span class="hm-n">6</span><span class="hm-l">核心场景</span>
+          </div>
+          <div class="hm-div" /><div class="hm-item">
+            <span class="hm-n">AI</span><span class="hm-l">智能协同</span>
+          </div>
         </div>
       </div>
 
@@ -39,23 +58,53 @@
     </section>
 
     <!-- ═══════════════ STEPPER NAV ═══════════════ -->
-    <nav class="stepper" :class="'st--'+currentStep">
+    <nav
+      class="stepper"
+      :class="'st--'+currentStep"
+    >
       <div class="st-track">
-        <template v-for="(s,i) in steps" :key="i">
-          <button class="st-node" :class="{ done:i<currentStep, active:i===currentStep, wait:i>currentStep }" @click="jumpToStep(i)">
-            <span class="st-num"><svg v-if="i<currentStep" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg><template v-else>{{ i+1 }}</template></span>
+        <template
+          v-for="(s,i) in steps"
+          :key="i"
+        >
+          <button
+            class="st-node"
+            :class="{ done:i<currentStep, active:i===currentStep, wait:i>currentStep }"
+            @click="jumpToStep(i)"
+          >
+            <span class="st-num"><svg
+              v-if="i<currentStep"
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="3.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            ><polyline points="20 6 9 17 4 12" /></svg><template v-else>{{ i+1 }}</template></span>
             <span class="st-txt">{{ s.label }}</span>
           </button>
-          <div v-if="i<steps.length-1" class="st-conn"><div class="st-conn-fill" :style="{width: i<currentStep ? '100%' : '0%'}" /></div>
+          <div
+            v-if="i<steps.length-1"
+            class="st-conn"
+          >
+            <div
+              class="st-conn-fill"
+              :style="{width: i<currentStep ? '100%' : '0%'}"
+            />
+          </div>
         </template>
       </div>
     </nav>
 
     <!-- ═══════════════ MAIN CONTENT ═══════════════ -->
     <main class="main">
-
       <!-- ─── STEP 0: 基本信息 ─── -->
-      <section v-show="currentStep===0" class="step step--basic">
+      <section
+        v-show="currentStep===0"
+        class="step step--basic"
+      >
         <div class="step-deco">
           <span class="sd-num">01</span>
           <div class="sd-bar" />
@@ -63,28 +112,77 @@
 
         <!-- Name: Hero Input -->
         <div class="name-block">
-          <label class="nb-label" for="assess-name">你的姓名</label>
-          <el-form ref="basicFormRef" :model="form.basic" :rules="basicRules" label-position="top" class="nb-form">
+          <label
+            class="nb-label"
+            for="assess-name"
+          >你的姓名</label>
+          <el-form
+            ref="basicFormRef"
+            :model="form.basic"
+            :rules="basicRules"
+            label-position="top"
+            class="nb-form"
+          >
             <el-form-item prop="name">
-              <el-input id="assess-name" v-model="form.basic.name" placeholder="输入姓名..." size="large" class="name-input" />
+              <el-input
+                id="assess-name"
+                v-model="form.basic.name"
+                placeholder="输入姓名..."
+                size="large"
+                class="name-input"
+              />
             </el-form-item>
           </el-form>
-          <p class="nb-hint">用于生成个性化评估报告</p>
+          <p class="nb-hint">
+            用于生成个性化评估报告
+          </p>
         </div>
 
         <!-- Two-col row: Age + University -->
         <div class="row-2">
           <div class="field-block fb-left">
-            <label class="fb-label" for="assess-age">年龄</label>
-            <el-input-number id="assess-age" v-model="form.basic.age" :min="16" :max="50" controls-position="right" size="large" style="width:100%" />
+            <label
+              class="fb-label"
+              for="assess-age"
+            >年龄</label>
+            <el-input-number
+              id="assess-age"
+              v-model="form.basic.age"
+              :min="16"
+              :max="50"
+              controls-position="right"
+              size="large"
+              style="width:100%"
+            />
           </div>
           <div class="field-block fb-right">
-            <label class="fb-label" for="assess-university">在读院校类型</label>
-            <el-select id="assess-university" v-model="form.basic.university" placeholder="选择院校" size="large" style="width:100%">
-              <el-option label="985 院校" value="985" />
-              <el-option label="211 院校" value="211" />
-              <el-option label="普通本科" value="regular" />
-              <el-option label="海外院校" value="overseas" />
+            <label
+              class="fb-label"
+              for="assess-university"
+            >在读院校类型</label>
+            <el-select
+              id="assess-university"
+              v-model="form.basic.university"
+              placeholder="选择院校"
+              size="large"
+              style="width:100%"
+            >
+              <el-option
+                label="985 院校"
+                value="985"
+              />
+              <el-option
+                label="211 院校"
+                value="211"
+              />
+              <el-option
+                label="普通本科"
+                value="regular"
+              />
+              <el-option
+                label="海外院校"
+                value="overseas"
+              />
             </el-select>
           </div>
         </div>
@@ -93,8 +191,13 @@
         <div class="gpa-block">
           <div class="gb-top">
             <div class="gb-info">
-              <label class="fb-label" for="assess-gpa">GPA 绩点</label>
-              <p class="gb-desc">4.0 满分制，拖动滑块调整</p>
+              <label
+                class="fb-label"
+                for="assess-gpa"
+              >GPA 绩点</label>
+              <p class="gb-desc">
+                4.0 满分制，拖动滑块调整
+              </p>
             </div>
             <div class="gb-display">
               <span class="gb-num">{{ form.basic.gpa.toFixed(1) }}</span>
@@ -102,7 +205,14 @@
             </div>
           </div>
           <div class="gb-slider-wrap">
-            <el-slider id="assess-gpa" v-model="form.basic.gpa" :min="0" :max="4" :step="0.1" :show-tooltip="true" />
+            <el-slider
+              id="assess-gpa"
+              v-model="form.basic.gpa"
+              :min="0"
+              :max="4"
+              :step="0.1"
+              :show-tooltip="true"
+            />
           </div>
           <div class="gb-scale">
             <span>0</span><span>1.0</span><span>2.0</span><span>3.0</span><span>4.0</span>
@@ -111,32 +221,67 @@
 
         <!-- Language -->
         <div class="lang-block">
-          <label class="fb-label" for="assess-language">语言成绩</label>
-          <el-input id="assess-language" v-model="form.basic.language" placeholder="如：雅思 7.0 / 托福 100" size="large" />
-          <p class="lb-hint">填写已获得的语言考试成绩，留空则不纳入评估</p>
+          <label
+            class="fb-label"
+            for="assess-language"
+          >语言成绩</label>
+          <el-input
+            id="assess-language"
+            v-model="form.basic.language"
+            placeholder="如：雅思 7.0 / 托福 100"
+            size="large"
+          />
+          <p class="lb-hint">
+            填写已获得的语言考试成绩，留空则不纳入评估
+          </p>
         </div>
 
         <div class="step-action">
-          <button class="btn-primary" @click="nextStep">
+          <button
+            class="btn-primary"
+            @click="nextStep"
+          >
             开始学术评估
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            ><path d="M5 12h14M12 5l7 7-7 7" /></svg>
           </button>
         </div>
       </section>
 
       <!-- ─── STEP 1: 学术背景 ─── -->
-      <section v-show="currentStep===1" class="step step--academic">
+      <section
+        v-show="currentStep===1"
+        class="step step--academic"
+      >
         <div class="step-deco">
           <span class="sd-num">02</span>
           <div class="sd-bar" />
         </div>
-        <h2 class="step-title">学术背景</h2>
+        <h2 class="step-title">
+          学术背景
+        </h2>
 
         <!-- Degree: Large Pill Row -->
         <div class="degree-row">
           <label class="fb-label">学历层次</label>
           <div class="deg-pills">
-            <button v-for="d in ['本科','硕士','博士']" :key="d" class="deg-pill" :class="{ active: form.academic.degree === d }" @click="form.academic.degree = d">{{ d }}</button>
+            <button
+              v-for="d in ['本科','硕士','博士']"
+              :key="d"
+              class="deg-pill"
+              :class="{ active: form.academic.degree === d }"
+              @click="form.academic.degree = d"
+            >
+              {{ d }}
+            </button>
           </div>
         </div>
 
@@ -144,15 +289,37 @@
         <div class="major-row">
           <label class="fb-label">专业方向（可多选）</label>
           <div class="tag-cloud">
-            <button v-for="m in ['理工','商科','人文','社科','艺术']" :key="m" class="tc-tag" :class="{ on: form.academic.majors.includes(m) }" @click="toggleMajor(m)">{{ m }}</button>
+            <button
+              v-for="m in ['理工','商科','人文','社科','艺术']"
+              :key="m"
+              class="tc-tag"
+              :class="{ on: form.academic.majors.includes(m) }"
+              @click="toggleMajor(m)"
+            >
+              {{ m }}
+            </button>
           </div>
         </div>
 
         <!-- Score -->
-        <div class="field-block" style="margin-bottom:28px;">
-          <label class="fb-label" for="assess-score">均分</label>
+        <div
+          class="field-block"
+          style="margin-bottom:28px;"
+        >
+          <label
+            class="fb-label"
+            for="assess-score"
+          >均分</label>
           <div class="score-inline">
-            <el-input-number id="assess-score" v-model="form.academic.averageScore" :min="0" :max="100" controls-position="right" size="large" style="flex:1" />
+            <el-input-number
+              id="assess-score"
+              v-model="form.academic.averageScore"
+              :min="0"
+              :max="100"
+              controls-position="right"
+              size="large"
+              style="flex:1"
+            />
             <span class="si-suffix">/ 100</span>
           </div>
         </div>
@@ -160,129 +327,370 @@
         <!-- Research: Full-width list area -->
         <div class="research-area">
           <div class="ra-head">
-            <label class="fb-label" style="margin:0;">科研经历</label>
-            <button class="btn-add-row" @click="openResearchDialog">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+            <label
+              class="fb-label"
+              style="margin:0;"
+            >科研经历</label>
+            <button
+              class="btn-add-row"
+              @click="openResearchDialog"
+            >
+              <svg
+                width="13"
+                height="13"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              ><path d="M12 5v14M5 12h14" /></svg>
               添加经历
             </button>
           </div>
-          <div v-if="form.academic.research.length === 0" class="empty-note">暂无科研记录</div>
-          <div v-for="(item,idx) in form.academic.research" :key="idx" class="res-entry">
-            <div class="re-main"><strong>{{ item.name }}</strong><span class="re-meta">{{ item.role }} · {{ item.duration }}</span></div>
+          <div
+            v-if="form.academic.research.length === 0"
+            class="empty-note"
+          >
+            暂无科研记录
+          </div>
+          <div
+            v-for="(item,idx) in form.academic.research"
+            :key="idx"
+            class="res-entry"
+          >
+            <div class="re-main">
+              <strong>{{ item.name }}</strong><span class="re-meta">{{ item.role }} · {{ item.duration }}</span>
+            </div>
             <div class="re-btns">
-              <button class="btn-tiny" @click="editResearch(idx)">编辑</button>
-              <button class="btn-tiny btn-tiny--del" @click="removeResearch(idx)">删除</button>
+              <button
+                class="btn-tiny"
+                @click="editResearch(idx)"
+              >
+                编辑
+              </button>
+              <button
+                class="btn-tiny btn-tiny--del"
+                @click="removeResearch(idx)"
+              >
+                删除
+              </button>
             </div>
           </div>
         </div>
 
         <div class="step-action step-action--split">
-          <button class="btn-ghost" @click="prevStep">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+          <button
+            class="btn-ghost"
+            @click="prevStep"
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            ><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
             返回
           </button>
-          <button class="btn-primary" @click="nextStep">
+          <button
+            class="btn-primary"
+            @click="nextStep"
+          >
             下一步：实践经历
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            ><path d="M5 12h14M12 5l7 7-7 7" /></svg>
           </button>
         </div>
       </section>
 
       <!-- ─── STEP 2: 实践经历 ─── -->
-      <section v-show="currentStep===2" class="step step--practice">
+      <section
+        v-show="currentStep===2"
+        class="step step--practice"
+      >
         <div class="step-deco">
           <span class="sd-num">03</span>
           <div class="sd-bar" />
         </div>
-        <h2 class="step-title">实践经历</h2>
+        <h2 class="step-title">
+          实践经历
+        </h2>
 
         <div class="prac-tabs">
-          <button v-for="t in [{k:'internship',l:'实习'},{k:'competition',l:'竞赛'},{k:'volunteer',l:'志愿'}]" :key="t.k" class="pt-tab" :class="{ on: practiceTab === t.k }" @click="practiceTab = t.k">{{ t.l }}</button>
+          <button
+            v-for="t in [{k:'internship',l:'实习'},{k:'competition',l:'竞赛'},{k:'volunteer',l:'志愿'}]"
+            :key="t.k"
+            class="pt-tab"
+            :class="{ on: practiceTab === t.k }"
+            @click="practiceTab = t.k"
+          >
+            {{ t.l }}
+          </button>
         </div>
 
         <!-- Internship Tab -->
-        <div v-show="practiceTab==='internship'" class="tab-content">
-          <button class="btn-add-row" @click="openInternshipDialog">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+        <div
+          v-show="practiceTab==='internship'"
+          class="tab-content"
+        >
+          <button
+            class="btn-add-row"
+            @click="openInternshipDialog"
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            ><path d="M12 5v14M5 12h14" /></svg>
             添加实习经历
           </button>
-          <div v-if="form.practice.internships.length===0" class="empty-note">暂无实习记录</div>
-          <div v-for="(item,idx) in form.practice.internships" :key="'i'+idx" class="res-entry">
+          <div
+            v-if="form.practice.internships.length===0"
+            class="empty-note"
+          >
+            暂无实习记录
+          </div>
+          <div
+            v-for="(item,idx) in form.practice.internships"
+            :key="'i'+idx"
+            class="res-entry"
+          >
             <div class="re-main">
-              <div class="re-head"><strong>{{ item.company }}</strong><span class="tag-mini">{{ item.position }}</span></div>
+              <div class="re-head">
+                <strong>{{ item.company }}</strong><span class="tag-mini">{{ item.position }}</span>
+              </div>
               <span class="re-meta">{{ item.duration }}<template v-if="item.description"> · {{ item.description }}</template></span>
             </div>
             <div class="re-btns">
-              <button class="btn-tiny" @click="editInternship(idx)">编辑</button>
-              <button class="btn-tiny btn-tiny--del" @click="deleteInternship(idx)">删除</button>
+              <button
+                class="btn-tiny"
+                @click="editInternship(idx)"
+              >
+                编辑
+              </button>
+              <button
+                class="btn-tiny btn-tiny--del"
+                @click="deleteInternship(idx)"
+              >
+                删除
+              </button>
             </div>
           </div>
         </div>
 
         <!-- Competition Tab -->
-        <div v-show="practiceTab==='competition'" class="tab-content">
-          <button class="btn-add-row" @click="openCompetitionDialog">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+        <div
+          v-show="practiceTab==='competition'"
+          class="tab-content"
+        >
+          <button
+            class="btn-add-row"
+            @click="openCompetitionDialog"
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            ><path d="M12 5v14M5 12h14" /></svg>
             添加竞赛获奖
           </button>
-          <div v-if="form.practice.competitions.length===0" class="empty-note">暂无竞赛记录</div>
-          <div v-for="(item,idx) in form.practice.competitions" :key="'c'+idx" class="res-entry">
+          <div
+            v-if="form.practice.competitions.length===0"
+            class="empty-note"
+          >
+            暂无竞赛记录
+          </div>
+          <div
+            v-for="(item,idx) in form.practice.competitions"
+            :key="'c'+idx"
+            class="res-entry"
+          >
             <div class="re-main">
-              <div class="re-head"><strong>{{ item.name }}</strong><span class="tag-mini" :class="'tm-'+getAwardLevelType(item.level)">{{ item.level }}</span></div>
+              <div class="re-head">
+                <strong>{{ item.name }}</strong><span
+                  class="tag-mini"
+                  :class="'tm-'+getAwardLevelType(item.level)"
+                >{{ item.level }}</span>
+              </div>
               <span class="re-meta">🏆 {{ item.award }}<template v-if="item.time"> · {{ item.time }}</template></span>
             </div>
             <div class="re-btns">
-              <button class="btn-tiny" @click="editCompetition(idx)">编辑</button>
-              <button class="btn-tiny btn-tiny--del" @click="deleteCompetition(idx)">删除</button>
+              <button
+                class="btn-tiny"
+                @click="editCompetition(idx)"
+              >
+                编辑
+              </button>
+              <button
+                class="btn-tiny btn-tiny--del"
+                @click="deleteCompetition(idx)"
+              >
+                删除
+              </button>
             </div>
           </div>
         </div>
 
         <!-- Volunteer Tab -->
-        <div v-show="practiceTab==='volunteer'" class="tab-content">
-          <button class="btn-add-row" @click="openVolunteerDialog">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+        <div
+          v-show="practiceTab==='volunteer'"
+          class="tab-content"
+        >
+          <button
+            class="btn-add-row"
+            @click="openVolunteerDialog"
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            ><path d="M12 5v14M5 12h14" /></svg>
             添加志愿服务
           </button>
-          <div v-if="form.practice.volunteers.length===0" class="empty-note">暂无志愿服务记录</div>
-          <div v-for="(item,idx) in form.practice.volunteers" :key="'v'+idx" class="res-entry">
+          <div
+            v-if="form.practice.volunteers.length===0"
+            class="empty-note"
+          >
+            暂无志愿服务记录
+          </div>
+          <div
+            v-for="(item,idx) in form.practice.volunteers"
+            :key="'v'+idx"
+            class="res-entry"
+          >
             <div class="re-main">
-              <div class="re-head"><strong>{{ item.organization }}</strong><span class="tag-mini tm-ok">{{ item.role }}</span></div>
+              <div class="re-head">
+                <strong>{{ item.organization }}</strong><span class="tag-mini tm-ok">{{ item.role }}</span>
+              </div>
               <span class="re-meta">{{ item.duration }}<template v-if="item.description"> · {{ item.description }}</template></span>
             </div>
             <div class="re-btns">
-              <button class="btn-tiny" @click="editVolunteer(idx)">编辑</button>
-              <button class="btn-tiny btn-tiny--del" @click="deleteVolunteer(idx)">删除</button>
+              <button
+                class="btn-tiny"
+                @click="editVolunteer(idx)"
+              >
+                编辑
+              </button>
+              <button
+                class="btn-tiny btn-tiny--del"
+                @click="deleteVolunteer(idx)"
+              >
+                删除
+              </button>
             </div>
           </div>
         </div>
 
         <div class="step-action step-action--split">
-          <button class="btn-ghost" @click="prevStep">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+          <button
+            class="btn-ghost"
+            @click="prevStep"
+          >
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            ><path d="M19 12H5M12 19l-7-7 7-7" /></svg>
             返回
           </button>
           <div class="sa-right">
-            <div v-if="providers.length > 0" class="provider-sel">
-              <el-dropdown trigger="click" @command="(cmd) => selectedProvider = cmd">
+            <div
+              v-if="providers.length > 0"
+              class="provider-sel"
+            >
+              <el-dropdown
+                trigger="click"
+                @command="(cmd) => selectedProvider = cmd"
+              >
                 <button class="btn-provider">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9 9h6v6H9z"/></svg>
+                  <svg
+                    width="13"
+                    height="13"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  ><rect
+                    x="4"
+                    y="4"
+                    width="16"
+                    height="16"
+                    rx="2"
+                  /><path d="M9 9h6v6H9z" /></svg>
                   {{ currentProviderName }}
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+                  <svg
+                    width="10"
+                    height="10"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.5"
+                  ><path d="M6 9l6 6 6-6" /></svg>
                 </button>
                 <template #dropdown>
                   <el-dropdown-menu>
-                    <el-dropdown-item v-for="p in providers" :key="p.id" :command="p.id" :class="{ 'is-active': selectedProvider === p.id }">{{ p.name }}</el-dropdown-item>
+                    <el-dropdown-item
+                      v-for="p in providers"
+                      :key="p.id"
+                      :command="p.id"
+                      :class="{ 'is-active': selectedProvider === p.id }"
+                    >
+                      {{ p.name }}
+                    </el-dropdown-item>
                   </el-dropdown-menu>
                 </template>
               </el-dropdown>
             </div>
-            <button v-else class="btn-config" @click="router.push('/ai-config')">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
-              配置 AI
-            </button>
-            <button class="btn-primary" :disabled="_btnDisabled" @click="generateReport">
-              <svg v-if="!_btnDisabled" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+            <button
+              class="btn-primary"
+              :disabled="_btnDisabled"
+              @click="generateReport"
+            >
+              <svg
+                v-if="!_btnDisabled"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              ><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" /></svg>
               {{ _btnDisabled ? 'AI 分析中...' : '生成报告' }}
             </button>
           </div>
@@ -290,10 +698,15 @@
       </section>
 
       <!-- ─── STEP 3: 报告 ═══════════════ -->
-      <section v-show="currentStep===3" class="step step--report">
-
+      <section
+        v-show="currentStep===3"
+        class="step step--report"
+      >
         <!-- Loading State -->
-        <div v-if="aiStream.isConnecting && !aiStream.hasContent" class="report-loading">
+        <div
+          v-if="aiStream.isConnecting && !aiStream.hasContent"
+          class="report-loading"
+        >
           <div class="rl-spinner" />
           <p>{{ activeStream.waitingText || '正在连接 AI 服务...' }}</p>
         </div>
@@ -301,7 +714,6 @@
         <template v-if="!aiStream.isConnecting || aiStream.hasContent">
           <!-- Bento Dashboard -->
           <div class="bento">
-
             <!-- Score Hero -->
             <div class="bt-score">
               <div class="bts-glow" />
@@ -309,166 +721,606 @@
                 <span class="bts-val">{{ animatedScore }}</span>
                 <span class="bts-unit">/ 5.0</span>
               </div>
-              <p class="bts-label">竞争力总分</p>
-              <div class="bts-bar"><div class="bts-bar-fill" :style="{ width: (overallScore / 5 * 100) + '%' }" /></div>
+              <p class="bts-label">
+                竞争力总分
+              </p>
+              <div class="bts-bar">
+                <div
+                  class="bts-bar-fill"
+                  :style="{ width: (overallScore / 5 * 100) + '%' }"
+                />
+              </div>
             </div>
 
             <!-- AI Analysis Card -->
-            <div class="bt-ai" :class="{ busy: aiStream.isLoading, done: aiStream.content && !aiStream.isLoading, err: aiStream.error, idle: !aiStream.isLoading && !aiStream.content && !aiStream.error }">
-              <div class="bta-head" @click="showAiSection = !showAiSection">
+            <div
+              class="bt-ai"
+              :class="{ busy: aiStream.isLoading, done: aiStream.content && !aiStream.isLoading, err: aiStream.error, idle: !aiStream.isLoading && !aiStream.content && !aiStream.error }"
+            >
+              <div
+                class="bta-head"
+                @click="showAiSection = !showAiSection"
+              >
                 <div class="bta-left">
-                  <div class="bta-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9 9h6v6H9z"/></svg></div>
+                  <div class="bta-icon">
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    ><rect
+                      x="4"
+                      y="4"
+                      width="16"
+                      height="16"
+                      rx="2"
+                    /><path d="M9 9h6v6H9z" /></svg>
+                  </div>
                   AI 深度分析
                 </div>
                 <div class="bta-right">
                   <span class="bta-toggle">{{ showAiSection ? '收起' : '展开' }}</span>
-                  <svg class="bta-chevron" :class="{ open: showAiSection }" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 15l-6-6-6 6"/></svg>
+                  <svg
+                    class="bta-chevron"
+                    :class="{ open: showAiSection }"
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  ><path d="M18 15l-6-6-6 6" /></svg>
                 </div>
               </div>
-              <div v-show="showAiSection" class="bta-body">
-                <div v-if="aiStream.isThinking && !aiStream.content && !aiStream.reasoning" class="ai-thinking">
-                  <div class="at-dots"><span/><span/><span/></div>
-                  <p class="at-text">AI 正在启动深度分析...</p>
-                  <p class="at-hint">思考型模型会先分析您的背景，再生成更有针对性的建议</p>
-                  <button v-if="activeStream.stopButtonVisible" class="btn-stop" style="margin-top:18px" @click="stopAIAnalysis">停止</button>
+              <div
+                v-show="showAiSection"
+                class="bta-body"
+              >
+                <div
+                  v-if="aiStream.isThinking && !aiStream.content && !aiStream.reasoning"
+                  class="ai-thinking"
+                >
+                  <div class="at-dots">
+                    <span /><span /><span />
+                  </div>
+                  <p class="at-text">
+                    AI 正在启动深度分析...
+                  </p>
+                  <p class="at-hint">
+                    思考型模型会先分析您的背景，再生成更有针对性的建议
+                  </p>
+                  <button
+                    v-if="activeStream.stopButtonVisible"
+                    class="btn-stop"
+                    style="margin-top:18px"
+                    @click="stopAIAnalysis"
+                  >
+                    停止
+                  </button>
                 </div>
-                <div v-if="aiStream.reasoning" class="reason-box">
-                  <div class="rb-header" @click="showReasoning = !showReasoning">
-                    <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9 9h6v6H9z"/></svg> 思考过程</span>
+                <div
+                  v-if="aiStream.reasoning"
+                  class="reason-box"
+                >
+                  <div
+                    class="rb-header"
+                    @click="showReasoning = !showReasoning"
+                  >
+                    <span><svg
+                      width="12"
+                      height="12"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    ><rect
+                      x="4"
+                      y="4"
+                      width="16"
+                      height="16"
+                      rx="2"
+                    /><path d="M9 9h6v6H9z" /></svg> 思考过程</span>
                     <span class="bta-toggle sm">{{ showReasoning ? '收起' : '展开' }}</span>
                   </div>
-                  <div v-show="showReasoning" ref="reasoningContentRef" class="rb-content" @scroll="aiStream.handleUserScroll">{{ aiStream.reasoning }}</div>
+                  <div
+                    v-show="showReasoning"
+                    ref="reasoningContentRef"
+                    class="rb-content"
+                    @scroll="aiStream.handleUserScroll"
+                  >
+                    {{ aiStream.reasoning }}
+                  </div>
                 </div>
-                <div v-if="aiStream.isLoading && aiStream.hasReasoning && !aiStream.content && !aiStream.isThinking" class="ai-thinking">
-                  <div class="at-dots"><span/><span/><span/></div>
-                  <p class="at-text">思考完成，正在生成报告...</p>
-                  <p class="at-hint">AI 正在基于分析结果撰写个性化建议</p>
-                  <button v-if="activeStream.stopButtonVisible" class="btn-stop" style="margin-top:18px" @click="stopAIAnalysis">停止</button>
+                <div
+                  v-if="aiStream.isLoading && aiStream.hasReasoning && !aiStream.content && !aiStream.isThinking"
+                  class="ai-thinking"
+                >
+                  <div class="at-dots">
+                    <span /><span /><span />
+                  </div>
+                  <p class="at-text">
+                    思考完成，正在生成报告...
+                  </p>
+                  <p class="at-hint">
+                    AI 正在基于分析结果撰写个性化建议
+                  </p>
+                  <button
+                    v-if="activeStream.stopButtonVisible"
+                    class="btn-stop"
+                    style="margin-top:18px"
+                    @click="stopAIAnalysis"
+                  >
+                    停止
+                  </button>
                 </div>
-                <div v-if="aiStream.content || (aiStream.isLoading && aiStream.hasContent)" class="content-box">
-                  <div class="cb-header" @click="showAiContent = !showAiContent">
-                    <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg> 分析报告</span>
+                <div
+                  v-if="aiStream.content || (aiStream.isLoading && aiStream.hasContent)"
+                  class="content-box"
+                >
+                  <div
+                    class="cb-header"
+                    @click="showAiContent = !showAiContent"
+                  >
+                    <span><svg
+                      width="12"
+                      height="12"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    ><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><polyline points="14 2 14 8 20 8" /></svg> 分析报告</span>
                     <div style="display:flex;align-items:center;gap:8px">
-                      <button v-if="aiStream.isLoading && activeStream.stopButtonVisible" class="btn-stop-xs" @click.stop="stopAIAnalysis">停止</button>
+                      <button
+                        v-if="aiStream.isLoading && activeStream.stopButtonVisible"
+                        class="btn-stop-xs"
+                        @click.stop="stopAIAnalysis"
+                      >
+                        停止
+                      </button>
                       <span class="bta-toggle sm">{{ showAiContent ? '收起' : '展开' }}</span>
                     </div>
                   </div>
-                  <div v-show="showAiContent" class="cb-content">
-                    <div class="ai-md" v-html="renderAiContent(aiStream.content)" />
-                    <span v-if="aiStream.isStreaming" class="cursor-blink" />
+                  <div
+                    v-show="showAiContent"
+                    class="cb-content"
+                  >
+                    <div
+                      class="ai-md"
+                      v-html="renderAiContent(aiStream.content)"
+                    />
+                    <span
+                      v-if="aiStream.isStreaming"
+                      class="cursor-blink"
+                    />
                   </div>
                 </div>
-                <div v-else-if="aiStream.error" class="err-box">
-                  <p class="eb-title">分析失败</p>
-                  <p class="eb-msg">{{ aiStream.error }}</p>
-                  <button v-if="activeStream.canRetry" class="btn-primary btn-sm" @click="retryAIAnalysis">重试</button>
-                </div>
-                <div v-else-if="!selectedProvider" class="idle-box">
-                  <p>未配置 AI 模型</p>
-                  <button class="btn-primary btn-sm" @click="router.push('/ai-config')">去配置</button>
+                <div
+                  v-else-if="aiStream.error"
+                  class="err-box"
+                >
+                  <p class="eb-title">
+                    分析失败
+                  </p>
+                  <p class="eb-msg">
+                    {{ aiStream.error }}
+                  </p>
+                  <button
+                    v-if="activeStream.canRetry"
+                    class="btn-primary btn-sm"
+                    @click="retryAIAnalysis"
+                  >
+                    重试
+                  </button>
                 </div>
               </div>
             </div>
 
             <!-- Stat Cards -->
             <div class="bt-stat">
-              <div class="bs-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg></div>
-              <div class="bs-value">{{ form.basic.gpa.toFixed(1) }}<span class="bs-grade" :class="getGpaGradeClass(form.basic.gpa)">{{ getGpaGrade(form.basic.gpa) }}</span></div>
-              <p class="bs-note">{{ getGpaComment(form.basic.gpa, form.basic.university) }}</p>
+              <div class="bs-icon">
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                ><path d="M22 10v6M2 10l10-5 10 5-10 5z" /><path d="M6 12v5c3 3 9 3 12 0v-5" /></svg>
+              </div>
+              <div class="bs-value">
+                {{ form.basic.gpa.toFixed(1) }}<span
+                  class="bs-grade"
+                  :class="getGpaGradeClass(form.basic.gpa)"
+                >{{ getGpaGrade(form.basic.gpa) }}</span>
+              </div>
+              <p class="bs-note">
+                {{ getGpaComment(form.basic.gpa, form.basic.university) }}
+              </p>
             </div>
 
             <div class="bt-stat">
-              <div class="bs-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></div>
-              <div class="bs-value">{{ form.basic.language || '—' }}<span class="bs-grade" :class="getLanguageScoreClass()">{{ getLanguageLevel() }}</span></div>
-              <p class="bs-note">{{ getLanguageComment() }}</p>
+              <div class="bs-icon">
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                ><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" /></svg>
+              </div>
+              <div class="bs-value">
+                {{ form.basic.language || '—' }}<span
+                  class="bs-grade"
+                  :class="getLanguageScoreClass()"
+                >{{ getLanguageLevel() }}</span>
+              </div>
+              <p class="bs-note">
+                {{ getLanguageComment() }}
+              </p>
             </div>
 
             <!-- Radar -->
             <div class="bt-radar">
-              <div ref="radarRef" class="radar-canvas" />
+              <div
+                ref="radarRef"
+                class="radar-canvas"
+              />
             </div>
 
             <!-- Detail Breakdown -->
             <div class="bt-detail">
-              <h3 class="bd-heading">维度细分</h3>
-              <div v-for="item in detailItems" :key="item.key" class="bd-item">
+              <h3 class="bd-heading">
+                维度细分
+              </h3>
+              <div
+                v-for="item in detailItems"
+                :key="item.key"
+                class="bd-item"
+              >
                 <div class="bd-top">
                   <span class="bd-name">{{ item.label }}</span>
                   <span class="bd-val">{{ item.score.toFixed(1) }}<span class="bd-max">/5</span></span>
                 </div>
-                <div class="bd-track"><div class="bd-fill" :style="{ width: (item.score / 5 * 100) + '%' }" /></div>
-                <p class="bd-text">{{ item.comment }}</p>
+                <div class="bd-track">
+                  <div
+                    class="bd-fill"
+                    :style="{ width: (item.score / 5 * 100) + '%' }"
+                  />
+                </div>
+                <p class="bd-text">
+                  {{ item.comment }}
+                </p>
               </div>
             </div>
-
           </div><!-- /bento -->
 
           <div class="report-actions">
-            <button class="btn-primary" @click="saveReport">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            <button
+              class="btn-primary"
+              @click="saveReport"
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              ><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" /><polyline points="17 21 17 13 7 13 7 21" /><polyline points="7 3 7 8 15 8" /></svg>
               保存结果
             </button>
-            <button class="btn-ghost" @click="resetForm">重新填写</button>
+            <button
+              class="btn-ghost"
+              @click="resetForm"
+            >
+              重新填写
+            </button>
           </div>
         </template>
       </section>
-
     </main>
 
     <!-- ═══════════════ DIALOGS ═══════════════ -->
-    <el-dialog v-model="researchDialogVisible" :title="isEditingResearch ? '编辑科研经历' : '添加科研经历'" width="520px" :close-on-click-modal="false">
-      <el-form ref="researchFormRef" :model="currentResearch" :rules="researchRules" label-position="top" class="dlg-form">
-        <el-form-item label="项目名称" prop="name"><el-input v-model="currentResearch.name" placeholder="请输入项目名称" /></el-form-item>
-        <el-form-item label="担任角色" prop="role"><el-input v-model="currentResearch.role" placeholder="如：项目负责人、核心成员、参与者" /></el-form-item>
-        <el-form-item label="项目时长" prop="duration"><el-input v-model="currentResearch.duration" placeholder="如：3个月、半年、1年" /></el-form-item>
-        <el-form-item label="项目成果" prop="achievements"><el-input v-model="currentResearch.achievements" type="textarea" :rows="3" placeholder="描述项目成果、发表论文、获奖情况等" /></el-form-item>
+    <el-dialog
+      v-model="researchDialogVisible"
+      :title="isEditingResearch ? '编辑科研经历' : '添加科研经历'"
+      width="520px"
+      :close-on-click-modal="false"
+    >
+      <el-form
+        ref="researchFormRef"
+        :model="currentResearch"
+        :rules="researchRules"
+        label-position="top"
+        class="dlg-form"
+      >
+        <el-form-item
+          label="项目名称"
+          prop="name"
+        >
+          <el-input
+            v-model="currentResearch.name"
+            placeholder="请输入项目名称"
+          />
+        </el-form-item>
+        <el-form-item
+          label="担任角色"
+          prop="role"
+        >
+          <el-input
+            v-model="currentResearch.role"
+            placeholder="如：项目负责人、核心成员、参与者"
+          />
+        </el-form-item>
+        <el-form-item
+          label="项目时长"
+          prop="duration"
+        >
+          <el-input
+            v-model="currentResearch.duration"
+            placeholder="如：3个月、半年、1年"
+          />
+        </el-form-item>
+        <el-form-item
+          label="项目成果"
+          prop="achievements"
+        >
+          <el-input
+            v-model="currentResearch.achievements"
+            type="textarea"
+            :rows="3"
+            placeholder="描述项目成果、发表论文、获奖情况等"
+          />
+        </el-form-item>
       </el-form>
       <template #footer>
-        <button class="btn-ghost" @click="closeResearchDialog">取消</button>
-        <button class="btn-primary" @click="saveResearch">保存</button>
+        <button
+          class="btn-ghost"
+          @click="closeResearchDialog"
+        >
+          取消
+        </button>
+        <button
+          class="btn-primary"
+          @click="saveResearch"
+        >
+          保存
+        </button>
       </template>
     </el-dialog>
 
-    <el-dialog v-model="internshipDialogVisible" :title="isEditingInternship ? '编辑实习经历' : '添加实习经历'" width="520px" :close-on-click-modal="false">
-      <el-form ref="internshipFormRef" :model="currentInternship" :rules="internshipRules" label-position="top" class="dlg-form">
-        <el-form-item label="公司名称" prop="company"><el-input v-model="currentInternship.company" placeholder="请输入公司名称" /></el-form-item>
-        <el-form-item label="职位名称" prop="position"><el-input v-model="currentInternship.position" placeholder="如：前端工程师实习生" /></el-form-item>
-        <el-form-item label="实习时长" prop="duration"><el-input v-model="currentInternship.duration" placeholder="如：3个月、6个月" /></el-form-item>
-        <el-form-item label="工作描述" prop="description"><el-input v-model="currentInternship.description" type="textarea" :rows="3" placeholder="简要描述工作内容（可选）" /></el-form-item>
+    <el-dialog
+      v-model="internshipDialogVisible"
+      :title="isEditingInternship ? '编辑实习经历' : '添加实习经历'"
+      width="520px"
+      :close-on-click-modal="false"
+    >
+      <el-form
+        ref="internshipFormRef"
+        :model="currentInternship"
+        :rules="internshipRules"
+        label-position="top"
+        class="dlg-form"
+      >
+        <el-form-item
+          label="公司名称"
+          prop="company"
+        >
+          <el-input
+            v-model="currentInternship.company"
+            placeholder="请输入公司名称"
+          />
+        </el-form-item>
+        <el-form-item
+          label="职位名称"
+          prop="position"
+        >
+          <el-input
+            v-model="currentInternship.position"
+            placeholder="如：前端工程师实习生"
+          />
+        </el-form-item>
+        <el-form-item
+          label="实习时长"
+          prop="duration"
+        >
+          <el-input
+            v-model="currentInternship.duration"
+            placeholder="如：3个月、6个月"
+          />
+        </el-form-item>
+        <el-form-item
+          label="工作描述"
+          prop="description"
+        >
+          <el-input
+            v-model="currentInternship.description"
+            type="textarea"
+            :rows="3"
+            placeholder="简要描述工作内容（可选）"
+          />
+        </el-form-item>
       </el-form>
       <template #footer>
-        <button class="btn-ghost" @click="closeInternshipDialog">取消</button>
-        <button class="btn-primary" @click="saveInternship">保存</button>
+        <button
+          class="btn-ghost"
+          @click="closeInternshipDialog"
+        >
+          取消
+        </button>
+        <button
+          class="btn-primary"
+          @click="saveInternship"
+        >
+          保存
+        </button>
       </template>
     </el-dialog>
 
-    <el-dialog v-model="competitionDialogVisible" :title="isEditingCompetition ? '编辑竞赛记录' : '添加竞赛获奖'" width="520px" :close-on-click-modal="false">
-      <el-form ref="competitionFormRef" :model="currentCompetition" :rules="competitionRules" label-position="top" class="dlg-form">
-        <el-form-item label="竞赛名称" prop="name"><el-input v-model="currentCompetition.name" placeholder="请输入竞赛名称" /></el-form-item>
-        <el-form-item label="竞赛级别" prop="level">
-          <el-select v-model="currentCompetition.level" placeholder="请选择级别" style="width:100%" aria-label="竞赛级别">
-            <el-option label="国家级" value="国家级" /><el-option label="省级" value="省级" /><el-option label="校级" value="校级" /><el-option label="其他" value="其他" />
+    <el-dialog
+      v-model="competitionDialogVisible"
+      :title="isEditingCompetition ? '编辑竞赛记录' : '添加竞赛获奖'"
+      width="520px"
+      :close-on-click-modal="false"
+    >
+      <el-form
+        ref="competitionFormRef"
+        :model="currentCompetition"
+        :rules="competitionRules"
+        label-position="top"
+        class="dlg-form"
+      >
+        <el-form-item
+          label="竞赛名称"
+          prop="name"
+        >
+          <el-input
+            v-model="currentCompetition.name"
+            placeholder="请输入竞赛名称"
+          />
+        </el-form-item>
+        <el-form-item
+          label="竞赛级别"
+          prop="level"
+        >
+          <el-select
+            v-model="currentCompetition.level"
+            placeholder="请选择级别"
+            style="width:100%"
+            aria-label="竞赛级别"
+          >
+            <el-option
+              label="国家级"
+              value="国家级"
+            /><el-option
+              label="省级"
+              value="省级"
+            /><el-option
+              label="校级"
+              value="校级"
+            /><el-option
+              label="其他"
+              value="其他"
+            />
           </el-select>
         </el-form-item>
-        <el-form-item label="获奖情况" prop="award"><el-input v-model="currentCompetition.award" placeholder="如：一等奖、银奖" /></el-form-item>
-        <el-form-item label="参赛时间" prop="time"><el-input v-model="currentCompetition.time" placeholder="如：2024年3月（可选）" /></el-form-item>
+        <el-form-item
+          label="获奖情况"
+          prop="award"
+        >
+          <el-input
+            v-model="currentCompetition.award"
+            placeholder="如：一等奖、银奖"
+          />
+        </el-form-item>
+        <el-form-item
+          label="参赛时间"
+          prop="time"
+        >
+          <el-input
+            v-model="currentCompetition.time"
+            placeholder="如：2024年3月（可选）"
+          />
+        </el-form-item>
       </el-form>
       <template #footer>
-        <button class="btn-ghost" @click="closeCompetitionDialog">取消</button>
-        <button class="btn-primary" @click="saveCompetition">保存</button>
+        <button
+          class="btn-ghost"
+          @click="closeCompetitionDialog"
+        >
+          取消
+        </button>
+        <button
+          class="btn-primary"
+          @click="saveCompetition"
+        >
+          保存
+        </button>
       </template>
     </el-dialog>
 
-    <el-dialog v-model="volunteerDialogVisible" :title="isEditingVolunteer ? '编辑志愿服务' : '添加志愿服务'" width="520px" :close-on-click-modal="false">
-      <el-form ref="volunteerFormRef" :model="currentVolunteer" :rules="volunteerRules" label-position="top" class="dlg-form">
-        <el-form-item label="组织名称" prop="organization"><el-input v-model="currentVolunteer.organization" placeholder="请输入服务组织名称" /></el-form-item>
-        <el-form-item label="志愿岗位" prop="role"><el-input v-model="currentVolunteer.role" placeholder="如：活动志愿者、支教老师" /></el-form-item>
-        <el-form-item label="服务时长" prop="duration"><el-input v-model="currentVolunteer.duration" placeholder="如：20小时、1个月" /></el-form-item>
-        <el-form-item label="服务描述" prop="description"><el-input v-model="currentVolunteer.description" type="textarea" :rows="3" placeholder="简要描述服务内容和感受（可选）" /></el-form-item>
+    <el-dialog
+      v-model="volunteerDialogVisible"
+      :title="isEditingVolunteer ? '编辑志愿服务' : '添加志愿服务'"
+      width="520px"
+      :close-on-click-modal="false"
+    >
+      <el-form
+        ref="volunteerFormRef"
+        :model="currentVolunteer"
+        :rules="volunteerRules"
+        label-position="top"
+        class="dlg-form"
+      >
+        <el-form-item
+          label="组织名称"
+          prop="organization"
+        >
+          <el-input
+            v-model="currentVolunteer.organization"
+            placeholder="请输入服务组织名称"
+          />
+        </el-form-item>
+        <el-form-item
+          label="志愿岗位"
+          prop="role"
+        >
+          <el-input
+            v-model="currentVolunteer.role"
+            placeholder="如：活动志愿者、支教老师"
+          />
+        </el-form-item>
+        <el-form-item
+          label="服务时长"
+          prop="duration"
+        >
+          <el-input
+            v-model="currentVolunteer.duration"
+            placeholder="如：20小时、1个月"
+          />
+        </el-form-item>
+        <el-form-item
+          label="服务描述"
+          prop="description"
+        >
+          <el-input
+            v-model="currentVolunteer.description"
+            type="textarea"
+            :rows="3"
+            placeholder="简要描述服务内容和感受（可选）"
+          />
+        </el-form-item>
       </el-form>
       <template #footer>
-        <button class="btn-ghost" @click="closeVolunteerDialog">取消</button>
-        <button class="btn-primary" @click="saveVolunteer">保存</button>
+        <button
+          class="btn-ghost"
+          @click="closeVolunteerDialog"
+        >
+          取消
+        </button>
+        <button
+          class="btn-primary"
+          @click="saveVolunteer"
+        >
+          保存
+        </button>
       </template>
     </el-dialog>
   </div>

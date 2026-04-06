@@ -21,12 +21,21 @@
           让每一份材料都成为你申请路上的基石
         </p>
         <div class="hero-stats">
-          <div class="stat-item" v-for="(stat, idx) in heroStats" :key="idx">
+          <div
+            v-for="(stat, idx) in heroStats"
+            :key="idx"
+            class="stat-item"
+          >
             <div class="stat-value font-display">
               <span class="stat-number">{{ stat.value }}</span>
-              <span class="stat-suffix" v-if="stat.suffix">{{ stat.suffix }}</span>
+              <span
+                v-if="stat.suffix"
+                class="stat-suffix"
+              >{{ stat.suffix }}</span>
             </div>
-            <div class="stat-label">{{ stat.label }}</div>
+            <div class="stat-label">
+              {{ stat.label }}
+            </div>
           </div>
         </div>
       </div>
@@ -51,7 +60,10 @@
         </nav>
 
         <!-- ===== Tab 1: 文书助手 ===== -->
-        <div v-show="activeTab === 'essay'" class="tab-panel">
+        <div
+          v-show="activeTab === 'essay'"
+          class="tab-panel"
+        >
           <!-- 文书类型选择 -->
           <div
             v-if="!selectedEssayType"
@@ -59,8 +71,12 @@
           >
             <div class="section-header">
               <span class="section-tag">01 / ESSAY TYPE</span>
-              <h2 class="section-heading font-display">选择文书类型</h2>
-              <p class="section-desc">从以下四种核心文书类型开始你的写作之旅</p>
+              <h2 class="section-heading font-display">
+                选择文书类型
+              </h2>
+              <p class="section-desc">
+                从以下四种核心文书类型开始你的写作之旅
+              </p>
             </div>
             <div class="essay-types-grid">
               <div
@@ -71,12 +87,20 @@
                 :style="{ '--delay': index * 0.1 + 's' }"
                 @click="selectEssayType(type.value)"
               >
-                <div class="card-index">{{ String(index + 1).padStart(2, '0') }}</div>
-                <div class="card-icon-wrap">
-                  <el-icon :size="32"><component :is="type.icon" /></el-icon>
+                <div class="card-index">
+                  {{ String(index + 1).padStart(2, '0') }}
                 </div>
-                <h3 class="card-title">{{ type.label }}</h3>
-                <p class="card-desc">{{ type.description }}</p>
+                <div class="card-icon-wrap">
+                  <el-icon :size="32">
+                    <component :is="type.icon" />
+                  </el-icon>
+                </div>
+                <h3 class="card-title">
+                  {{ type.label }}
+                </h3>
+                <p class="card-desc">
+                  {{ type.description }}
+                </p>
                 <div class="card-arrow">
                   <el-icon><Right /></el-icon>
                 </div>
@@ -91,7 +115,10 @@
             class="template-selection reveal-up"
           >
             <div class="template-nav">
-              <button class="back-btn" @click="selectedEssayType = null">
+              <button
+                class="back-btn"
+                @click="selectedEssayType = null"
+              >
                 <el-icon><ArrowLeft /></el-icon>
                 <span>返回选择</span>
               </button>
@@ -106,11 +133,18 @@
               v-if="essayKeyPoints[selectedEssayType]"
               class="key-points-bar"
             >
-              <div class="kp-icon"><el-icon><InfoFilled /></el-icon></div>
+              <div class="kp-icon">
+                <el-icon><InfoFilled /></el-icon>
+              </div>
               <div class="kp-content">
                 <span class="kp-title">核心要点</span>
                 <ul class="kp-list">
-                  <li v-for="(point, index) in essayKeyPoints[selectedEssayType]" :key="index">{{ point }}</li>
+                  <li
+                    v-for="(point, index) in essayKeyPoints[selectedEssayType]"
+                    :key="index"
+                  >
+                    {{ point }}
+                  </li>
                 </ul>
               </div>
             </div>
@@ -123,10 +157,20 @@
                 :style="{ '--delay': index * 0.08 + 's' }"
                 @click="selectTemplate(template)"
               >
-                <div class="tpl-badge">TEMPLATE</div>
-                <div class="tpl-icon"><el-icon :size="24"><Document /></el-icon></div>
-                <h4 class="tpl-name">{{ template.name }}</h4>
-                <p class="tpl-desc">{{ template.description }}</p>
+                <div class="tpl-badge">
+                  TEMPLATE
+                </div>
+                <div class="tpl-icon">
+                  <el-icon :size="24">
+                    <Document />
+                  </el-icon>
+                </div>
+                <h4 class="tpl-name">
+                  {{ template.name }}
+                </h4>
+                <p class="tpl-desc">
+                  {{ template.description }}
+                </p>
                 <div class="tpl-action">
                   <span>使用此模板</span>
                   <el-icon><Right /></el-icon>
@@ -136,9 +180,15 @@
           </div>
 
           <!-- 文书编辑器 -->
-          <div v-else class="essay-editor-wrapper reveal-up">
+          <div
+            v-else
+            class="essay-editor-wrapper reveal-up"
+          >
             <div class="editor-topbar">
-              <button class="back-btn" @click="backToTemplates">
+              <button
+                class="back-btn"
+                @click="backToTemplates"
+              >
                 <el-icon><ArrowLeft /></el-icon>
                 <span>返回模板</span>
               </button>
@@ -153,40 +203,147 @@
               <!-- 工具栏 -->
               <div class="editor-toolbar">
                 <div class="toolbar-left">
-                  <el-select v-model="currentEssayType" size="small" class="tool-select" aria-label="文书类型">
-                    <el-option label="个人陈述" value="ps" />
-                    <el-option label="简历" value="cv" />
-                    <el-option label="推荐信" value="reference" />
-                    <el-option label="研究计划" value="research" />
+                  <el-select
+                    v-model="currentEssayType"
+                    size="small"
+                    class="tool-select"
+                    aria-label="文书类型"
+                  >
+                    <el-option
+                      label="个人陈述"
+                      value="ps"
+                    />
+                    <el-option
+                      label="简历"
+                      value="cv"
+                    />
+                    <el-option
+                      label="推荐信"
+                      value="reference"
+                    />
+                    <el-option
+                      label="研究计划"
+                      value="research"
+                    />
                   </el-select>
-                  <el-select v-model="selectedProvider" size="small" class="tool-select" aria-label="AI供应商选择">
-                    <el-option v-for="p in providers" :key="p.id" :label="p.name" :value="p.id" />
+                  <el-select
+                    v-model="selectedProvider"
+                    size="small"
+                    class="tool-select"
+                    aria-label="AI供应商选择"
+                  >
+                    <el-option
+                      v-for="p in providers"
+                      :key="p.id"
+                      :label="p.name"
+                      :value="p.id"
+                    />
                   </el-select>
                   <div class="toolbar-sep" />
                   <div class="fmt-group">
-                    <button class="fmt-btn" @click="formatDoc('bold')" title="加粗">B</button>
-                    <button class="fmt-btn" @click="formatDoc('italic')" title="斜体">I</button>
-                    <button class="fmt-btn" @click="formatDoc('underline')" title="下划线">U</button>
+                    <button
+                      class="fmt-btn"
+                      title="加粗"
+                      @click="formatDoc('bold')"
+                    >
+                      B
+                    </button>
+                    <button
+                      class="fmt-btn"
+                      title="斜体"
+                      @click="formatDoc('italic')"
+                    >
+                      I
+                    </button>
+                    <button
+                      class="fmt-btn"
+                      title="下划线"
+                      @click="formatDoc('underline')"
+                    >
+                      U
+                    </button>
                   </div>
                   <div class="fmt-group">
-                    <button class="fmt-btn" @click="formatDoc('h1')" title="H1">H1</button>
-                    <button class="fmt-btn" @click="formatDoc('h2')" title="H2">H2</button>
-                    <button class="fmt-btn" @click="formatDoc('h3')" title="H3">H3</button>
+                    <button
+                      class="fmt-btn"
+                      title="H1"
+                      @click="formatDoc('h1')"
+                    >
+                      H1
+                    </button>
+                    <button
+                      class="fmt-btn"
+                      title="H2"
+                      @click="formatDoc('h2')"
+                    >
+                      H2
+                    </button>
+                    <button
+                      class="fmt-btn"
+                      title="H3"
+                      @click="formatDoc('h3')"
+                    >
+                      H3
+                    </button>
                   </div>
                   <div class="fmt-group">
-                    <button class="fmt-btn" @click="formatDoc('ul')" title="列表">☰</button>
-                    <button class="fmt-btn" @click="formatDoc('ol')" title="有序">1.</button>
+                    <button
+                      class="fmt-btn"
+                      title="列表"
+                      @click="formatDoc('ul')"
+                    >
+                      ☰
+                    </button>
+                    <button
+                      class="fmt-btn"
+                      title="有序"
+                      @click="formatDoc('ol')"
+                    >
+                      1.
+                    </button>
                   </div>
                   <div class="fmt-group">
-                    <button class="fmt-btn" @click="formatDoc('undo')" title="撤销">↶</button>
-                    <button class="fmt-btn" @click="formatDoc('redo')" title="重做">↷</button>
+                    <button
+                      class="fmt-btn"
+                      title="撤销"
+                      @click="formatDoc('undo')"
+                    >
+                      ↶
+                    </button>
+                    <button
+                      class="fmt-btn"
+                      title="重做"
+                      @click="formatDoc('redo')"
+                    >
+                      ↷
+                    </button>
                   </div>
                 </div>
                 <div class="toolbar-right">
-                  <button class="tool-action-btn" @click="showWordCountDialog">字数统计</button>
-                  <button class="tool-action-btn primary" @click="showVersionNoteDialog">保存版本</button>
-                  <button class="tool-action-btn" @click="showVersions">历史版本</button>
-                  <button class="tool-action-btn accent" @click="previewAndExportPDF">导出 PDF</button>
+                  <button
+                    class="tool-action-btn"
+                    @click="showWordCountDialog"
+                  >
+                    字数统计
+                  </button>
+                  <button
+                    class="tool-action-btn primary"
+                    @click="showVersionNoteDialog"
+                  >
+                    保存版本
+                  </button>
+                  <button
+                    class="tool-action-btn"
+                    @click="showVersions"
+                  >
+                    历史版本
+                  </button>
+                  <button
+                    class="tool-action-btn accent"
+                    @click="previewAndExportPDF"
+                  >
+                    导出 PDF
+                  </button>
                 </div>
               </div>
 
@@ -210,7 +367,10 @@
 
               <!-- 编辑区域 -->
               <div class="editor-body">
-                <div v-show="editorMode === 'edit'" class="editor-edit-pane">
+                <div
+                  v-show="editorMode === 'edit'"
+                  class="editor-edit-pane"
+                >
                   <div
                     ref="editorRef"
                     class="rich-editor"
@@ -223,26 +383,56 @@
                     @keydown="onEditorKeydown"
                   />
                 </div>
-                <div v-show="editorMode === 'preview'" class="editor-preview-pane">
-                  <div v-if="essayContent" class="preview-content" v-html="renderedPreviewContent" />
-                  <div v-else class="preview-empty">
-                    <el-icon :size="40"><Document /></el-icon>
+                <div
+                  v-show="editorMode === 'preview'"
+                  class="editor-preview-pane"
+                >
+                  <div
+                    v-if="essayContent"
+                    class="preview-content"
+                    v-html="renderedPreviewContent"
+                  />
+                  <div
+                    v-else
+                    class="preview-empty"
+                  >
+                    <el-icon :size="40">
+                      <Document />
+                    </el-icon>
                     <span>暂无内容，请先在编辑模式下撰写</span>
                   </div>
                 </div>
               </div>
 
               <!-- AI 建议块 -->
-              <div v-if="aiSuggestion" class="ai-suggestion-block">
+              <div
+                v-if="aiSuggestion"
+                class="ai-suggestion-block"
+              >
                 <div class="suggestion-header">
-                  <div class="suggestion-icon"><el-icon><MagicStick /></el-icon></div>
+                  <div class="suggestion-icon">
+                    <el-icon><MagicStick /></el-icon>
+                  </div>
                   <span class="suggestion-title">AI 建议</span>
                   <div class="suggestion-actions">
-                    <button class="sug-btn accept" @click="acceptSuggestion">采用建议</button>
-                    <button class="sug-btn reject" @click="rejectSuggestion">忽略</button>
+                    <button
+                      class="sug-btn accept"
+                      @click="acceptSuggestion"
+                    >
+                      采用建议
+                    </button>
+                    <button
+                      class="sug-btn reject"
+                      @click="rejectSuggestion"
+                    >
+                      忽略
+                    </button>
                   </div>
                 </div>
-                <div class="suggestion-body" v-html="renderedSuggestionContent" />
+                <div
+                  class="suggestion-body"
+                  v-html="renderedSuggestionContent"
+                />
               </div>
 
               <!-- AI 助手输入区 -->
@@ -261,8 +451,13 @@
                     :disabled="isGenerating || !aiPrompt.trim()"
                     @click="generateWithAI"
                   >
-                    <el-icon v-if="!isGenerating"><Promotion /></el-icon>
-                    <span v-else class="spinner" />
+                    <el-icon v-if="!isGenerating">
+                      <Promotion />
+                    </el-icon>
+                    <span
+                      v-else
+                      class="spinner"
+                    />
                     {{ isGenerating ? '生成中...' : 'AI 生成' }}
                   </button>
                 </div>
@@ -271,32 +466,62 @@
               <!-- 字数栏 -->
               <div class="word-count-bar">
                 <span>{{ wordCount }} 字 · 预计阅读 {{ Math.ceil(wordCount / 400) }} 分钟</span>
-                <button class="wc-detail-btn" @click="showWordCountDialog">详细统计 →</button>
+                <button
+                  class="wc-detail-btn"
+                  @click="showWordCountDialog"
+                >
+                  详细统计 →
+                </button>
               </div>
             </div>
           </div>
         </div>
 
         <!-- ===== Tab 2: 材料清单 ===== -->
-        <div v-show="activeTab === 'checklist'" class="tab-panel">
+        <div
+          v-show="activeTab === 'checklist'"
+          class="tab-panel"
+        >
           <div class="checklist-section reveal-up">
             <div class="section-header">
               <span class="section-tag">02 / CHECKLIST</span>
-              <h2 class="section-heading font-display">材料清单</h2>
-              <p class="section-desc">系统化管理每一份申请材料，确保万无一失</p>
+              <h2 class="section-heading font-display">
+                材料清单
+              </h2>
+              <p class="section-desc">
+                系统化管理每一份申请材料，确保万无一失
+              </p>
             </div>
 
             <div class="checklist-overview">
               <div class="overview-left">
                 <div class="overview-progress-ring">
-                  <svg viewBox="0 0 120 120" class="progress-svg">
-                    <circle cx="60" cy="60" r="52" class="ring-bg" />
-                    <circle cx="60" cy="60" r="52" class="ring-fill" :stroke-dasharray="`${completionRate * 3.27} 327`" />
+                  <svg
+                    viewBox="0 0 120 120"
+                    class="progress-svg"
+                  >
+                    <circle
+                      cx="60"
+                      cy="60"
+                      r="52"
+                      class="ring-bg"
+                    />
+                    <circle
+                      cx="60"
+                      cy="60"
+                      r="52"
+                      class="ring-fill"
+                      :stroke-dasharray="`${completionRate * 3.27} 327`"
+                    />
                   </svg>
-                  <div class="ring-value font-display">{{ completionRate }}<span class="ring-pct">%</span></div>
+                  <div class="ring-value font-display">
+                    {{ completionRate }}<span class="ring-pct">%</span>
+                  </div>
                 </div>
                 <div class="overview-info">
-                  <div class="overview-title">材料准备进度</div>
+                  <div class="overview-title">
+                    材料准备进度
+                  </div>
                   <div class="overview-meta">
                     <span class="meta-done">{{ completedCount }} 已完成</span>
                     <span class="meta-pending">{{ pendingCount }} 待处理</span>
@@ -304,9 +529,24 @@
                 </div>
               </div>
               <div class="overview-actions">
-                <button class="ov-action-btn primary" @click="exportCSV">导出清单</button>
-                <button class="ov-action-btn" @click="generateReport">生成报告</button>
-                <button class="ov-action-btn ghost" @click="resetChecklist">重置</button>
+                <button
+                  class="ov-action-btn primary"
+                  @click="exportCSV"
+                >
+                  导出清单
+                </button>
+                <button
+                  class="ov-action-btn"
+                  @click="generateReport"
+                >
+                  生成报告
+                </button>
+                <button
+                  class="ov-action-btn ghost"
+                  @click="resetChecklist"
+                >
+                  重置
+                </button>
               </div>
             </div>
 
@@ -317,7 +557,10 @@
                 class="category-block"
                 :class="{ expanded: activeCategory.includes(category.id) }"
               >
-                <button class="category-trigger" @click="toggleCategory(category.id)">
+                <button
+                  class="category-trigger"
+                  @click="toggleCategory(category.id)"
+                >
                   <div class="cat-left">
                     <span class="cat-icon">{{ getCategoryIcon(category.id) }}</span>
                     <span class="cat-name">{{ category.name }}</span>
@@ -332,7 +575,12 @@
                       aria-label="目标国家选择"
                       @click.stop
                     >
-                      <el-option v-for="country in countries" :key="country" :label="country" :value="country" />
+                      <el-option
+                        v-for="country in countries"
+                        :key="country"
+                        :label="country"
+                        :value="country"
+                      />
                     </el-select>
                     <span class="cat-arrow"><el-icon><ArrowDown /></el-icon></span>
                   </div>
@@ -348,19 +596,37 @@
                         >
                           <td class="col-check">
                             <label class="custom-checkbox">
-                              <input type="checkbox" v-model="item.completed" @change="updateProgress" :aria-label="'完成: ' + item.name" />
+                              <input
+                                v-model="item.completed"
+                                type="checkbox"
+                                :aria-label="'完成: ' + item.name"
+                                @change="updateProgress"
+                              >
                               <span class="checkmark" />
                             </label>
                           </td>
                           <td class="col-name">
-                            <span class="item-name" :class="{ strikethrough: item.completed }">{{ item.name }}</span>
+                            <span
+                              class="item-name"
+                              :class="{ strikethrough: item.completed }"
+                            >{{ item.name }}</span>
                           </td>
                           <td class="col-note">
                             <span class="item-note">{{ item.note }}</span>
                           </td>
                           <td class="col-actions">
-                            <button class="row-action edit" @click="editItem(category.id, idx)">编辑</button>
-                            <button class="row-action delete" @click="removeItem(category.id, idx)">删除</button>
+                            <button
+                              class="row-action edit"
+                              @click="editItem(category.id, idx)"
+                            >
+                              编辑
+                            </button>
+                            <button
+                              class="row-action delete"
+                              @click="removeItem(category.id, idx)"
+                            >
+                              删除
+                            </button>
                           </td>
                         </tr>
                       </tbody>
@@ -370,7 +636,10 @@
               </div>
             </div>
 
-            <button class="add-custom-btn" @click="addCustomItem">
+            <button
+              class="add-custom-btn"
+              @click="addCustomItem"
+            >
               <el-icon><Plus /></el-icon>
               <span>添加自定义材料</span>
             </button>
@@ -378,26 +647,51 @@
         </div>
 
         <!-- ===== Tab 3: 申请进度 ===== -->
-        <div v-show="activeTab === 'progress'" class="tab-panel">
+        <div
+          v-show="activeTab === 'progress'"
+          class="tab-panel"
+        >
           <div class="progress-section reveal-up">
             <div class="section-header">
               <span class="section-tag">03 / PROGRESS</span>
-              <h2 class="section-heading font-display">申请进度</h2>
-              <p class="section-desc">追踪从准备到录取的每一步进展</p>
+              <h2 class="section-heading font-display">
+                申请进度
+              </h2>
+              <p class="section-desc">
+                追踪从准备到录取的每一步进展
+              </p>
             </div>
 
             <div class="overall-progress-card">
               <div class="op-left">
                 <div class="op-ring">
-                  <svg viewBox="0 0 120 120" class="progress-svg">
-                    <circle cx="60" cy="60" r="52" class="ring-bg" />
-                    <circle cx="60" cy="60" r="52" class="ring-fill accent" :stroke-dasharray="`${overallProgress * 3.27} 327`" />
+                  <svg
+                    viewBox="0 0 120 120"
+                    class="progress-svg"
+                  >
+                    <circle
+                      cx="60"
+                      cy="60"
+                      r="52"
+                      class="ring-bg"
+                    />
+                    <circle
+                      cx="60"
+                      cy="60"
+                      r="52"
+                      class="ring-fill accent"
+                      :stroke-dasharray="`${overallProgress * 3.27} 327`"
+                    />
                   </svg>
-                  <div class="op-ring-value font-display">{{ overallProgress }}<span class="ring-pct">%</span></div>
+                  <div class="op-ring-value font-display">
+                    {{ overallProgress }}<span class="ring-pct">%</span>
+                  </div>
                 </div>
               </div>
               <div class="op-right">
-                <h3 class="op-title">整体申请进度</h3>
+                <h3 class="op-title">
+                  整体申请进度
+                </h3>
                 <div class="op-stats">
                   <div class="op-stat">
                     <span class="op-stat-val font-display">{{ completedStages }}/{{ applicationStages.length }}</span>
@@ -418,15 +712,34 @@
                 class="stage-card magnetic-card"
                 :class="{ completed: isStageCompleted(stage), active: getStageProgress(stage) > 0 && !isStageCompleted(stage) }"
               >
-                <div class="stage-connector" v-if="sIdx < applicationStages.length - 1" />
+                <div
+                  v-if="sIdx < applicationStages.length - 1"
+                  class="stage-connector"
+                />
                 <div class="stage-header-row">
-                  <div class="stage-num">{{ String(sIdx + 1).padStart(2, '0') }}</div>
-                  <div class="stage-icon">{{ stage.icon }}</div>
-                  <h4 class="stage-name">{{ stage.name }}</h4>
-                  <el-tag :type="getStageTagType(stage)" size="small" effect="dark" class="stage-tag">{{ getStageStatus(stage) }}</el-tag>
+                  <div class="stage-num">
+                    {{ String(sIdx + 1).padStart(2, '0') }}
+                  </div>
+                  <div class="stage-icon">
+                    {{ stage.icon }}
+                  </div>
+                  <h4 class="stage-name">
+                    {{ stage.name }}
+                  </h4>
+                  <el-tag
+                    :type="getStageTagType(stage)"
+                    size="small"
+                    effect="dark"
+                    class="stage-tag"
+                  >
+                    {{ getStageStatus(stage) }}
+                  </el-tag>
                 </div>
                 <div class="stage-progress-bar">
-                  <div class="sp-fill" :style="{ width: getStageProgress(stage) + '%' }" />
+                  <div
+                    class="sp-fill"
+                    :style="{ width: getStageProgress(stage) + '%' }"
+                  />
                 </div>
                 <div class="stage-meta">
                   <span class="sm-task-count">{{ getStageCompletedCount(stage) }}/{{ stage.tasks.length }} 任务</span>
@@ -440,11 +753,22 @@
                     @click="handleTaskClick(stage, task)"
                   >
                     <label class="task-check">
-                      <input type="checkbox" v-model="task.completed" @click.stop @change="saveProgressData" :aria-label="'完成: ' + task.name" />
+                      <input
+                        v-model="task.completed"
+                        type="checkbox"
+                        :aria-label="'完成: ' + task.name"
+                        @click.stop
+                        @change="saveProgressData"
+                      >
                       <span class="task-checkmark" />
                     </label>
                     <span class="task-label">{{ task.name }}</span>
-                    <el-icon v-if="!task.completed && stage.route" class="task-go"><Right /></el-icon>
+                    <el-icon
+                      v-if="!task.completed && stage.route"
+                      class="task-go"
+                    >
+                      <Right />
+                    </el-icon>
                   </div>
                 </div>
               </div>
@@ -457,145 +781,373 @@
     <!-- ===== 对话框（保持原有功能） ===== -->
 
     <!-- 编辑材料对话框 -->
-    <el-dialog v-model="editItemDialogVisible" title="编辑材料" width="420px" class="styled-dialog">
-      <el-form :model="editingItem" label-width="80px">
+    <el-dialog
+      v-model="editItemDialogVisible"
+      title="编辑材料"
+      width="420px"
+      class="styled-dialog"
+    >
+      <el-form
+        :model="editingItem"
+        label-width="80px"
+      >
         <el-form-item label="材料名称">
-          <el-input v-model="editingItem.name" placeholder="材料名称" />
+          <el-input
+            v-model="editingItem.name"
+            placeholder="材料名称"
+          />
         </el-form-item>
         <el-form-item label="备注">
-          <el-input v-model="editingItem.note" type="textarea" placeholder="备注信息" />
+          <el-input
+            v-model="editingItem.note"
+            type="textarea"
+            placeholder="备注信息"
+          />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="editItemDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="confirmEditItem">保存修改</el-button>
+        <el-button @click="editItemDialogVisible = false">
+          取消
+        </el-button>
+        <el-button
+          type="primary"
+          @click="confirmEditItem"
+        >
+          保存修改
+        </el-button>
       </template>
     </el-dialog>
 
     <!-- 检查报告对话框 -->
-    <el-dialog v-model="reportVisible" title="材料准备检查报告" width="620px" class="styled-dialog">
+    <el-dialog
+      v-model="reportVisible"
+      title="材料准备检查报告"
+      width="620px"
+      class="styled-dialog"
+    >
       <div class="report-content">
         <div class="report-summary-card">
           <div class="report-summary">
             <div class="summary-stat">
-              <div class="stat-value success-color">{{ completedCount }}</div>
-              <div class="stat-label">已完成</div>
+              <div class="stat-value success-color">
+                {{ completedCount }}
+              </div>
+              <div class="stat-label">
+                已完成
+              </div>
             </div>
             <div class="summary-stat">
-              <div class="stat-value warning-color">{{ pendingCount }}</div>
-              <div class="stat-label">未完成</div>
+              <div class="stat-value warning-color">
+                {{ pendingCount }}
+              </div>
+              <div class="stat-label">
+                未完成
+              </div>
             </div>
             <div class="summary-stat">
-              <div class="stat-value primary-color">{{ completionRate }}%</div>
-              <div class="stat-label">完成率</div>
+              <div class="stat-value primary-color">
+                {{ completionRate }}%
+              </div>
+              <div class="stat-label">
+                完成率
+              </div>
             </div>
           </div>
-          <el-progress :percentage="completionRate" :color="progressColor" />
+          <el-progress
+            :percentage="completionRate"
+            :color="progressColor"
+          />
         </div>
-        <div v-if="pendingItems.length > 0" class="pending-section">
-          <h4 class="pending-title">待完成材料 ({{ pendingItems.length }}项)</h4>
-          <el-table :data="pendingItems" size="small" border class="pending-items-table">
-            <el-table-column prop="name" label="材料名称" min-width="200" show-overflow-tooltip />
-            <el-table-column prop="categoryName" label="分类" width="100" />
-            <el-table-column prop="note" label="备注" min-width="160" show-overflow-tooltip />
-            <el-table-column label="操作" width="80">
+        <div
+          v-if="pendingItems.length > 0"
+          class="pending-section"
+        >
+          <h4 class="pending-title">
+            待完成材料 ({{ pendingItems.length }}项)
+          </h4>
+          <el-table
+            :data="pendingItems"
+            size="small"
+            border
+            class="pending-items-table"
+          >
+            <el-table-column
+              prop="name"
+              label="材料名称"
+              min-width="200"
+              show-overflow-tooltip
+            />
+            <el-table-column
+              prop="categoryName"
+              label="分类"
+              width="100"
+            />
+            <el-table-column
+              prop="note"
+              label="备注"
+              min-width="160"
+              show-overflow-tooltip
+            />
+            <el-table-column
+              label="操作"
+              width="80"
+            >
               <template #default="{ row }">
-                <el-button size="small" type="success" text @click="markCompleted(row)">完成</el-button>
+                <el-button
+                  size="small"
+                  type="success"
+                  text
+                  @click="markCompleted(row)"
+                >
+                  完成
+                </el-button>
               </template>
             </el-table-column>
           </el-table>
         </div>
-        <el-empty v-else description="所有材料已准备完成！🎉" />
-        <div v-if="completedItems.length > 0" class="completed-section">
-          <h4 class="completed-title">已完成材料 ({{ completedItems.length }}项)</h4>
+        <el-empty
+          v-else
+          description="所有材料已准备完成！🎉"
+        />
+        <div
+          v-if="completedItems.length > 0"
+          class="completed-section"
+        >
+          <h4 class="completed-title">
+            已完成材料 ({{ completedItems.length }}项)
+          </h4>
           <div class="completed-list">
-            <el-tag v-for="item in completedItems" :key="item.name" type="success" effect="light">{{ item.name }}</el-tag>
+            <el-tag
+              v-for="item in completedItems"
+              :key="item.name"
+              type="success"
+              effect="light"
+            >
+              {{ item.name }}
+            </el-tag>
           </div>
         </div>
       </div>
     </el-dialog>
 
     <!-- 添加自定义材料对话框 -->
-    <el-dialog v-model="itemDialogVisible" title="添加自定义材料" width="420px" class="styled-dialog">
-      <el-form :model="newItem" label-width="80px">
+    <el-dialog
+      v-model="itemDialogVisible"
+      title="添加自定义材料"
+      width="420px"
+      class="styled-dialog"
+    >
+      <el-form
+        :model="newItem"
+        label-width="80px"
+      >
         <el-form-item label="材料名称">
-          <el-input v-model="newItem.name" placeholder="如：作品集" />
+          <el-input
+            v-model="newItem.name"
+            placeholder="如：作品集"
+          />
         </el-form-item>
         <el-form-item label="所属分类">
-          <el-select v-model="newItem.category" style="width: 100%;" aria-label="材料分类">
-            <el-option label="必需材料" value="required" />
-            <el-option label="推荐材料" value="recommended" />
-            <el-option label="可选材料" value="optional" />
+          <el-select
+            v-model="newItem.category"
+            style="width: 100%;"
+            aria-label="材料分类"
+          >
+            <el-option
+              label="必需材料"
+              value="required"
+            />
+            <el-option
+              label="推荐材料"
+              value="recommended"
+            />
+            <el-option
+              label="可选材料"
+              value="optional"
+            />
           </el-select>
         </el-form-item>
         <el-form-item label="备注">
-          <el-input v-model="newItem.note" type="textarea" placeholder="备注信息（可选）" />
+          <el-input
+            v-model="newItem.note"
+            type="textarea"
+            placeholder="备注信息（可选）"
+          />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="itemDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="confirmAddItem">添加</el-button>
+        <el-button @click="itemDialogVisible = false">
+          取消
+        </el-button>
+        <el-button
+          type="primary"
+          @click="confirmAddItem"
+        >
+          添加
+        </el-button>
       </template>
     </el-dialog>
 
     <!-- 历史版本对话框 -->
-    <el-dialog v-model="versionsVisible" title="文书历史版本" width="620px" class="styled-dialog">
-      <el-table :data="versions" style="width: 100%" class="versions-table">
-        <el-table-column prop="date" label="保存时间" width="180" />
-        <el-table-column prop="note" label="版本备注" min-width="200" show-overflow-tooltip />
-        <el-table-column label="操作" width="140">
+    <el-dialog
+      v-model="versionsVisible"
+      title="文书历史版本"
+      width="620px"
+      class="styled-dialog"
+    >
+      <el-table
+        :data="versions"
+        style="width: 100%"
+        class="versions-table"
+      >
+        <el-table-column
+          prop="date"
+          label="保存时间"
+          width="180"
+        />
+        <el-table-column
+          prop="note"
+          label="版本备注"
+          min-width="200"
+          show-overflow-tooltip
+        />
+        <el-table-column
+          label="操作"
+          width="140"
+        >
           <template #default="{ row }">
-            <el-button text type="primary" size="small" @click="previewVersion(row)">预览</el-button>
-            <el-button text type="success" size="small" @click="restoreVersion(row)">恢复</el-button>
+            <el-button
+              text
+              type="primary"
+              size="small"
+              @click="previewVersion(row)"
+            >
+              预览
+            </el-button>
+            <el-button
+              text
+              type="success"
+              size="small"
+              @click="restoreVersion(row)"
+            >
+              恢复
+            </el-button>
           </template>
         </el-table-column>
       </el-table>
     </el-dialog>
 
     <!-- 版本备注对话框 -->
-    <el-dialog v-model="versionNoteVisible" title="保存版本" width="420px" class="styled-dialog">
-      <el-form :model="versionNote" label-width="80px">
+    <el-dialog
+      v-model="versionNoteVisible"
+      title="保存版本"
+      width="420px"
+      class="styled-dialog"
+    >
+      <el-form
+        :model="versionNote"
+        label-width="80px"
+      >
         <el-form-item label="版本备注">
-          <el-input v-model="versionNote.text" placeholder="请输入版本备注，如：初稿、修改版、终稿..." maxlength="50" show-word-limit />
+          <el-input
+            v-model="versionNote.text"
+            placeholder="请输入版本备注，如：初稿、修改版、终稿..."
+            maxlength="50"
+            show-word-limit
+          />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="versionNoteVisible = false">取消</el-button>
-        <el-button type="primary" @click="confirmSaveVersion">保存</el-button>
+        <el-button @click="versionNoteVisible = false">
+          取消
+        </el-button>
+        <el-button
+          type="primary"
+          @click="confirmSaveVersion"
+        >
+          保存
+        </el-button>
       </template>
     </el-dialog>
 
     <!-- 字数统计对话框 -->
-    <el-dialog v-model="wordCountVisible" title="字数统计详情" width="520px" class="styled-dialog">
+    <el-dialog
+      v-model="wordCountVisible"
+      title="字数统计详情"
+      width="520px"
+      class="styled-dialog"
+    >
       <div class="word-count-detail">
-        <el-descriptions :column="1" border>
-          <el-descriptions-item label="总字符数">{{ essayContent.length }} 个字符</el-descriptions-item>
-          <el-descriptions-item label="中文字符">{{ charStats.zh }} 个</el-descriptions-item>
-          <el-descriptions-item label="英文字母">{{ charStats.en }} 个</el-descriptions-item>
-          <el-descriptions-item label="数字">{{ charStats.digits }} 个</el-descriptions-item>
-          <el-descriptions-item label="标点符号">{{ charStats.punct }} 个</el-descriptions-item>
-          <el-descriptions-item label="空格">{{ charStats.space }} 个</el-descriptions-item>
-          <el-descriptions-item label="换行符">{{ charStats.newline }} 个</el-descriptions-item>
-          <el-descriptions-item label="估计词数（英文）">{{ charStats.en }} 词</el-descriptions-item>
-          <el-descriptions-item label="预计阅读时间">{{ Math.ceil(wordCount / 400) }} 分钟</el-descriptions-item>
+        <el-descriptions
+          :column="1"
+          border
+        >
+          <el-descriptions-item label="总字符数">
+            {{ essayContent.length }} 个字符
+          </el-descriptions-item>
+          <el-descriptions-item label="中文字符">
+            {{ charStats.zh }} 个
+          </el-descriptions-item>
+          <el-descriptions-item label="英文字母">
+            {{ charStats.en }} 个
+          </el-descriptions-item>
+          <el-descriptions-item label="数字">
+            {{ charStats.digits }} 个
+          </el-descriptions-item>
+          <el-descriptions-item label="标点符号">
+            {{ charStats.punct }} 个
+          </el-descriptions-item>
+          <el-descriptions-item label="空格">
+            {{ charStats.space }} 个
+          </el-descriptions-item>
+          <el-descriptions-item label="换行符">
+            {{ charStats.newline }} 个
+          </el-descriptions-item>
+          <el-descriptions-item label="估计词数（英文）">
+            {{ charStats.en }} 词
+          </el-descriptions-item>
+          <el-descriptions-item label="预计阅读时间">
+            {{ Math.ceil(wordCount / 400) }} 分钟
+          </el-descriptions-item>
         </el-descriptions>
       </div>
     </el-dialog>
 
     <!-- PDF预览对话框 -->
-    <el-dialog v-model="pdfPreviewVisible" title="PDF预览" width="700px" fullscreen class="styled-dialog pdf-dialog">
-      <div ref="pdfPreviewRef" class="pdf-preview-wrapper">
+    <el-dialog
+      v-model="pdfPreviewVisible"
+      title="PDF预览"
+      width="700px"
+      fullscreen
+      class="styled-dialog pdf-dialog"
+    >
+      <div
+        ref="pdfPreviewRef"
+        class="pdf-preview-wrapper"
+      >
         <div class="pdf-document">
           <div class="pdf-header">
             <h1>{{ getEssayTypeLabel(selectedEssayType) }}</h1>
-            <p class="pdf-template-info">{{ selectedTemplate?.name }}</p>
+            <p class="pdf-template-info">
+              {{ selectedTemplate?.name }}
+            </p>
           </div>
-          <div class="pdf-body" v-html="renderedContent" />
+          <div
+            class="pdf-body"
+            v-html="renderedContent"
+          />
         </div>
       </div>
       <template #footer>
-        <el-button @click="pdfPreviewVisible = false">关闭预览</el-button>
-        <el-button type="primary" @click="downloadPDF">下载PDF</el-button>
+        <el-button @click="pdfPreviewVisible = false">
+          关闭预览
+        </el-button>
+        <el-button
+          type="primary"
+          @click="downloadPDF"
+        >
+          下载PDF
+        </el-button>
       </template>
     </el-dialog>
   </div>
