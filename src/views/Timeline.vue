@@ -1,14 +1,27 @@
 <template>
-  <div class="timeline-page" @mousemove="onMouseMove">
+  <div
+    class="timeline-page"
+    @mousemove="onMouseMove"
+  >
     <!-- Noise Texture Overlay -->
     <div class="noise-overlay" />
 
     <!-- Custom Cursor -->
-    <div class="cursor-dot" :style="{ left: cursorX + 'px', top: cursorY + 'px' }" />
-    <div class="cursor-ring" :class="{ expanded: cursorExpanded }" :style="{ left: ringX + 'px', top: ringY + 'px' }" />
+    <div
+      class="cursor-dot"
+      :style="{ left: cursorX + 'px', top: cursorY + 'px' }"
+    />
+    <div
+      class="cursor-ring"
+      :class="{ expanded: cursorExpanded }"
+      :style="{ left: ringX + 'px', top: ringY + 'px' }"
+    />
 
     <!-- ===== Hero: Cinematic Journey Opener ===== -->
-    <section class="hero-section" ref="heroRef">
+    <section
+      ref="heroRef"
+      class="hero-section"
+    >
       <div class="hero-grid-lines" />
       <div class="hero-glow hero-glow-1" />
       <div class="hero-glow hero-glow-2" />
@@ -36,14 +49,24 @@
           >
             <div class="stat-number-wrap">
               <span class="stat-number">{{ animatedStats[idx] }}</span>
-              <span v-if="stat.suffix" class="stat-suffix">{{ stat.suffix }}</span>
+              <span
+                v-if="stat.suffix"
+                class="stat-suffix"
+              >{{ stat.suffix }}</span>
             </div>
-            <span v-if="idx < heroStats.length - 1" class="stat-divider-v" />
+            <span
+              v-if="idx < heroStats.length - 1"
+              class="stat-divider-v"
+            />
             <span class="stat-label-text">{{ stat.label }}</span>
           </div>
         </div>
 
-        <div class="hero-scroll-hint" @mouseenter="cursorExpanded = true" @mouseleave="cursorExpanded = false">
+        <div
+          class="hero-scroll-hint"
+          @mouseenter="cursorExpanded = true"
+          @mouseleave="cursorExpanded = false"
+        >
           <span class="scroll-line" />
           <span class="scroll-text">SCROLL TO EXPLORE</span>
         </div>
@@ -54,7 +77,10 @@
     <section class="main-section">
       <div class="data-container">
         <!-- Floating Toolbar -->
-        <div class="toolbar-float" :class="{ 'toolbar-scrolled': toolbarScrolled }">
+        <div
+          class="toolbar-float"
+          :class="{ 'toolbar-scrolled': toolbarScrolled }"
+        >
           <div class="toolbar-inner">
             <div class="toolbar-left">
               <div class="view-switcher">
@@ -64,24 +90,64 @@
                   class="view-btn"
                   :class="{ active: currentView === view.value }"
                   @click="currentView = view.value"
-                >{{ view.label }}</button>
+                >
+                  {{ view.label }}
+                </button>
               </div>
-              <select id="view-mode" name="view-mode" v-model="mode" class="mode-select" @change="handleModeChange">
-                <option value="compact">紧凑</option>
-                <option value="normal">常规</option>
-                <option value="relaxed">宽松</option>
+              <select
+                id="view-mode"
+                v-model="mode"
+                name="view-mode"
+                class="mode-select"
+                @change="handleModeChange"
+              >
+                <option value="compact">
+                  紧凑
+                </option>
+                <option value="normal">
+                  常规
+                </option>
+                <option value="relaxed">
+                  宽松
+                </option>
               </select>
             </div>
             <div class="toolbar-right">
-              <button class="btn-icon" title="删除所有任务" @click="deleteAllTasks" @mouseenter="cursorExpanded = true" @mouseleave="cursorExpanded = false"><el-icon><Delete /></el-icon></button>
-              <button class="btn-icon" title="重置所有任务" @click="resetAllTasks" @mouseenter="cursorExpanded = true" @mouseleave="cursorExpanded = false"><el-icon><RefreshRight /></el-icon></button>
-              <button class="btn-primary-cta" @click="generateSampleTasks" @mouseenter="cursorExpanded = true" @mouseleave="cursorExpanded = false"><el-icon><DocumentAdd /></el-icon> 生成示例任务</button>
+              <button
+                class="btn-icon"
+                title="删除所有任务"
+                @click="deleteAllTasks"
+                @mouseenter="cursorExpanded = true"
+                @mouseleave="cursorExpanded = false"
+              >
+                <el-icon><Delete /></el-icon>
+              </button>
+              <button
+                class="btn-icon"
+                title="重置所有任务"
+                @click="resetAllTasks"
+                @mouseenter="cursorExpanded = true"
+                @mouseleave="cursorExpanded = false"
+              >
+                <el-icon><RefreshRight /></el-icon>
+              </button>
+              <button
+                class="btn-primary-cta"
+                @click="generateSampleTasks"
+                @mouseenter="cursorExpanded = true"
+                @mouseleave="cursorExpanded = false"
+              >
+                <el-icon><DocumentAdd /></el-icon> 生成示例任务
+              </button>
             </div>
           </div>
         </div>
 
         <!-- Chart View -->
-        <div v-if="currentView === 'chart'" class="chart-area animate-on-scroll">
+        <div
+          v-if="currentView === 'chart'"
+          class="chart-area animate-on-scroll"
+        >
           <div class="chart-card-premium">
             <div class="chart-header-bar">
               <h3 class="chart-title-premium">
@@ -89,17 +155,26 @@
               </h3>
               <span class="chart-sub-info">{{ milestones.length }} 个阶段 · 实时追踪</span>
             </div>
-            <div ref="chartRef" class="chart-canvas-premium" />
+            <div
+              ref="chartRef"
+              class="chart-canvas-premium"
+            />
           </div>
         </div>
 
         <!-- Timeline View -->
-        <div v-else-if="currentView === 'timeline'" class="timeline-area animate-on-scroll">
+        <div
+          v-else-if="currentView === 'timeline'"
+          class="timeline-area animate-on-scroll"
+        >
           <div class="timeline-card-premium">
             <div class="timeline-layout-premium">
               <div class="timeline-container-premium">
                 <div class="timeline-track">
-                  <div class="track-fill" :style="{ height: trackFillHeight + '%' }" />
+                  <div
+                    class="track-fill"
+                    :style="{ height: trackFillHeight + '%' }"
+                  />
                 </div>
                 <div
                   v-for="(milestone, mIdx) in milestones"
@@ -117,37 +192,92 @@
                 >
                   <div class="ms-node">
                     <div class="node-ring" />
-                    <div class="node-core" :class="'node-' + milestone.status" />
+                    <div
+                      class="node-core"
+                      :class="'node-' + milestone.status"
+                    />
                   </div>
-                  <div class="ms-card" :class="{ 'card-hover': hoverMilestone === milestone.id }">
+                  <div
+                    class="ms-card"
+                    :class="{ 'card-hover': hoverMilestone === milestone.id }"
+                  >
                     <div class="ms-card-top">
-                      <div class="ms-phase-num">PHASE {{ String(milestone.id).padStart(2, '0') }}</div>
-                      <span class="status-pill" :class="'pill-' + milestone.status">{{ getStatusLabel(milestone.status) }}</span>
+                      <div class="ms-phase-num">
+                        PHASE {{ String(milestone.id).padStart(2, '0') }}
+                      </div>
+                      <span
+                        class="status-pill"
+                        :class="'pill-' + milestone.status"
+                      >{{ getStatusLabel(milestone.status) }}</span>
                     </div>
-                    <h4 class="ms-title">{{ milestone.title }}</h4>
-                    <p class="ms-desc">{{ milestone.description }}</p>
+                    <h4 class="ms-title">
+                      {{ milestone.title }}
+                    </h4>
+                    <p class="ms-desc">
+                      {{ milestone.description }}
+                    </p>
                     <div class="ms-meta-row">
                       <span class="ms-date">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                        <svg
+                          width="14"
+                          height="14"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                        ><rect
+                          x="3"
+                          y="4"
+                          width="18"
+                          height="18"
+                          rx="2"
+                        /><line
+                          x1="16"
+                          y1="2"
+                          x2="16"
+                          y2="6"
+                        /><line
+                          x1="8"
+                          y1="2"
+                          x2="8"
+                          y2="6"
+                        /><line
+                          x1="3"
+                          y1="10"
+                          x2="21"
+                          y2="10"
+                        /></svg>
                         {{ formatDate(milestone.deadline) }}
                       </span>
                       <span class="ms-progress-val">{{ getMilestoneProgress(milestone) }}%</span>
                     </div>
                     <div class="ms-progress-track">
-                      <div class="ms-progress-bar" :style="{ width: getMilestoneProgress(milestone) + '%' }" />
+                      <div
+                        class="ms-progress-bar"
+                        :style="{ width: getMilestoneProgress(milestone) + '%' }"
+                      />
                     </div>
                   </div>
                 </div>
               </div>
 
               <!-- Detail Panel -->
-              <div v-if="selectedMilestone" class="detail-panel-premium">
+              <div
+                v-if="selectedMilestone"
+                class="detail-panel-premium"
+              >
                 <div class="dp-header">
-                  <div class="dp-phase-badge">PHASE {{ String(selectedMilestone.id).padStart(2, '0') }}</div>
-                  <h3 class="dp-title">{{ selectedMilestone.title }}</h3>
+                  <div class="dp-phase-badge">
+                    PHASE {{ String(selectedMilestone.id).padStart(2, '0') }}
+                  </div>
+                  <h3 class="dp-title">
+                    {{ selectedMilestone.title }}
+                  </h3>
                   <span class="dp-date">{{ formatDate(selectedMilestone.deadline) }}</span>
                 </div>
-                <p class="dp-desc">{{ selectedMilestone.description }}</p>
+                <p class="dp-desc">
+                  {{ selectedMilestone.description }}
+                </p>
 
                 <div class="dp-tasks-section">
                   <div class="dp-tasks-header">
@@ -160,49 +290,112 @@
                       class="dp-task-item"
                       :class="{ completed: task.completed }"
                     >
-                      <label class="dp-checkbox" @mouseenter="cursorExpanded = true" @mouseleave="cursorExpanded = false">
-                        <input type="checkbox" :checked="task.completed" @change="toggleTask(selectedMilestone.id, task.id)" :aria-label="'标记完成: ' + task.title">
+                      <label
+                        class="dp-checkbox"
+                        @mouseenter="cursorExpanded = true"
+                        @mouseleave="cursorExpanded = false"
+                      >
+                        <input
+                          type="checkbox"
+                          :checked="task.completed"
+                          :aria-label="'标记完成: ' + task.title"
+                          @change="toggleTask(selectedMilestone.id, task.id)"
+                        >
                         <span class="check-box" />
                       </label>
                       <span class="dp-task-name">{{ task.title }}</span>
-                      <span v-if="isUrgent(task.deadline) && !task.completed" class="tag-mini tag-danger">即将到期</span>
-                      <span v-else-if="isOverdue(task.deadline) && !task.completed" class="tag-mini tag-danger">已逾期</span>
+                      <span
+                        v-if="isUrgent(task.deadline) && !task.completed"
+                        class="tag-mini tag-danger"
+                      >即将到期</span>
+                      <span
+                        v-else-if="isOverdue(task.deadline) && !task.completed"
+                        class="tag-mini tag-danger"
+                      >已逾期</span>
                     </li>
                   </ul>
-                  <p v-if="selectedMilestone.tasks.length === 0" class="dp-empty">暂无任务</p>
+                  <p
+                    v-if="selectedMilestone.tasks.length === 0"
+                    class="dp-empty"
+                  >
+                    暂无任务
+                  </p>
                 </div>
 
                 <div class="dp-actions">
-                  <button class="btn-add-task" @click="showAddTaskToMilestone" @mouseenter="cursorExpanded = true" @mouseleave="cursorExpanded = false"><el-icon><Plus /></el-icon> 添加任务</button>
+                  <button
+                    class="btn-add-task"
+                    @click="showAddTaskToMilestone"
+                    @mouseenter="cursorExpanded = true"
+                    @mouseleave="cursorExpanded = false"
+                  >
+                    <el-icon><Plus /></el-icon> 添加任务
+                  </button>
                 </div>
               </div>
 
               <!-- Empty State -->
-              <div v-else class="empty-state-premium">
+              <div
+                v-else
+                class="empty-state-premium"
+              >
                 <div class="empty-rings">
                   <div class="ring ring-outer" />
                   <div class="ring ring-inner" />
                 </div>
-                <p class="empty-main-text">选择一个阶段</p>
-                <p class="empty-sub-text">点击左侧任意里程碑查看详情与任务管理</p>
+                <p class="empty-main-text">
+                  选择一个阶段
+                </p>
+                <p class="empty-sub-text">
+                  点击左侧任意里程碑查看详情与任务管理
+                </p>
               </div>
             </div>
           </div>
         </div>
 
         <!-- Kanban View -->
-        <div v-else class="kanban-area animate-on-scroll">
+        <div
+          v-else
+          class="kanban-area animate-on-scroll"
+        >
           <div class="kanban-toolbar-premium">
             <div class="kt-left">
-              <button v-if="!showOnlyUpcoming" class="btn-filter" @click="showUpcomingTasks" @mouseenter="cursorExpanded = true" @mouseleave="cursorExpanded = false"><el-icon><Bell /></el-icon> 即将到期 (7天)</button>
-              <button v-else class="btn-filter btn-filter-active" @click="showAllTasks" @mouseenter="cursorExpanded = true" @mouseleave="cursorExpanded = false"><el-icon><Back /></el-icon> 显示全部</button>
-              <span v-if="upcomingTasksCount > 0 && !showOnlyUpcoming" class="upcoming-badge">{{ upcomingTasksCount }} 个即将到期</span>
+              <button
+                v-if="!showOnlyUpcoming"
+                class="btn-filter"
+                @click="showUpcomingTasks"
+                @mouseenter="cursorExpanded = true"
+                @mouseleave="cursorExpanded = false"
+              >
+                <el-icon><Bell /></el-icon> 即将到期 (7天)
+              </button>
+              <button
+                v-else
+                class="btn-filter btn-filter-active"
+                @click="showAllTasks"
+                @mouseenter="cursorExpanded = true"
+                @mouseleave="cursorExpanded = false"
+              >
+                <el-icon><Back /></el-icon> 显示全部
+              </button>
+              <span
+                v-if="upcomingTasksCount > 0 && !showOnlyUpcoming"
+                class="upcoming-badge"
+              >{{ upcomingTasksCount }} 个即将到期</span>
             </div>
           </div>
           <div class="kanban-board-premium">
-            <div v-for="column in columns" :key="column.id" class="kanban-col-premium">
+            <div
+              v-for="column in columns"
+              :key="column.id"
+              class="kanban-col-premium"
+            >
               <div class="col-header-premium">
-                <span class="col-dot" :class="'dot-' + column.id" />
+                <span
+                  class="col-dot"
+                  :class="'dot-' + column.id"
+                />
                 <h4>{{ column.title }}</h4>
                 <span class="col-count-premium">{{ getColumnTasks(column.id).length }}</span>
               </div>
@@ -223,15 +416,30 @@
                   @mouseenter="cursorExpanded = true"
                   @mouseleave="cursorExpanded = false"
                 >
-                  <div class="tc-stripe" :class="'stripe-' + (isOverdue(task.deadline) ? 'danger' : isUrgent(task.deadline) ? 'warning' : 'solid')" />
+                  <div
+                    class="tc-stripe"
+                    :class="'stripe-' + (isOverdue(task.deadline) ? 'danger' : isUrgent(task.deadline) ? 'warning' : 'solid')"
+                  />
                   <div class="tc-body">
                     <div class="tc-top">
                       <span class="tc-title">{{ task.title }}</span>
                       <div class="tc-tags">
-                        <span v-if="isOverdue(task.deadline)" class="tag-sm tag-sm-danger">已逾期</span>
-                        <span v-else-if="task.reminderEnabled && isSoon(task.deadline)" class="tag-sm tag-sm-warning">即将到期</span>
-                        <span v-else-if="isUrgent(task.deadline)" class="tag-sm tag-sm-warning">紧急</span>
-                        <span v-if="task.reminderEnabled && !isOverdue(task.deadline)" class="tag-sm tag-sm-info">提醒</span>
+                        <span
+                          v-if="isOverdue(task.deadline)"
+                          class="tag-sm tag-sm-danger"
+                        >已逾期</span>
+                        <span
+                          v-else-if="task.reminderEnabled && isSoon(task.deadline)"
+                          class="tag-sm tag-sm-warning"
+                        >即将到期</span>
+                        <span
+                          v-else-if="isUrgent(task.deadline)"
+                          class="tag-sm tag-sm-warning"
+                        >紧急</span>
+                        <span
+                          v-if="task.reminderEnabled && !isOverdue(task.deadline)"
+                          class="tag-sm tag-sm-info"
+                        >提醒</span>
                       </div>
                     </div>
                     <div class="tc-meta">
@@ -240,14 +448,47 @@
                       <span>{{ formatDate(task.deadline) }}</span>
                     </div>
                     <div class="tc-actions-row">
-                      <button class="tc-action-btn" @click="editTask(task)">编辑</button>
-                      <button class="tc-action-btn tc-action-del" @click="deleteTask(task.id)">删除</button>
+                      <button
+                        class="tc-action-btn"
+                        @click="editTask(task)"
+                      >
+                        编辑
+                      </button>
+                      <button
+                        class="tc-action-btn tc-action-del"
+                        @click="deleteTask(task.id)"
+                      >
+                        删除
+                      </button>
                     </div>
                   </div>
                 </div>
-                <button v-if="getHiddenCount(column.id) > 0" class="expand-btn-premium" @click="toggleColumnExpand(column.id)" @mouseenter="cursorExpanded = true" @mouseleave="cursorExpanded = false"><el-icon><ArrowDown /></el-icon> {{ isColumnExpanded(column.id) ? '收起' : `展开剩余 ${getHiddenCount(column.id)} 个` }}</button>
-                <button v-else-if="isColumnExpanded(column.id) && getColumnTasks(column.id).length > VISIBLE_TASK_COUNT" class="expand-btn-premium expand-collapse" @click="toggleColumnExpand(column.id)" @mouseenter="cursorExpanded = true" @mouseleave="cursorExpanded = false"><el-icon><ArrowUp /></el-icon> 收起</button>
-                <button class="add-task-btn-premium" @click="showAddTask(column.id)" @mouseenter="cursorExpanded = true" @mouseleave="cursorExpanded = false"><el-icon><Plus /></el-icon> 添加新任务</button>
+                <button
+                  v-if="getHiddenCount(column.id) > 0"
+                  class="expand-btn-premium"
+                  @click="toggleColumnExpand(column.id)"
+                  @mouseenter="cursorExpanded = true"
+                  @mouseleave="cursorExpanded = false"
+                >
+                  <el-icon><ArrowDown /></el-icon> {{ isColumnExpanded(column.id) ? '收起' : `展开剩余 ${getHiddenCount(column.id)} 个` }}
+                </button>
+                <button
+                  v-else-if="isColumnExpanded(column.id) && getColumnTasks(column.id).length > VISIBLE_TASK_COUNT"
+                  class="expand-btn-premium expand-collapse"
+                  @click="toggleColumnExpand(column.id)"
+                  @mouseenter="cursorExpanded = true"
+                  @mouseleave="cursorExpanded = false"
+                >
+                  <el-icon><ArrowUp /></el-icon> 收起
+                </button>
+                <button
+                  class="add-task-btn-premium"
+                  @click="showAddTask(column.id)"
+                  @mouseenter="cursorExpanded = true"
+                  @mouseleave="cursorExpanded = false"
+                >
+                  <el-icon><Plus /></el-icon> 添加新任务
+                </button>
               </div>
             </div>
           </div>
@@ -258,55 +499,147 @@
     <!-- Task Dialog -->
     <Teleport to="body">
       <Transition name="dialog-premium">
-        <div v-if="taskDialogVisible" class="modal-overlay-premium" @click.self="taskDialogVisible = false">
-          <div class="modal-premium" @mouseenter="cursorExpanded = true" @mouseleave="cursorExpanded = false">
+        <div
+          v-if="taskDialogVisible"
+          class="modal-overlay-premium"
+          @click.self="taskDialogVisible = false"
+        >
+          <div
+            class="modal-premium"
+            @mouseenter="cursorExpanded = true"
+            @mouseleave="cursorExpanded = false"
+          >
             <div class="modal-header-premium">
               <h3>{{ editingTask ? '编辑任务' : '添加任务' }}</h3>
-              <button class="modal-close-premium" @click="taskDialogVisible = false">&times;</button>
+              <button
+                class="modal-close-premium"
+                @click="taskDialogVisible = false"
+              >
+                &times;
+              </button>
             </div>
             <div class="modal-body-premium">
               <div class="fg-group">
-                <label class="fg-label" for="task-title">任务标题</label>
-                <input id="task-title" v-model="taskForm.title" type="text" class="fg-input" placeholder="请输入任务标题">
+                <label
+                  class="fg-label"
+                  for="task-title"
+                >任务标题</label>
+                <input
+                  id="task-title"
+                  v-model="taskForm.title"
+                  type="text"
+                  class="fg-input"
+                  placeholder="请输入任务标题"
+                >
               </div>
               <div class="fg-group">
-                <label class="fg-label" for="task-milestone">所属阶段</label>
-                <select id="task-milestone" v-model="taskForm.milestoneId" class="fg-input fg-select">
-                  <option v-for="m in milestones" :key="m.id" :value="m.id">{{ m.title }}</option>
+                <label
+                  class="fg-label"
+                  for="task-milestone"
+                >所属阶段</label>
+                <select
+                  id="task-milestone"
+                  v-model="taskForm.milestoneId"
+                  class="fg-input fg-select"
+                >
+                  <option
+                    v-for="m in milestones"
+                    :key="m.id"
+                    :value="m.id"
+                  >
+                    {{ m.title }}
+                  </option>
                 </select>
               </div>
               <div class="fg-group">
-                <label class="fg-label" for="task-deadline">截止日期</label>
-                <input id="task-deadline" v-model="taskForm.deadline" type="date" class="fg-input">
+                <label
+                  class="fg-label"
+                  for="task-deadline"
+                >截止日期</label>
+                <input
+                  id="task-deadline"
+                  v-model="taskForm.deadline"
+                  type="date"
+                  class="fg-input"
+                >
               </div>
               <div class="fg-group">
                 <label class="fg-label">优先级</label>
                 <div class="priority-chips">
-                  <button v-for="p in priorityOptions" :key="p.value" class="priority-chip" :class="{ active: taskForm.priority === p.value }" @click="taskForm.priority = p.value">{{ p.label }}</button>
+                  <button
+                    v-for="p in priorityOptions"
+                    :key="p.value"
+                    class="priority-chip"
+                    :class="{ active: taskForm.priority === p.value }"
+                    @click="taskForm.priority = p.value"
+                  >
+                    {{ p.label }}
+                  </button>
                 </div>
               </div>
               <div class="fg-group">
                 <label class="fg-check-wrap">
-                  <input id="task-reminder" name="task-reminder" v-model="taskForm.reminderEnabled" type="checkbox" class="fg-check">
+                  <input
+                    id="task-reminder"
+                    v-model="taskForm.reminderEnabled"
+                    name="task-reminder"
+                    type="checkbox"
+                    class="fg-check"
+                  >
                   启用提醒
                 </label>
               </div>
-              <div v-if="taskForm.reminderEnabled" class="fg-group">
-                <label class="fg-label" for="task-reminder-days">提前提醒</label>
-                <select id="task-reminder-days" v-model="taskForm.reminderDays" class="fg-input fg-select">
-                  <option :value="1">提前1天</option>
-                  <option :value="3">提前3天</option>
-                  <option :value="7">提前7天</option>
+              <div
+                v-if="taskForm.reminderEnabled"
+                class="fg-group"
+              >
+                <label
+                  class="fg-label"
+                  for="task-reminder-days"
+                >提前提醒</label>
+                <select
+                  id="task-reminder-days"
+                  v-model="taskForm.reminderDays"
+                  class="fg-input fg-select"
+                >
+                  <option :value="1">
+                    提前1天
+                  </option>
+                  <option :value="3">
+                    提前3天
+                  </option>
+                  <option :value="7">
+                    提前7天
+                  </option>
                 </select>
               </div>
               <div class="fg-group">
-                <label class="fg-label" for="task-desc">描述</label>
-                <textarea id="task-desc" v-model="taskForm.description" class="fg-input fg-textarea" rows="3" placeholder="可选：添加任务描述..." />
+                <label
+                  class="fg-label"
+                  for="task-desc"
+                >描述</label>
+                <textarea
+                  id="task-desc"
+                  v-model="taskForm.description"
+                  class="fg-input fg-textarea"
+                  rows="3"
+                  placeholder="可选：添加任务描述..."
+                />
               </div>
             </div>
             <div class="modal-footer-premium">
-              <button class="btn-modal-ghost" @click="taskDialogVisible = false">取消</button>
-              <button class="btn-modal-primary" @click="saveTask">保存</button>
+              <button
+                class="btn-modal-ghost"
+                @click="taskDialogVisible = false"
+              >
+                取消
+              </button>
+              <button
+                class="btn-modal-primary"
+                @click="saveTask"
+              >
+                保存
+              </button>
             </div>
           </div>
         </div>

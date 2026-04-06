@@ -25,8 +25,9 @@
           </router-link>
         </nav>
 
-        <!-- 右侧：设置按钮 + 移动端汉堡菜单按钮 -->
+        <!-- 右侧：公告 + 设置按钮 + 移动端汉堡菜单按钮 -->
         <div class="header-right">
+          <AnnouncementButton />
           <el-tooltip
             content="AI配置"
             placement="bottom"
@@ -173,6 +174,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { Expand, Menu, Close, Document, Cpu, DataLine } from '@element-plus/icons-vue'
 import Logo from './components/common/Logo.vue'
 import SiteFooter from './components/common/SiteFooter.vue'
+import AnnouncementButton from './components/common/AnnouncementButton.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -257,6 +259,7 @@ const showContact = () => {
   display: flex;
   align-items: center;
   justify-content: flex-end;
+  gap: 10px;
 }
 
 .nav-menu-container {

@@ -2,7 +2,10 @@
   <div class="md-page">
     <div class="md-noise" />
 
-    <div v-if="loading" class="md-loading">
+    <div
+      v-if="loading"
+      class="md-loading"
+    >
       <div class="md-loading__spinner" />
       <span>加载专业信息中...</span>
     </div>
@@ -15,17 +18,34 @@
         :class="{ 'md-hero--visible': heroVisible }"
       >
         <div class="md-hero__grid-bg" />
-        <div class="md-hero__accent-bar" :class="'md-hero__accent-bar--' + categoryClass" />
+        <div
+          class="md-hero__accent-bar"
+          :class="'md-hero__accent-bar--' + categoryClass"
+        />
 
         <div class="md-hero__inner">
           <!-- 返回导航 -->
           <nav class="md-breadcrumb">
-            <button class="md-back" @click="goBack">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8L10 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <button
+              class="md-back"
+              @click="goBack"
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+                fill="none"
+              ><path
+                d="M10 12L6 8L10 4"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              /></svg>
               <span>返回</span>
             </button>
             <span class="md-breadcrumb__sep">/</span>
-            <span class="md-breadcrumb__text">材料中心</span>
+            <span class="md-breadcrumb__text">院校数据库</span>
             <span class="md-breadcrumb__sep">/</span>
             <span class="md-breadcrumb__current">专业详情</span>
           </nav>
@@ -43,7 +63,10 @@
           </div>
 
           <!-- 专业名称 — 超大展示字体 -->
-          <h1 ref="titleRef" class="md-title">
+          <h1
+            ref="titleRef"
+            class="md-title"
+          >
             <span
               v-for="(word, i) in titleWords"
               :key="i"
@@ -55,10 +78,17 @@
           </h1>
 
           <!-- 英文名 -->
-          <p v-if="englishName" class="md-subtitle">{{ englishName }}</p>
+          <p
+            v-if="englishName"
+            class="md-subtitle"
+          >
+            {{ englishName }}
+          </p>
 
           <!-- 描述 -->
-          <p class="md-desc">{{ major.description }}</p>
+          <p class="md-desc">
+            {{ major.description }}
+          </p>
         </div>
       </header>
 
@@ -69,26 +99,36 @@
         :class="{ 'md-body--visible': contentVisible }"
       >
         <div class="md-container">
-
           <!-- ===== 薪资数据 — Wow Moment ===== -->
           <section class="md-section md-section--salary">
             <div class="md-salary-block">
               <div class="md-salary__label-row">
                 <span class="md-salary__label">AVERAGE SALARY</span>
-                <span class="md-salary__source-link" @click="openSource(salarySource)">
+                <span
+                  class="md-salary__source-link"
+                  @click="openSource(salarySource)"
+                >
                   {{ salarySource?.label }} →
                 </span>
               </div>
               <div class="md-salary__numbers">
                 <div class="md-salary__item">
                   <span class="md-salary__region">CN</span>
-                  <span class="md-salary__val">{{ cnSalary }}<sup v-if="mdRefIndex('salary')" class="md-ref" @click.stop="openSource(major.sources.salary)">{{ mdRefIndex('salary') }}</sup></span>
+                  <span class="md-salary__val">{{ cnSalary }}<sup
+                    v-if="mdRefIndex('salary')"
+                    class="md-ref"
+                    @click.stop="openSource(major.sources.salary)"
+                  >{{ mdRefIndex('salary') }}</sup></span>
                   <span class="md-salary__unit">/月</span>
                 </div>
                 <div class="md-salary__divider" />
                 <div class="md-salary__item">
                   <span class="md-salary__region">US</span>
-                  <span class="md-salary__val">{{ usSalary }}<sup v-if="mdRefIndex('salary')" class="md-ref" @click.stop="openSource(major.sources.salary)">{{ mdRefIndex('salary') }}</sup></span>
+                  <span class="md-salary__val">{{ usSalary }}<sup
+                    v-if="mdRefIndex('salary')"
+                    class="md-ref"
+                    @click.stop="openSource(major.sources.salary)"
+                  >{{ mdRefIndex('salary') }}</sup></span>
                   <span class="md-salary__unit">/年</span>
                 </div>
               </div>
@@ -97,12 +137,13 @@
 
           <!-- ===== 双栏编辑区 ===== -->
           <div class="md-grid">
-
             <!-- 左栏: 核心课程 -->
             <section class="md-section md-section--courses">
               <header class="md-sec-head">
                 <span class="md-sec-num">01</span>
-                <h2 class="md-sec-title">核心课程</h2>
+                <h2 class="md-sec-title">
+                  核心课程
+                </h2>
               </header>
               <div class="md-courses">
                 <div
@@ -121,7 +162,9 @@
             <section class="md-section md-section--career">
               <header class="md-sec-head">
                 <span class="md-sec-num">02</span>
-                <h2 class="md-sec-title">就业方向</h2>
+                <h2 class="md-sec-title">
+                  就业方向
+                </h2>
               </header>
               <div class="md-careers">
                 <div
@@ -135,14 +178,15 @@
                 </div>
               </div>
             </section>
-
           </div>
 
           <!-- ===== 推荐院校 ===== -->
           <section class="md-section md-section--schools">
             <header class="md-sec-head">
               <span class="md-sec-num">03</span>
-              <h2 class="md-sec-title">推荐院校</h2>
+              <h2 class="md-sec-title">
+                推荐院校
+              </h2>
               <span class="md-sec-sub">开设此专业的顶尖院校</span>
             </header>
             <div class="md-schools">
@@ -153,14 +197,29 @@
                 :style="{ '--si': idx }"
                 @click="viewSchoolDetail(school)"
               >
-                <div class="md-school__rank" :class="'md-school__rank--' + getRankType(school.ranking)">
+                <div
+                  class="md-school__rank"
+                  :class="'md-school__rank--' + getRankType(school.ranking)"
+                >
                   {{ school.ranking }}
                 </div>
                 <div class="md-school__info">
                   <span class="md-school__name">{{ school.name }}</span>
                   <span class="md-school__loc">{{ school.country }}</span>
                 </div>
-                <svg class="md-school__arrow" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 4L10 8L6 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <svg
+                  class="md-school__arrow"
+                  width="16"
+                  height="16"
+                  viewBox="0 0 16 16"
+                  fill="none"
+                ><path
+                  d="M6 4L10 8L6 12"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                /></svg>
               </div>
             </div>
           </section>
@@ -169,9 +228,14 @@
           <section class="md-section md-section--sources">
             <header class="md-sec-head">
               <span class="md-sec-num">04</span>
-              <h2 class="md-sec-title">数据来源</h2>
+              <h2 class="md-sec-title">
+                数据来源
+              </h2>
             </header>
-            <ol v-if="mdRefList.length > 0" class="md-ref-list">
+            <ol
+              v-if="mdRefList.length > 0"
+              class="md-ref-list"
+            >
               <li
                 v-for="ref in mdRefList"
                 :key="ref.key"
@@ -181,7 +245,12 @@
                   class="md-ref-item__num"
                   @click.stop="openSource(ref)"
                 >[{{ ref.index }}]</span>
-                <a :href="ref.url" target="_blank" rel="noopener noreferrer" class="md-ref-item__link">{{ ref.label }}</a>
+                <a
+                  :href="ref.url"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="md-ref-item__link"
+                >{{ ref.label }}</a>
                 <span class="md-ref-item__arrow">↗</span>
               </li>
             </ol>
@@ -189,25 +258,76 @@
 
           <!-- ===== 底部操作栏 ===== -->
           <footer class="md-actions">
-            <button class="md-btn md-btn--ghost" @click="goBack">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 12L6 8L10 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              返回材料中心
+            <button
+              class="md-btn md-btn--ghost"
+              @click="goBack"
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+                fill="none"
+              ><path
+                d="M10 12L6 8L10 4"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              /></svg>
+              返回院校数据库
             </button>
-            <button class="md-btn md-btn--primary" @click="startAIChat">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M14 8C14 11.31 11.31 14 8 14C6.58 14 5.27 13.51 4.23 12.69L2 13L2.75 10.77C1.93 9.73 1.44 8.42 1.44 7C1.44 3.69 4.13 1 7.44 1C10.75 1 14 3.69 14 7V8Z" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="6" cy="7" r="0.8" fill="currentColor"/><circle cx="10" cy="7" r="0.8" fill="currentColor"/></svg>
+            <button
+              class="md-btn md-btn--primary"
+              @click="startAIChat"
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+                fill="none"
+              ><path
+                d="M14 8C14 11.31 11.31 14 8 14C6.58 14 5.27 13.51 4.23 12.69L2 13L2.75 10.77C1.93 9.73 1.44 8.42 1.44 7C1.44 3.69 4.13 1 7.44 1C10.75 1 14 3.69 14 7V8Z"
+                stroke="currentColor"
+                stroke-width="1.3"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              /><circle
+                cx="6"
+                cy="7"
+                r="0.8"
+                fill="currentColor"
+              /><circle
+                cx="10"
+                cy="7"
+                r="0.8"
+                fill="currentColor"
+              /></svg>
               AI 深度解析
             </button>
           </footer>
-
         </div>
       </main>
     </template>
 
-    <div v-else class="md-error">
-      <div class="md-error__icon">404</div>
-      <div class="md-error__title">专业未找到</div>
-      <div class="md-error__desc">该专业可能已被移除或 ID 无效</div>
-      <button class="md-btn md-btn--primary" @click="router.push('/materials')">返回材料中心</button>
+    <div
+      v-else
+      class="md-error"
+    >
+      <div class="md-error__icon">
+        404
+      </div>
+      <div class="md-error__title">
+        专业未找到
+      </div>
+      <div class="md-error__desc">
+        该专业可能已被移除或 ID 无效
+      </div>
+      <button
+        class="md-btn md-btn--primary"
+        @click="router.push('/university-database?tab=majors')"
+      >
+        返回院校数据库
+      </button>
     </div>
   </div>
 </template>
@@ -304,7 +424,7 @@ function getRankType(ranking) {
 }
 
 function goBack() {
-  router.push('/materials')
+  router.push('/university-database?tab=majors')
 }
 
 function viewSchoolDetail(school) {
@@ -340,9 +460,15 @@ function startAIChat() {
 }
 
 onMounted(async () => {
-  // 强制滚动到页面顶部
-  window.scrollTo(0, 0)
-  document.documentElement.scrollTop = 0
+  const resetScroll = () => {
+    const appMain = document.querySelector('.app-main')
+    if (appMain) appMain.scrollTo({ top: 0, left: 0, behavior: 'instant' })
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' })
+    document.documentElement.scrollTop = 0
+    document.body.scrollTop = 0
+  }
+  resetScroll()
+  requestAnimationFrame(resetScroll)
 
   try {
     const id = parseInt(route.params.id)
