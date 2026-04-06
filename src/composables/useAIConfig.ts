@@ -3,7 +3,7 @@ import { useGlobalAIState, type AIConfig } from './useGlobalAIState'
 export interface AIProvider {
   id: string
   name: string
-  type: 'openai' | 'anthropic' | 'deepseek' | 'openrouter' | 'custom'
+  type: 'openai' | 'anthropic' | 'domestic' | 'other'
   apiKey: string
   baseUrl?: string
   model?: string
@@ -22,7 +22,7 @@ const PROVIDERS_KEY = 'ai_providers'
 const DEFAULT_PROVIDER: AIProvider = {
   id: 'provider-default-zhipu',
   name: '智谱 GLM-4.7-Flash（推荐）',
-  type: 'deepseek',
+  type: 'domestic',
   apiKey: '015518e0bc86498dafdc42bf88b1572a.dioiOVESgV9mUg5i',
   baseUrl: 'https://open.bigmodel.cn/api/paas/v4',
   model: 'glm-4.7-flash',
@@ -136,7 +136,7 @@ export function useAIConfig() {
       errors.push('请输入 API Key')
     }
     
-    if (provider.type === 'custom' && !provider.baseUrl?.trim()) {
+    if (provider.type === 'other' && !provider.baseUrl?.trim()) {
       errors.push('自定义提供商需要输入 Base URL')
     }
     

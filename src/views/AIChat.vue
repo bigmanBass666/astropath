@@ -535,10 +535,11 @@ const lastError = ref(null)
 const userData = ref(null)
 const enableThinking = ref(false)
 const searchQuery = ref('')
-const CHAT_STATE_KEY = 'ai_chat_current_state'
+const CHAT_STATE_KEY_PREFIX = 'ai_chat_state_'
 const currentStream = ref(null)
 let isRestoringState = false
 let isFreshEntry = true
+const agentSessionMessages = ref({})
 
 const { scrollToBottom, handleUserScroll: handleStreamScroll } = useAIStream({
   taskId: `chat-${currentAgentId.value}`,
@@ -562,38 +563,62 @@ const goBack = () => router.back()
 
 const saveCurrentState = () => {
   if (isRestoringState) return
-  localStorage.setItem(CHAT_STATE_KEY, JSON.stringify({ messages: messages.value, currentAgentId: currentAgentId.value, currentConversationId: currentConversationId.value, savedAt: Date.now() }))
-}
-
-const loadCurrentState = () => {
-  const saved = localStorage.getItem(CHAT_STATE_KEY)
-  if (saved) {
-    try {
-      const state = JSON.parse(saved)
-      if (state.messages && state.messages.length > 0) {
-        isRestoringState = true; currentAgentId.value = state.currentAgentId || 'consultant'; currentConversationId.value = state.currentConversationId || null; messages.value = state.messages; isRestoringState = false
-        nextTick(() => scrollToBottom(true))
-      }
-    } catch (_e) { isRestoringState = false }
+  agentSessionMessages.value[currentAgentId.value] = {
+    messages: JSON.parse(JSON.stringify(messages.value)),
+    currentConversationId: currentConversationId.value,
+    savedAt: Date.now()
   }
 }
 
-const clearCurrentState = () => localStorage.removeItem(CHAT_STATE_KEY)
+const loadAgentSession = (agentId) => {
+  const session = agentSessionMessages.value[agentId]
+  if (session && session.messages && session.messages.length > 0) {
+    isRestoringState = true
+    messages.value = JSON.parse(JSON.stringify(session.messages))
+    currentConversationId.value = session.currentConversationId || null
+    isRestoringState = false
+    nextTick(() => scrollToBottom(true))
+    return true
+  }
+  return false
+}
+
+const clearCurrentState = () => {
+  delete agentSessionMessages.value[currentAgentId.value]
+}
+
+const clearAllAgentSessions = () => {
+  agentSessionMessages.value = {}
+}
 
 const conversations = ref([])
 const filteredConversations = computed(() => {
-  if (!searchQuery.value) return conversations.value
-  const q = searchQuery.value.toLowerCase()
-  return conversations.value.filter(c => (c.title && c.title.toLowerCase().includes(q)) || getAgentName(c.agentId).toLowerCase().includes(q))
+  let result = conversations.value
+  result = result.filter(c => c.agentId === currentAgentId.value)
+  if (searchQuery.value) {
+    const q = searchQuery.value.toLowerCase()
+    result = result.filter(c => (c.title && c.title.toLowerCase().includes(q)) || getAgentName(c.agentId).toLowerCase().includes(q))
+  }
+  return result
 })
 
 const todayConversations = computed(() => {
-  const t = new Date(); t.setHours(0, 0, 0, 0)
-  return filteredConversations.value.filter(c => { const d = new Date(c.createdAt); d.setHours(0, 0, 0, 0); return d.getTime() === t.getTime() })
+  const t = new Date()
+  t.setHours(0, 0, 0, 0)
+  return filteredConversations.value.filter(c => {
+    const d = new Date(c.createdAt)
+    d.setHours(0, 0, 0, 0)
+    return d.getTime() === t.getTime()
+  })
 })
 const olderConversations = computed(() => {
-  const t = new Date(); t.setHours(0, 0, 0, 0)
-  return filteredConversations.value.filter(c => { const d = new Date(c.createdAt); d.setHours(0, 0, 0, 0); return d.getTime() < t.getTime() })
+  const t = new Date()
+  t.setHours(0, 0, 0, 0)
+  return filteredConversations.value.filter(c => {
+    const d = new Date(c.createdAt)
+    d.setHours(0, 0, 0, 0)
+    return d.getTime() < t.getTime()
+  })
 })
 
 const providers = computed(() => { const s = localStorage.getItem('ai_providers'); return s ? JSON.parse(s) : [DEFAULT_PROVIDER] })
@@ -604,12 +629,22 @@ const loadProviders = () => { const s = localStorage.getItem('ai_providers'); if
 
 const selectAgent = (id) => {
   if (currentAgentId.value === id) return
-  if (messages.value.length > 0) saveConversation()
+  if (messages.value.length > 0) {
+    saveConversation()
+    saveCurrentState()
+  }
   currentAgentId.value = id
-  if (isFreshEntry) { messages.value = []; currentConversationId.value = null; clearCurrentState(); return }
-  const last = conversations.value.filter(c => c.agentId === id).sort((a, b) => b.createdAt - a.createdAt)[0]
-  if (last && last.messages && last.messages.length > 0) { messages.value = JSON.parse(JSON.stringify(last.messages)); currentConversationId.value = last.id; saveCurrentState() }
-  else { messages.value = []; currentConversationId.value = null; clearCurrentState() }
+  if (isFreshEntry) {
+    messages.value = []
+    currentConversationId.value = null
+    clearCurrentState()
+    return
+  }
+  if (loadAgentSession(id)) {
+    return
+  }
+  messages.value = []
+  currentConversationId.value = null
 }
 
 const toggleThinking = () => { enableThinking.value = !enableThinking.value }
@@ -696,8 +731,29 @@ const autoSaveConversation = () => { if (saveTimeout) clearTimeout(saveTimeout);
 watch(messages, (nv) => { if (isRestoringState) return; if (nv.length > 0) autoSaveConversation(); if (!isGenerating.value) saveCurrentState() }, { deep: true })
 watch(currentAgentId, () => saveCurrentState())
 
-onMounted(() => { loadProviders(); loadUserData(); const s = localStorage.getItem('conversations'); if (s) { conversations.value = JSON.parse(s); conversations.value.forEach((c, i) => { if (!c.id) c.id = Date.now() + i }) }; loadCurrentState() })
-onUnmounted(() => { saveCurrentState(); if (currentStream.value) currentStream.value.stop(); isFreshEntry = true })
+onMounted(() => {
+  loadProviders()
+  loadUserData()
+  const s = localStorage.getItem('conversations')
+  if (s) {
+    conversations.value = JSON.parse(s)
+    conversations.value.forEach((c, i) => {
+      if (!c.id) c.id = Date.now() + i
+    })
+  }
+  if (isFreshEntry) {
+    clearAllAgentSessions()
+    messages.value = []
+    currentConversationId.value = null
+  } else {
+    loadAgentSession(currentAgentId.value)
+  }
+})
+onUnmounted(() => {
+  saveCurrentState()
+  if (currentStream.value) currentStream.value.stop()
+  isFreshEntry = true
+})
 </script>
 
 <style scoped>
