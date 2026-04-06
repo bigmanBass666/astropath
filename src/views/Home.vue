@@ -103,7 +103,7 @@
             <p>{{ feature.desc }}</p>
             <el-link
               type="primary"
-              :underline="false"
+              underline="never"
               class="feature-link"
               :href="feature.path"
             >

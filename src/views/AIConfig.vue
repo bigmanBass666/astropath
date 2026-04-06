@@ -87,7 +87,7 @@
               <span class="notice-label">SECURITY NOTICE</span>
               <span class="notice-divider" />
               <span class="notice-text">
-                当前使用开发者测试 API Key（<span class="notice-model">GLM-4.7-Flash</span>），<span class="notice-emphasis">请勿用于其他用途</span>。
+                当前使用开发者测试 API Key（<span class="notice-model">{{ zhipuModelName }}</span>），<span class="notice-emphasis">请勿用于其他用途</span>。
               </span>
             </div>
           </div>
@@ -460,6 +460,11 @@
 <script setup>
 import { ref, computed, reactive, onMounted, onUnmounted } from 'vue'
 import { testProviderConnection } from '@/utils/ai-api'
+import { ZHIPU_MODEL_ID } from '@/composables/useAIConfig'
+
+const zhipuModelName = computed(() =>
+  '智谱 ' + ZHIPU_MODEL_ID.split('-').map((p, i) => i === 0 ? p.toUpperCase() : p.charAt(0).toUpperCase() + p.slice(1)).join('-')
+)
 
 const providers = ref([])
 const newProvider = ref({
@@ -551,23 +556,23 @@ const addProvider = () => {
 }
 
 const addZhipuPreset = () => {
-  const existing = providers.value.find(p => p.name === '智谱 GLM-4.7-Flash（推荐）')
+  const existing = providers.value.find(p => p.name === zhipuModelName.value + '（推荐）')
   if (existing) {
     showToast('智谱配置已存在', 'info')
     return
   }
   providers.value.push({
-    name: '智谱 GLM-4.7-Flash（推荐）',
+    name: zhipuModelName.value + '（推荐）',
     type: 'domestic',
     baseUrl: 'https://open.bigmodel.cn/api/paas/v4',
     apiKey: '015518e0bc86498dafdc42bf88b1572a.dioiOVESgV9mUg5i',
-    model: 'glm-4.7-flash',
+    model: ZHIPU_MODEL_ID,
     status: 'untested',
     id: Date.now(),
     supportsThinking: true
   })
   saveProviders()
-  showToast('已添加智谱 GLM-4.7-Flash 配置（支持思考模式），请点击"测试"验证连接', 'success')
+  showToast('已添加' + zhipuModelName.value + '配置（支持思考模式），请点击"测试"验证连接', 'success')
 }
 
 const removeProvider = (index) => {

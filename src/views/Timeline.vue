@@ -564,8 +564,15 @@
                 >
               </div>
               <div class="fg-group">
-                <label class="fg-label">优先级</label>
-                <div class="priority-chips">
+                <span
+                  id="priority-label"
+                  class="fg-label"
+                >优先级</span>
+                <div
+                  class="priority-chips"
+                  role="radiogroup"
+                  aria-labelledby="priority-label"
+                >
                   <button
                     v-for="p in priorityOptions"
                     :key="p.value"

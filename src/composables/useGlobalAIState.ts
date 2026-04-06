@@ -279,6 +279,7 @@ export function useGlobalAIState() {
       queuePosition: 0
     }
     globalState.tasks[taskId] = task
+    console.log('[GlobalAIState] initTask:', { taskId, taskKeys: Object.keys(globalState.tasks) })
     scheduleSave()
     return task
   }
@@ -404,6 +405,8 @@ export function useGlobalAIState() {
     const task = globalState.tasks[taskId]
     if (task) {
       task.content += content
+      task.timestamp = Date.now()
+      console.log('[GlobalAIState] appendContent:', { taskId, contentLength: task.content.length, addedLength: content.length })
       if (collapseReasoning && task.reasoning) {
         task.showReasoning = false
       }
@@ -543,6 +546,8 @@ export function useGlobalAIState() {
     return streamActionsMap.get(taskId) ?? null
   }
 
+  const _getRawTask = (taskId: string) => globalState.tasks[taskId]
+
   return {
     state: readonly(globalState),
     tasks: readonly(globalState.tasks),
@@ -550,6 +555,7 @@ export function useGlobalAIState() {
     activeCount: computed(() => globalState.activeCount),
     config: computed(() => globalState.config),
     getTask,
+    _getRawTask,
     hasTask,
     isTaskActive,
     canStartTask,

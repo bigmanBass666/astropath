@@ -271,8 +271,15 @@
 
         <!-- Degree: Large Pill Row -->
         <div class="degree-row">
-          <label class="fb-label">学历层次</label>
-          <div class="deg-pills">
+          <span
+            id="degree-label"
+            class="fb-label"
+          >学历层次</span>
+          <div
+            class="deg-pills"
+            role="radiogroup"
+            aria-labelledby="degree-label"
+          >
             <button
               v-for="d in ['本科','硕士','博士']"
               :key="d"
@@ -287,8 +294,15 @@
 
         <!-- Majors: Tag Cloud -->
         <div class="major-row">
-          <label class="fb-label">专业方向（可多选）</label>
-          <div class="tag-cloud">
+          <span
+            id="major-label"
+            class="fb-label"
+          >专业方向（可多选）</span>
+          <div
+            class="tag-cloud"
+            role="group"
+            aria-labelledby="major-label"
+          >
             <button
               v-for="m in ['理工','商科','人文','社科','艺术']"
               :key="m"
@@ -735,7 +749,7 @@
             <!-- AI Analysis Card -->
             <div
               class="bt-ai"
-              :class="{ busy: aiStream.isLoading, done: aiStream.content && !aiStream.isLoading, err: aiStream.error, idle: !aiStream.isLoading && !aiStream.content && !aiStream.error }"
+              :class="{ busy: aiStream.isLoading, done: aiContent && !aiStream.isLoading, err: aiStream.error, idle: !aiStream.isLoading && !aiContent && !aiStream.error }"
             >
               <div
                 class="bta-head"
@@ -783,7 +797,7 @@
                 class="bta-body"
               >
                 <div
-                  v-if="aiStream.isThinking && !aiStream.content && !aiStream.reasoning"
+                  v-if="aiStream.isThinking && !aiContent && !aiStream.reasoning"
                   class="ai-thinking"
                 >
                   <div class="at-dots">
@@ -840,7 +854,7 @@
                   </div>
                 </div>
                 <div
-                  v-if="aiStream.isLoading && aiStream.hasReasoning && !aiStream.content && !aiStream.isThinking"
+                  v-if="aiStream.isLoading && aiStream.hasReasoning && !aiContent && !aiStream.isThinking"
                   class="ai-thinking"
                 >
                   <div class="at-dots">
@@ -861,9 +875,17 @@
                     停止
                   </button>
                 </div>
+                <!-- DEBUG -->
+                <div style="background: #fef3c7; padding: 8px; margin-bottom: 10px; font-size: 12px; font-family: monospace; white-space: pre-wrap;">
+                  <div>aiContent.length={{ aiContent.length }}</div>
+                  <div>hasContent={{ aiStream.hasContent }}</div>
+                  <div>isLoading={{ aiStream.isLoading }}</div>
+                  <div>state={{ aiStream.state }}</div>
+                </div>
                 <div
-                  v-if="aiStream.content || (aiStream.isLoading && aiStream.hasContent)"
+                  v-if="aiContent || (aiStream.isLoading && aiStream.hasContent)"
                   class="content-box"
+                  style="border: 2px solid red; min-height: 100px;"
                 >
                   <div
                     class="cb-header"
@@ -896,7 +918,7 @@
                   >
                     <div
                       class="ai-md"
-                      v-html="renderAiContent(aiStream.content)"
+                      v-html="renderAiContent(aiContent)"
                     />
                     <span
                       v-if="aiStream.isStreaming"
@@ -1336,9 +1358,10 @@ import { renderMarkdown } from '@/utils/markdown'
 import { useAIStream } from '@/composables/useAIStream'
 import { useActiveStream } from '@/composables/useActiveStream'
 import { useGlobalAIState } from '@/composables/useGlobalAIState'
-import { DEFAULT_PROVIDER } from '@/composables/useAIConfig'
+import { useAIConfig } from '@/composables/useAIConfig'
 
 const router = useRouter()
+const aiConfig = useAIConfig()
 const currentStep = ref(0)
 const practiceTab = ref('internship')
 const basicFormRef = ref(null)
@@ -1447,17 +1470,22 @@ globalAIState.clearActiveStream()
 const _btnDisabled = ref(false)
 
 const selectedProvider = ref(null)
-const providers = computed(() => { try { return JSON.parse(localStorage.getItem('ai_providers') || '[]') } catch { return [DEFAULT_PROVIDER] } })
+const providers = computed(() => aiConfig.getProviders())
 const currentProviderName = computed(() => providers.value.find(p => p.id === selectedProvider.value)?.name || '选择AI模型')
-const loadProviders = () => { try { const p = JSON.parse(localStorage.getItem('ai_providers') || '[]'); if (p.length > 0) selectedProvider.value = p[0].id; else selectedProvider.value = DEFAULT_PROVIDER.id } catch {} }
+const loadProviders = () => { const defaultProvider = aiConfig.getDefaultProvider(); if (defaultProvider) selectedProvider.value = defaultProvider.id }
 
 const showReasoning = ref(true), showAiContent = ref(true), showAiSection = ref(true)
 const animatedScore = ref('0.0')
+
+const aiContent = computed(() => {
+  const c = aiStream.content
+  return typeof c === 'string' ? c : (c?.value ?? '')
+})
 const animateScore = (target) => { const start = parseFloat(animatedScore.value) || 0, dur = 1200, t0 = performance.now(); const tick = (now) => { const p = Math.min((now - t0) / dur, 1), e = 1 - Math.pow(1 - p, 3); animatedScore.value = (start + (target - start) * e).toFixed(1); if (p < 1) requestAnimationFrame(tick) }; requestAnimationFrame(tick) }
 watch(overallScore, (v) => { if (currentStep.value === 3) animateScore(v) })
 
-const generateReport = async () => { _btnDisabled.value = true; aiStream.reset(); await new Promise(r => setTimeout(r, 500)); currentStep.value = 3; await nextTick(); renderRadarChart(); animateScore(overallScore.value); if (selectedProvider.value) await callAIAnalysis(); else _btnDisabled.value = false }
-const callAIAnalysis = async () => { const scores = { overall: overallScore.value, academic: academicScore.value, language: languageScore.value, research: researchScore.value, practice: practiceScore.value }; try { await aiStream.generateWithProvider(selectedProvider.value, [{ role: 'user', content: buildAssessmentPrompt(form, scores) }]) } catch {} finally { _btnDisabled.value = false } }
+const generateReport = async () => { _btnDisabled.value = true; showAiSection.value = true; showAiContent.value = true; await new Promise(r => setTimeout(r, 500)); currentStep.value = 3; await nextTick(); renderRadarChart(); animateScore(overallScore.value); if (selectedProvider.value) await callAIAnalysis(); else { _btnDisabled.value = false } }
+const callAIAnalysis = async () => { const scores = { overall: overallScore.value, academic: academicScore.value, language: languageScore.value, research: researchScore.value, practice: practiceScore.value }; try { await aiStream.generateWithProvider(selectedProvider.value, [{ role: 'user', content: buildAssessmentPrompt(form, scores) }]) } catch (err) { console.error('[Assessment] AI analysis failed:', err) } finally { _btnDisabled.value = false } }
 const retryAIAnalysis = () => activeStream.handleRetry()
 const stopAIAnalysis = () => { aiStream.stop(); activeStream.stopGeneration(); _btnDisabled.value = false }
 const renderAiContent = (c) => c && typeof c === 'string' ? renderMarkdown(c) : ''
@@ -1477,11 +1505,11 @@ const handleResize = () => radarChart?.resize()
 const saveReport = () => { localStorage.setItem('assessment_report', JSON.stringify({ ...form, scores: { overall: overallScore.value, academic: academicScore.value, language: languageScore.value, research: researchScore.value, practice: practiceScore.value }, savedAt: new Date().toISOString() })); ElMessage.success('已保存') }
 const resetForm = () => ElMessageBox.confirm('确定重新填写？数据将丢失', '提示', { confirmButtonText: '确定', cancelButtonText: '取消' }).then(() => { isResetting.value = true; Object.assign(form.basic, { name:'', age:22, university:'', gpa:3.0, language:'' }); Object.assign(form.academic, { degree:'本科', majors:[], averageScore:80, research:[] }); Object.assign(form.practice, { internships:[], competitions:[], volunteers:[] }); aiStream.reset(); showAiSection.value = showReasoning.value = showAiContent.value = true; currentStep.value = 0; practiceTab.value = 'internship'; localStorage.removeItem('assessment_form'); setTimeout(() => isResetting.value = false, 0) }).catch(() => {})
 let isLoaded = false; const isResetting = ref(false)
-const loadFromStorage = async () => { try { const d = JSON.parse(localStorage.getItem('assessment_form') || '{}'); if (d.form) { Object.assign(form.basic, d.form.basic || {}); Object.assign(form.academic, d.academic || {}); Object.assign(form.practice, d.practice || {}) }; if (typeof d.currentStep === 'number') currentStep.value = d.currentStep; if (d.practiceTab) practiceTab.value = d.practiceTab; if (typeof d.showReasoning === 'boolean') showReasoning.value = d.showReasoning; if (typeof d.showAiContent === 'boolean') showAiContent.value = d.showAiContent; if (typeof d.showAiSection === 'boolean') showAiSection.value = d.showAiSection } catch {} isLoaded = true; if (currentStep.value === 3) { await nextTick(); renderRadarChart(); animateScore(overallScore.value) } }
+const loadFromStorage = async () => { try { const d = JSON.parse(localStorage.getItem('assessment_form') || '{}'); if (d.form) { Object.assign(form.basic, d.form.basic || {}); Object.assign(form.academic, d.academic || {}); Object.assign(form.practice, d.practice || {}) }; if (typeof d.currentStep === 'number') currentStep.value = d.currentStep; if (d.practiceTab) practiceTab.value = d.practiceTab; if (typeof d.showReasoning === 'boolean') showReasoning.value = d.showReasoning } catch {} isLoaded = true; if (currentStep.value === 3) { await nextTick(); renderRadarChart(); animateScore(overallScore.value) } }
 
 watch([form, currentStep, practiceTab, showReasoning, showAiContent, showAiSection], () => { if (!isLoaded || isResetting.value) return; localStorage.setItem('assessment_form', JSON.stringify({ form: { basic:{...form.basic}, academic:{...form.academic}, practice:{ internships:[...form.practice.internships], competitions:[...form.practice.competitions], volunteers:[...form.practice.volunteers] } }, currentStep: currentStep.value, practiceTab: practiceTab.value, showReasoning: showReasoning.value, showAiContent: showAiContent.value, showAiSection: showAiSection.value })); if (form.basic.name || form.basic.university) localStorage.setItem('assessment_report', JSON.stringify({ ...form, scores: { overall:overallScore.value, academic:academicScore.value, language:languageScore.value, research:researchScore.value, practice:practiceScore.value }, savedAt:new Date().toISOString() })) }, { deep: true })
 
-onMounted(() => { window.addEventListener('resize', handleResize); loadFromStorage(); loadProviders(); nextTick(() => aiStream.reset()) })
+onMounted(() => { window.addEventListener('resize', handleResize); loadProviders(); loadFromStorage(); })
 onUnmounted(() => { window.removeEventListener('resize', handleResize); radarChart?.dispose(); radarChart = null })
 </script>
 

@@ -20,7 +20,7 @@ export function useDatabaseState() {
   const filterCountry = ref('')
   const filterRankRange = ref('')
   const filterMajor = ref('')
-  const sortBy = ref('')
+  const sortBy = ref('qs_rank')
   const viewMode = ref('card')
   const currentSchoolPage = ref(1)
   const schoolPageSize = ref(12)

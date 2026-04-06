@@ -5,7 +5,22 @@
 
 import { DEFAULT_PROVIDER } from '@/composables/useAIConfig'
 
-const _debug = import.meta.env.DEV ? (...args) => console.log(...args) : () => {}
+const _debug = import.meta.env.DEV ? (...args) => console.log('[AI API]', ...args) : () => {}
+
+const IS_DEV = import.meta.env.DEV
+
+function resolveApiUrl(provider) {
+  if (!provider.baseUrl) return '/ai-proxy/chat/completions'
+  if (IS_DEV && provider.baseUrl.startsWith('http')) {
+    try {
+      const url = new URL(provider.baseUrl)
+      return `/ai-proxy/chat/completions`
+    } catch {
+      return `${provider.baseUrl}/chat/completions`
+    }
+  }
+  return `${provider.baseUrl}/chat/completions`
+}
 
 const EMPTY_USER_GUIDANCE_PROMPT = `【⚠️ 重要：用户尚未填写背景信息】
 
@@ -75,7 +90,11 @@ export async function sendMessageToAI(providerId, messages, options = {}, extern
       })
     }
 
-    const response = await fetch(`${provider.baseUrl}/chat/completions`, {
+    const apiUrl = resolveApiUrl(provider)
+    _debug('[AI API] Requesting:', apiUrl, '| model:', provider.model, '| provider:', provider.name)
+    _debug('[AI API] Full URL will be proxied to:', provider.baseUrl, '/chat/completions')
+
+    const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -117,7 +136,8 @@ export async function sendMessageToAI(providerId, messages, options = {}, extern
       return handleNormalResponse(response)
     }
   } catch (error) {
-    // 网络错误或请求失败
+    _debug('[AI API] Request failed:', error.name, error.message)
+
     if (error.name === 'AbortError') {
       throw new AIError('network', '请求超时，请检查网络连接或稍后重试')
     } else if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
@@ -145,13 +165,20 @@ function buildRequestBody(provider, messages, options) {
   }
 
   // 思考模式特殊处理
+  // 注意：GLM-Z1-Flash 等推理模型默认内置深度思考，不需要额外参数启用
+  // 思考内容会通过 reasoning_content 字段自动返回
   if (options.enableThinking) {
     if (provider.type === 'anthropic') {
       // (anthropic 类型在下面单独处理)
-    } else if (provider.type === 'domestic' || provider.type === 'other') {
-      baseBody.thinking = {
-        type: 'enabled'
-      }
+    }
+    // GLM-Z1 系列模型默认内置深度思考，不需要 enable_thinking 参数
+    // 如果模型名包含 z1，不添加任何思考相关参数
+    else if (provider.model?.toLowerCase().includes('z1')) {
+      // GLM-Z1-Flash 等模型默认内置深度思考，无需额外参数
+    }
+    else if (provider.type === 'domestic' || provider.type === 'other') {
+      // 其他国内模型可能需要 enable_thinking 参数
+      baseBody.enable_thinking = true
     } else {
       baseBody.enable_thinking = true
     }
@@ -164,7 +191,8 @@ function buildRequestBody(provider, messages, options) {
       baseBody.max_tokens = 8192
     }
   } else {
-    if (provider.type === 'domestic' || provider.type === 'other') {
+    // 不启用思考模式时，对非 Z1 模型禁用 thinking
+    if ((provider.type === 'domestic' || provider.type === 'other') && !provider.model?.toLowerCase().includes('z1')) {
       baseBody.thinking = {
         type: 'disabled'
       }
@@ -175,7 +203,12 @@ function buildRequestBody(provider, messages, options) {
   
   // 设置 max_tokens（如果提供了且大于0）
   if (options.maxTokens && options.maxTokens > 0) {
-    baseBody.max_tokens = options.maxTokens
+    // glm-z1 系列模型 max_tokens 限制较小
+    if (provider.model?.toLowerCase().includes('z1')) {
+      baseBody.max_tokens = Math.min(options.maxTokens, 8192)
+    } else {
+      baseBody.max_tokens = options.maxTokens
+    }
   }
 
   if (provider.type === 'anthropic') {
@@ -280,6 +313,8 @@ async function* handleStreamResponse(response) {
   const decoder = new TextDecoder()
   let buffer = ''
   let chunkCount = 0
+  let isInsideThinkTag = false
+  let thinkBuffer = ''
 
   while (true) {
     const { done, value } = await reader.read()
@@ -328,33 +363,49 @@ async function* handleStreamResponse(response) {
         try {
           const parsed = JSON.parse(data)
                     _debug('[AI API] Parsed data:', parsed)
-          
+
           // 处理推理内容 - 支持多种字段名
           const delta = parsed.choices?.[0]?.delta
-          const reasoningContent = 
+          const reasoningContent =
             delta?.reasoning_content ||
             delta?.thinking ||
             delta?.reasoning ||
             delta?.thought
-          
+
           if (reasoningContent) {
             chunkCount++
             _debug('[AI API] Yielding reasoning chunk #', chunkCount, ':', reasoningContent)
             yield { type: 'reasoning', content: reasoningContent }
           }
-          
+
           // 处理正常内容
-          const content = 
+          const content =
             parsed.choices?.[0]?.delta?.content ||  // OpenAI 流式格式
             parsed.choices?.[0]?.message?.content || // OpenAI 非流式格式
             parsed.delta?.text ||                     // 某些 API 格式
             parsed.text ||                            // 简单文本格式
             parsed.content                            // 其他格式
-          
+
           if (content) {
-            chunkCount++
-            _debug('[AI API] Yielding content chunk #', chunkCount, ':', content)
-            yield { type: 'content', content }
+            // 如果已经有独立的 reasoning_content，则不再解析 content 中的 think 标签
+            // 避免重复显示思考内容
+            if (reasoningContent) {
+              // 只返回 content，不解析 think 标签
+              chunkCount++
+              _debug('[AI API] Yielding content chunk #', chunkCount, ':', content.substring(0, 50))
+              yield { type: 'content', content: content }
+            } else {
+              // 没有独立的 reasoning_content，需要解析 content 中的 think 标签
+              const processedChunks = processContentWithThinkTags(content, isInsideThinkTag, thinkBuffer)
+              isInsideThinkTag = processedChunks.isInsideThinkTag
+              thinkBuffer = processedChunks.thinkBuffer
+
+              for (const chunk of processedChunks.chunks) {
+                chunkCount++
+                _debug('[AI API] Yielding', chunk.type, 'chunk #', chunkCount, ':', chunk.content.substring(0, 50))
+                yield chunk
+              }
+            }
           }
         } catch (e) {
           console.warn('[AI API] Failed to parse SSE data:', data, e)
@@ -377,9 +428,9 @@ async function* handleStreamResponse(response) {
     if (data && data !== '[DONE]') {
       try {
         const parsed = JSON.parse(data)
-        
+
         // 处理推理内容 - 支持多种字段名
-        const reasoningContent = 
+        const reasoningContent =
           parsed.choices?.[0]?.delta?.reasoning_content ||
           parsed.choices?.[0]?.delta?.thinking ||
           parsed.choices?.[0]?.delta?.reasoning ||
@@ -389,27 +440,147 @@ async function* handleStreamResponse(response) {
           parsed.thinking ||
           parsed.reasoning ||
           parsed.thought
-        
+
         if (reasoningContent) {
           yield { type: 'reasoning', content: reasoningContent }
         }
-        
+
         // 处理正常内容
-        const content = 
+        const content =
           parsed.choices?.[0]?.delta?.content ||
           parsed.choices?.[0]?.message?.content ||
           parsed.delta?.text ||
           parsed.text ||
           parsed.content
-        
+
         if (content) {
-          yield { type: 'content', content }
+          // 如果已经有独立的 reasoning_content，则不再解析 content 中的 think 标签
+          if (reasoningContent) {
+            yield { type: 'content', content: content }
+          } else {
+            const processedChunks = processContentWithThinkTags(content, isInsideThinkTag, thinkBuffer)
+            for (const chunk of processedChunks.chunks) {
+              yield chunk
+            }
+            // 更新状态
+            isInsideThinkTag = processedChunks.isInsideThinkTag
+            thinkBuffer = processedChunks.thinkBuffer
+          }
         }
       } catch (e) {
         console.warn('[AI API] Failed to parse remaining buffer:', buffer, e)
       }
     }
   }
+  
+  // 流结束时，如果仍然在 think 标签内部，输出剩余的内容
+  if (isInsideThinkTag && thinkBuffer.trim()) {
+    yield { type: 'reasoning', content: thinkBuffer }
+  }
+}
+
+function processContentWithThinkTags(content, isInsideThinkTag, thinkBuffer) {
+  const chunks = []
+  // 将新内容追加到缓冲区
+  let currentBuffer = thinkBuffer + content
+
+  _debug('[AI API] processContentWithThinkTags - input:', content.substring(0, 100))
+  _debug('[AI API] processContentWithThinkTags - buffer length:', currentBuffer.length)
+  _debug('[AI API] processContentWithThinkTags - isInsideThinkTag:', isInsideThinkTag)
+
+  // 使用更简单可靠的算法：循环处理直到没有更多标签
+  let remainingBuffer = currentBuffer
+  let loopCount = 0
+  const MAX_LOOPS = 100 // 防止无限循环
+
+  while (remainingBuffer.length > 0 && loopCount < MAX_LOOPS) {
+    loopCount++
+
+    if (!isInsideThinkTag) {
+      // 在 think 标签外部，寻找开始标签
+      const thinkStartIdx = remainingBuffer.indexOf('<think>')
+
+      if (thinkStartIdx === -1) {
+        // 没有找到开始标签，检查是否是部分标签（如 '<th', '<thin' 等）
+        // 如果缓冲区以 '<' 或 '<t' 或 '<th' 等开头，可能是标签的一部分，需要保留到下一个 chunk
+        const partialTagMatch = remainingBuffer.match(/<t?h?i?n?k?$/)
+        if (partialTagMatch && remainingBuffer.length < 10) {
+          // 可能是部分标签，保留到下一个 chunk
+          thinkBuffer = remainingBuffer
+          remainingBuffer = ''
+          break
+        }
+        // 没有找到开始标签，剩余内容都是普通内容
+        if (remainingBuffer.trim()) {
+          chunks.push({ type: 'content', content: remainingBuffer })
+        }
+        remainingBuffer = ''
+        thinkBuffer = ''
+        break
+      } else {
+        // 找到开始标签，先输出标签前的普通内容
+        if (thinkStartIdx > 0) {
+          const textContent = remainingBuffer.slice(0, thinkStartIdx)
+          if (textContent.trim()) {
+            chunks.push({ type: 'content', content: textContent })
+          }
+        }
+        // 进入 think 标签内部，截断缓冲区
+        isInsideThinkTag = true
+        remainingBuffer = remainingBuffer.slice(thinkStartIdx + '<think>'.length)
+      }
+    } else {
+      // 在 think 标签内部，寻找结束标签
+      const thinkEndIdx = remainingBuffer.indexOf('</think>')
+
+      if (thinkEndIdx === -1) {
+        // 没有找到结束标签，检查是否是部分结束标签
+        const partialEndMatch = remainingBuffer.match(/<\/?t?h?i?n?k?$/)
+        if (partialEndMatch && remainingBuffer.length < 10) {
+          // 可能是部分结束标签，保留最后几个字符到下一个 chunk
+          // 前面的内容可以立即输出
+          const outputContent = remainingBuffer.slice(0, -partialEndMatch[0].length)
+          if (outputContent.trim()) {
+            chunks.push({ type: 'reasoning', content: outputContent })
+          }
+          thinkBuffer = partialEndMatch[0]
+          remainingBuffer = ''
+          break
+        }
+        // 没有找到结束标签，立即输出当前 think 内容，保留少量内容到缓冲区
+        // 这样可以实现流式输出思考过程
+        if (remainingBuffer.length > 5) {
+          // 保留最后5个字符，防止跨 chunk 的标签被截断
+          const outputContent = remainingBuffer.slice(0, -5)
+          const keepBuffer = remainingBuffer.slice(-5)
+          if (outputContent.trim()) {
+            chunks.push({ type: 'reasoning', content: outputContent })
+          }
+          thinkBuffer = keepBuffer
+        } else {
+          thinkBuffer = remainingBuffer
+        }
+        remainingBuffer = ''
+        break
+      } else {
+        // 找到结束标签，输出 think 内容
+        const reasoningContent = remainingBuffer.slice(0, thinkEndIdx)
+        if (reasoningContent.trim()) {
+          chunks.push({ type: 'reasoning', content: reasoningContent })
+        }
+        // 退出 think 标签，截断缓冲区
+        isInsideThinkTag = false
+        thinkBuffer = ''
+        remainingBuffer = remainingBuffer.slice(thinkEndIdx + '</think>'.length)
+      }
+    }
+  }
+
+  _debug('[AI API] processContentWithThinkTags - output chunks:', chunks.length, 'types:', chunks.map(c => c.type))
+  _debug('[AI API] processContentWithThinkTags - remaining thinkBuffer:', thinkBuffer.length)
+  _debug('[AI API] processContentWithThinkTags - final isInsideThinkTag:', isInsideThinkTag)
+
+  return { chunks, isInsideThinkTag, thinkBuffer }
 }
 
 // 测试provider连接
@@ -444,7 +615,7 @@ export async function testProviderConnection(providerId) {
 }
 
 // 为不同智能体构建系统提示词
-export function buildSystemPrompt(agentId, userData = null) {
+export function buildSystemPrompt(agentId, userData = null, enableThinking = false) {
   const prompts = {
     consultant: `你是一位专业的留学顾问，帮助用户解答关于出国留学的整体规划问题。
 你的回答应该专业、全面、实用，涵盖选校、申请、时间规划等方面。`,
@@ -457,6 +628,22 @@ export function buildSystemPrompt(agentId, userData = null) {
   }
 
   let basePrompt = prompts[agentId] || '你是一个有用的助手。'
+
+  // GLM-Z1-Flash 等推理模型默认内置深度思考
+  // 思考内容直接输出到 content 中，需要用特定格式包裹以便前端分离显示
+  if (enableThinking) {
+    basePrompt += `
+
+【重要 - 输出格式要求】
+在回答用户问题之前，请先进行思考分析。将你的思考过程用 <think> 和 </think> 标签包裹，例如：
+<think>
+1. 用户的问题是...
+2. 我需要考虑...
+3. 建议方案是...
+</think>
+
+然后给出你的正式回答。思考过程会实时显示给用户，正式回答应该简洁专业。`
+  }
 
   if (userData) {
     const userInfo = formatUserInfoForPrompt(userData)

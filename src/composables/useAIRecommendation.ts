@@ -65,8 +65,8 @@ export function useAIRecommendation() {
     return analysisStreams.get(schoolId)!
   }
 
-  const buildRecommendationPrompt = (assessment: AssessmentForm, preference: UserPreference): string => {
-    const userProfile = {
+  const buildUserProfile = (assessment: AssessmentForm) => {
+    return {
       gpa: assessment.basic?.gpa || 3.0,
       university: assessment.basic?.university || 'regular',
       language: assessment.basic?.language || '未填写',
@@ -80,6 +80,10 @@ export function useAIRecommendation() {
       competitionCount: assessment.practice?.competitions?.length || 0,
       competitionDetails: assessment.practice?.competitions || []
     }
+  }
+
+  const buildRecommendationPrompt = (assessment: AssessmentForm, preference: UserPreference): string => {
+    const userProfile = buildUserProfile(assessment)
 
     const priorityMap: Record<PriorityKey, string> = {
       ranking: '学校排名',
@@ -190,19 +194,7 @@ ${JSON.stringify(schoolsList, null, 2)}
     const school = schoolsData.find((s) => s.id === schoolId)
     if (!school) throw new Error('School not found')
 
-    const userProfile = {
-      gpa: assessment.basic?.gpa || 3.0,
-      university: assessment.basic?.university || 'regular',
-      language: assessment.basic?.language || '未填写',
-      averageScore: assessment.academic?.averageScore || 75,
-      majors: assessment.academic?.majors?.join('、') || '未选择',
-      researchCount: assessment.academic?.research?.length || 0,
-      researchDetails: assessment.academic?.research || [],
-      internshipCount: assessment.practice?.internships?.length || 0,
-      internshipDetails: assessment.practice?.internships || [],
-      competitionCount: assessment.practice?.competitions?.length || 0,
-      competitionDetails: assessment.practice?.competitions || []
-    }
+    const userProfile = buildUserProfile(assessment)
 
     const universityTierText = userProfile.university === '985' ? '985院校' :
                                userProfile.university === '211' ? '211院校' :
@@ -292,6 +284,7 @@ ${JSON.stringify(schoolsList, null, 2)}
     providerId: string,
     _onStream?: (content: string) => void
   ): Promise<{ recommendations: AIRecommendation[], summary: string }> => {
+    console.log('[AI Recommendation] generateRecommendations called, providerId:', providerId)
     globalState.startRecommendation(assessment, preference, providerId)
 
     try {
@@ -345,15 +338,19 @@ ${JSON.stringify(schoolsList, null, 2)}
         summary: parsed.summary
       }
     } catch (err) {
-      console.error('Generate recommendations error:', err)
+      console.error('[AI Recommendation] Failed, using fallback algorithm:', err)
       const errorMsg = err instanceof Error ? err.message : '生成推荐失败'
       globalState.setError(errorMsg)
 
-      return generateFallbackRecommendations(assessment, {
+      const fallback = generateFallbackRecommendations(assessment, {
         priorities: ['ranking'],
         excludedCountries: [],
         specialRequirements: ''
       })
+      return {
+        ...fallback,
+        summary: fallback.summary + '（基于本地匹配算法，AI推荐暂不可用）'
+      }
     }
   }
 

@@ -457,7 +457,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getSchoolById } from '@/utils/recommendationEngine'
 
@@ -471,6 +471,9 @@ const titleRef = ref(null)
 const heroVisible = ref(false)
 const contentVisible = ref(false)
 const metricsVisible = ref(false)
+
+// 收藏状态 - 使用响应式变量确保UI实时更新
+const favoriteIds = ref([])
 
 let heroObserver = null
 let contentObserver = null
@@ -499,11 +502,18 @@ const school = computed(() => {
   }
 })
 
-const isFavorite = computed(() => {
+// 从 localStorage 加载收藏列表
+function loadFavorites() {
   try {
     const favs = JSON.parse(localStorage.getItem('school_favorites') || '[]')
-    return favs.includes(school.value?.id)
-  } catch { return false }
+    favoriteIds.value = Array.isArray(favs) ? favs : []
+  } catch {
+    favoriteIds.value = []
+  }
+}
+
+const isFavorite = computed(() => {
+  return favoriteIds.value.includes(school.value?.id)
 })
 
 const nameWords = computed(() => {
@@ -585,15 +595,13 @@ function openRef(url) {
 
 function toggleFavorite() {
   if (!school.value) return
-  let favs = []
-  try { favs = JSON.parse(localStorage.getItem('school_favorites') || '[]') } catch {}
-  const idx = favs.indexOf(school.value.id)
+  const idx = favoriteIds.value.indexOf(school.value.id)
   if (idx > -1) {
-    favs.splice(idx, 1)
+    favoriteIds.value.splice(idx, 1)
   } else {
-    favs.push(school.value.id)
+    favoriteIds.value.push(school.value.id)
   }
-  localStorage.setItem('school_favorites', JSON.stringify(favs))
+  localStorage.setItem('school_favorites', JSON.stringify(favoriteIds.value))
 }
 
 function startChat() {
@@ -605,6 +613,9 @@ function startChat() {
 }
 
 onMounted(() => {
+  // 初始化收藏状态
+  loadFavorites()
+
   const resetScroll = () => {
     const appMain = document.querySelector('.app-main')
     if (appMain) appMain.scrollTo({ top: 0, left: 0, behavior: 'instant' })
@@ -628,6 +639,11 @@ onMounted(() => {
     if (!contentVisible.value) contentVisible.value = true
     if (!metricsVisible.value) metricsVisible.value = true
   }, 600)
+
+  // 监听路由变化，重新加载收藏状态（处理从其他页面返回的情况）
+  watch(() => route.params.id, () => {
+    loadFavorites()
+  })
 })
 
 function setupObservers() {

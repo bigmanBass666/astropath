@@ -94,18 +94,98 @@ export function useAIStream(options: UseAIStreamOptions): AIStreamResult {
   let scrollRafId: number | null = null
   let rafScrollId: number | null = null
   const SCROLL_COOLDOWN = 150
-  const IDLE_TIMEOUT = 30000
+  const IDLE_TIMEOUT = 120000
 
-  const task = computed(() => globalState.getTask(taskId))
+  const task = computed(() => globalState._getRawTask(taskId))
 
   const state = computed<AIStreamState>(() => task.value?.state || 'idle')
-  const content = computed<string>(() => task.value?.content || '')
-  const reasoning = computed<string>(() => task.value?.reasoning || '')
-  const error = computed<string | null>(() => task.value?.error || null)
-  const showReasoning = computed<boolean>(() => task.value?.showReasoning ?? true)
-  const queuePosition = computed<number>(() => task.value?.queuePosition || 0)
-  const retryCount = computed<number>(() => task.value?.retryCount || 0)
-  const maxRetries = computed<number>(() => task.value?.maxRetries || globalState.getConfig().retryAttempts)
+  const contentRef = ref<string>('')
+  const reasoningRef = ref<string>('')
+  const errorRef = ref<string | null>(null)
+  const showReasoningRef = ref<boolean>(true)
+  const queuePositionRef = ref<number>(0)
+  const retryCountRef = ref<number>(0)
+  const maxRetriesRef = ref<number>(0)
+
+  watch(
+    () => globalState._getRawTask(taskId)?.content,
+    (newContent) => {
+      console.log('[useAIStream] content watch triggered:', { taskId, newContent: newContent?.substring(0, 50), length: newContent?.length, contentRefBefore: contentRef.value?.length })
+      if (newContent !== undefined) {
+        contentRef.value = newContent
+        console.log('[useAIStream] contentRef updated:', { taskId, contentRefAfter: contentRef.value?.length })
+      }
+    },
+    { immediate: true }
+  )
+  
+  watch(
+    () => globalState._getRawTask(taskId)?.reasoning,
+    (newReasoning) => {
+      if (newReasoning !== undefined) {
+        reasoningRef.value = newReasoning
+      }
+    },
+    { immediate: true }
+  )
+  
+  watch(
+    () => globalState._getRawTask(taskId)?.error,
+    (newError) => {
+      errorRef.value = newError || null
+    },
+    { immediate: true }
+  )
+  
+  watch(
+    () => globalState._getRawTask(taskId)?.state,
+    () => {},
+    { immediate: true }
+  )
+  
+  watch(
+    () => globalState._getRawTask(taskId)?.showReasoning,
+    (newVal) => {
+      showReasoningRef.value = newVal ?? true
+    },
+    { immediate: true }
+  )
+  
+  watch(
+    () => globalState._getRawTask(taskId)?.queuePosition,
+    (newVal) => {
+      queuePositionRef.value = newVal || 0
+    },
+    { immediate: true }
+  )
+  
+  watch(
+    () => globalState._getRawTask(taskId)?.retryCount,
+    (newVal) => {
+      retryCountRef.value = newVal || 0
+    },
+    { immediate: true }
+  )
+  
+  watch(
+    () => globalState._getRawTask(taskId)?.maxRetries,
+    (newVal) => {
+      maxRetriesRef.value = newVal || globalState.getConfig().retryAttempts
+    },
+    { immediate: true }
+  )
+
+  const content = computed<string>(() => {
+    const val = contentRef.value
+    console.log('[useAIStream] content computed:', { taskId, length: val?.length, preview: val?.substring(0, 50) })
+    return val ?? ''
+  })
+  const reasoning = computed<string>(() => reasoningRef.value ?? '')
+  const error = computed<string | null>(() => errorRef.value)
+  const showReasoning = computed<boolean>(() => showReasoningRef.value)
+  const queuePosition = computed<number>(() => queuePositionRef.value)
+  const retryCount = computed<number>(() => retryCountRef.value)
+  const maxRetries = computed<number>(() => maxRetriesRef.value)
 
   const isStreaming = computed(() => state.value === 'streaming')
   const isThinking = computed(() => state.value === 'thinking')
@@ -463,8 +543,6 @@ export function useAIStream(options: UseAIStreamOptions): AIStreamResult {
     onMounted(() => {
       restore()
     })
-  } else {
-    reset()
   }
 
   onUnmounted(() => {

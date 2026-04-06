@@ -495,18 +495,24 @@ const handleMarkAllRead = () => {
 
 /* ===== 公告列表 ===== */
 .ann-list {
-  padding: 0 12px;
+  padding: 4px 12px 8px;
 }
 
 /* ===== 单条公告（手风琴） ===== */
 .ann-item {
   display: flex;
   gap: 0;
-  padding: 4px 10px;
+  padding: 8px 12px;
   cursor: pointer;
-  transition: background 0.2s ease;
+  transition: all 0.2s ease;
   animation: annItemIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
   animation-delay: var(--delay, 0ms);
+  border-radius: 12px;
+  margin-bottom: 6px;
+}
+
+.ann-item:last-child {
+  margin-bottom: 0;
 }
 
 @keyframes annItemIn {
@@ -521,19 +527,19 @@ const handleMarkAllRead = () => {
 }
 
 .ann-item:hover {
-  background: rgba(15, 23, 42, 0.015);
+  background: rgba(15, 23, 42, 0.03);
 }
 
 .ann-item--unread {
-  background: rgba(217, 119, 6, 0.025);
-}
-
-.ann-item--unread:hover {
   background: rgba(217, 119, 6, 0.04);
 }
 
+.ann-item--unread:hover {
+  background: rgba(217, 119, 6, 0.06);
+}
+
 .ann-item--expanded {
-  background: transparent;
+  background: rgba(15, 23, 42, 0.02);
 }
 
 /* 左侧时间线轨道 */
@@ -541,57 +547,48 @@ const handleMarkAllRead = () => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 28px;
+  width: 32px;
   flex-shrink: 0;
-  padding-top: 22px;
+  padding-top: 18px;
 }
 
 .ann-item__dot {
   display: block;
-  width: 9px;
-  height: 9px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
   background: var(--color-border);
   transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
   flex-shrink: 0;
   z-index: 1;
+  border: 2px solid transparent;
 }
 
 .ann-item--unread .ann-item__dot {
   background: var(--color-accent);
-  box-shadow: 0 0 0 4px rgba(217, 119, 6, 0.12), 0 0 12px rgba(217, 119, 6, 0.25);
+  box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.15);
 }
 
 .ann-item--expanded .ann-item__dot {
-  transform: scale(1.35);
+  transform: scale(1.2);
   background: var(--color-solid);
-  box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.08);
+  box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.08);
 }
 
 .ann-item__line {
-  width: 1.5px;
+  width: 2px;
   flex: 1;
-  margin-top: 4px;
-  background: linear-gradient(to bottom, var(--color-border-light), transparent);
-  min-height: 20px;
+  margin-top: 6px;
+  background: linear-gradient(to bottom, var(--color-border), transparent);
+  min-height: 24px;
 }
 
 /* 主内容区 */
 .ann-item__main {
   flex: 1;
   min-width: 0;
-  padding: 14px 18px 14px 14px;
-  border-bottom: 1px solid rgba(15, 23, 42, 0.035);
+  padding: 12px 16px;
   transition: border-color 0.2s ease;
-}
-
-.ann-item:last-child .ann-item__main {
-  border-bottom: none;
-}
-
-.ann-item--expanded .ann-item__main {
-  border-bottom-color: transparent;
-  padding-bottom: 4px;
 }
 
 /* 顶部元信息行 */

@@ -1,256 +1,285 @@
 <template>
-  <div class="pref-awwwards">
-    <div
-      ref="headerEl"
-      class="pref-header reveal-up"
-    >
-      <div class="header-icon">
-        <svg
-          width="20"
-          height="20"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="#fff"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        ><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
-      </div>
-      <div class="header-text">
-        <p class="header-title">
-          AI 选校助手
-        </p>
-        <p class="header-sub">
-          你好！我是你的专属选校顾问。
-        </p>
-      </div>
-    </div>
-
-    <div
-      v-if="assessment"
-      ref="summaryEl"
-      class="pref-summary reveal-up"
-    >
-      <div class="summary-bar">
-        <span class="summary-label">已了解你的背景</span>
-      </div>
-      <div class="summary-chips">
-        <span class="s-chip s-chip--dark">{{ assessment.basic?.gpa || 'N/A' }} GPA</span>
-        <span class="s-chip s-chip--warm">{{ getUniversityLabel(assessment.basic?.university) }}</span>
-        <span class="s-chip">{{ assessment.academic?.averageScore || 'N/A' }} 均分</span>
-        <span class="s-chip">{{ assessment.academic?.degree || '本科' }}</span>
-      </div>
-    </div>
-
-    <p
-      ref="introEl"
-      class="pref-intro reveal-up"
-    >
-      为了给你最合适的推荐，请告诉我：
-    </p>
-
-    <div
-      ref="card1El"
-      class="step-card reveal-up"
-      :class="{ 'step-card--active': currentFocus === 1 }"
-    >
-      <div class="step-num-badge">
-        01
-      </div>
-      <div class="step-content">
-        <label class="step-q">
-          你目前最看重什么？
-          <span class="q-hint">可多选</span>
-        </label>
-        <div class="option-grid">
-          <button
-            v-for="opt in priorityOptions"
-            :key="opt.value"
-            class="opt-btn"
-            :class="{ 'opt-btn--on': selectedPriorities.includes(opt.value) }"
-            @click="togglePriority(opt.value)"
-          >
-            <span class="opt-icon">{{ getIcon(opt.icon) }}</span>
-            {{ opt.label }}
-          </button>
+  <div class="pref-container">
+    <div class="pref-noise" />
+    
+    <div class="pref-inner">
+      <header class="pref-header">
+        <div class="header-accent-line" />
+        <div class="header-meta">
+          <span class="meta-label">STEP</span>
+          <span class="meta-num">01</span>
         </div>
-      </div>
-    </div>
-
-    <div
-      ref="card2El"
-      class="step-card reveal-up"
-      :class="{ 'step-card--active': currentFocus === 2 }"
-    >
-      <div class="step-num-badge">
-        02
-      </div>
-      <div class="step-content">
-        <label class="step-q">有想避开的国家/地区吗？</label>
-        <div class="country-grid">
-          <button
-            :class="['c-btn', { 'c-btn--on': excludedCountries.length === 0 }]"
-            @click="clearExcludedCountries"
-          >
-            无限制
-          </button>
-          <button
-            v-for="c in availableCountries"
-            :key="c"
-            :class="['c-btn', { 'c-btn--on': excludedCountries.includes(c) }]"
-            @click="toggleCountry(c)"
-          >
-            {{ c }}
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <div
-      ref="card3El"
-      class="step-card reveal-up"
-    >
-      <div class="step-num-badge">
-        03
-      </div>
-      <div class="step-content">
-        <label class="step-q">
-          还有什么特别的要求？
-          <span class="q-hint q-hint--muted">选填</span>
-        </label>
-        <el-input
-          v-model="specialRequirements"
-          type="textarea"
-          :rows="3"
-          placeholder="例如：我想去加州的学校、希望学费在3万美元以内..."
-          class="aww-textarea"
-        />
-      </div>
-    </div>
-
-    <div
-      ref="actionsEl"
-      class="pref-actions reveal-up"
-    >
-      <button
-        class="submit-btn"
-        :class="{
-          'submit-btn--loading': loading,
-          'submit-btn--ready': !loading && selectedPriorities.length > 0
-        }"
-        :disabled="loading || selectedPriorities.length === 0"
-        @click="submitPreferences"
-      >
-        <span
-          v-if="!loading"
-          class="sb-icon"
-        >
-          <svg
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          ><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" /></svg>
-        </span>
-        <span
-          v-else
-          class="sb-spin"
-        >
-          <svg
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2.5"
-            class="spin-svg"
-          ><path d="M21 12a9 9 0 1 1-6.219-8.56" /></svg>
-        </span>
-        {{ loading ? '生成中...' : '开始智能推荐' }}
-      </button>
+        <h1 class="header-title">
+          <span class="title-line title-line--sub">定制你的</span>
+          <span class="title-line title-line--main">选校偏好</span>
+        </h1>
+        <p class="header-desc">
+          AI 智能解析背景，为你生成专属留学路线图
+        </p>
+      </header>
 
       <div
-        v-if="loading"
-        class="progress-box"
+        v-if="assessment"
+        class="profile-strip"
       >
-        <div class="prog-track">
-          <div
-            class="prog-fill"
-            :style="{ width: stepProgress + '%' }"
-          />
+        <div class="strip-label">
+          Your Profile
         </div>
-        <div class="steps-dots">
-          <div
-            v-for="(si, idx) in visibleSteps"
-            :key="si.step"
-            class="sd-item"
-            :class="{
-              'sd-item--live': currentStep === si.step,
-              'sd-item--done': getStepIndex(si.step) < getStepIndex(currentStep)
-            }"
-          >
-            <div class="sd-circle">
-              <svg
-                v-if="getStepIndex(si.step) < getStepIndex(currentStep)"
-                width="10"
-                height="10"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="3"
-              ><polyline points="20 6 9 17 4 12" /></svg>
-              <span v-else>{{ idx + 1 }}</span>
-            </div>
-            <span class="sd-label">{{ si.label }}</span>
+        <div class="strip-items">
+          <div class="strip-item strip-item--highlight">
+            <span class="item-val">{{ assessment.basic?.gpa || 'N/A' }}</span>
+            <span class="item-key">GPA</span>
+          </div>
+          <div class="strip-divider" />
+          <div class="strip-item strip-item--warm">
+            <span class="item-val">{{ getUniversityLabel(assessment.basic?.university) }}</span>
+          </div>
+          <div class="strip-divider" />
+          <div class="strip-item">
+            <span class="item-val">{{ assessment.academic?.averageScore || 'N/A' }}</span>
+            <span class="item-key">均分</span>
+          </div>
+          <div class="strip-divider" />
+          <div class="strip-item">
+            <span class="item-val">{{ assessment.academic?.degree || '本科' }}</span>
           </div>
         </div>
-        <p class="prog-msg">
-          {{ stepLabels[currentStep as RecommendationStep] }}
-        </p>
+      </div>
 
-        <div
-          v-if="isStreaming && streamingContent"
-          class="stream-box"
+      <div class="form-flow">
+        <section class="flow-section">
+          <div class="section-index">
+            <span class="index-num">01</span>
+            <span class="index-line" />
+          </div>
+          <div class="section-body">
+            <h2 class="section-question">
+              你最看重<br>
+              <span class="q-accent">什么？</span>
+            </h2>
+            <p class="section-hint">
+              可多选
+            </p>
+            <div class="priority-grid">
+              <button
+                v-for="opt in priorityOptions"
+                :key="opt.value"
+                class="priority-card"
+                :class="{ 'priority-card--active': selectedPriorities.includes(opt.value) }"
+                @click="togglePriority(opt.value)"
+              >
+                <span class="card-icon">{{ getIcon(opt.icon) }}</span>
+                <span class="card-label">{{ opt.label }}</span>
+                <span class="card-check">
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="3"
+                  ><polyline points="20 6 9 17 4 12" /></svg>
+                </span>
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <section class="flow-section">
+          <div class="section-index">
+            <span class="index-num">02</span>
+            <span class="index-line" />
+          </div>
+          <div class="section-body">
+            <h2 class="section-question">
+              有没有想<br>
+              <span class="q-accent">排除的地区？</span>
+            </h2>
+            <p class="section-hint">
+              点击排除
+            </p>
+            <div class="region-grid">
+              <button
+                class="region-chip region-chip--clear"
+                :class="{ 'region-chip--active': excludedCountries.length === 0 }"
+                @click="clearExcludedCountries"
+              >
+                <span class="chip-icon">🌍</span>
+                <span class="chip-text">不限制</span>
+              </button>
+              <button
+                v-for="c in availableCountries"
+                :key="c"
+                class="region-chip"
+                :class="{ 'region-chip--excluded': excludedCountries.includes(c) }"
+                @click="toggleCountry(c)"
+              >
+                <span class="chip-text">{{ c }}</span>
+                <span class="chip-x">×</span>
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <section class="flow-section flow-section--last">
+          <div class="section-index">
+            <span class="index-num">03</span>
+            <span class="index-line" />
+          </div>
+          <div class="section-body">
+            <h2 class="section-question">
+              还有其他<br>
+              <span class="q-accent">要求吗？</span>
+            </h2>
+            <p class="section-hint">
+              选填 · 越详细越好
+            </p>
+            <div class="input-wrapper">
+              <textarea
+                v-model="specialRequirements"
+                class="custom-textarea"
+                placeholder="例如：偏好加州的学校、预算每年30万以内..."
+                rows="3"
+              />
+              <div class="textarea-counter">
+                {{ specialRequirements.length }} / 500
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div class="action-zone">
+        <button
+          class="generate-btn"
+          :class="{
+            'generate-btn--loading': loading,
+            'generate-btn--ready': !loading && selectedPriorities.length > 0
+          }"
+          :disabled="loading || selectedPriorities.length === 0"
+          @click="submitPreferences"
         >
+          <span class="btn-bg" />
+          <span class="btn-content">
+            <template v-if="!loading">
+              <span class="btn-icon">
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                ><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" /></svg>
+              </span>
+              <span class="btn-text">生成推荐方案</span>
+            </template>
+            <template v-else>
+              <span class="btn-spinner">
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                  class="spinner-svg"
+                ><path d="M21 12a9 9 0 1 1-6.219-8.56" /></svg>
+              </span>
+              <span class="btn-text">AI 生成中...</span>
+            </template>
+          </span>
+          <span class="btn-glow" />
+        </button>
+
+        <Transition name="progress-fade">
           <div
-            v-if="hasReasoningContent(streamingContent)"
-            class="stream-block"
+            v-if="loading"
+            class="progress-panel"
           >
-            <div class="stream-tag stream-tag--think">
-              <svg
-                width="11"
-                height="11"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2.5"
-                class="spin-svg-mini"
-              ><path d="M21 12a9 9 0 1 1-6.219-8.56" /></svg>
-              AI思考过程
+            <div class="progress-header">
+              <span class="progress-title">AI 处理中</span>
+              <span class="progress-percent">{{ stepProgress }}%</span>
             </div>
-            <pre class="stream-text stream-text--think">{{ getReasoningContent(streamingContent) }}</pre>
-          </div>
-          <div
-            v-if="hasMainContent(streamingContent)"
-            class="stream-block"
-            :class="{ 'stream-block--split': hasReasoningContent(streamingContent) }"
-          >
-            <div class="stream-tag stream-tag--result">
-              <svg
-                width="11"
-                height="11"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2.5"
-              ><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
-              生成结果
+            <div class="progress-track">
+              <div
+                class="progress-fill"
+                :style="{ width: stepProgress + '%' }"
+              />
             </div>
-            <pre class="stream-text">{{ getMainContent(streamingContent) }}</pre>
+            <div class="progress-steps">
+              <div
+                v-for="(si, idx) in visibleSteps"
+                :key="si.step"
+                class="p-step"
+                :class="{
+                  'p-step--active': currentStep === si.step,
+                  'p-step--done': getStepIndex(si.step) < getStepIndex(currentStep)
+                }"
+              >
+                <div class="p-step-dot">
+                  <svg
+                    v-if="getStepIndex(si.step) < getStepIndex(currentStep)"
+                    width="10"
+                    height="10"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="3"
+                  ><polyline points="20 6 9 17 4 12" /></svg>
+                  <span v-else>{{ idx + 1 }}</span>
+                </div>
+                <span class="p-step-label">{{ si.label }}</span>
+              </div>
+            </div>
+            <p class="progress-msg">
+              {{ stepLabels[currentStep as RecommendationStep] }}
+            </p>
+
+            <Transition name="stream-fade">
+              <div
+                v-if="isStreaming && streamingContent"
+                class="stream-container"
+              >
+                <div
+                  v-if="hasReasoningContent(streamingContent)"
+                  class="stream-block stream-block--think"
+                >
+                  <div class="stream-header">
+                    <svg
+                      width="12"
+                      height="12"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2.5"
+                      class="spin-mini"
+                    ><path d="M21 12a9 9 0 1 1-6.219-8.56" /></svg>
+                    <span>AI 推理过程</span>
+                  </div>
+                  <pre class="stream-content stream-content--think">{{ getReasoningContent(streamingContent) }}</pre>
+                </div>
+                <div
+                  v-if="hasMainContent(streamingContent)"
+                  class="stream-block stream-block--result"
+                >
+                  <div class="stream-header">
+                    <svg
+                      width="12"
+                      height="12"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2.5"
+                    ><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
+                    <span>生成结果</span>
+                  </div>
+                  <pre class="stream-content">{{ getMainContent(streamingContent) }}</pre>
+                </div>
+              </div>
+            </Transition>
           </div>
-        </div>
+        </Transition>
       </div>
     </div>
   </div>
@@ -262,14 +291,6 @@ import { ElMessage } from 'element-plus'
 import { stepLabels } from '@/composables/useAIRecommendation'
 import type { RecommendationStep } from '@/composables/useAIRecommendation'
 import { hasReasoningContent, hasMainContent, getReasoningContent, getMainContent } from '@/utils/streamParser'
-
-const headerEl = ref<HTMLElement | null>(null)
-const summaryEl = ref<HTMLElement | null>(null)
-const introEl = ref<HTMLElement | null>(null)
-const card1El = ref<HTMLElement | null>(null)
-const card2El = ref<HTMLElement | null>(null)
-const card3El = ref<HTMLElement | null>(null)
-const actionsEl = ref<HTMLElement | null>(null)
 
 defineProps({
   assessment: {
@@ -301,11 +322,11 @@ defineProps({
 const emit = defineEmits(['submit'])
 
 const priorityOptions = [
-  { value: 'ranking', label: '学校排名', icon: 'Trophy' },
-  { value: 'major', label: '专业实力', icon: 'Reading' },
+  { value: 'ranking', label: '排名优先', icon: 'Trophy' },
+  { value: 'major', label: '专业匹配', icon: 'Reading' },
   { value: 'career', label: '就业前景', icon: 'Briefcase' },
   { value: 'location', label: '地理位置', icon: 'MapLocation' },
-  { value: 'cost', label: '学费预算', icon: 'Money' }
+  { value: 'cost', label: '费用预算', icon: 'Money' }
 ]
 
 const availableCountries = ['美国', '英国', '澳洲', '加拿大', '新加坡', '中国香港', '日本', '韩国', '欧洲其他']
@@ -313,7 +334,6 @@ const availableCountries = ['美国', '英国', '澳洲', '加拿大', '新加�
 const selectedPriorities = ref<string[]>([])
 const excludedCountries = ref<string[]>([])
 const specialRequirements = ref('')
-const currentFocus = ref(-1)
 
 const getIcon = (icon: string) => {
   const map: Record<string, string> = {
@@ -328,12 +348,12 @@ const getIcon = (icon: string) => {
 
 const getUniversityLabel = (university: string) => {
   const map: Record<string, string> = {
-    '985': '985院校',
-    '211': '211院校',
-    'overseas': '海外院校',
-    'regular': '普通本科'
+    '985': '985',
+    '211': '211',
+    'overseas': 'Overseas',
+    'regular': 'Regular'
   }
-  return map[university] || university || '未知院校'
+  return map[university] || university || 'N/A'
 }
 
 const stepOrder: RecommendationStep[] = ['idle', 'analyzing', 'matching', 'generating', 'completed', 'error']
@@ -385,96 +405,135 @@ const submitPreferences = () => {
   })
 }
 
-const revealElements = [
-  { el: headerEl, delay: 0 },
-  { el: summaryEl, delay: 80 },
-  { el: introEl, delay: 140 },
-  { el: card1El, delay: 200 },
-  { el: card2El, delay: 280 },
-  { el: card3El, delay: 360 },
-  { el: actionsEl, delay: 440 }
-]
-
 onMounted(() => {
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        const target = entry.target as HTMLElement
-        const staggerDelay = Number(target.dataset.revealDelay || 0)
-        setTimeout(() => {
-          target.classList.add('is-visible')
-        }, staggerDelay)
-        observer.unobserve(target)
-      }
-    })
-  }, {
-    threshold: 0.12,
-    rootMargin: '0px 0px -40px 0px'
-  })
+  const observer = new window.IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('is-visible')
+        }
+      })
+    },
+    { threshold: 0.1, rootMargin: '0px 0px -50px 0px' }
+  )
 
-  revealElements.forEach(({ el, delay }) => {
-    if (el.value) {
-      el.value.dataset.revealDelay = String(delay)
-      observer.observe(el.value)
-    }
+  document.querySelectorAll('.flow-section').forEach((el) => {
+    observer.observe(el)
   })
 })
 </script>
 
 <style scoped>
-.pref-awwwards {
-  max-width: 680px;
+/* ====== Container ====== */
+.pref-container {
+  position: relative;
+  width: 100%;
+  min-height: 100%;
+  background: #FAFAF9;
+  overflow: hidden;
+}
+
+.pref-noise {
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: 0.025;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+.pref-inner {
+  position: relative;
+  max-width: 900px;
   margin: 0 auto;
+  padding: 80px 40px 120px;
 }
 
 /* ====== Header ====== */
 .pref-header {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  margin-bottom: 40px;
-  padding-bottom: 28px;
-  border-bottom: 1px solid #F1F5F9;
+  position: relative;
+  margin-bottom: 60px;
+  padding-bottom: 40px;
 }
 
-.header-icon {
-  width: 52px;
-  height: 52px;
-  border-radius: 16px;
-  background: #0F172A;
+.header-accent-line {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 60px;
+  height: 3px;
+  background: #D97706;
+}
+
+.header-meta {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  box-shadow: 0 4px 14px rgba(15,23,42,0.18);
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 24px;
+  padding-top: 40px;
+}
+
+.meta-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: #94A3B8;
+}
+
+.meta-num {
+  font-size: 10px;
+  font-weight: 800;
+  font-family: var(--font-family-mono);
+  color: #D97706;
 }
 
 .header-title {
-  margin: 0 0 3px 0;
-  font-size: 19px;
-  font-weight: 700;
+  margin: 0 0 16px 0;
+  line-height: 0.95;
+}
+
+.title-line {
+  display: block;
+}
+
+.title-line--sub {
+  font-size: clamp(18px, 2.5vw, 24px);
+  font-weight: 400;
+  color: #94A3B8;
+  letter-spacing: -0.5px;
+}
+
+.title-line--main {
+  font-size: clamp(42px, 7vw, 72px);
+  font-weight: 900;
   color: #0F172A;
-  letter-spacing: -0.4px;
+  letter-spacing: -3px;
 }
 
-.header-sub {
-  margin: 0;
-  font-size: 13px;
+.header-desc {
+  font-size: 15px;
   color: #64748B;
+  margin: 0;
+  line-height: 1.7;
+  max-width: 400px;
 }
 
-/* ====== Summary ====== */
-.pref-summary {
-  background: linear-gradient(135deg, #F8FAFC 0%, rgba(248,250,252,0.5) 100%);
+/* ====== Profile Strip ====== */
+.profile-strip {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 20px 28px;
+  background: #FFFFFF;
   border: 1px solid #F1F5F9;
-  border-radius: 20px;
-  padding: 20px 24px;
-  margin-bottom: 36px;
+  border-radius: 16px;
+  margin-bottom: 60px;
   position: relative;
   overflow: hidden;
 }
 
-.pref-summary::before {
+.profile-strip::before {
   content: '';
   position: absolute;
   left: 0;
@@ -482,303 +541,434 @@ onMounted(() => {
   bottom: 0;
   width: 3px;
   background: linear-gradient(180deg, #D97706, transparent);
-  border-radius: 0 2px 2px 0;
 }
 
-.summary-bar {
-  margin-bottom: 14px;
-}
-
-.summary-label {
-  font-size: 10px;
+.strip-label {
+  font-size: 9px;
   font-weight: 700;
-  color: #94A3B8;
-  letter-spacing: 1.8px;
+  letter-spacing: 2px;
   text-transform: uppercase;
-  display: block;
+  color: #94A3B8;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
 }
 
-.summary-chips {
+.strip-items {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+  align-items: center;
+  gap: 16px;
+  flex: 1;
 }
 
-.s-chip {
-  padding: 5px 13px;
-  border-radius: 100px;
-  font-size: 12px;
-  font-weight: 600;
-  background: #F1F5F9;
-  color: #64748B;
-  letter-spacing: 0.15px;
+.strip-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
-.s-chip--dark {
+.strip-item--highlight {
   background: #0F172A;
-  color: #fff;
+  padding: 8px 16px;
+  border-radius: 8px;
 }
 
-.s-chip--warm {
+.strip-item--highlight .item-val {
+  color: #fff;
+  font-size: 18px;
+}
+
+.strip-item--highlight .item-key {
+  color: rgba(255,255,255,0.5);
+}
+
+.strip-item--warm {
   background: #FEF3C7;
+  padding: 8px 14px;
+  border-radius: 8px;
+}
+
+.strip-item--warm .item-val {
   color: #B45309;
 }
 
-/* ====== Intro ====== */
-.pref-intro {
-  font-size: 17px;
-  font-weight: 600;
-  color: #0F172A;
-  margin: 0 0 28px 0;
-  letter-spacing: -0.2px;
-}
-
-/* ====== Step Card — Awwwards Style ====== */
-.step-card {
-  display: flex;
-  gap: 20px;
-  padding: 28px;
-  background: #FFFFFF;
-  border: 1px solid #F1F5F9;
-  border-radius: 20px;
-  margin-bottom: 16px;
-  transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.45s cubic-bezier(0.34, 1.56, 0.64, 1), border-color 0.35s ease;
-  position: relative;
-}
-
-.step-card::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 3px;
-  background: #E2E8F0;
-  transition: background 0.35s ease;
-  border-radius: 0 2px 2px 0;
-}
-
-.step-card:focus-within::before {
-  background: #0F172A;
-}
-
-.step-card:focus-within {
-  border-color: rgba(15,23,42,0.1);
-  box-shadow: 0 8px 32px rgba(15,23,42,0.06);
-}
-
-.step-num-badge {
-  width: 36px;
-  height: 36px;
-  border-radius: 12px;
-  background: #F8FAFC;
-  color: #94A3B8;
-  font-size: 13px;
-  font-weight: 800;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  transition: all 0.35s ease;
-}
-
-.step-card:focus-within .step-num-badge {
-  background: #0F172A;
-  color: #fff;
-  box-shadow: 0 4px 12px rgba(15,23,42,0.2);
-}
-
-.step-content {
-  flex: 1;
-  min-width: 0;
-}
-
-.step-q {
-  font-size: 15px;
+.item-val {
+  font-size: 14px;
   font-weight: 700;
-  color: #0F172A;
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  margin-bottom: 16px;
+  color: #334155;
+  font-family: var(--font-family-mono);
+  letter-spacing: -0.5px;
 }
 
-.q-hint {
-  font-size: 10px;
-  font-weight: 600;
-  color: #D97706;
-  background: #FEF3C7;
-  padding: 2px 8px;
-  border-radius: 4px;
-}
-
-.q-hint--muted {
+.item-key {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
   color: #94A3B8;
-  background: #F1F5F9;
 }
 
-/* ====== Option Grid ====== */
-.option-grid {
+.strip-divider {
+  width: 1px;
+  height: 32px;
+  background: #E2E8F0;
+}
+
+/* ====== Form Flow ====== */
+.form-flow {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+  flex-direction: column;
+  gap: 0;
 }
 
-.opt-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 9px 18px;
-  border: 1.5px solid #E2E8F0;
-  border-radius: 100px;
-  font-size: 13px;
-  font-weight: 600;
-  color: #64748B;
-  background: #FFF;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+.flow-section {
+  display: grid;
+  grid-template-columns: 80px 1fr;
+  gap: 32px;
+  padding: 48px 0;
+  border-bottom: 1px solid #F1F5F9;
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.opt-btn:hover {
-  border-color: #0F172A;
-  color: #0F172A;
+.flow-section.is-visible {
+  opacity: 1;
+  transform: translateY(0);
 }
 
-.opt-btn--on {
-  background: #0F172A;
-  border-color: #0F172A;
-  color: #fff;
-  transform: scale(1.03);
-  box-shadow: 0 4px 14px rgba(15,23,42,0.18);
+.flow-section--last {
+  border-bottom: none;
 }
 
-.opt-icon {
-  font-size: 14px;
-  line-height: 1;
-}
-
-/* ====== Country Grid ====== */
-.country-grid {
+.section-index {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  padding-top: 8px;
 }
 
-.c-btn {
-  padding: 8px 16px;
-  border: 1.5px solid #E2E8F0;
-  border-radius: 100px;
-  font-size: 13px;
-  font-weight: 600;
-  color: #64748B;
-  background: #FFF;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+.index-num {
+  font-size: 11px;
+  font-weight: 800;
+  font-family: var(--font-family-mono);
+  color: #CBD5E1;
+  letter-spacing: 1px;
 }
 
-.c-btn:hover {
-  border-color: #0F172A;
+.index-line {
+  width: 1px;
+  height: 40px;
+  background: linear-gradient(180deg, #E2E8F0, transparent);
+}
+
+.section-body {
+  flex: 1;
+}
+
+.section-question {
+  margin: 0 0 8px 0;
+  font-size: clamp(28px, 4vw, 40px);
+  font-weight: 800;
   color: #0F172A;
+  line-height: 1.1;
+  letter-spacing: -1.5px;
 }
 
-.c-btn--on {
-  background: #0F172A;
-  border-color: #0F172A;
-  color: #fff;
+.q-accent {
+  color: #D97706;
 }
 
-/* ====== Textarea ====== */
-.aww-textarea :deep(.el-textarea__inner) {
-  border-radius: 14px;
-  border: 1.5px solid #E2E8F0;
-  font-family: var(--font-family-base);
-  font-size: 14px;
-  resize: none;
-  transition: all 0.3s ease;
-  background: #FAFAF9;
+.section-hint {
+  margin: 0 0 28px 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: #94A3B8;
+  letter-spacing: 0.5px;
 }
 
-.aww-textarea :deep(.el-textarea__inner:focus) {
-  border-color: #0F172A;
-  box-shadow: 0 0 0 4px rgba(15,23,42,0.05);
-  background: #fff;
+/* ====== Priority Grid ====== */
+.priority-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
 }
 
-/* ====== Actions ====== */
-.pref-actions {
+.priority-card {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 28px;
-  margin-top: 12px;
+  gap: 12px;
+  padding: 28px 20px;
+  background: #FFFFFF;
+  border: 1.5px solid #E2E8F0;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  overflow: hidden;
 }
 
-.submit-btn {
+.priority-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(217,119,6,0.08), transparent);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.priority-card:hover {
+  border-color: #0F172A;
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(15,23,42,0.08);
+}
+
+.priority-card:hover::before {
+  opacity: 1;
+}
+
+.priority-card--active {
+  background: #0F172A;
+  border-color: #0F172A;
+  transform: translateY(-4px);
+  box-shadow: 0 16px 40px rgba(15,23,42,0.2);
+}
+
+.priority-card--active::before {
+  opacity: 0;
+}
+
+.card-icon {
+  font-size: 28px;
+  line-height: 1;
+  transition: transform 0.3s ease;
+}
+
+.priority-card:hover .card-icon {
+  transform: scale(1.15);
+}
+
+.card-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: #334155;
+  letter-spacing: 0.3px;
+  transition: color 0.3s ease;
+}
+
+.priority-card--active .card-label {
+  color: #fff;
+}
+
+.card-check {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #F1F5F9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #94A3B8;
+  transition: all 0.3s ease;
+  transform: scale(0);
+}
+
+.priority-card--active .card-check {
+  background: #D97706;
+  color: #fff;
+  transform: scale(1);
+}
+
+/* ====== Region Grid ====== */
+.region-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.region-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  background: #FFFFFF;
+  border: 1.5px solid #E2E8F0;
+  border-radius: 100px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #64748B;
+  cursor: pointer;
+  transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.region-chip:hover {
+  border-color: #0F172A;
+  color: #0F172A;
+}
+
+.region-chip--clear {
+  background: #F8FAFC;
+}
+
+.region-chip--active {
+  background: #0F172A;
+  border-color: #0F172A;
+  color: #fff;
+}
+
+.region-chip--excluded {
+  background: #FEF2F2;
+  border-color: #FECACA;
+  color: #DC2626;
+  text-decoration: line-through;
+  text-decoration-thickness: 2px;
+}
+
+.chip-icon {
+  font-size: 14px;
+}
+
+.chip-x {
+  font-size: 18px;
+  font-weight: 300;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.region-chip--excluded .chip-x {
+  opacity: 1;
+}
+
+/* ====== Custom Textarea ====== */
+.input-wrapper {
+  position: relative;
+}
+
+.custom-textarea {
+  width: 100%;
+  padding: 20px 24px;
+  background: #FFFFFF;
+  border: 1.5px solid #E2E8F0;
+  border-radius: 16px;
+  font-family: var(--font-family-base);
+  font-size: 15px;
+  line-height: 1.7;
+  color: #334155;
+  resize: none;
+  transition: all 0.35s ease;
+}
+
+.custom-textarea::placeholder {
+  color: #CBD5E1;
+}
+
+.custom-textarea:focus {
+  outline: none;
+  border-color: #0F172A;
+  box-shadow: 0 0 0 4px rgba(15,23,42,0.05);
+}
+
+.textarea-counter {
+  position: absolute;
+  bottom: 12px;
+  right: 16px;
+  font-size: 10px;
+  font-weight: 600;
+  color: #CBD5E1;
+  font-family: var(--font-family-mono);
+}
+
+/* ====== Action Zone ====== */
+.action-zone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 32px;
+  margin-top: 60px;
+  padding-top: 60px;
+  border-top: 1px solid #F1F5F9;
+}
+
+.generate-btn {
   position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  padding: 17px 48px;
+  gap: 14px;
+  padding: 20px 56px;
   font-size: 15px;
   font-weight: 700;
+  letter-spacing: 0.5px;
   border: none;
   border-radius: 16px;
   cursor: pointer;
   overflow: hidden;
-  transition: all 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
-  min-height: 56px;
-  letter-spacing: 0.3px;
+  min-height: 64px;
+  transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-.submit-btn:not(:disabled) {
+.btn-bg {
+  position: absolute;
+  inset: 0;
   background: #0F172A;
-  color: white;
-  box-shadow: 0 6px 20px rgba(15,23,42,0.2);
+  transition: all 0.4s ease;
 }
 
-.submit-btn:not(:disabled).submit-btn--ready:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 12px 36px rgba(15,23,42,0.28);
+.generate-btn:not(:disabled):hover .btn-bg {
+  background: #1E293B;
 }
 
-.submit-btn:not(:disabled)::after {
-  content: '';
+.btn-content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  color: #fff;
+}
+
+.generate-btn:disabled .btn-content {
+  color: #CBD5E1;
+}
+
+.generate-btn:disabled .btn-bg {
+  background: #F1F5F9;
+}
+
+.generate-btn--ready:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 50px rgba(15,23,42,0.25);
+}
+
+.btn-glow {
   position: absolute;
   bottom: 0;
   left: 50%;
   transform: translateX(-50%);
-  width: 50%;
+  width: 60%;
   height: 2px;
   background: linear-gradient(90deg, transparent, #D97706, transparent);
   opacity: 0;
-  transition: opacity 0.35s ease;
+  transition: opacity 0.4s ease;
 }
 
-.submit-btn:not(:disabled).submit-btn--ready:hover::after {
+.generate-btn--ready:hover .btn-glow {
   opacity: 1;
 }
 
-.submit-btn:disabled {
-  background: #F1F5F9;
-  color: #CBD5E1;
-  cursor: not-allowed;
-  box-shadow: none;
-}
-
-.submit-btn:active:not(:disabled) {
-  transform: scale(0.97);
-}
-
-.sb-icon, .sb-spin {
+.btn-icon {
   display: flex;
-  align-items: center;
 }
 
-.spin-svg {
-  animation: spin 1s linear infinite;
+.btn-spinner {
+  display: flex;
 }
-.spin-svg-mini {
+
+.spinner-svg {
   animation: spin 1s linear infinite;
 }
 
@@ -787,54 +977,77 @@ onMounted(() => {
   to { transform: rotate(360deg); }
 }
 
-/* ====== Progress Box ====== */
-.progress-box {
+/* ====== Progress Panel ====== */
+.progress-panel {
   width: 100%;
-  max-width: 520px;
-  padding: 28px;
-  background: #FAFAF9;
-  border-radius: 20px;
+  max-width: 560px;
+  padding: 32px;
+  background: #FFFFFF;
   border: 1px solid #F1F5F9;
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(15,23,42,0.04);
 }
 
-.prog-track {
+.progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.progress-title {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #64748B;
+}
+
+.progress-percent {
+  font-size: 14px;
+  font-weight: 800;
+  font-family: var(--font-family-mono);
+  color: #0F172A;
+}
+
+.progress-track {
   height: 4px;
-  background: #E2E8F0;
+  background: #F1F5F9;
   border-radius: 100px;
   overflow: hidden;
-  margin-bottom: 22px;
+  margin-bottom: 24px;
 }
 
-.prog-fill {
+.progress-fill {
   height: 100%;
   background: linear-gradient(90deg, #0F172A, #D97706);
   border-radius: 100px;
-  transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.steps-dots {
+.progress-steps {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 18px;
+  margin-bottom: 20px;
 }
 
-.sd-item {
+.p-step {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 7px;
+  gap: 8px;
   opacity: 0.35;
   transition: opacity 0.3s ease;
 }
 
-.sd-item--live { opacity: 1; }
-.sd-item--done { opacity: 0.65; }
+.p-step--active { opacity: 1; }
+.p-step--done { opacity: 0.6; }
 
-.sd-circle {
+.p-step-dot {
   width: 28px;
   height: 28px;
-  border-radius: 100px;
-  background: #E2E8F0;
+  border-radius: 50%;
+  background: #F1F5F9;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -844,34 +1057,31 @@ onMounted(() => {
   transition: all 0.3s ease;
 }
 
-.sd-item--live .sd-circle {
+.p-step--active .p-step-dot {
   background: #0F172A;
   color: #fff;
-  box-shadow: 0 3px 10px rgba(15,23,42,0.22);
+  box-shadow: 0 4px 12px rgba(15,23,42,0.2);
 }
 
-.sd-item--done .sd-circle {
+.p-step--done .p-step-dot {
   background: #059669;
   color: #fff;
 }
 
-.sd-label {
+.p-step-label {
   font-size: 10px;
   color: #94A3B8;
   text-align: center;
-  max-width: 56px;
+  max-width: 60px;
   line-height: 1.3;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
-.sd-item--live .sd-label {
+.p-step--active .p-step-label {
   color: #0F172A;
   font-weight: 700;
 }
 
-.prog-msg {
+.progress-msg {
   text-align: center;
   margin: 0;
   font-size: 13px;
@@ -879,63 +1089,170 @@ onMounted(() => {
   font-weight: 600;
 }
 
-/* ====== Stream Box ====== */
-.stream-box {
-  margin-top: 18px;
+/* ====== Stream Container ====== */
+.stream-container {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
 }
 
 .stream-block {
-  background: #fff;
-  border-radius: 14px;
+  border-radius: 12px;
   border: 1px solid #F1F5F9;
   overflow: hidden;
 }
 
-.stream-block--split {
-  border-top: none;
-  border-top-left-radius: 0;
-  border-top-right-radius: 0;
-  margin-top: -1px;
+.stream-block--think {
+  background: #F0F9FF;
+  border-color: rgba(2,132,199,0.15);
 }
 
-.stream-tag {
+.stream-block--result {
+  background: #ECFDF5;
+  border-color: rgba(5,150,105,0.15);
+}
+
+.stream-header {
   display: flex;
   align-items: center;
-  gap: 7px;
-  padding: 11px 16px;
+  gap: 8px;
+  padding: 12px 16px;
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.3px;
 }
 
-.stream-tag--think {
+.stream-block--think .stream-header {
   color: #0284C7;
-  background: #F0F9FF;
 }
 
-.stream-tag--result {
+.stream-block--result .stream-header {
   color: #059669;
-  background: #ECFDF5;
 }
 
-.stream-text {
+.spin-mini {
+  animation: spin 1s linear infinite;
+}
+
+.stream-content {
   margin: 0;
-  padding: 13px 16px;
+  padding: 14px 16px;
   font-family: var(--font-family-mono);
   font-size: 11px;
   line-height: 1.75;
   color: #475569;
   white-space: pre-wrap;
   word-break: break-all;
-  max-height: 130px;
+  max-height: 120px;
   overflow-y: auto;
-  background: #FAFAF9;
+  background: rgba(255,255,255,0.5);
 }
 
-.stream-text::-webkit-scrollbar { width: 3px; }
-.stream-text::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 2px; }
+.stream-content::-webkit-scrollbar { width: 3px; }
+.stream-content::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 2px; }
 
-.stream-text--think {
+.stream-content--think {
   color: #64748B;
+}
+
+/* ====== Transitions ====== */
+.progress-fade-enter-active {
+  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.progress-fade-leave-active {
+  transition: all 0.3s ease;
+}
+.progress-fade-enter-from {
+  opacity: 0;
+  transform: translateY(20px);
+}
+.progress-fade-leave-to {
+  opacity: 0;
+}
+
+.stream-fade-enter-active {
+  transition: all 0.4s ease;
+}
+.stream-fade-enter-from {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+/* ====== Responsive ====== */
+@media (max-width: 768px) {
+  .pref-inner {
+    padding: 60px 24px 100px;
+  }
+
+  .header-title {
+    margin-bottom: 12px;
+  }
+
+  .title-line--main {
+    letter-spacing: -2px;
+  }
+
+  .profile-strip {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 16px 20px;
+  }
+
+  .strip-label {
+    writing-mode: horizontal-tb;
+    transform: none;
+  }
+
+  .strip-items {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .strip-divider {
+    display: none;
+  }
+
+  .flow-section {
+    grid-template-columns: 1fr;
+    gap: 20px;
+    padding: 32px 0;
+  }
+
+  .section-index {
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .index-line {
+    width: 40px;
+    height: 1px;
+  }
+
+  .priority-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .priority-card {
+    padding: 20px 16px;
+  }
+
+  .generate-btn {
+    width: 100%;
+    padding: 18px 32px;
+  }
+
+  .progress-panel {
+    padding: 24px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 </style>

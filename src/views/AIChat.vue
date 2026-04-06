@@ -662,7 +662,7 @@ const sendMessage = async () => {
   messages.value.push(aiMsg); const aiIdx = messages.value.length - 1
 
   try {
-    const systemPrompt = buildSystemPrompt(currentAgentId.value, userData.value)
+    const systemPrompt = buildSystemPrompt(currentAgentId.value, userData.value, enableThinking.value)
     const apiMessages = [{ role: 'system', content: systemPrompt }, ...messages.value.filter(m => m.role === 'user' || m.role === 'assistant').map(m => ({ role: m.role, content: m.content }))]
 
     const stream = useAIStream({ taskId: `chat-${currentAgentId.value}-${Date.now()}`, enableThinking: enableThinking.value, autoRestore: false, autoScroll: true, scrollContainer: () => messagesContainer.value })

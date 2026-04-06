@@ -19,13 +19,15 @@ interface AISettings {
 
 const PROVIDERS_KEY = 'ai_providers'
 
+export const ZHIPU_MODEL_ID = 'glm-z1-flash'
+
 const DEFAULT_PROVIDER: AIProvider = {
   id: 'provider-default-zhipu',
-  name: '智谱 GLM-4.7-Flash（推荐）',
+  name: '智谱 GLM-Z1-Flash（推理模型）',
   type: 'domestic',
   apiKey: '015518e0bc86498dafdc42bf88b1572a.dioiOVESgV9mUg5i',
   baseUrl: 'https://open.bigmodel.cn/api/paas/v4',
-  model: 'glm-4.7-flash',
+  model: ZHIPU_MODEL_ID,
   isDefault: true,
   enabled: true
 }

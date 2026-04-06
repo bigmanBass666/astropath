@@ -1,5 +1,6 @@
 export const schoolsData = [
   {
+    id: 1,
     name: '麻省理工学院',
     country: '美国',
     major: 'Computer Science',

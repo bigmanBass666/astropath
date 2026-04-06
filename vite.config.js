@@ -11,7 +11,23 @@ export default defineConfig({
   },
   server: {
     port: 3000,
-    host: true
+    host: true,
+    proxy: {
+      '/ai-proxy/': {
+        target: 'https://open.bigmodel.cn/api/paas/v4',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/ai-proxy\//, ''),
+        configure: (proxy, _options) => {
+          proxy.on('error', (err) => console.error('[AI Proxy Error]', err.message))
+          proxy.on('proxyReq', (proxyReq, req) => {
+            console.log('[AI Proxy]', req.method, (req.url || '').substring(0, 100))
+          })
+          proxy.on('proxyRes', (proxyRes, req) => {
+            console.log('[AI Proxy Response]', req.url?.substring(0, 60), '→', proxyRes.statusCode)
+          })
+        }
+      }
+    }
   },
   build: {
     rollupOptions: {
