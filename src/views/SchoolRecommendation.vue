@@ -134,108 +134,185 @@
           key="recommendation"
           class="page-results"
         >
-          <section class="results-hero">
-            <div class="results-hero-bg">
-              <div class="results-orb results-orb--1" />
-              <div class="results-orb results-orb--2" />
+          <section
+            ref="resultsHeroRef"
+            class="results-hero"
+          >
+            <div class="res-bg-numeral">
+              RESULTS
             </div>
+            <div class="res-glow res-glow--1" />
+            <div class="res-glow res-glow--2" />
+            <div class="res-grid-pattern" />
 
-            <div class="results-hero-content">
-              <div class="results-badge-row">
-                <span class="badge-icon">✓</span>
-                <span class="badge-text">推荐完成</span>
+            <div class="res-hero-inner">
+              <div class="res-left">
+                <div class="res-badge">
+                  <span class="res-badge__dot" />
+                  <span class="res-badge__text">RECOMMENDATION COMPLETE</span>
+                </div>
+
+                <h2 class="res-title">
+                  <span class="res-title__main">AI 智能选校</span>
+                  <span class="res-title__sub">结果报告</span>
+                </h2>
+
+                <p class="res-desc">
+                  基于您的背景与偏好，AI 已从 {{ SCHOOL_COUNT_DISPLAY }} 所院校中筛选出最优匹配
+                </p>
               </div>
 
-              <h2 class="results-main-title">
-                <span class="r-title-line">AI 智能选校</span>
-                <span class="r-title-line r-title-line--sub">结果报告</span>
-              </h2>
-
-              <p class="results-sub">
-                基于您的背景，为您推荐以下院校
-              </p>
-
-              <div class="stats-showcase">
-                <div class="stat-item stat-item--hero">
-                  <div class="stat-number-wrap">
-                    <CountUp
-                      :end-val="overallMatchScore"
-                      suffix="%"
-                    />
+              <div class="res-stats-panel">
+                <div class="rsp-main">
+                  <div class="rsp-gauge">
+                    <svg
+                      class="rsp-ring"
+                      viewBox="0 0 120 120"
+                    >
+                      <circle
+                        class="rsp-ring__bg"
+                        cx="60"
+                        cy="60"
+                        r="52"
+                        fill="none"
+                        stroke-width="8"
+                      />
+                      <circle
+                        class="rsp-ring__fill"
+                        cx="60"
+                        cy="60"
+                        r="52"
+                        fill="none"
+                        stroke-width="8"
+                        :stroke-dasharray="327"
+                        :stroke-dashoffset="327 - (327 * overallMatchScore / 100)"
+                        stroke-linecap="round"
+                      />
+                    </svg>
+                    <div class="rsp-gauge__center">
+                      <CountUp
+                        :end-val="overallMatchScore"
+                        suffix="%"
+                      />
+                    </div>
                   </div>
-                  <div class="stat-track">
-                    <div
-                      class="stat-track-fill"
-                      :style="{ width: overallMatchScore + '%' }"
-                    />
-                  </div>
-                  <span class="stat-name">综合匹配度</span>
+                  <span class="rsp-label">综合匹配度</span>
                 </div>
 
-                <div class="stat-vline" />
+                <div class="rsp-divider" />
 
-                <div class="stat-item">
-                  <div class="stat-number-wrap">
-                    <CountUp :end-val="coreCount" />
-                    <span class="stat-suffix-small">所</span>
+                <div class="rsp-side">
+                  <div class="rsp-stat">
+                    <span class="rsp-stat__val"><CountUp :end-val="coreCount" /></span>
+                    <span class="rsp-stat__suffix">所</span>
+                    <span class="rsp-stat__key">核心推荐</span>
                   </div>
-                  <span class="stat-name">核心推荐</span>
-                </div>
-
-                <div class="stat-vline" />
-
-                <div class="stat-item">
-                  <div class="stat-number-wrap">
-                    <CountUp :end-val="alternativeCount" />
-                    <span class="stat-suffix-small">所</span>
+                  <div class="rsp-stat">
+                    <span class="rsp-stat__val"><CountUp :end-val="alternativeCount" /></span>
+                    <span class="rsp-stat__suffix">所</span>
+                    <span class="rsp-stat__key">备选方案</span>
                   </div>
-                  <span class="stat-name">备选方案</span>
                 </div>
+              </div>
+            </div>
+
+            <div class="res-bottom-line">
+              <div class="res-bl-fill" />
+            </div>
+          </section>
+
+          <!-- ====== TRANSITION ZONE ====== -->
+          <section class="transition-zone">
+            <div class="tz-inner">
+              <div class="tz-stat">
+                <span class="tz-num">{{ coreCount }}</span>
+                <span class="tz-label">所核心推荐</span>
+              </div>
+              <div class="tz-divider" />
+              <div class="tz-context">
+                <span class="tz-highlight">{{ assessment?.academic?.major || 'CS' }}</span>
+                <span class="tz-text">背景 · GPA {{ assessment?.academic?.gpa || '3.8' }}</span>
+              </div>
+              <div class="tz-divider" />
+              <div class="tz-summary">
+                <span class="tz-text">基于</span>
+                <span class="tz-highlight">{{ SCHOOL_COUNT_DISPLAY }}</span>
+                <span class="tz-text">所院校库匹配</span>
               </div>
             </div>
           </section>
 
-          <section class="filter-bar">
-            <div class="filter-inner">
-              <div class="filter-group">
+          <section class="filter-fusion">
+            <div class="ff-inner">
+              <div class="ff-chips">
                 <button
-                  class="f-btn"
-                  :class="{ 'f-btn--on': activeFilter === 'all' }"
+                  class="ff-pill"
+                  :class="{ 'ff-pill--on': activeFilter === 'all' }"
                   @click="activeFilter = 'all'"
                 >
                   全部
                 </button>
                 <button
-                  class="f-btn"
-                  :class="{ 'f-btn--on': activeFilter === 'core' }"
+                  class="ff-pill"
+                  :class="{ 'ff-pill--on': activeFilter === 'core' }"
                   @click="activeFilter = 'core'"
                 >
                   核心推荐
                 </button>
                 <button
-                  class="f-btn"
-                  :class="{ 'f-btn--on': activeFilter === 'alternative' }"
+                  class="ff-pill"
+                  :class="{ 'ff-pill--on': activeFilter === 'alternative' }"
                   @click="activeFilter = 'alternative'"
                 >
                   备选方案
                 </button>
               </div>
-              <div class="sort-wrap">
-                <span class="sort-lbl">排序</span>
-                <select
-                  v-model="sortBy"
-                  class="sort-select"
-                >
-                  <option value="match-desc">
-                    匹配度 ↓
-                  </option>
-                  <option value="match-asc">
-                    匹配度 ↑
-                  </option>
-                  <option value="ranking">
-                    排名
-                  </option>
-                </select>
+
+              <div
+                class="ff-sort"
+                @click="sortOpen = !sortOpen"
+              >
+                <span class="ff-sort__lbl">排序</span>
+                <span class="ff-sort__cur">{{ sortLabel }}</span>
+                <svg
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                  class="ff-sort__arrow"
+                  :class="{ 'ff-sort__arrow--open': sortOpen }"
+                ><polyline points="6 9 12 15 18 9" /></svg>
+
+                <Transition name="ff-drop">
+                  <div
+                    v-if="sortOpen"
+                    class="ff-dropdown"
+                  >
+                    <button
+                      class="ff-opt"
+                      :class="{ 'ff-opt--on': sortBy === 'match-desc' }"
+                      @click.stop="sortBy = 'match-desc'; sortOpen = false"
+                    >
+                      匹配度 ↓
+                    </button>
+                    <button
+                      class="ff-opt"
+                      :class="{ 'ff-opt--on': sortBy === 'match-asc' }"
+                      @click.stop="sortBy = 'match-asc'; sortOpen = false"
+                    >
+                      匹配度 ↑
+                    </button>
+                    <button
+                      class="ff-opt"
+                      :class="{ 'ff-opt--on': sortBy === 'ranking' }"
+                      @click.stop="sortBy = 'ranking'; sortOpen = false"
+                    >
+                      排名
+                    </button>
+                  </div>
+                </Transition>
               </div>
             </div>
           </section>
@@ -352,7 +429,9 @@ import { useAIRecommendation } from '@/composables/useAIRecommendation'
 import { useAIConfig } from '@/composables/useAIConfig'
 import { useActiveStream } from '@/composables/useActiveStream'
 import { useScrollAnimation } from '@/composables/useScrollAnimation'
+import { useAssessmentState } from '@/composables/useAssessmentState'
 import { schoolsData } from '@/utils/recommendationEngine'
+import { SCHOOL_COUNT_DISPLAY } from '@/data/schoolsData'
 
 const router = useRouter()
 const aiConfig = useAIConfig()
@@ -379,8 +458,9 @@ const {
   recStream
 } = useAIRecommendation()
 
-const hasAssessment = ref(false)
-const assessment = ref(null)
+const assessmentState = useAssessmentState()
+const hasAssessment = assessmentState.hasData
+const assessment = assessmentState.form
 const currentStep = ref('preference')
 const recommendations = ref([])
 const summary = ref('')
@@ -389,6 +469,12 @@ const userPreference = ref(null)
 
 const activeFilter = ref('all')
 const sortBy = ref('match-desc')
+const sortOpen = ref(false)
+
+const sortLabel = computed(() => {
+  const map = { 'match-desc': '匹配度 ↓', 'match-asc': '匹配度 ↑', 'ranking': '排名' }
+  return map[sortBy.value] || '匹配度 ↓'
+})
 
 const constellationDimensions = computed(() => [
   { label: '学术能力', value: assessment.value?.academic?.gpa ? Math.min(100, (parseFloat(assessment.value.academic.gpa) / 4.0) * 100) : 75 },
@@ -422,6 +508,17 @@ const analysisVisible = ref(false)
 const selectedRecommendation = ref(null)
 const currentAnalysis = ref(null)
 const compareVisible = ref(false)
+const resultsHeroRef = ref<HTMLElement | null>(null)
+
+watch(() => currentStep.value, (newVal, oldVal) => {
+  if (oldVal === 'analyzing' || oldVal === 'matching' || oldVal === 'generating') {
+    if (newVal === 'recommendation' || newVal === 'completed' || newVal === 'idle') {
+      nextTick(() => {
+        resultsHeroRef.value?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      })
+    }
+  }
+})
 
 const CATEGORY_MAP = {
   reach: 'core',
@@ -436,9 +533,11 @@ const displayCategory = (cat) => CATEGORY_MAP[cat] || cat
 const coreCount = computed(() => recommendations.value.filter(r => displayCategory(r.category) === 'core').length)
 const alternativeCount = computed(() => recommendations.value.filter(r => displayCategory(r.category) === 'alternative').length)
 const overallMatchScore = computed(() => {
-  if (recommendations.value.length === 0) return 0
-  const total = recommendations.value.reduce((sum, r) => sum + r.matchScore, 0)
-  return Math.round(total / recommendations.value.length)
+  if (!recommendations.value || recommendations.value.length === 0) return 0
+  const scores = recommendations.value.map(r => Number(r.matchScore) || 0).filter(s => !isNaN(s))
+  if (scores.length === 0) return 0
+  const total = scores.reduce((sum, s) => sum + s, 0)
+  return Math.round(total / scores.length)
 })
 
 const filteredAndSortedRecommendations = computed(() => {
@@ -632,26 +731,6 @@ const handleAdjustRequest = async (message) => {
   }
 }
 
-const checkAssessment = () => {
-  const savedAssessment = localStorage.getItem('assessment_report')
-  if (savedAssessment) {
-    try {
-      const parsed = JSON.parse(savedAssessment)
-      assessment.value = parsed
-      if (parsed.basic && (parsed.basic.name || parsed.basic.university)) {
-        hasAssessment.value = true
-      } else {
-        hasAssessment.value = false
-      }
-    } catch (e) {
-      console.error('解析评估数据失败:', e)
-      hasAssessment.value = false
-    }
-  } else {
-    hasAssessment.value = false
-  }
-}
-
 watch(() => globalState.state.schoolAnalysis, (newState) => {
   if (newState.currentStep === 'completed' && newState.analysis && selectedRecommendation.value) {
     if (newState.schoolId === selectedRecommendation.value.schoolId) {
@@ -661,8 +740,6 @@ watch(() => globalState.state.schoolAnalysis, (newState) => {
 }, { deep: true })
 
 onMounted(() => {
-  checkAssessment()
-
   const savedFavorites = localStorage.getItem('school_favorites')
   if (savedFavorites) {
     favorites.value = JSON.parse(savedFavorites)
@@ -1057,30 +1134,6 @@ onMounted(() => {
   background: #E2E8F0;
 }
 
-/* ====== Scroll Hint ====== */
-.hero-scroll-hint {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  margin-top: var(--space-12);
-  animation: fadeUp 0.8s ease both;
-  animation-delay: 0.9s;
-}
-
-.scroll-line {
-  width: 40px;
-  height: 1px;
-  background: linear-gradient(90deg, #CBD5E1, transparent);
-}
-
-.scroll-text {
-  font-size: 11px;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: #CBD5E1;
-  font-weight: 600;
-}
-
 /* ====== Hero Right — Canvas ====== */
 .hero-right {
   display: flex;
@@ -1133,283 +1186,488 @@ onMounted(() => {
 /* ====== Preference Section ====== */
 .preference-section {
   position: relative;
-  padding: var(--space-20) var(--space-8) var(--space-28);
+  padding: var(--space-8) var(--space-6) var(--space-28);
   background:
     radial-gradient(ellipse 80% 50% at 50% -5%, rgba(15,23,42,0.015), transparent),
     linear-gradient(180deg, #FFFFFF 0%, #FAFAF9 100%);
 }
 
 .pref-section-inner {
-  max-width: 720px;
-  margin: 0 auto;
   position: relative;
   z-index: 1;
 }
 
-/* ====== RESULTS HERO — Light Theme ====== */
+/* ====== RESULTS HERO — Cinematic Report Cover ====== */
 .results-hero {
   position: relative;
   overflow: hidden;
   background: #FFFFFF;
-  padding: var(--space-24) var(--space-8);
-  border-bottom: 1px solid #F1F5F9;
+  padding: 80px 60px 64px;
 }
 
-.results-hero-bg {
+.res-bg-numeral {
   position: absolute;
-  inset: 0;
-  overflow: hidden;
+  top: 24px;
+  right: 48px;
+  font-size: clamp(100px, 14vw, 200px);
+  font-weight: 900;
+  font-family: var(--font-family-mono);
+  color: #F1F5F9;
+  line-height: 0.85;
+  letter-spacing: -8px;
+  -webkit-text-stroke: 1px rgba(15,23,42,0.035);
+  pointer-events: none;
+  z-index: 0;
+  user-select: none;
 }
 
-.results-orb {
+.res-glow {
   position: absolute;
   border-radius: 50%;
-  filter: blur(100px);
+  filter: blur(120px);
+  pointer-events: none;
+  z-index: 0;
 }
 
-.results-orb--1 {
-  width: 600px;
-  height: 600px;
-  top: -200px;
-  right: -100px;
+.res-glow--1 {
+  width: 500px;
+  height: 500px;
+  top: -12%;
+  right: -4%;
   background: rgba(217,119,6,0.06);
 }
 
-.results-orb--2 {
-  width: 300px;
-  height: 300px;
-  bottom: -50px;
-  left: 10%;
+.res-glow--2 {
+  width: 350px;
+  height: 350px;
+  bottom: -5%;
+  left: 8%;
   background: rgba(15,23,42,0.03);
 }
 
-.results-hero-content {
-  position: relative;
-  z-index: 2;
-  max-width: 1000px;
-  margin: 0 auto;
-  text-align: center;
+.res-grid-pattern {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(15,23,42,0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(15,23,42,0.02) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(ellipse 70% 55% at 50% 45%, black, transparent);
+  -webkit-mask-image: radial-gradient(ellipse 70% 55% at 50% 45%, black, transparent);
+  pointer-events: none;
+  z-index: 0;
 }
 
-.results-badge-row {
+.res-hero-inner {
+  position: relative;
+  z-index: 2;
+  max-width: 1100px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 60px;
+  align-items: center;
+}
+
+/* ====== Left Column ====== */
+.res-left {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.res-badge {
   display: inline-flex;
   align-items: center;
   gap: 10px;
   padding: 8px 20px;
   border-radius: 100px;
-  background: #ECFDF5;
-  border: 1px solid rgba(5,150,105,0.15);
-  margin-bottom: var(--space-8);
+  background: #F8FAFC;
+  border: 1px solid #F1F5F9;
+  width: fit-content;
 }
 
-.badge-icon {
-  width: 16px;
-  height: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #059669;
-  font-size: 12px;
-  font-weight: 700;
+.res-badge__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #059669;
+  animation: pulse-dot 2s ease-in-out infinite;
 }
 
-.badge-text {
-  font-size: 11px;
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(5,150,105,0.3); }
+  50% { opacity: 0.6; box-shadow: 0 0 0 6px rgba(5,150,105,0); }
+}
+
+.res-badge__text {
+  font-size: 10px;
   font-weight: 700;
-  letter-spacing: 2px;
+  letter-spacing: 2.5px;
   text-transform: uppercase;
-  color: #059669;
+  color: #64748B;
 }
 
-.results-main-title {
-  margin: 0 0 var(--space-5) 0;
-  line-height: 1.05;
+.res-title {
+  margin: 0;
+  line-height: 1.02;
 }
 
-.r-title-line {
+.res-title__main {
   display: block;
-}
-
-.r-title-line:first-child {
-  font-size: clamp(36px, 5.5vw, 64px);
+  font-size: clamp(40px, 5.5vw, 68px);
   font-weight: 900;
   color: #0F172A;
   letter-spacing: -2.5px;
 }
 
-.r-title-line--sub {
+.res-title__sub {
+  display: block;
   font-size: clamp(28px, 4vw, 44px);
   font-weight: 700;
   color: #D97706;
   letter-spacing: -1.5px;
 }
 
-.results-sub {
+.res-desc {
+  margin: 0;
   font-size: 16px;
   color: #64748B;
-  margin: 0 0 var(--space-12) 0;
-  letter-spacing: 0.3px;
+  line-height: 1.7;
+  max-width: 380px;
 }
 
-/* ====== Stats Showcase — Light ====== */
-.stats-showcase {
+/* ====== Stats Panel ====== */
+.res-stats-panel {
   display: flex;
-  align-items: stretch;
-  justify-content: center;
-  gap: 0;
-  background: #F8FAFC;
+  align-items: center;
+  gap: 32px;
+  padding: 36px 40px;
+  background: linear-gradient(145deg, #FAFAF9, #F8FAFC);
   border: 1px solid #F1F5F9;
-  border-radius: 24px;
-  padding: var(--space-8) var(--space-10);
-  max-width: 680px;
-  margin: 0 auto;
+  border-radius: 28px;
+  box-shadow:
+    0 4px 6px -1px rgba(0,0,0,0.02),
+    0 16px 40px -12px rgba(15,23,42,0.04);
 }
 
-.stat-item {
-  flex: 1;
-  text-align: center;
-  padding: 0 var(--space-6);
+.rsp-main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.rsp-gauge {
   position: relative;
+  width: 110px;
+  height: 110px;
 }
 
-.stat-item--hero {
-  flex: 1.4;
+.rsp-ring {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
 }
 
-.stat-number-wrap {
-  font-size: clamp(36px, 4vw, 52px);
+.rsp-ring__bg {
+  stroke: #E2E8F0;
+}
+
+.rsp-ring__fill {
+  stroke: url(#resGradient);
+  stroke: #D97706;
+  transition: stroke-dashoffset 1.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.rsp-gauge__center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
   font-weight: 900;
   color: #0F172A;
   font-family: var(--font-family-mono);
-  letter-spacing: -3px;
-  line-height: 1;
-  margin-bottom: var(--space-3);
-  display: flex;
-  align-items: baseline;
-  justify-content: center;
-  gap: 4px;
+  letter-spacing: -1.5px;
 }
 
-.stat-suffix-small {
-  font-size: 16px;
-  font-weight: 600;
-  color: #94A3B8;
-  font-family: var(--font-family-base);
-  letter-spacing: 0;
-}
-
-.stat-track {
-  width: 80px;
-  height: 3px;
-  background: #E2E8F0;
-  border-radius: 100px;
-  margin: 0 auto var(--space-3);
-  overflow: hidden;
-}
-
-.stat-track-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #D97706, #FBBF24);
-  border-radius: 100px;
-  transition: width 2s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.stat-name {
-  display: block;
+.rsp-label {
   font-size: 11px;
   font-weight: 600;
-  letter-spacing: 1.5px;
+  letter-spacing: 1px;
   text-transform: uppercase;
   color: #94A3B8;
 }
 
-.stat-vline {
+.rsp-divider {
   width: 1px;
-  background: #E2E8F0;
-  align-self: stretch;
+  height: 72px;
+  background: linear-gradient(180deg, #E2E8F0, transparent, #E2E8F0);
+  flex-shrink: 0;
 }
 
-/* ====== Filter Bar ====== */
-.filter-bar {
+.rsp-side {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  justify-content: center;
+}
+
+.rsp-stat {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+}
+
+.rsp-stat__val {
+  font-size: 30px;
+  font-weight: 900;
+  color: #0F172A;
+  font-family: var(--font-family-mono);
+  letter-spacing: -2px;
+  line-height: 1;
+}
+
+.rsp-stat__suffix {
+  font-size: 13px;
+  font-weight: 600;
+  color: #94A3B8;
+}
+
+.rsp-stat__key {
+  font-size: 11px;
+  font-weight: 600;
+  color: #94A3B8;
+  letter-spacing: 0.5px;
+  margin-left: auto;
+}
+
+/* ====== Bottom Line ====== */
+.res-bottom-line {
+  position: relative;
+  height: 1px;
+  background: #F1F5F9;
+}
+
+.res-bl-fill {
+  width: 35%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, #D97706, transparent);
+  opacity: 0.35;
+}
+
+/* ====== FILTER FUSION — Integrated Pills ====== */
+.filter-fusion {
   position: sticky;
   top: 0;
   z-index: 100;
-  background: rgba(250,250,249,0.85);
+  background: rgba(248,250,252,0.82);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border-bottom: 1px solid rgba(15,23,42,0.05);
+  border-bottom: 1px solid rgba(15,23,42,0.04);
 }
 
-.filter-inner {
-  max-width: 1200px;
+.ff-inner {
+  max-width: 1100px;
   margin: 0 auto;
-  padding: var(--space-4) var(--space-8);
+  padding: 14px 60px;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 20px;
 }
 
-.filter-group {
+.ff-chips {
   display: flex;
-  gap: 4px;
+  gap: 6px;
   background: #F1F5F9;
-  padding: 4px;
-  border-radius: 12px;
+  padding: 5px;
+  border-radius: 14px;
 }
 
-.f-btn {
-  padding: 8px 22px;
+.ff-pill {
+  padding: 9px 22px;
   border: none;
-  border-radius: 9px;
+  border-radius: 10px;
   font-size: 13px;
   font-weight: 600;
   color: #64748B;
   background: transparent;
   cursor: pointer;
   transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
-  letter-spacing: 0.2px;
+  white-space: nowrap;
 }
 
-.f-btn:hover {
+.ff-pill:hover {
   color: #334155;
 }
 
-.f-btn--on {
+.ff-pill--on {
   background: #FFFFFF;
   color: #0F172A;
   box-shadow: 0 2px 8px rgba(15,23,42,0.08);
+  font-weight: 700;
 }
 
-.sort-wrap {
+/* ====== Custom Sort Dropdown ====== */
+.ff-sort {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: 8px;
+  padding: 9px 16px 9px 12px;
+  background: #FFFFFF;
+  border: 1.5px solid #E2E8F0;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  user-select: none;
 }
 
-.sort-lbl {
+.ff-sort:hover {
+  border-color: #CBD5E1;
+  box-shadow: 0 4px 12px rgba(15,23,42,0.05);
+}
+
+.ff-sort__lbl {
   font-size: 12px;
   color: #94A3B8;
   font-weight: 600;
-  letter-spacing: 0.5px;
 }
 
-.sort-select {
-  padding: 8px 32px 8px 14px;
-  border: 1px solid #E2E8F0;
-  border-radius: 10px;
+.ff-sort__cur {
   font-size: 13px;
+  font-weight: 700;
   color: #334155;
-  background: #FFF url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394A3B8' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 12px center;
-  cursor: pointer;
-  outline: none;
-  appearance: none;
-  -webkit-appearance: none;
-  transition: border-color 0.25s;
 }
 
-.sort-select:focus {
-  border-color: #0F172A;
-  box-shadow: 0 0 0 3px rgba(15,23,42,0.06);
+.ff-sort__arrow {
+  color: #94A3B8;
+  transition: transform 0.25s ease;
+}
+
+.ff-sort__arrow--open {
+  transform: rotate(180deg);
+}
+
+.ff-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 140px;
+  padding: 6px;
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 14px;
+  box-shadow: 0 12px 36px rgba(15,23,42,0.1);
+  z-index: 200;
+}
+
+.ff-opt {
+  display: block;
+  width: 100%;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  font-size: 13px;
+  font-weight: 600;
+  color: #64748B;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.ff-opt:hover {
+  background: #F8FAFC;
+  color: #0F172A;
+}
+
+.ff-opt--on {
+  color: #D97706;
+  background: #FEF3C7;
+}
+
+/* Dropdown Transition */
+.ff-drop-enter-active {
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.ff-drop-leave-active {
+  transition: all 0.15s ease;
+}
+.ff-drop-enter-from {
+  opacity: 0;
+  transform: translateY(-8px) scale(0.96);
+}
+.ff-drop-leave-to {
+  opacity: 0;
+  transform: translateY(-4px) scale(0.98);
+}
+
+/* ====== Transition Zone ====== */
+.transition-zone {
+  background: #F8FAFC;
+  border-bottom: 1px solid #F1F5F9;
+  padding: 32px 60px;
+}
+
+.tz-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 32px;
+}
+
+.tz-stat {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.tz-num {
+  font-size: 56px;
+  font-weight: 900;
+  font-family: var(--font-family-mono);
+  color: #0F172A;
+  letter-spacing: -3px;
+  line-height: 1;
+}
+
+.tz-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #64748B;
+}
+
+.tz-divider {
+  width: 1px;
+  height: 32px;
+  background: #E2E8F0;
+}
+
+.tz-context,
+.tz-summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tz-highlight {
+  font-size: 15px;
+  font-weight: 700;
+  color: #D97706;
+  padding: 4px 12px;
+  background: rgba(217,119,6,0.08);
+  border-radius: 100px;
+}
+
+.tz-text {
+  font-size: 14px;
+  color: #94A3B8;
 }
 
 /* ====== Results Body ====== */
@@ -1417,6 +1675,7 @@ onMounted(() => {
   max-width: 1300px;
   margin: 0 auto;
   padding: var(--space-12) var(--space-8) var(--space-24);
+  background: #F8FAFC;
 }
 
 /* ====== Dialog ====== */

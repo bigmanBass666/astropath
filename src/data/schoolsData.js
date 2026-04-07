@@ -1,3 +1,6 @@
+export const SCHOOL_COUNT = 101
+export const SCHOOL_COUNT_DISPLAY = '55+'
+
 export const schoolsData = [
   {
     id: 1,

@@ -16,7 +16,7 @@
           <nav class="sd-breadcrumb">
             <button
               class="sd-back"
-              @click="router.back()"
+              @click="handleBack"
             >
               <svg
                 width="16"
@@ -456,7 +456,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getSchoolById } from '@/utils/recommendationEngine'
@@ -467,17 +467,16 @@ const router = useRouter()
 const heroRef = ref(null)
 const contentRef = ref(null)
 const metricsRef = ref(null)
-const titleRef = ref(null)
 const heroVisible = ref(false)
 const contentVisible = ref(false)
 const metricsVisible = ref(false)
 
 // 收藏状态 - 使用响应式变量确保UI实时更新
-const favoriteIds = ref([])
+const favoriteIds = ref<number[]>([])
 
-let heroObserver = null
-let contentObserver = null
-let metricsObserver = null
+let heroObserver: IntersectionObserver | null = null
+let contentObserver: IntersectionObserver | null = null
+let metricsObserver: IntersectionObserver | null = null
 
 const fromLabels = {
   recommendation: '返回选校推荐',
@@ -488,14 +487,36 @@ const fromLabels = {
   home: '返回首页'
 }
 
-const backLabel = computed(() => fromLabels[route.query.from] || '返回')
+const backLabel = computed(() => {
+  const from = route.query.from
+  const key = Array.isArray(from) ? from[0] : from
+  return key ? (fromLabels as Record<string, string>)[key] || '返回' : '返回'
+})
+
+const fromRoutes: Record<string, string> = {
+  recommendation: '/school-recommendation',
+  database: '/university-database',
+  timeline: '/timeline',
+  materials: '/materials',
+  'major-detail': '/major-detail',
+  home: '/'
+}
+
+function handleBack() {
+  const target = fromRoutes[route.query.from as string]
+  if (target) {
+    router.push(target)
+  } else {
+    router.back()
+  }
+}
 
 const school = computed(() => {
-  const id = parseInt(route.params.id)
+  const id = parseInt(route.params.id as string)
   const found = getSchoolById(id)
   if (!found) return null
   if (found.match !== undefined) return found
-  const competitivenessMap = { extreme: 88, very_high: 78, high: 68, moderate: 55, accessible: 45 }
+  const competitivenessMap: Record<string, number> = { extreme: 88, very_high: 78, high: 68, moderate: 55, accessible: 45 }
   return {
     ...found,
     match: found.admissionCriteria ? competitivenessMap[found.admissionCriteria.competitiveness] || 50 : 50
@@ -506,14 +527,14 @@ const school = computed(() => {
 function loadFavorites() {
   try {
     const favs = JSON.parse(localStorage.getItem('school_favorites') || '[]')
-    favoriteIds.value = Array.isArray(favs) ? favs : []
+    favoriteIds.value = Array.isArray(favs) ? favs as number[] : []
   } catch {
     favoriteIds.value = []
   }
 }
 
 const isFavorite = computed(() => {
-  return favoriteIds.value.includes(school.value?.id)
+  return school.value?.id ? favoriteIds.value.includes(school.value.id) : false
 })
 
 const nameWords = computed(() => {
@@ -562,7 +583,7 @@ const difficultyText = computed(() => {
 
 const programHighlight = computed(() => {
   const major = school.value?.major || ''
-  const map = {
+  const map: Record<string, string> = {
     'CS': '提供 AI、系统、理论等多个研究方向',
     'Computer Science': '提供 AI、系统、理论等多个研究方向',
     'AI': '涵盖机器学习、计算机视觉、自然语言处理',
@@ -574,22 +595,24 @@ const programHighlight = computed(() => {
 
 /* ===== 引用系统 ===== */
 const refOrder = ['ranking', 'tuition', 'acceptance', 'requirements']
+type RefKey = 'ranking' | 'tuition' | 'acceptance' | 'requirements'
+type RefSources = Record<string, { url: string; label: string }>
 
 const refList = computed(() => {
-  const srcs = school.value?.sources
+  const srcs = school.value?.sources as RefSources | undefined
   if (!srcs) return []
   return refOrder
-    .filter(key => srcs[key]?.url && srcs[key]?.label)
+    .filter((key) => srcs[key]?.url && srcs[key]?.label)
     .map((key, idx) => ({ ...srcs[key], index: idx + 1, key }))
 })
 
-function refIndex(key) {
-  const srcs = school.value?.sources
+function refIndex(key: string): number | null {
+  const srcs = school.value?.sources as RefSources | undefined
   if (!srcs || !srcs[key]) return null
-  return refOrder.indexOf(key) + 1 || null
+  return refOrder.indexOf(key as RefKey) + 1 || null
 }
 
-function openRef(url) {
+function openRef(url: string): void {
   if (url) window.open(url, '_blank', 'noopener,noreferrer')
 }
 
@@ -647,14 +670,16 @@ onMounted(() => {
 })
 
 function setupObservers() {
-  const makeObs = (cb) => new IntersectionObserver(
-    entries => entries.forEach(e => { if (e.isIntersecting) { cb(true); e.target._obs?.unobserve(e.target) } }),
-    { threshold: 0.1 }
-  )
+  const makeObs = (cb: (v: boolean) => void) => {
+    const obs = new IntersectionObserver(
+      entries => entries.forEach(e => { if (e.isIntersecting) { cb(true); obs.unobserve(e.target) } }),
+      { threshold: 0.1 }
+    )
+    return obs
+  }
   heroObserver = makeObs(v => { heroVisible.value = v })
   contentObserver = makeObs(v => { contentVisible.value = v })
   metricsObserver = makeObs(v => { metricsVisible.value = v })
-  ;[heroObserver, contentObserver, metricsObserver].forEach(o => { o._obs = o })
 }
 
 onUnmounted(() => {

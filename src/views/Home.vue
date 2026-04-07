@@ -1,1442 +1,2459 @@
 <template>
   <div
     ref="homePageRef"
-    class="home-page"
+    class="hp-page"
   >
-    <!-- Hero区域 -->
+    <div class="hp-noise" />
+
+    <!-- ===== SECTION 1: HERO ===== -->
     <section
       ref="heroRef"
-      class="hero"
+      class="hp-hero"
+      :class="{ 'hp-hero--visible': heroVisible }"
+      @mousemove="onHeroMouseMove"
     >
-      <!-- 视差滚动背景层 -->
       <div
-        ref="heroParallaxRef"
-        class="hero-parallax-layer"
-      >
-        <!-- 星座网络背景 - 科技感 -->
-        <div class="hero-network-bg">
-          <canvas
-            ref="networkCanvas"
-            class="network-canvas"
+        ref="gridBgRef"
+        class="hp-hero__grid-bg"
+        :style="{ '--px': mouseParallax.x + 'px', '--py': mouseParallax.y + 'px' }"
+      />
+      <div class="hp-hero__glow" />
+      <div
+        class="hp-hero__cursor-glow"
+        :style="{ '--cgx': mouseParallax.x * 2.5 + 'px', '--cgy': mouseParallax.y * 2.5 + 'px' }"
+      />
+
+      <div class="hp-hero__tech">
+        <svg
+          class="hp-tech__svg"
+          viewBox="0 0 1440 900"
+          preserveAspectRatio="xMidYMid slice"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <defs>
+            <linearGradient
+              id="techLineGrad"
+              x1="0%"
+              y1="0%"
+              x2="100%"
+              y2="0%"
+            >
+              <stop
+                offset="0%"
+                stop-color="#0F172A"
+                stop-opacity="0"
+              />
+              <stop
+                offset="50%"
+                stop-color="#0F172A"
+                stop-opacity="0.12"
+              />
+              <stop
+                offset="100%"
+                stop-color="#0F172A"
+                stop-opacity="0"
+              />
+            </linearGradient>
+            <linearGradient
+              id="techLineGradV"
+              x1="0%"
+              y1="0%"
+              x2="0%"
+              y2="100%"
+            >
+              <stop
+                offset="0%"
+                stop-color="#D97706"
+                stop-opacity="0"
+              />
+              <stop
+                offset="50%"
+                stop-color="#D97706"
+                stop-opacity="0.12"
+              />
+              <stop
+                offset="100%"
+                stop-color="#D97706"
+                stop-opacity="0"
+              />
+            </linearGradient>
+          </defs>
+
+          <g
+            class="hp-tech__grid-lines"
+            opacity="0.4"
+          >
+            <line
+              x1="120"
+              y1="80"
+              x2="120"
+              y2="820"
+              stroke="#0F172A"
+              stroke-width="0.5"
+              stroke-dasharray="4 6"
+              opacity="0.15"
+            />
+            <line
+              x1="360"
+              y1="60"
+              x2="360"
+              y2="840"
+              stroke="#0F172A"
+              stroke-width="0.5"
+              stroke-dasharray="4 6"
+              opacity="0.12"
+            />
+            <line
+              x1="600"
+              y1="70"
+              x2="600"
+              y2="830"
+              stroke="#0F172A"
+              stroke-width="0.5"
+              stroke-dasharray="4 6"
+              opacity="0.15"
+            />
+            <line
+              x1="840"
+              y1="50"
+              x2="840"
+              y2="850"
+              stroke="#0F172A"
+              stroke-width="0.5"
+              stroke-dasharray="4 6"
+              opacity="0.12"
+            />
+            <line
+              x1="1080"
+              y1="75"
+              x2="1080"
+              y2="825"
+              stroke="#0F172A"
+              stroke-width="0.5"
+              stroke-dasharray="4 6"
+              opacity="0.14"
+            />
+            <line
+              x1="1320"
+              y1="65"
+              x2="1320"
+              y2="835"
+              stroke="#0F172A"
+              stroke-width="0.5"
+              stroke-dasharray="4 6"
+              opacity="0.13"
+            />
+
+            <line
+              x1="40"
+              y1="150"
+              x2="1400"
+              y2="150"
+              stroke="#0F172A"
+              stroke-width="0.5"
+              stroke-dasharray="4 6"
+              opacity="0.13"
+            />
+            <line
+              x1="30"
+              y1="300"
+              x2="1410"
+              y2="300"
+              stroke="#0F172A"
+              stroke-width="0.5"
+              stroke-dasharray="4 6"
+              opacity="0.11"
+            />
+            <line
+              x1="45"
+              y1="450"
+              x2="1395"
+              y2="450"
+              stroke="#0F172A"
+              stroke-width="0.5"
+              stroke-dasharray="4 6"
+              opacity="0.14"
+            />
+            <line
+              x1="35"
+              y1="600"
+              x2="1405"
+              y2="600"
+              stroke="#0F172A"
+              stroke-width="0.5"
+              stroke-dasharray="4 6"
+              opacity="0.12"
+            />
+            <line
+              x1="42"
+              y1="750"
+              x2="1398"
+              y2="750"
+              stroke="#0F172A"
+              stroke-width="0.5"
+              stroke-dasharray="4 6"
+              opacity="0.13"
+            />
+          </g>
+
+          <g
+            class="hp-tech__connections"
+            opacity="0.6"
+          >
+            <path
+              d="M180,200 Q340,180 420,320 T620,380 T780,280 T980,350"
+              fill="none"
+              stroke="url(#techLineGrad)"
+              stroke-width="1.2"
+            />
+            <path
+              d="M220,650 Q400,620 520,700 T720,660 T920,720 T1120,680"
+              fill="none"
+              stroke="url(#techLineGrad)"
+              stroke-width="1"
+            />
+            <path
+              d="M1100,160 Q1180,260 1160,380 T1240,500 T1220,620"
+              fill="none"
+              stroke="url(#techLineGradV)"
+              stroke-width="1"
+            />
+            <path
+              d="M80,480 Q160,400 240,430 T360,380 T440,450"
+              fill="none"
+              stroke="url(#techLineGrad)"
+              stroke-width="0.8"
+            />
+          </g>
+
+          <g class="hp-tech__nodes">
+            <circle
+              cx="420"
+              cy="320"
+              r="3"
+              fill="#0F172A"
+              opacity="0.35"
+            />
+            <circle
+              cx="620"
+              cy="380"
+              r="2.5"
+              fill="#D97706"
+              opacity="0.4"
+            />
+            <circle
+              cx="780"
+              cy="280"
+              r="3"
+              fill="#0F172A"
+              opacity="0.3"
+            />
+            <circle
+              cx="980"
+              cy="350"
+              r="2"
+              fill="#0F172A"
+              opacity="0.28"
+            />
+            <circle
+              cx="520"
+              cy="700"
+              r="3"
+              fill="#0F172A"
+              opacity="0.32"
+            />
+            <circle
+              cx="720"
+              cy="660"
+              r="2.5"
+              fill="#D97706"
+              opacity="0.38"
+            />
+            <circle
+              cx="920"
+              cy="720"
+              r="2"
+              fill="#0F172A"
+              opacity="0.26"
+            />
+            <circle
+              cx="1160"
+              cy="380"
+              r="2.5"
+              fill="#0F172A"
+              opacity="0.3"
+            />
+            <circle
+              cx="1240"
+              cy="500"
+              r="2"
+              fill="#D97706"
+              opacity="0.35"
+            />
+            <circle
+              cx="240"
+              cy="430"
+              r="2"
+              fill="#0F172A"
+              opacity="0.28"
+            />
+            <circle
+              cx="440"
+              cy="450"
+              r="2.5"
+              fill="#0F172A"
+              opacity="0.32"
+            />
+          </g>
+
+          <g class="hp-tech__rings">
+            <circle
+              cx="1150"
+              cy="220"
+              r="60"
+              fill="none"
+              stroke="#0F172A"
+              stroke-width="0.5"
+              opacity="0.08"
+              stroke-dasharray="3 8"
+            />
+            <circle
+              cx="1150"
+              cy="220"
+              r="90"
+              fill="none"
+              stroke="#0F172A"
+              stroke-width="0.4"
+              opacity="0.05"
+              stroke-dasharray="2 10"
+            />
+            <circle
+              cx="1150"
+              cy="220"
+              r="120"
+              fill="none"
+              stroke="#D97706"
+              stroke-width="0.3"
+              opacity="0.06"
+              stroke-dasharray="1 12"
+            />
+            <circle
+              cx="260"
+              cy="620"
+              r="45"
+              fill="none"
+              stroke="#0F172A"
+              stroke-width="0.5"
+              opacity="0.07"
+              stroke-dasharray="3 7"
+            />
+            <circle
+              cx="260"
+              cy="620"
+              r="72"
+              fill="none"
+              stroke="#0F172A"
+              stroke-width="0.4"
+              opacity="0.04"
+              stroke-dasharray="2 9"
+            />
+          </g>
+        </svg>
+
+        <span class="hp-tech__watermark">ASTROPATH</span>
+        <span class="hp-tech__watermark hp-tech__watermark--sub">v2.0</span>
+
+        <div class="hp-tech__axis hp-tech__axis--x" />
+        <div class="hp-tech__axis hp-tech__axis--y" />
+        <span class="hp-tech__label hp-tech__label--x">X</span>
+        <span class="hp-tech__label hp-tech__label--y">Y</span>
+
+        <div class="hp-tech__ticks-x">
+          <i
+            v-for="n in 8"
+            :key="'tx'+n"
+            class="hp-tech__tick"
+            :style="{ '--ti': n }"
           />
         </div>
-        <!-- 渐变叠加层 -->
-        <div class="hero-gradient-overlay" />
-        <!-- 动态光晕装饰 -->
-        <div class="hero-glow-decoration" />
+        <div class="hp-tech__ticks-y">
+          <i
+            v-for="n in 6"
+            :key="'ty'+n"
+            class="hp-tech__tick hp-tech__tick--y"
+            :style="{ '--ti': n }"
+          />
+        </div>
+
+        <div class="hp-tech__scanline" />
+        <div class="hp-tech__scanline hp-tech__scanline--h" />
+
+        <div class="hp-tech__floating-ui">
+          <span class="hp-fui hp-fui--coord"><b>lat:</b> 23.1291°</span>
+          <span class="hp-fui hp-fui--coord"><b>lng:</b> 113.2644°</span>
+          <span class="hp-fui hp-fui--badge">SYS.OK</span>
+          <span class="hp-fui hp-fui--hex">#0F172A</span>
+          <span class="hp-fui hp-fui--mini">AI×6</span>
+          <span class="hp-fui hp-fui--status"><i /> ONLINE</span>
+        </div>
+
+        <span class="hp-tech__coord">SYS.INIT // ASTROPATH v2.0 // READY</span>
       </div>
 
-      <div
-        class="hero-content"
-        :class="{ 'is-visible': heroVisible }"
-      >
-        <h1 class="hero-title">
-          {{ animatedTitle }}
-        </h1>
-        <p class="hero-subtitle">
-          {{ animatedSubtitle }}
-        </p>
-        <div class="hero-actions">
-          <el-button
-            type="primary"
-            size="large"
-            class="cta-button"
+      <div class="hp-hero__inner">
+        <div class="hp-hero__main">
+          <h1 class="hp-hero__title">
+            <span class="hp-hero__line hp-hero__line--lead">
+              <span
+                v-for="(w, wi) in leadWords"
+                :key="'l'+wi"
+                class="hp-w"
+                :style="{ '--wi': wi }"
+              ><span class="hp-w__inner">{{ w }}</span></span>
+            </span>
+            <span class="hp-hero__line hp-hero__line--anchor">
+              <span class="hp-anchor-bracket">&lt;</span>
+              <span
+                v-for="(w, wi) in anchorWords"
+                :key="'a'+wi"
+                class="hp-w"
+                :style="{ '--wi': wi }"
+              ><span class="hp-w__inner">{{ w }}</span></span>
+              <span class="hp-anchor-bracket">/&gt;</span>
+              <span class="hp-anchor-cursor" />
+            </span>
+          </h1>
+        </div>
+
+        <div class="hp-hero__side">
+          <p class="hp-hero__sub">
+            AI 智能解析背景<br>为你生成专属留学路线图
+          </p>
+          <button
+            ref="ctaBtnRef"
+            class="hp-btn hp-btn--primary hp-btn--magnetic"
             @click="router.push('/assessment')"
+            @mouseenter="onCtaEnter"
+            @mouseleave="onCtaLeave"
+            @mousemove="onCtaMove"
           >
             开始规划
-          </el-button>
-          <el-button
-            size="large"
-            class="secondary-button"
-            @click="router.push('/university-database')"
-          >
-            探索院校
-          </el-button>
-        </div>
-        <div class="hero-stats">
-          <div
-            v-for="(stat, index) in heroStats"
-            :key="index"
-            class="stat-item"
-          >
-            <span class="stat-number">{{ stat.animated || stat.value }}</span>
-            <span class="stat-desc">{{ stat.label }}</span>
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 16 16"
+              fill="none"
+            ><path
+              d="M3 8H13M9 4L13 8L9 12"
+              stroke="currentColor"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            /></svg>
+          </button>
+          <div class="hp-hero__stats">
+            <span class="hp-stat"><em>{{ SCHOOL_COUNT_DISPLAY }}</em><i>院校</i></span>
+            <span class="hp-stat"><em>6大</em><i>场景</i></span>
+            <span class="hp-stat"><em>Multi-AI</em><i>协同</i></span>
           </div>
         </div>
       </div>
-      <!-- 滚动提示 -->
-      <div
-        class="scroll-indicator"
-        @click="scrollToNextSection"
-      >
-        <div class="scroll-mouse">
-          <div class="scroll-wheel" />
-        </div>
-        <span class="scroll-text">向下滚动</span>
-      </div>
     </section>
 
-    <!-- 核心功能展示 -->
+    <div class="hp-marquee">
+      <div class="hp-marquee__track">
+        <span
+          v-for="n in 8"
+          :key="'m1-'+n"
+          class="hp-marquee__item"
+        >{{ SCHOOL_COUNT_DISPLAY }} 精选院校</span>
+        <span class="hp-marquee__dot" />
+        <span
+          v-for="n in 8"
+          :key="'m2-'+n"
+          class="hp-marquee__item"
+        >6 大核心场景</span>
+        <span class="hp-marquee__dot" />
+        <span
+          v-for="n in 8"
+          :key="'m3-'+n"
+          class="hp-marquee__item"
+        >Multi-AI 智能协同</span>
+        <span class="hp-marquee__dot" />
+      </div>
+    </div>
+
+    <!-- ===== SECTION 2: MANIFESTO — 理念宣言 (垂直布局) ===== -->
     <section
-      ref="featuresRef"
-      class="features"
-      :class="{ 'is-visible': featuresVisible }"
+      ref="manifestoRef"
+      class="hp-manifesto"
+      :class="{ 'hp-manifesto--visible': manifestoVisible }"
     >
-      <div class="container">
-        <h2 class="section-title">
-          核心功能
+      <header class="hp-manifesto__header">
+        <span class="hp-manifesto__eyebrow">WHAT WE BELIEVE</span>
+        <h2 class="hp-manifesto__title">
+          不是工具，是导航系统
         </h2>
-        <div class="features-grid">
-          <div
-            v-for="(feature, index) in features"
-            :key="index"
-            class="feature-card"
-            :style="{ animationDelay: `${index * 0.1}s` }"
-            @click="navigateTo(feature.path)"
-          >
-            <div class="feature-icon-wrapper">
-              <el-icon class="feature-icon">
-                <component :is="feature.icon" />
-              </el-icon>
-            </div>
-            <h3>{{ feature.title }}</h3>
-            <p>{{ feature.desc }}</p>
-            <el-link
-              type="primary"
-              underline="never"
-              class="feature-link"
-              :href="feature.path"
-            >
-              了解更多
-              <el-icon class="link-arrow">
-                <ArrowRight />
-              </el-icon>
-            </el-link>
-          </div>
-        </div>
-      </div>
-    </section>
+      </header>
 
-    <!-- 平台特色 -->
-    <section
-      ref="highlightsRef"
-      class="highlights"
-      :class="{ 'is-visible': highlightsVisible }"
-    >
-      <!-- 背景装饰 -->
-      <div class="highlights-bg-decoration">
-        <div class="bg-circle bg-circle-1" />
-        <div class="bg-circle bg-circle-2" />
-        <div class="bg-grid" />
-      </div>
-      <div class="container">
-        <h2 class="section-title">
-          为什么选择我们
-        </h2>
-        <div class="highlights-content">
-          <div
-            v-for="(item, index) in highlights"
-            :key="index"
-            class="highlight-item"
-            :style="{ animationDelay: `${index * 0.15}s` }"
-          >
-            <div class="highlight-number">
-              {{ String(index + 1).padStart(2, '0') }}
-            </div>
-            <div class="highlight-icon-wrapper">
-              <div class="icon-ring" />
-              <el-icon
-                :size="40"
-                :color="'var(--color-slate-700)'"
-              >
-                <component :is="item.icon" />
-              </el-icon>
-            </div>
-            <h4>{{ item.title }}</h4>
-            <p>{{ item.desc }}</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- CTA区域 -->
-    <section
-      ref="ctaRef"
-      class="cta-section"
-      :class="{ 'is-visible': ctaVisible }"
-    >
-      <div class="cta-content">
-        <h2>准备好开始您的留学规划了吗？</h2>
-        <p>30秒完成背景评估，获取专属留学路径图</p>
-        <el-button
-          type="primary"
-          size="large"
-          class="cta-final-button"
-          @click="router.push('/assessment')"
+      <div class="hp-manifesto__list">
+        <a
+          v-for="(item, index) in manifestoItems"
+          :key="index"
+          :ref="el => { if (el) manifestoItemRefs[index] = el }"
+          class="hp-manifesto__item"
+          :class="[`hp-manifesto__item--${index % 2 === 0 ? 'even' : 'odd'}`, { 'hp-manifesto__item--visible': visibleItems.has(index) }]"
+          :href="item.path"
+          @click.prevent="router.push(item.path)"
         >
-          立即开始
-        </el-button>
+          <span class="hp-manifesto__index">{{ String(index + 1).padStart(2, '0') }}</span>
+          <div class="hp-manifesto__body">
+            <div class="hp-manifesto__head">
+              <h3 class="hp-manifesto__item-title">{{ item.title }}</h3>
+              <span class="hp-manifesto__cta">
+                进入
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 14 14"
+                  fill="none"
+                ><path
+                  d="M3 7H11M8 4L11 7L8 10"
+                  stroke="currentColor"
+                  stroke-width="1.6"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                /></svg>
+              </span>
+            </div>
+            <p class="hp-manifesto__item-desc">{{ item.desc }}</p>
+          </div>
+          <span class="hp-manifesto__line" />
+        </a>
+      </div>
+    </section>
+
+    <!-- ===== SECTION 3: BENTO GRID ===== -->
+    <section
+      ref="bentoRef"
+      class="hp-bento"
+      :class="{ 'hp-bento--visible': bentoVisible }"
+    >
+      <div class="hp-bento__inner">
+        <header class="hp-bento__header">
+          <span class="hp-bento__eyebrow">THE TOOLKIT</span>
+          <h2 class="hp-bento__title">
+            六大核心能力
+          </h2>
+        </header>
+
+        <div class="hp-bento__grid">
+          <a
+            v-for="(card, idx) in bentoCards"
+            :key="idx"
+            :ref="el => { if (el) bentoCardRefs[idx] = el }"
+            class="hp-bento__card"
+            :class="[`hp-bento__card--${card.size}`, { 'hp-bento__card--visible': visibleBentoCards.has(idx) }]"
+            :style="{ '--card-i': idx }"
+            :href="card.path"
+            @click.prevent="handleBentoClick($event, card.path)"
+            @mouseenter="onBentoHover($event, true)"
+            @mouseleave="onBentoHover($event, false)"
+          >
+            <span class="hp-bento__num">{{ String(idx + 1).padStart(2, '0') }}</span>
+            <div class="hp-bento__card-body">
+              <div
+                v-if="card.icon && card.size === 'ai'"
+                class="hp-bento__card-icon"
+                v-html="card.icon"
+              />
+              <div class="hp-bento__card-content">
+                <h3 class="hp-bento__card-title">{{ card.title }}</h3>
+                <p
+                  v-if="card.desc"
+                  class="hp-bento__card-desc"
+                >{{ card.desc }}</p>
+                <span
+                  v-if="card.size === 'ai'"
+                  class="hp-bento__card-cta"
+                >进入对话
+                  <svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 12 12"
+                    fill="none"
+                    style="margin-left:6px;flex-shrink:0"
+                  ><path
+                    d="M3 6H9M7 3L10 6L7 9"
+                    stroke="currentColor"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  /></svg>
+                </span>
+              </div>
+            </div>
+            <span class="hp-bento__corner hp-bento__corner--tl" />
+            <span class="hp-bento__corner hp-bento__corner--br" />
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== SECTION 5: INVITATION — 终章 CTA ===== -->
+    <section
+      ref="invitationRef"
+      class="hp-invitation"
+      :class="{ 'hp-invitation--visible': invitationVisible }"
+    >
+      <div class="hp-invitation__grid-bg" />
+      <span class="hp-invitation__watermark">LAUNCH</span>
+
+      <div class="hp-invitation__inner">
+        <div class="hp-invitation__left">
+          <span class="hp-invitation__eyebrow">READY TO BEGIN?</span>
+          <h2 class="hp-invitation__title">
+            <span class="hp-invitation__title-line-1">
+              <span
+                v-for="(w, wi) in invLeadWords"
+                :key="'il'+wi"
+                class="hp-w hp-w--inv"
+                :style="{ '--wi': wi }"
+              ><span class="hp-w__inner">{{ w }}</span></span>
+            </span>
+            <span class="hp-invitation__title-line-2">
+              <span
+                v-for="(w, wi) in invAnchorWords"
+                :key="'ia'+wi"
+                class="hp-w hp-w--inv"
+                :style="{ '--wi': wi }"
+              ><span class="hp-w__inner">{{ w }}</span></span>
+            </span>
+          </h2>
+          <p class="hp-invitation__sub">
+            30 秒完成背景评估，获取专属留学路线图。<br>AI 将为你生成从选校到录取的完整规划。
+          </p>
+          <span class="hp-invitation__meta">
+            <i class="hp-invitation__dot" />
+            无需注册 · 完全免费 · 隐私安全
+          </span>
+        </div>
+
+        <div class="hp-invitation__right">
+          <button
+            class="hp-btn hp-btn--hero"
+            @click="router.push('/assessment')"
+          >
+            <span class="hp-btn-hero__content">
+              <span class="hp-btn-hero__label">开始你的旅程</span>
+              <span class="hp-btn-hero__sub">Start Your Journey</span>
+            </span>
+            <svg
+              class="hp-btn-hero__arrow"
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+            ><path
+              d="M5 12H19M13 6L19 12L13 18"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            /></svg>
+            <span class="hp-btn-hero__border" />
+          </button>
+          <span class="hp-invitation__hint">按 Enter 或点击进入</span>
+        </div>
+      </div>
+
+      <div class="hp-invitation__footer">
+        <span class="hp-invitation__footer-line" />
+        <span class="hp-invitation__footer-text">ASTROPATH v2.0 &copy; 2026</span>
       </div>
     </section>
 
     <SiteFooter @show-guide="guideVisible = true" />
 
-    <!-- 返回顶部按钮 -->
     <button
-      class="back-to-top"
+      class="hp-back-to-top"
       :class="{ visible: showBackToTop }"
       title="返回顶部"
       @click="scrollToTop"
     >
-      <el-icon><Top /></el-icon>
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 16 16"
+        fill="none"
+      ><path
+        d="M8 12V4M4 8L8 4L12 8"
+        stroke="currentColor"
+        stroke-width="1.6"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      /></svg>
     </button>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, inject, nextTick } from 'vue'
+import { ref, reactive, computed, onMounted, onUnmounted, inject, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
-import {
-  Document, Cpu, Calendar, Files, School, ChatDotRound,
-  MagicStick, Timer, DataLine, User, ArrowRight, Top
-} from '@element-plus/icons-vue'
 import SiteFooter from '../components/common/SiteFooter.vue'
+import { SCHOOL_COUNT_DISPLAY } from '../data/schoolsData'
 
 const router = useRouter()
 
 const homePageRef = ref(null)
 const heroRef = ref(null)
-const heroParallaxRef = ref(null)
-const networkCanvas = ref(null)
-const featuresRef = ref(null)
-const highlightsRef = ref(null)
-const ctaRef = ref(null)
+const gridBgRef = ref(null)
+const ctaBtnRef = ref(null)
+const manifestoRef = ref(null)
+const bentoRef = ref(null)
+const invitationRef = ref(null)
 
 const heroVisible = ref(false)
-const featuresVisible = ref(false)
-const highlightsVisible = ref(false)
-const ctaVisible = ref(false)
+const manifestoVisible = ref(false)
+const bentoVisible = ref(false)
+const invitationVisible = ref(false)
 const showBackToTop = ref(false)
-// 通过 inject 接收 App.vue provide 的对话框状态
+
 const guideVisible = inject('guideVisible')
 
-// 打字机效果的标题和副标题
-const fullTitle = '一站式智能留学规划'
-const fullSubtitle = 'AI 智能解析背景，为你生成专属留学路线图'
-const animatedTitle = ref('')
-const animatedSubtitle = ref('')
+const leadWords = ['一站式', '智能', '留学']
+const anchorWords = ['规划', '平台']
+const invLeadWords = ['准备好开始']
+const invAnchorWords = ['你的留学旅程了吗？']
 
-let subtitleIndex = 0
-let typingInterval = null
+const mouseParallax = reactive({ x: 0, y: 0 })
 
-const heroStats = ref([
-  { value: '55+', label: '精选院校', animated: '' },
-  { value: '6大', label: '核心场景', animated: '' },
-  { value: 'Multi-AI', label: '智能协同', animated: '' }
-])
-
-const features = [
-  { title: '背景评估', desc: '全面的背景信息收集与分析，生成竞争力雷达图', icon: Document, path: '/assessment' },
-  { title: 'AI智能选校', desc: '基于多维度数据的智能匹配，推荐最适合的院校', icon: Cpu, path: '/school-recommendation' },
-  { title: '时间规划', desc: '动态时间线与任务看板，轻松管理申请进度', icon: Calendar, path: '/timeline' },
-  { title: '材料中心', desc: '文书助手与材料清单，赋能申请全流程', icon: Files, path: '/materials' },
-  { title: '院校数据库', desc: '全球院校信息搜索与对比，快速了解目标学校', icon: School, path: '/university-database' },
-  { title: 'AI智能对话', desc: '多角色智能体在线问答，随时获取专业建议', icon: ChatDotRound, path: '/ai-chat' }
+const manifestoItems = [
+  { title: '背景即地图', desc: '全面采集学术背景与实践经历，生成竞争力雷达图，让优势与短板一目了然。', path: '/assessment' },
+  { title: 'AI 选校不是搜索', desc: `基于多维度数据智能匹配，AI 从 ${SCHOOL_COUNT_DISPLAY} 所院校中筛选最适合你的目标清单。`, path: '/school-recommendation' },
+  { title: '时间可见方可掌控', desc: '动态时间线与任务看板，将漫长的申请季拆解为可执行的每日行动。', path: '/timeline' },
+  { title: '材料有序，文书有力', desc: '结构化材料清单管理，配合AI文书助手，让每一份申请材料都精准有力。', path: '/materials' },
+  { title: '数据面前人人平等', desc: '全球院校信息透明化，排名、学费、录取率、专业方向——全面对比，理性决策。', path: '/university-database' },
+  { title: '多智能体协同思考', desc: 'Multi-AI 智能体团队在线协作，从选校策略到面试模拟，提供多维度专业建议。', path: '/ai-chat' }
 ]
 
-const highlights = [
-  { title: 'AI驱动', desc: '整合多个AI供应商，提供智能化的分析与建议', icon: MagicStick },
-  { title: '动态规划', desc: '根据您的背景自动生成个性化时间路线图', icon: Timer },
-  { title: '数据可视化', desc: '竞争力雷达图直观展示您的优势与不足', icon: DataLine },
-  { title: '智能体对话', desc: '多角色AI助手，提供专属咨询服务', icon: User }
+const bentoCards = [
+  { size: 'ai', title: 'AI 智能对话', desc: 'Multi-AI 智能体团队在线协作，随时获取专业申请建议。', icon: '<svg width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16 4v24M4 16h24"/><circle cx="16" cy="16" r="10"/></svg>', path: '/ai-chat' },
+  { size: 'sm', title: '背景评估', desc: '竞争力雷达图', path: '/assessment' },
+  { size: 'sm', title: 'AI 选校', desc: '智能匹配推荐', path: '/school-recommendation' },
+  { size: 'sm', title: '时间规划', desc: '动态时间线管理', path: '/timeline' },
+  { size: 'sm', title: '材料中心', desc: '文书与清单管理', path: '/materials' },
+  { size: 'wide', title: '院校数据库', desc: `${SCHOOL_COUNT_DISPLAY} 所全球院校信息，支持按国家/排名/专业筛选，数据透明化决策。`, path: '/university-database' },
+  { size: 'wide', title: '全流程覆盖', desc: '从背景评估到最终录取，AstroPath 陪伴你走完留学规划的每一步。', path: '/assessment' }
 ]
 
-const navigateTo = (path) => {
-  router.push(path)
+const visibleItems = reactive(new Set())
+const visibleBentoCards = reactive(new Set())
+const manifestoItemRefs = ref([])
+const bentoCardRefs = ref([])
+
+let heroObserver = null
+let manifestoObserver = null
+let bentoObserver = null
+let invitationObserver = null
+let itemObservers = []
+let cardObservers = []
+
+const scrollToManifesto = () => {
+  manifestoRef.value?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
 
-// 打字机效果
-const startTypingEffect = () => {
-  // 先快速显示标题
-  animatedTitle.value = fullTitle
-
-  // 延迟后显示副标题
-  setTimeout(() => {
-    typingInterval = setInterval(() => {
-      if (subtitleIndex < fullSubtitle.length) {
-        animatedSubtitle.value = fullSubtitle.substring(0, subtitleIndex + 1)
-        subtitleIndex++
-      } else {
-        clearInterval(typingInterval)
-      }
-    }, 40)
-  }, 600)
-}
-
-// 视差滚动和滚动动画 - 使用节流优化性能
-let scrollTicking = false
-
-const handleScroll = () => {
-  if (!homePageRef.value || scrollTicking) return
-
-  scrollTicking = true
-  requestAnimationFrame(() => {
-    const scrollY = window.scrollY
-    const windowHeight = window.innerHeight
-
-    // 显示/隐藏返回顶部按钮
-    showBackToTop.value = scrollY > 400
-
-    // Hero区域视差效果
-    if (heroParallaxRef.value && heroRef.value) {
-      const heroHeight = heroRef.value.offsetHeight
-      if (scrollY < heroHeight) {
-        // 背景移动速度为滚动速度的30%，方向与滚动相反创造视差
-        const parallaxOffset = scrollY * 0.3
-        heroParallaxRef.value.style.setProperty('--parallax-y', `${parallaxOffset}px`)
-        // 淡出效果
-        const opacity = Math.max(0, 1 - scrollY / (heroHeight * 0.6))
-        heroParallaxRef.value.style.setProperty('--hero-opacity', opacity)
-      }
-    }
-
-    // Features区域滚动进入动画
-    if (featuresRef.value && !featuresVisible.value) {
-      const rect = featuresRef.value.getBoundingClientRect()
-      if (rect.top < windowHeight * 0.8) {
-        featuresVisible.value = true
-      }
-    }
-
-    // Highlights区域滚动进入动画
-    if (highlightsRef.value && !highlightsVisible.value) {
-      const rect = highlightsRef.value.getBoundingClientRect()
-      if (rect.top < windowHeight * 0.8) {
-        highlightsVisible.value = true
-      }
-    }
-
-    // CTA区域滚动进入动画
-    if (ctaRef.value && !ctaVisible.value) {
-      const rect = ctaRef.value.getBoundingClientRect()
-      if (rect.top < windowHeight * 0.8) {
-        ctaVisible.value = true
-      }
-    }
-
-    scrollTicking = false
-  })
-}
-
-// 使用 IntersectionObserver 检测元素可见性（更可靠）
-const setupIntersectionObserver = () => {
-  const observerOptions = {
-    root: null,
-    rootMargin: '0px',
-    threshold: 0.1
-  }
-
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        if (entry.target === featuresRef.value) featuresVisible.value = true
-        if (entry.target === highlightsRef.value) highlightsVisible.value = true
-        if (entry.target === ctaRef.value) ctaVisible.value = true
-      }
-    })
-  }, observerOptions)
-
-  nextTick(() => {
-    if (featuresRef.value) observer.observe(featuresRef.value)
-    if (highlightsRef.value) observer.observe(highlightsRef.value)
-    if (ctaRef.value) observer.observe(ctaRef.value)
-  })
-
-  return observer
-}
-
-// 滚动到顶部
 const scrollToTop = () => {
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
-// 滚动到下一个区域
-const scrollToNextSection = () => {
-  if (featuresRef.value) {
-    featuresRef.value.scrollIntoView({ behavior: 'smooth', block: 'start' })
+const handleBentoClick = (e, path) => {
+  router.push(path)
+}
+
+const onBentoHover = (e, entering) => {
+  const card = e.currentTarget
+  if (!card) return
+  const rect = card.getBoundingClientRect()
+  const x = e.clientX - rect.left - rect.width / 2
+  const y = e.clientY - rect.top - rect.height / 2
+  if (entering) {
+    card.style.setProperty('--mx', `${-(y / rect.width) * 8}deg`)
+    card.style.setProperty('--my', `${(x / rect.height) * 8}deg`)
+  } else {
+    card.style.setProperty('--mx', '0deg')
+    card.style.setProperty('--my', '0deg')
   }
 }
 
-// 星座网络Canvas动画
-let networkAnimationId = null
-let cleanupNetworkAnimation = null
+const onHeroMouseMove = (e) => {
+  const rect = heroRef.value?.getBoundingClientRect()
+  if (!rect) return
+  const x = (e.clientX - rect.left) / rect.width - 0.5
+  const y = (e.clientY - rect.top) / rect.height - 0.5
+  mouseParallax.x = x * -50
+  mouseParallax.y = y * -35
+}
 
-const initNetworkAnimation = () => {
-  if (!networkCanvas.value) return
+const onCtaEnter = () => {
+  ctaBtnRef.value?.classList.add('hp-btn--magnetic--hover')
+}
+const onCtaLeave = () => {
+  ctaBtnRef.value?.classList.remove('hp-btn--magnetic--hover')
+  ctaBtnRef.value.style.transform = ''
+}
+const onCtaMove = (e) => {
+  const btn = ctaBtnRef.value
+  if (!btn) return
+  const rect = btn.getBoundingClientRect()
+  const x = e.clientX - rect.left - rect.width / 2
+  const y = e.clientY - rect.top - rect.height / 2
+  btn.style.transform = `translate(${x * 0.1}px, ${y * 0.1}px)`
+}
 
-  const canvas = networkCanvas.value
-  const ctx = canvas.getContext('2d')
-  let width, height
+const handleScroll = () => {
+  showBackToTop.value = window.scrollY > 400
+}
 
-  const resize = () => {
-    width = canvas.width = canvas.offsetWidth
-    height = canvas.height = canvas.offsetHeight
+const setupObservers = () => {
+  const observeWithDelay = (refVal, visibleRef, delay = 0) => {
+    const obs = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            setTimeout(() => { visibleRef.value = true }, delay)
+            obs.unobserve(entry.target)
+          }
+        })
+      },
+      { threshold: 0.08 }
+    )
+    return obs
   }
-  resize()
-  window.addEventListener('resize', resize)
 
-  // 创建节点
-  const nodes = []
-  const nodeCount = 25
-  const connectionDistance = 150
-
-  for (let i = 0; i < nodeCount; i++) {
-    nodes.push({
-      x: Math.random() * width,
-      y: Math.random() * height,
-      vx: (Math.random() - 0.5) * 0.3,
-      vy: (Math.random() - 0.5) * 0.3,
-      radius: Math.random() * 2 + 2
-    })
-  }
-
-  const animate = () => {
-    ctx.clearRect(0, 0, width, height)
-
-    // 更新节点位置
-    nodes.forEach(node => {
-      node.x += node.vx
-      node.y += node.vy
-
-      if (node.x < 0 || node.x > width) node.vx *= -1
-      if (node.y < 0 || node.y > height) node.vy *= -1
-    })
-
-    // 绘制连线
-    ctx.strokeStyle = 'rgba(30, 58, 95, 0.08)'
-    ctx.lineWidth = 1
-    for (let i = 0; i < nodes.length; i++) {
-      for (let j = i + 1; j < nodes.length; j++) {
-        const dx = nodes[i].x - nodes[j].x
-        const dy = nodes[i].y - nodes[j].y
-        const dist = Math.sqrt(dx * dx + dy * dy)
-
-        if (dist < connectionDistance) {
-          const opacity = (1 - dist / connectionDistance) * 0.15
-          ctx.strokeStyle = `rgba(30, 58, 95, ${opacity})`
-          ctx.beginPath()
-          ctx.moveTo(nodes[i].x, nodes[i].y)
-          ctx.lineTo(nodes[j].x, nodes[j].y)
-          ctx.stroke()
+  heroObserver = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          setTimeout(() => { heroVisible.value = true }, 100)
+          heroObserver?.unobserve(entry.target)
         }
-      }
-    }
+      })
+    },
+    { threshold: 0.1 }
+  )
 
-    // 绘制节点
-    nodes.forEach(node => {
-      // 外圈光晕
-      const gradient = ctx.createRadialGradient(node.x, node.y, 0, node.x, node.y, node.radius * 3)
-      gradient.addColorStop(0, 'rgba(30, 58, 95, 0.1)')
-      gradient.addColorStop(1, 'transparent')
-      ctx.fillStyle = gradient
-      ctx.beginPath()
-      ctx.arc(node.x, node.y, node.radius * 3, 0, Math.PI * 2)
-      ctx.fill()
+  manifestoObserver = observeWithDelay(manifestoRef, manifestoVisible, 0)
+  bentoObserver = observeWithDelay(bentoRef, bentoVisible, 0)
+  invitationObserver = observeWithDelay(invitationRef, invitationVisible, 0)
 
-      // 核心点
-      ctx.fillStyle = 'rgba(30, 58, 95, 0.3)'
-      ctx.beginPath()
-      ctx.arc(node.x, node.y, node.radius, 0, Math.PI * 2)
-      ctx.fill()
-    })
+  const itemObs = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        const el = entry.target
+        const idx = manifestoItemRefs.value.indexOf(el)
+        if (idx >= 0 && entry.isIntersecting && !visibleItems.has(idx)) {
+          setTimeout(() => { visibleItems.add(idx) }, idx * 100)
+          itemObs.unobserve(el)
+        }
+      })
+    },
+    { threshold: 0.15 }
+  )
 
-    networkAnimationId = requestAnimationFrame(animate)
-  }
+  const cardObs = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        const el = entry.target
+        const idx = bentoCardRefs.value.indexOf(el)
+        if (idx >= 0 && entry.isIntersecting && !visibleBentoCards.has(idx)) {
+          setTimeout(() => { visibleBentoCards.add(idx) }, idx * 80)
+          cardObs.unobserve(el)
+        }
+      })
+    },
+    { threshold: 0.1 }
+  )
 
-  animate()
+  nextTick(() => {
+    if (heroRef.value) heroObserver.observe(heroRef.value)
+    if (manifestoRef.value) manifestoObserver.observe(manifestoRef.value)
+    if (bentoRef.value) bentoObserver.observe(bentoRef.value)
+    if (invitationRef.value) invitationObserver.observe(invitationRef.value)
+
+    manifestoItemRefs.value.forEach(el => { if (el) itemObs.observe(el) })
+    bentoCardRefs.value.forEach(el => { if (el) cardObs.observe(el) })
+
+    itemObservers.push(itemObs)
+    cardObservers.push(cardObs)
+  })
 
   return () => {
-    window.removeEventListener('resize', resize)
-    cancelAnimationFrame(networkAnimationId)
+    itemObs.disconnect()
+    cardObs.disconnect()
   }
 }
 
-let intersectionObserver = null
-
 onMounted(() => {
-  // 触发打字机效果
-  setTimeout(() => {
-    heroVisible.value = true
-    startTypingEffect()
-  }, 200)
-
-  // 添加滚动监听（用于视差效果和返回顶部按钮）
   window.addEventListener('scroll', handleScroll, { passive: true })
-
-  // 使用 IntersectionObserver 检测区域可见性（更可靠）
-  intersectionObserver = setupIntersectionObserver()
-
-  // 初始化星座网络动画
-  cleanupNetworkAnimation = initNetworkAnimation()
+  setupObservers()
 })
 
 onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll)
-  if (typingInterval) clearInterval(typingInterval)
-  if (cleanupNetworkAnimation) cleanupNetworkAnimation()
-  if (intersectionObserver) intersectionObserver.disconnect()
+  heroObserver?.disconnect()
+  manifestoObserver?.disconnect()
+  bentoObserver?.disconnect()
+  invitationObserver?.disconnect()
+  itemObservers.forEach(o => o.disconnect())
+  cardObservers.forEach(o => o.disconnect())
 })
 </script>
 
 <style scoped>
-.home-page {
-  min-height: calc(100vh - 140px);
-}
-
-/* ===== Hero区域 ===== */
-.hero {
+.hp-page {
   position: relative;
-  background: var(--gradient-hero);
-  color: var(--color-text-primary);
-  padding: 100px 0 80px;
-  text-align: center;
-  overflow: hidden;
+  min-height: 100vh;
+  background: var(--color-background);
+  overflow-x: hidden;
+  cursor: default;
 }
 
-/* Hero底部渐变过渡阴影 - 分隔Hero和Features */
-.hero::after {
-  content: '';
-  position: absolute;
-  bottom: -1px;
-  left: 0;
-  right: 0;
-  height: 120px;
-  background: linear-gradient(180deg,
-    rgba(250, 250, 250, 0) 0%,
-    rgba(250, 250, 250, 0.3) 30%,
-    rgba(250, 250, 250, 0.7) 60%,
-    #FAFAFA 100%
-  );
-  pointer-events: none;
-  z-index: 5;
-}
-
-/* Hero视差效果容器 */
-.hero-parallax-layer {
-  position: absolute;
+.hp-noise {
+  position: fixed;
   inset: 0;
-  transform: translateY(var(--parallax-y, 0));
-  opacity: var(--hero-opacity, 1);
   pointer-events: none;
+  z-index: 99999;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px 256px;
 }
 
-/* 星座网络背景 - 科技感 */
-.hero-network-bg {
-  position: absolute;
-  inset: 0;
+
+/* ============================================
+   SECTION 1: HERO
+   ============================================ */
+.hp-hero {
+  position: relative;
   overflow: hidden;
+  height: calc(100dvh - 64px);
+  margin-top: -20px;
+  display: flex;
+  align-items: center;
+  opacity: 0;
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.hp-hero--visible { opacity: 1; }
+
+.hp-hero__grid-bg {
+  position: absolute;
+  inset: -40px;
   pointer-events: none;
+  background-image:
+    linear-gradient(rgba(15, 23, 42, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(15, 23, 42, 0.03) 1px, transparent 1px);
+  background-size: 80px 80px;
+  mask-image: radial-gradient(ellipse 90% 80% at 50% 45%, black 22%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 90% 80% at 50% 45%, black 22%, transparent 100%);
+  transition: transform 0.15s ease-out;
+  will-change: transform;
+  transform: translate(var(--px), var(--py));
+}
+
+.hp-hero__cursor-glow {
+  position: absolute;
+  width: 420px;
+  height: 420px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(217, 119, 6, 0.09) 0%, rgba(217, 119, 6, 0.03) 30%, transparent 65%);
+  pointer-events: none;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
+  transform: translate(calc(-50% + var(--cgx)), calc(-50% + var(--cgy)));
   z-index: 0;
 }
 
-.network-canvas {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-}
 
-/* 渐变叠加动画 - 学术风格 */
-.hero-gradient-overlay {
+/* ===== 科技感装饰层 — 密集版 ===== */
+.hp-hero__tech {
   position: absolute;
   inset: 0;
-  background:
-    /* 动态网格背景 */
-    linear-gradient(90deg, rgba(30, 58, 95, 0.04) 1px, transparent 1px),
-    linear-gradient(rgba(30, 58, 95, 0.04) 1px, transparent 1px),
-    /* 径向渐变光晕 */
-    radial-gradient(ellipse at 30% 50%, rgba(30, 58, 95, 0.05) 0%, transparent 50%),
-    radial-gradient(ellipse at 70% 50%, rgba(184, 134, 11, 0.04) 0%, transparent 50%),
-    /* 底部渐变过渡 */
-    linear-gradient(180deg, transparent 0%, rgba(30, 58, 95, 0.02) 100%);
-  background-size:
-    80px 80px,
-    80px 80px,
-    100% 100%,
-    100% 100%,
-    100% 100%;
-  animation: gradient-shift 8s ease-in-out infinite alternate;
   pointer-events: none;
   z-index: 1;
+  overflow: hidden;
 }
 
-/* 动态光晕装饰 */
-.hero-glow-decoration {
+.hp-tech__svg {
   position: absolute;
   inset: 0;
-  overflow: hidden;
-  pointer-events: none;
-}
-
-.hero-glow-decoration::before {
-  content: '';
-  position: absolute;
-  width: 600px;
-  height: 600px;
-  top: -200px;
-  left: -100px;
-  background: radial-gradient(circle, rgba(184, 134, 11, 0.08) 0%, transparent 70%);
-  animation: glow-pulse 10s ease-in-out infinite;
-}
-
-.hero-glow-decoration::after {
-  content: '';
-  position: absolute;
-  width: 400px;
-  height: 400px;
-  bottom: -100px;
-  right: -50px;
-  background: radial-gradient(circle, rgba(30, 58, 95, 0.06) 0%, transparent 70%);
-  animation: glow-pulse 12s ease-in-out infinite reverse;
-}
-
-/* Hero内容 */
-.hero-content {
-  position: relative;
-  z-index: 2;
-  max-width: 1200px;
-  margin: 0 auto;
-  box-sizing: border-box;
-  opacity: 0;
-  transform: translateY(30px);
-  transition: opacity var(--transition-slow), transform var(--transition-slow);
-}
-
-.hero-content.is-visible {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.hero-title {
-  font-size: 52px;
-  font-weight: var(--font-bold);
-  margin-bottom: var(--space-6);
-  letter-spacing: -1px;
-  line-height: var(--leading-tight);
-  color: var(--color-text-primary);
-  font-family: var(--font-family-display);
-  position: relative;
-}
-
-.hero-title::after {
-  content: '';
-  display: block;
-  width: 100px;
-  height: 4px;
-  background: var(--color-accent);
-  margin: var(--space-4) auto 0;
-  border-radius: var(--radius-sm);
-  position: relative;
-  overflow: hidden;
-}
-
-.hero-title::after::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
-  animation: shimmer-line 2s ease-in-out infinite;
+  opacity: 0;
+  transition: opacity 1s ease 0.3s;
+}
+.hp-hero--visible .hp-tech__svg { opacity: 1; }
+
+
+/* 巨型水印文字 */
+.hp-tech__watermark {
+  position: absolute;
+  font-family: var(--font-family-mono);
+  font-weight: 800;
+  color: var(--color-solid);
+  opacity: 0;
+  letter-spacing: -0.06em;
+  line-height: 0.85;
+  user-select: none;
+  transition: opacity 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.5s;
+}
+.hp-hero--visible .hp-tech__watermark { opacity: 0.03; }
+
+.hp-tech__watermark {
+  bottom: 18%;
+  right: 4%;
+  font-size: clamp(140px, 18vw, 280px);
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+}
+.hp-tech__watermark--sub {
+  top: 12%;
+  left: 3%;
+  font-size: clamp(56px, 7vw, 110px);
+  letter-spacing: 0.08em;
+  writing-mode: horizontal-tb;
 }
 
-.hero-subtitle {
-  font-size: var(--text-xl);
-  color: var(--color-text-secondary);
-  margin-bottom: var(--space-10);
-  line-height: var(--leading-relaxed);
-  min-height: 1.7em;
+
+/* 坐标轴 */
+.hp-tech__axis {
+  position: absolute;
+  background: rgba(15, 23, 42, 0.07);
+}
+.hp-tech__axis--x {
+  bottom: 24%;
+  left: 5%;
+  width: 22%;
+  height: 1px;
+}
+.hp-tech__axis--y {
+  top: 22%;
+  left: 6%;
+  width: 1px;
+  height: 30%;
 }
 
-.hero-actions {
-  display: flex;
-  gap: var(--space-6);
-  justify-content: center;
-  margin-bottom: var(--space-12);
-  flex-wrap: wrap;
-}
-
-.cta-button {
-  background: var(--color-solid);
-  color: white;
-  font-size: var(--text-lg);
-  padding: 14px 36px;
-  border-radius: var(--radius-lg);
+.hp-tech__label {
+  position: absolute;
+  font-family: var(--font-family-mono);
+  font-size: 9px;
   font-weight: 600;
-  border: none;
-  white-space: nowrap;
-  transition: all 0.2s ease;
-  min-width: 160px;
+  color: var(--color-border);
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+.hp-tech__label--x {
+  bottom: calc(24% - 14px);
+  left: calc(5% + 22% + 4px);
+}
+.hp-tech__label--y {
+  top: 22%;
+  left: calc(6% - 12px);
 }
 
-.cta-button:hover {
-  background: var(--color-solid-hover);
-  transform: translateY(-1px);
-}
-
-.secondary-button {
-  background: transparent;
-  color: var(--color-text-primary);
-  font-size: var(--text-lg);
-  padding: 14px 36px;
-  border-radius: var(--radius-lg);
-  font-weight: 600;
-  border: 1.5px solid rgba(30, 58, 95, 0.2);
-  white-space: nowrap;
-  transition: all 0.2s ease;
-  min-width: 160px;
-}
-
-.secondary-button:hover {
-  border-color: var(--color-text-primary);
-  transform: translateY(-1px);
-}
-
-/* Hero统计数据 */
-.hero-stats {
+/* 刻度线 */
+.hp-tech__ticks-x {
+  position: absolute;
+  bottom: calc(24% - 3px);
+  left: 5%;
+  width: 22%;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-8);
-  margin-top: var(--space-10);
-  margin-bottom: var(--space-8);
+  justify-content: space-between;
 }
-
-.stat-item {
+.hp-tech__ticks-y {
+  position: absolute;
+  top: 22%;
+  left: calc(6% - 3px);
+  height: 30%;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  justify-content: space-between;
+}
+.hp-tech__tick {
+  width: 6px;
+  height: 1px;
+  background: rgba(15, 23, 42, 0.1);
   opacity: 0;
-  transform: translateY(20px);
-  animation: stat-fade-in 0.6s ease forwards;
+  animation: tickIn 0.3s ease forwards;
+  animation-delay: calc(var(--ti) * 0.1s + 1.2s);
+}
+.hp-hero--visible .hp-tech__tick { animation-delay: calc(var(--ti) * 0.1s + 1.2s); }
+.hp-tech__tick--y {
+  width: 1px;
+  height: 6px;
+}
+@keyframes tickIn {
+  from { opacity: 0; transform: scaleX(0); }
+  to   { opacity: 1; transform: scaleX(1); }
 }
 
-@keyframes stat-fade-in {
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+
+/* 扫描线 */
+.hp-tech__scanline {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(217, 119, 6, 0.18), transparent);
+  animation: scanMove 4s ease-in-out infinite;
+  opacity: 0;
+  transition: opacity 0.8s ease 1s;
+}
+.hp-tech__scanline--h {
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 2px;
+  height: auto;
+  background: linear-gradient(180deg, transparent, rgba(15, 23, 42, 0.1), transparent);
+  animation: scanMoveH 5s ease-in-out infinite;
+  animation-delay: 1s;
+}
+.hp-hero--visible .hp-tech__scanline { opacity: 1; }
+
+@keyframes scanMove {
+  0%, 100% { top: 8%; }
+  50% { top: 88%; }
+}
+@keyframes scanMoveH {
+  0%, 100% { right: 6%; }
+  50% { right: 92%; }
 }
 
-.stat-number {
-  font-size: 36px;
-  font-weight: 800;
-  line-height: 1.1;
-  margin-bottom: var(--space-2);
-  color: var(--color-solid);
-  font-family: var(--font-family-display);
-  letter-spacing: -1px;
-}
 
-.stat-desc {
-  font-size: var(--text-sm);
-  color: var(--color-text-secondary);
+/* 浮动 UI 元素 */
+.hp-tech__floating-ui {
+  position: absolute;
+  inset: 0;
+}
+.hp-fui {
+  position: absolute;
+  font-family: var(--font-family-mono);
+  font-size: 9px;
   font-weight: 500;
-  letter-spacing: 0.5px;
+  letter-spacing: 1px;
+  white-space: nowrap;
+  opacity: 0;
+  animation: fuiFloat 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation-delay: calc(var(--fi, 0) * 0.12s + 1.4s);
+}
+.hp-hero--visible .hp-fui { animation-delay: calc(var(--fi, 0) * 0.12s + 1.4s); }
+
+.hp-fui--coord {
+  --fi: 0;
+  top: 16%;
+  right: 18%;
+  color: var(--color-border);
+  padding: 4px 8px;
+  border: 1px solid var(--color-border-light);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(4px);
+}
+.hp-fui--coord b { color: var(--color-accent); font-weight: 700; }
+
+.hp-fui--coord:nth-of-type(2) {
+  --fi: 1;
+  top: calc(16% + 22px);
+  right: 18%;
 }
 
-.stat-divider {
-  width: 1px;
-  height: 44px;
-  background: linear-gradient(180deg, transparent, var(--color-border), transparent);
+.hp-fui--badge {
+  --fi: 2;
+  top: 38%;
+  left: 8%;
+  color: #065F46;
+  background: #ECFDF5;
+  border: 1px solid #A7F3D0;
+  border-radius: 4px;
+  padding: 3px 8px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
 }
 
-/* stat-item之间的分隔线（用伪元素实现） */
-.stat-item:not(:last-child) {
-  position: relative;
+.hp-fui--hex {
+  --fi: 3;
+  bottom: 36%;
+  right: 12%;
+  color: var(--color-text-tertiary);
+  padding: 3px 7px;
+  border: 1px solid var(--color-border-light);
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(4px);
+  font-weight: 600;
 }
 
-.stat-item:not(:last-child)::after {
-  content: '';
+.hp-fui--mini {
+  --fi: 4;
+  top: 68%;
+  left: 14%;
+  color: var(--color-accent);
+  font-weight: 700;
+  font-size: 10px;
+  padding: 4px 10px;
+  border: 1px solid rgba(217, 119, 6, 0.2);
+  border-radius: 20px;
+  background: rgba(217, 119, 6, 0.06);
+}
+
+.hp-fui--status {
+  --fi: 5;
+  bottom: 16%;
+  left: 10%;
+  color: var(--color-border);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.hp-fui--status i {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #10B981;
+  animation: statusPulse 2s ease-in-out infinite;
+}
+
+@keyframes fuiFloat {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes statusPulse {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+  50% { opacity: 0.6; box-shadow: 0 0 0 3px rgba(16, 185, 129, 0); }
+}
+
+
+/* 系统坐标文字 */
+.hp-tech__coord {
   position: absolute;
-  right: calc(var(--space-8) * -0.5);
-  top: 50%;
-  transform: translateY(-50%);
-  width: 1px;
-  height: 44px;
-  background: linear-gradient(180deg, transparent, var(--color-border), transparent);
+  bottom: 20px;
+  right: 52px;
+  font-family: var(--font-family-mono);
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 2px;
+  color: var(--color-border);
+  opacity: 0;
+  transition: opacity 0.5s ease 1.2s;
 }
+.hp-hero--visible .hp-tech__coord { opacity: 0.5; }
 
-/* 滚动提示 */
-.scroll-indicator {
+.hp-hero__glow {
   position: absolute;
-  bottom: var(--space-8);
+  bottom: -120px;
   left: 50%;
   transform: translateX(-50%);
+  width: 900px;
+  height: 450px;
+  background: radial-gradient(ellipse, rgba(217, 119, 6, 0.055) 0%, transparent 65%);
+  pointer-events: none;
+}
+
+.hp-hero__inner {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: 1.35fr 0.65fr;
+  gap: 56px;
+  align-items: center;
+  width: 100%;
+  max-width: 1160px;
+  padding: 64px 52px 0;
+  box-sizing: border-box;
+}
+
+
+/* ===== 左栏: 主标题 · 逐词clip-reveal ===== */
+.hp-hero__main { }
+
+.hp-hero__title {
+  margin: 0 0 16px;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: var(--space-2);
-  cursor: pointer;
-  opacity: 0;
-  animation: scroll-fade-in 0.6s ease 1.5s forwards;
-  z-index: 10;
+  gap: 20px;
 }
 
-@keyframes scroll-fade-in {
-  to { opacity: 1; }
-}
-
-.scroll-mouse {
-  width: 24px;
-  height: 38px;
-  border: 2px solid var(--color-slate-300);
-  border-radius: 12px;
+.hp-hero__line {
   display: flex;
-  justify-content: center;
-  padding-top: 8px;
-  transition: all 0.3s ease;
+  flex-wrap: wrap;
+  gap: 0.2em;
+  line-height: 1.05;
+  letter-spacing: -0.04em;
+  font-family: var(--font-family-base);
 }
 
-.scroll-wheel {
-  width: 3px;
-  height: 8px;
-  background: var(--color-slate-700);
-  border-radius: 2px;
-  animation: scroll-wheel-move 1.5s ease-in-out infinite;
+.hp-w {
+  display: inline-block;
+  overflow: hidden;
+  position: relative;
+}
+.hp-w__inner {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(110%);
+  transition:
+    transform 0.75s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  transition-delay: calc(var(--wi) * 0.08s + var(--line-base, 0.1s));
+}
+.hp-hero--visible .hp-w__inner {
+  transform: translateY(0);
+  opacity: 1;
 }
 
-@keyframes scroll-wheel-move {
-  0%, 100% { 
-    transform: translateY(0); 
-    opacity: 1; 
-  }
-  50% { 
-    transform: translateY(6px); 
-    opacity: 0.3; 
-  }
-}
-
-.scroll-text {
-  font-size: var(--text-xs);
+.hp-hero__line--lead {
+  --line-base: 0.08s;
+  font-size: clamp(34px, 4.8vw, 62px);
+  font-weight: 700;
   color: var(--color-text-secondary);
+}
+
+.hp-hero__line--anchor {
+  --line-base: 0.28s;
+  font-size: clamp(56px, 10vw, 120px);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  color: var(--color-solid);
+  font-family: var(--font-family-mono);
+}
+
+.hp-anchor-bracket {
+  display: inline-block;
+  font-family: var(--font-family-mono);
+  font-size: 0.5em;
+  font-weight: 400;
+  color: var(--color-accent);
+  opacity: 0;
+  transform: translateY(8px);
+  transition:
+    opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  vertical-align: middle;
+}
+.hp-hero--visible .hp-anchor-bracket {
+  opacity: 0.7;
+  transform: translateY(0);
+  transition-delay: 0.7s;
+}
+
+.hp-anchor-cursor {
+  display: inline-block;
+  width: 3px;
+  height: 0.72em;
+  background: var(--color-accent);
+  margin-left: 6px;
+  vertical-align: baseline;
+  border-radius: 2px;
+  animation: hpBlink 1s step-end infinite;
+  opacity: 0;
+  transition: opacity 0.3s ease 0.9s;
+}
+.hp-hero--visible .hp-anchor-cursor { opacity: 1; }
+@keyframes hpBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+
+/* ===== 右栏 ===== */
+.hp-hero__side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 20px;
+  opacity: 0;
+  transform: translateY(20px);
+  transition:
+    opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.hp-hero--visible .hp-hero__side {
+  opacity: 1;
+  transform: translateY(0);
+  transition-delay: 0.55s;
+}
+
+.hp-hero__sub {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  line-height: 1.75;
+  margin: 0;
+  max-width: 240px;
+}
+
+
+/* ===== 按钮 ===== */
+.hp-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-family-base);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  will-change: transform;
+}
+
+.hp-btn--primary {
+  padding: 15px 30px;
+  background: var(--color-solid);
+  color: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.12);
+}
+.hp-btn--primary:hover {
+  background: var(--color-solid-hover);
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.2), 0 4px 10px rgba(15, 23, 42, 0.08);
+}
+.hp-btn--primary:active { transform: scale(0.97); }
+
+.hp-btn--magnetic {
+  transition: box-shadow 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.3s ease;
+}
+.hp-btn--magnetic--hover {
+  box-shadow: 0 14px 40px rgba(15, 23, 42, 0.25), 0 6px 16px rgba(15, 23, 42, 0.1);
+}
+
+.hp-btn--ghost {
+  padding: 13px 24px;
+  background: transparent;
+  color: var(--color-text-secondary);
+  border: 1.5px solid var(--color-border-light);
+  border-radius: 12px;
+}
+.hp-btn--ghost:hover {
+  color: var(--color-solid);
+  border-color: var(--color-solid);
+  background: rgba(15, 23, 42, 0.03);
+  transform: translateY(-2px);
+}
+
+.hp-btn--lg {
+  padding: 18px 44px;
+  font-size: 16px;
+  border-radius: 14px;
+}
+
+
+/* ===== Stats ===== */
+.hp-hero__stats {
+  display: flex;
+  gap: 20px;
+  padding-top: 10px;
+  border-top: 1px solid var(--color-border-light);
+}
+
+.hp-stat { text-align: left; }
+.hp-stat em {
+  display: block;
+  font-family: var(--font-family-mono);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-solid);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  font-style: normal;
+}
+.hp-stat i {
+  display: block;
+  font-family: var(--font-family-mono);
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--color-text-tertiary);
   letter-spacing: 1px;
-  transition: color 0.3s ease;
+  text-transform: uppercase;
+  font-style: normal;
+  margin-top: 1px;
 }
 
-.scroll-indicator:hover .scroll-mouse {
-  border-color: var(--color-slate-700);
-  box-shadow: 0 4px 12px rgba(30, 58, 95, 0.15);
+
+/* ============================================
+   MARQUEE 跑马灯
+   ============================================ */
+.hp-marquee {
+  overflow: hidden;
+  padding: 28px 0;
+  border-top: 1px solid var(--color-border-light);
+  border-bottom: 1px solid var(--color-border-light);
+  background: var(--color-background-alt);
+}
+.hp-marquee__track {
+  display: flex;
+  align-items: center;
+  gap: 40px;
+  width: max-content;
+  animation: marqueeScroll 40s linear infinite;
+  will-change: transform;
+}
+.hp-marquee__item {
+  font-family: var(--font-family-mono);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--color-text-tertiary);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.hp-marquee__dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  flex-shrink: 0;
+  opacity: 0.6;
+}
+@keyframes marqueeScroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
 }
 
-.scroll-indicator:hover .scroll-text {
-  color: var(--color-slate-700);
-}
 
-/* ===== Features区域 ===== */
-.features {
-  padding: var(--space-24) var(--space-10);
-  background: linear-gradient(180deg, #F8FAFC 0%, #EEF2F7 50%, #F0F4F8 100%);
+/* ============================================
+   SECTION 2: MANIFESTO — 编辑式理念宣言
+   ============================================ */
+.hp-manifesto {
+  padding: 90px 52px;
   opacity: 0;
   transform: translateY(40px);
-  transition: opacity 0.8s ease, transform 0.8s ease;
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
 }
-
-.features.is-visible {
+.hp-manifesto--visible {
   opacity: 1;
   transform: translateY(0);
 }
 
-.container {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 0 var(--space-10);
-  box-sizing: border-box;
+.hp-manifesto__header {
+  margin-bottom: 56px;
 }
-
-.section-title {
-  text-align: center;
-  font-size: var(--text-3xl);
-  color: var(--color-text-primary);
-  margin-bottom: var(--space-12);
-  position: relative;
-  font-weight: var(--font-bold);
-}
-
-.section-title::after {
-  content: '';
+.hp-manifesto__eyebrow {
   display: block;
-  width: 60px;
-  height: 4px;
-  background: var(--color-solid);
-  margin: var(--space-4) auto 0;
-  border-radius: var(--radius-sm);
+  font-family: var(--font-family-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  color: var(--color-accent);
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+.hp-manifesto__title {
+  font-family: var(--font-family-base);
+  font-size: clamp(28px, 4vw, 44px);
+  font-weight: 800;
+  color: var(--color-text-primary);
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  margin: 0;
 }
 
-.features-grid {
+.hp-manifesto__list {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: var(--space-6);
-  perspective: 1000px;
-}
-
-.feature-card {
-  background: var(--color-surface);
-  border-radius: var(--radius-2xl);
-  padding: var(--space-10) var(--space-8);
-  text-align: center;
-  cursor: pointer;
-  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-  box-shadow: var(--shadow-sm);
-  border: 1px solid transparent;
-  animation: fadeInUp 0.6s ease both, card-glow-pulse 4s ease-in-out infinite;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0;
+  max-width: 1160px;
   position: relative;
-  overflow: hidden;
-  transform-style: preserve-3d;
 }
 
-@keyframes card-glow-pulse {
-  0%, 100% {
-    box-shadow: 
-      var(--shadow-sm),
-      0 0 0 0 rgba(30, 58, 95, 0);
-  }
-  50% {
-    box-shadow: 
-      var(--shadow-sm),
-      0 0 20px -5px rgba(30, 58, 95, 0.08);
-  }
-}
-
-.feature-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 60%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-  transition: left 0.6s ease;
-}
-
-.feature-card::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -150%;
-  width: 50%;
-  height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(212, 175, 55, 0.04) 45%,
-    rgba(212, 175, 55, 0.08) 50%,
-    rgba(212, 175, 55, 0.04) 55%,
-    transparent 100%
-  );
-  animation: card-shimmer-sweep 8s ease-in-out infinite;
-  pointer-events: none;
-}
-
-@keyframes card-shimmer-sweep {
-  0% { left: -150%; }
-  40%, 60% { left: 150%; }
-  100% { left: 150%; }
-}
-
-.feature-card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 15px 30px -10px rgba(30, 58, 95, 0.12), 0 0 0 1px rgba(30, 58, 95, 0.05);
-  border-color: var(--color-slate-200);
-}
-
-.feature-card:hover::before {
-  left: 100%;
-}
-
-.feature-icon-wrapper {
-  width: 88px;
-  height: 88px;
-  border-radius: var(--radius-xl);
-  background: linear-gradient(135deg, #F0F4F8 0%, #E8EEF5 50%, #D9E6F2 100%);
+.hp-manifesto__item {
+  position: relative;
   display: flex;
-  align-items: center;
+  align-items: stretch;
+  gap: 0;
+  padding: 36px 28px 36px 0;
+  text-decoration: none;
+  color: inherit;
+  background: transparent;
+  border-bottom: 1px solid var(--color-border-light);
+  opacity: 0;
+  transform: translateY(28px);
+  transition:
+    opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+    background 0.4s ease;
+  overflow: hidden;
+}
+.hp-manifesto__item:nth-child(-n+2) { border-top: 1px solid var(--color-border-light); }
+.hp-manifesto__item:nth-child(odd) { border-right: 1px solid var(--color-border-light); }
+.hp-manifesto__item--visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.hp-manifesto__item:hover {
+  background: rgba(15, 23, 42, 0.015);
+}
+.hp-manifesto__item:hover .hp-manifesto__line {
+  transform: scaleY(1);
+  background: var(--color-accent);
+}
+.hp-manifesto__item:hover .hp-manifesto__index {
+  color: var(--color-accent);
+  transform: translateY(-2px);
+}
+.hp-manifesto__item:hover .hp-manifesto__item-title {
+  color: var(--color-solid);
+}
+.hp-manifesto__item:hover .hp-manifesto__cta {
+  opacity: 1;
+  transform: translateX(0);
+  color: var(--color-accent);
+}
+
+
+.hp-manifesto__index {
+  position: relative;
+  font-family: var(--font-family-mono);
+  font-size: clamp(56px, 7vw, 88px);
+  font-weight: 800;
+  color: var(--color-border);
+  letter-spacing: -0.05em;
+  line-height: 0.85;
+  flex-shrink: 0;
+  width: 72px;
+  opacity: 0.35;
+  transition:
+    color 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+    transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+    opacity 0.4s ease;
+  user-select: none;
+}
+.hp-manifesto__item:hover .hp-manifesto__index { opacity: 0.7; }
+
+
+.hp-manifesto__body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
   justify-content: center;
-  margin: 0 auto var(--space-4);
-  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  padding-left: 20px;
+  padding-right: 8px;
+}
+
+.hp-manifesto__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.hp-manifesto__item-title {
+  font-family: var(--font-family-base);
+  font-size: clamp(19px, 2vw, 24px);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  letter-spacing: -0.025em;
+  line-height: 1.25;
+  margin: 0;
+  transition: color 0.3s ease;
+}
+
+.hp-manifesto__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-family-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  white-space: nowrap;
+  color: var(--color-text-tertiary);
+  opacity: 0;
+  transform: translateX(-8px);
+  transition:
+    opacity 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+    transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+    color 0.3s ease;
+  flex-shrink: 0;
+}
+
+.hp-manifesto__item-desc {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  line-height: 1.65;
+  margin: 0;
+}
+
+
+.hp-manifesto__line {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 3px;
+  height: 0%;
+  background: var(--color-solid);
+  transform: translateY(-50%) scaleY(0);
+  transform-origin: center;
+  transition:
+    transform 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+    background 0.3s ease;
+  border-radius: 2px;
+}
+
+
+/* ============================================
+   SECTION 3: BENTO — 能力矩阵 (编辑式)
+   ============================================ */
+.hp-bento {
+  padding: 60px 40px 80px;
+  background: var(--color-background-alt);
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.hp-bento--visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.hp-bento__inner {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.hp-bento__header {
+  text-align: center;
+  margin-bottom: 56px;
+}
+.hp-bento__eyebrow {
+  display: block;
+  font-family: var(--font-family-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  color: var(--color-accent);
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+.hp-bento__title {
+  font-family: var(--font-family-base);
+  font-size: clamp(24px, 3.5vw, 38px);
+  font-weight: 800;
+  color: var(--color-text-primary);
+  letter-spacing: -0.03em;
+  margin: 0;
+}
+
+.hp-bento__grid {
+  display: grid;
+  gap: 2px;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: auto auto auto;
+}
+
+.hp-bento__card {
+  --mx: 0deg;
+  --my: 0deg;
   position: relative;
   overflow: hidden;
-  box-shadow:
-    inset 0 1px 3px rgba(255, 255, 255, 0.8),
-    inset 0 -1px 3px rgba(30, 58, 95, 0.05),
-    0 4px 12px rgba(30, 58, 95, 0.06);
-}
-
-.feature-icon-wrapper::before {
-  content: '';
-  position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: radial-gradient(circle at center, rgba(212, 175, 55, 0.08) 0%, transparent 70%);
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  min-height: 200px;
+  text-decoration: none;
+  color: inherit;
+  background: var(--color-surface);
   opacity: 0;
-  transition: opacity 0.4s ease;
+  transform: translateY(32px) scale(0.97);
+  transition:
+    opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
 }
-
-.feature-icon-wrapper::after {
-  content: '';
-  position: absolute;
-  inset: 2px;
-  border-radius: calc(var(--radius-xl) - 2px);
-  background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, transparent 60%);
-  pointer-events: none;
-}
-
-.feature-card:hover .feature-icon-wrapper {
-  background: linear-gradient(135deg, var(--color-slate-100) 0%, var(--color-slate-200) 100%);
-  transform: scale(1.05) translateY(-2px) rotate(-2deg);
-  box-shadow:
-    0 12px 28px rgba(30, 58, 95, 0.15),
-    0 4px 12px rgba(30, 58, 95, 0.1),
-    inset 0 1px 3px rgba(255, 255, 255, 0.5);
-}
-
-.feature-card:hover .feature-icon-wrapper::before {
+.hp-bento__card--visible {
   opacity: 1;
+  transform: perspective(900px) rotateX(var(--my)) rotateY(var(--mx)) translateY(0) scale(1);
 }
 
-.feature-card:hover .feature-icon-wrapper::after {
-  opacity: 0;
+
+/* ===== AI 英雄卡片 — 暗色主导 ===== */
+.hp-bento__card--ai {
+  grid-column: span 2;
+  grid-row: span 2;
+  min-height: 420px;
+  background: var(--color-solid);
+  color: #F8FAFC;
+  border-radius: 20px;
+}
+.hp-bento__card--ai .hp-bento__num {
+  color: rgba(248, 250, 252, 0.06);
+  right: -8%;
+  bottom: -6%;
+  font-size: clamp(160px, 22vw, 280px);
+}
+.hp-bento__card--ai .hp-bento__card-body {
+  padding: 44px;
+}
+.hp-bento__card--ai .hp-bento__card-icon {
+  color: var(--color-accent);
+  margin-bottom: 28px;
+  opacity: 0.85;
+  transition: all 0.4s ease;
+}
+.hp-bento__card--ai:hover .hp-bento__card-icon {
+  opacity: 1;
+  transform: scale(1.08);
+}
+.hp-bento__card--ai .hp-bento__card-title {
+  font-size: clamp(26px, 3vw, 36px);
+  color: #FFFFFF;
+  line-height: 1.15;
+}
+.hp-bento__card--ai .hp-bento__card-desc {
+  color: rgba(248, 250, 252, 0.55);
+  font-size: 15px;
+  max-width: 340px;
+  line-height: 1.7;
+}
+.hp-bento__card--ai .hp-bento__card-cta {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-family-mono);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-accent);
+  margin-top: auto;
+  padding-top: 28px;
+  letter-spacing: 0.03em;
+  gap: 8px;
+}
+.hp-bento__card--ai .hp-bento__corner { border-color: rgba(255,255,255,0.08); }
+.hp-bento__card--ai:hover {
+  transform: perspective(900px) rotateX(var(--my)) rotateY(var(--mx)) scale(1.01);
+  box-shadow:
+    0 30px 60px -15px rgba(15, 23, 42, 0.35),
+    0 12px 24px -8px rgba(15, 23, 42, 0.2);
 }
 
-.feature-icon {
-  font-size: 40px;
-  color: var(--color-slate-700);
-  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+/* ===== 普通卡片 — 极简编辑式 ===== */
+.hp-bento__card--sm {
+  grid-column: span 1;
+  grid-row: span 1;
+  min-height: 200px;
+  padding: 32px 28px;
+  border-right: 1px solid var(--color-border-light);
+  border-bottom: 1px solid var(--color-border-light);
+  border-radius: 0;
+}
+.hp-bento__card--sm:nth-child(3n + 3) { border-right: none; }
+
+.hp-bento__card--wide {
+  grid-column: span 2;
+  grid-row: span 1;
+  min-height: 180px;
+  padding: 32px 36px;
+  border-bottom: 1px solid var(--color-border-light);
+  border-radius: 0;
+}
+
+.hp-bento__card--sm:hover,
+.hp-bento__card--wide:hover {
+  background: rgba(15, 23, 42, 0.02);
+}
+.hp-bento__card--sm:hover,
+.hp-bento__card--wide:hover {
+  transform: perspective(900px) rotateX(var(--my)) rotateY(var(--mx)) translateX(4px);
+}
+
+
+/* ===== 巨型数字水印 ===== */
+.hp-bento__num {
+  position: absolute;
+  top: -8px;
+  right: 4px;
+  font-family: var(--font-family-mono);
+  font-size: clamp(72px, 9vw, 120px);
+  font-weight: 800;
+  color: var(--color-border-light);
+  letter-spacing: -0.06em;
+  line-height: 0.85;
+  pointer-events: none;
+  user-select: none;
+  z-index: 0;
+  opacity: 0.18;
+  transition:
+    color 0.5s cubic-bezier(0.34, 1.56, 0.64, 1),
+    opacity 0.5s ease,
+    transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.hp-bento__card--sm:hover .hp-bento__num,
+.hp-bento__card--wide:hover .hp-bento__num {
+  color: var(--color-accent);
+  opacity: 0.35;
+  transform: translate(-4px, -2px) scale(1.05);
+}
+
+
+/* ===== 卡片内容 ===== */
+.hp-bento__card-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  z-index: 1;
+  padding: 0;
+}
+
+.hp-bento__card-content {
   position: relative;
   z-index: 1;
 }
 
-.feature-card:hover .feature-icon {
-  transform: scale(1.1) rotate(5deg);
+.hp-bento__card-title {
+  font-family: var(--font-family-base);
+  font-size: clamp(18px, 1.8vw, 22px);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  letter-spacing: -0.025em;
+  margin: 0 0 10px;
+  line-height: 1.25;
+  transition: color 0.3s ease;
+}
+.hp-bento__card--sm:hover .hp-bento__card-title,
+.hp-bento__card--wide:hover .hp-bento__card-title {
   color: var(--color-solid);
 }
 
-.feature-card h3 {
-  font-size: var(--text-xl);
-  color: var(--color-text-primary);
-  margin-bottom: var(--space-3);
-  font-weight: var(--font-semibold);
-}
-
-.feature-card p {
+.hp-bento__card-desc {
+  font-size: 13px;
   color: var(--color-text-secondary);
-  line-height: var(--leading-normal);
-  margin-bottom: var(--space-5);
-  font-size: var(--text-base);
+  line-height: 1.65;
+  margin: 0;
 }
 
-.feature-link {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  font-size: var(--text-sm);
-  color: var(--color-slate-700);
-  font-weight: var(--font-semibold);
-  padding: var(--space-2) var(--space-5);
-  border-radius: var(--radius-lg);
-  border: 1.5px solid var(--color-slate-200);
-  background: transparent;
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-  position: relative;
-  overflow: hidden;
-}
 
-.feature-link::before {
-  content: '';
+/* ===== 角标装饰 (编辑式 L形角线) ===== */
+.hp-bento__corner {
   position: absolute;
-  inset: 0;
-  background: var(--color-solid);
+  width: 20px;
+  height: 20px;
+  pointer-events: none;
+  z-index: 2;
   opacity: 0;
-  transition: opacity 0.3s ease;
-  z-index: -1;
+  transition: opacity 0.4s ease 0.05s;
+}
+.hp-bento__card:hover .hp-bento__corner { opacity: 1; }
+
+.hp-bento__corner--tl {
+  top: 14px;
+  left: 14px;
+  border-top: 1.5px solid var(--color-accent);
+  border-left: 1.5px solid var(--color-accent);
+}
+.hp-bento__corner--br {
+  bottom: 14px;
+  right: 14px;
+  border-bottom: 1.5px solid var(--color-accent);
+  border-right: 1.5px solid var(--color-accent);
 }
 
-.feature-card:hover .feature-link {
-  gap: var(--space-3);
-  color: white;
-  border-color: transparent;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(30, 58, 95, 0.25);
-}
 
-.feature-card:hover .feature-link::before {
-  opacity: 1;
-}
-
-.link-arrow {
-  transition: transform var(--transition-normal);
-}
-
-.feature-card:hover .link-arrow {
-  transform: translateX(4px);
-}
-
-/* ===== Highlights区域 ===== */
-.highlights {
-  padding: var(--space-24) var(--space-10);
-  background: linear-gradient(180deg, #F7FAFC 0%, #EDF2F7 50%, #E8EEF5 100%);
+/* ============================================
+   SECTION 5: INVITATION — 暗色终章
+   ============================================ */
+.hp-invitation {
+  position: relative;
+  padding: 68px 40px 100px;
+  margin-bottom: -20px;
+  background: var(--color-solid);
+  color: #F8FAFC;
+  overflow: hidden;
   opacity: 0;
   transform: translateY(40px);
-  transition: opacity 0.8s ease, transform 0.8s ease;
-  position: relative;
-  overflow: hidden;
+  transition: opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1), transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
 }
-
-.highlights.is-visible {
+.hp-invitation--visible {
   opacity: 1;
   transform: translateY(0);
 }
 
-.highlights::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, var(--color-border), transparent);
-}
 
-/* 背景装饰 */
-.highlights-bg-decoration {
+/* ===== 背景网格 + 水印 ===== */
+.hp-invitation__grid-bg {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  overflow: hidden;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: 72px 72px;
+  mask-image: radial-gradient(ellipse 85% 60% at 50% 45%, black 25%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 85% 60% at 50% 45%, black 25%, transparent 100%);
 }
 
-.bg-circle {
+.hp-invitation__watermark {
   position: absolute;
-  border-radius: 50%;
-  border: 1px solid rgba(30, 58, 95, 0.06);
-}
-
-.bg-circle-1 {
-  width: 400px;
-  height: 400px;
-  top: -150px;
-  right: -100px;
-  animation: float 20s ease-in-out infinite;
-}
-
-.bg-circle-2 {
-  width: 300px;
-  height: 300px;
-  bottom: -100px;
-  left: -80px;
-  animation: float 25s ease-in-out infinite reverse;
-}
-
-.bg-grid {
-  position: absolute;
-  inset: 0;
-  background-image: 
-    linear-gradient(rgba(30, 58, 95, 0.02) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(30, 58, 95, 0.02) 1px, transparent 1px);
-  background-size: 60px 60px;
-  opacity: 0.8;
-}
-
-.highlights-content {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: var(--space-6);
-  position: relative;
-}
-
-/* 动态连接线 */
-.highlights-content::before {
-  content: '';
-  position: absolute;
-  top: 60px;
-  left: 8%;
-  right: 8%;
-  height: 3px;
-  background: linear-gradient(90deg,
-    transparent 0%,
-    var(--color-slate-200) 15%,
-    var(--color-slate-700) 50%,
-    var(--color-slate-200) 85%,
-    transparent 100%
-  );
-  opacity: 0.5;
-  z-index: 0;
-  border-radius: 2px;
-}
-
-.highlights-content::after {
-  content: '';
-  position: absolute;
-  top: 60px;
-  left: 10%;
-  width: 80%;
-  height: 3px;
-  background: linear-gradient(90deg,
-    transparent 0%,
-    rgba(212, 175, 55, 0.3) 20%,
-    rgba(212, 175, 55, 0.9) 50%,
-    rgba(212, 175, 55, 0.3) 80%,
-    transparent 100%
-  );
-  background-size: 200% 100%;
-  animation: line-flow 3s linear infinite;
-  z-index: 0;
-  border-radius: 2px;
-  filter: blur(0.5px);
-}
-
-@keyframes line-flow {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
-}
-
-.highlight-item {
-  text-align: center;
-  animation: fadeInUp 0.6s ease both;
-  position: relative;
-  z-index: 1;
-  padding: var(--space-6) var(--space-4);
-  border-radius: var(--radius-xl);
-  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-.highlight-item::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: var(--radius-xl);
-  background: linear-gradient(135deg, rgba(30, 58, 95, 0.02) 0%, transparent 100%);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.highlight-item:hover {
-  transform: translateY(-8px);
-}
-
-.highlight-item:hover::before {
-  opacity: 1;
-}
-
-/* 序号 */
-.highlight-number {
-  position: absolute;
-  top: var(--space-3);
-  right: var(--space-4);
-  width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: var(--text-xs);
-  font-weight: 700;
-  color: var(--color-slate-700);
+  bottom: -4%;
+  right: 2%;
   font-family: var(--font-family-mono);
-  letter-spacing: 0;
-  background: linear-gradient(135deg, #F0F4F8 0%, #E8EEF5 100%);
-  border-radius: 50%;
-  border: 1.5px solid var(--color-slate-200);
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 6px rgba(30, 58, 95, 0.08);
+  font-size: clamp(180px, 22vw, 340px);
+  font-weight: 800;
+  color: rgba(248, 250, 252, 0.03);
+  letter-spacing: -0.06em;
+  line-height: 0.85;
+  pointer-events: none;
+  user-select: none;
+  z-index: 0;
 }
 
-.highlight-item:hover .highlight-number {
-  background: var(--color-solid);
-  color: white;
-  border-color: transparent;
-  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
-  transform: scale(1.1);
+
+/* ===== 主布局：非对称双栏 ===== */
+.hp-invitation__inner {
+  position: relative;
+  z-index: 2;
+  max-width: 1100px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1.3fr 0.7fr;
+  gap: 64px;
+  align-items: center;
 }
 
-.highlight-icon-wrapper {
-  width: 80px;
-  height: 80px;
+
+/* ===== 左栏：标题区 ===== */
+.hp-invitation__left { }
+
+.hp-invitation__eyebrow {
+  display: inline-block;
+  font-family: var(--font-family-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  color: var(--color-accent);
+  text-transform: uppercase;
+  margin-bottom: 28px;
+}
+
+.hp-invitation__title {
+  font-family: var(--font-family-base);
+  font-size: clamp(36px, 5.5vw, 68px);
+  font-weight: 800;
+  color: #FFFFFF;
+  letter-spacing: -0.04em;
+  line-height: 1.05;
+  margin: 0 0 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.hp-invitation__title-line-1,
+.hp-invitation__title-line-2 {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.15em;
+  line-height: 1.05;
+}
+
+.hp-w--inv .hp-w__inner {
+  opacity: 0;
+  transform: translateY(110%);
+  transition:
+    transform 0.75s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  transition-delay: calc(var(--wi) * 0.08s + 0.6s);
+}
+.hp-invitation--visible .hp-w--inv .hp-w__inner {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.hp-invitation__sub {
+  font-size: 16px;
+  color: rgba(248, 250, 252, 0.5);
+  line-height: 1.75;
+  margin: 0 0 32px;
+  max-width: 480px;
+}
+
+.hp-invitation__meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-family-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 1.5px;
+  color: rgba(248, 250, 252, 0.3);
+  text-transform: uppercase;
+}
+.hp-invitation__dot {
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--color-slate-50) 0%, var(--color-slate-100) 100%);
+  background: #10B981;
+  animation: invPulse 2.5s ease-in-out infinite;
+  flex-shrink: 0;
+}
+@keyframes invPulse {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+  50% { opacity: 0.6; box-shadow: 0 0 0 4px rgba(16, 185, 129, 0); }
+}
+
+
+/* ===== 右栏：英雄 CTA ===== */
+.hp-invitation__right {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.hp-btn--hero {
+  position: relative;
   display: flex;
   align-items: center;
-  justify-content: center;
-  margin: 0 auto var(--space-5);
-  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-  position: relative;
-  box-shadow: 
-    0 4px 12px rgba(30, 58, 95, 0.08),
-    inset 0 -2px 4px rgba(30, 58, 95, 0.05);
-}
-
-/* 图标环形装饰 */
-.icon-ring {
-  position: absolute;
-  inset: -4px;
-  border-radius: 50%;
-  border: 2px dashed var(--color-slate-200);
-  opacity: 0;
-  transform: rotate(0deg);
-  transition: all 0.4s ease;
-}
-
-.highlight-item:hover .highlight-icon-wrapper {
-  background: linear-gradient(135deg, var(--color-slate-100) 0%, var(--color-slate-200) 100%);
-  transform: scale(1.05);
-  box-shadow: 
-    0 8px 24px rgba(30, 58, 95, 0.15),
-    0 0 0 4px rgba(30, 58, 95, 0.05),
-    inset 0 -2px 4px rgba(30, 58, 95, 0.05);
-}
-
-.highlight-item:hover .icon-ring {
-  opacity: 1;
-  transform: rotate(180deg);
-  border-color: var(--color-accent-light);
-}
-
-.highlight-item h4 {
-  margin: 0 0 var(--space-2);
-  color: var(--color-text-primary);
-  font-size: var(--text-lg);
-  font-weight: var(--font-semibold);
-  transition: color 0.3s ease;
-}
-
-.highlight-item:hover h4 {
-  color: var(--color-slate-700);
-}
-
-.highlight-item p {
-  color: var(--color-text-secondary);
-  line-height: var(--leading-normal);
-  font-size: var(--text-sm);
-}
-
-/* ===== CTA区域 ===== */
-.cta-section {
-  background: linear-gradient(135deg, #EEF2F7 0%, #F0F4F8 35%, #E8EDF3 70%, #DFE6EF 100%);
-  padding: var(--space-24) var(--space-10);
-  margin-bottom: var(--space-10);
-  text-align: center;
-  opacity: 0;
-  transform: translateY(30px);
-  transition: opacity 0.8s ease, transform 0.8s ease;
-  border-top: 1px solid rgba(30, 58, 95, 0.08);
-  border-bottom: 1px solid rgba(30, 58, 95, 0.08);
-  position: relative;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 36px 44px;
+  min-width: 280px;
+  background: transparent;
+  border: 1.5px solid rgba(248, 250, 252, 0.12);
+  border-radius: 18px;
+  cursor: pointer;
+  transition:
+    border-color 0.4s ease,
+    background 0.4s ease,
+    box-shadow 0.4s ease,
+    transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
   overflow: hidden;
+  color: #FFFFFF;
+  text-align: left;
+}
+.hp-btn--hero:hover {
+  border-color: var(--color-accent);
+  background: rgba(217, 119, 6, 0.06);
+  box-shadow:
+    0 20px 50px -12px rgba(217, 119, 6, 0.2),
+    0 8px 20px -8px rgba(217, 119, 6, 0.1);
+  transform: translateY(-3px);
+}
+.hp-btn--hero:active { transform: scale(0.98); }
+
+.hp-btn-hero__content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.hp-btn-hero__label {
+  font-family: var(--font-family-base);
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+.hp-btn-hero__sub {
+  font-family: var(--font-family-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 1.5px;
+  color: rgba(248, 250, 252, 0.4);
+  text-transform: uppercase;
 }
 
-.cta-section.is-visible {
-  opacity: 1;
-  transform: translateY(0);
+.hp-btn-hero__arrow {
+  flex-shrink: 0;
+  color: var(--color-accent);
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.3s ease;
+}
+.hp-btn--hero:hover .hp-btn-hero__arrow {
+  transform: translateX(4px);
+  color: var(--color-accent);
 }
 
-/* 顶部波浪分隔 */
-.cta-section::before {
-  content: '';
+.hp-btn-hero__border {
   position: absolute;
-  top: -1px;
-  left: 0;
-  right: 0;
-  height: 80px;
-  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 120' preserveAspectRatio='none'%3E%3Cpath fill='%23FAFAFA' d='M0,60 C240,120 480,0 720,60 C960,120 1200,0 1440,60 L1440,0 L0,0 Z'/%3E%3C/svg%3E") no-repeat center top;
-  background-size: 100% 100%;
-  filter: drop-shadow(0 2px 4px rgba(30, 58, 95, 0.1));
+  inset: 0;
+  border-radius: 18px;
+  padding: 1.5px;
+  background: linear-gradient(135deg, var(--color-accent), transparent 60%, var(--color-accent));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  pointer-events: none;
+}
+.hp-btn--hero:hover .hp-btn-hero__border { opacity: 0.6; }
+
+
+.hp-invitation__hint {
+  font-family: var(--font-family-mono);
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: rgba(248, 250, 252, 0.2);
+  text-transform: uppercase;
 }
 
-/* CTA区域底部不再使用波浪分隔，由页脚过渡区域统一处理 */
 
-.cta-content {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: var(--space-8) var(--space-5);
-  box-sizing: border-box;
+/* ===== 底部签名栏 ===== */
+.hp-invitation__footer {
   position: relative;
-  z-index: 1;
+  z-index: 2;
+  max-width: 1100px;
+  margin: 72px auto 0;
+  display: flex;
+  align-items: center;
+  gap: 20px;
 }
-
-.cta-content h2 {
-  color: var(--color-text-primary);
-  font-size: var(--text-3xl);
-  font-weight: var(--font-bold);
-  margin-bottom: var(--space-4);
-  font-family: var(--font-family-display);
-  position: relative;
+.hp-invitation__footer-line {
+  height: 1px;
+  flex: 1;
+  background: linear-gradient(90deg, rgba(248, 250, 252, 0.12), transparent);
 }
-
-.cta-content h2::after {
-  content: '';
-  display: block;
-  width: 60px;
-  height: 4px;
-  background: var(--color-accent);
-  margin: var(--space-4) auto 0;
-  border-radius: var(--radius-sm);
-}
-
-.cta-content p {
-  color: var(--color-text-secondary);
-  font-size: var(--text-lg);
-  margin-bottom: var(--space-8);
-}
-
-.cta-final-button {
-  background: var(--color-solid);
-  color: white;
-  font-size: var(--text-lg);
-  padding: var(--space-4) var(--space-12);
-  border-radius: var(--radius-lg);
+.hp-invitation__footer-text {
+  font-family: var(--font-family-mono);
+  font-size: 9px;
   font-weight: 600;
-  border: none;
-  transition: all 0.2s ease;
+  letter-spacing: 3px;
+  color: rgba(248, 250, 252, 0.2);
+  text-transform: uppercase;
+  white-space: nowrap;
 }
 
-.cta-final-button:hover {
-  background: var(--color-solid-hover);
-  transform: translateY(-1px);
-}
 
 /* ===== 返回顶部按钮 ===== */
-.back-to-top {
+.hp-back-to-top {
   position: fixed;
-  right: 30px;
-  bottom: 30px;
-  width: 48px;
-  height: 48px;
+  right: 28px;
+  bottom: 28px;
+  width: 46px;
+  height: 46px;
   border-radius: 50%;
   background: var(--color-surface);
   color: var(--color-slate-700);
-  border: 2px solid var(--color-slate-700);
+  border: 1.5px solid var(--color-border);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   box-shadow: var(--shadow-md);
-  transition: all var(--transition-normal);
+  transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
   z-index: 999;
   opacity: 0;
   pointer-events: none;
 }
-
-.back-to-top.visible {
+.hp-back-to-top.visible {
   opacity: 1;
   pointer-events: auto;
 }
-
-.back-to-top:hover {
-  background: var(--color-slate-700);
+.hp-back-to-top:hover {
+  background: var(--color-solid);
   color: white;
+  border-color: var(--color-solid);
   transform: translateY(-4px);
   box-shadow: var(--shadow-lg);
+}
+
+
+/* ============================================
+   响应式设计
+   ============================================ */
+
+@media (max-width: 1199px) {
+  .hp-hero { height: calc(100dvh - 56px); margin-top: -14px; }
+  .hp-hero__inner { padding: 52px 36px 0; gap: 40px; }
+  .hp-hero__line--lead { font-size: clamp(28px, 4.2vw, 54px); }
+  .hp-hero__line--anchor { font-size: clamp(50px, 10vw, 108px); }
+  .hp-hero__sub { max-width: 210px; }
+
+  .hp-marquee { padding: 22px 0; }
+  .hp-manifesto { padding: 70px 36px; }
+  .hp-manifesto__item { padding: 30px 24px 30px 0; }
+  .hp-manifesto__index { font-size: clamp(48px, 6vw, 72px); width: 60px; }
+
+  .hp-bento { padding: 48px 28px 24px; }
+  .hp-bento__grid { gap: 2px; }
+  .hp-bento__card--ai { min-height: 360px; }
+  .hp-bento__card--ai .hp-bento__card-body { padding: 32px; }
+  .hp-bento__card--ai .hp-bento__num { font-size: clamp(120px, 18vw, 220px); }
+  .hp-bento__card--sm { padding: 26px 22px; min-height: 180px; }
+  .hp-bento__card--wide { padding: 26px 28px; min-height: 160px; }
+
+  .hp-invitation { padding: 48px 28px 72px; margin-bottom: -14px; }
+  .hp-invitation__inner { grid-template-columns: 1fr; gap: 44px; }
+  .hp-invitation__watermark { font-size: clamp(120px, 20vw, 220px); }
+  .hp-btn--hero { min-width: auto; width: 100%; max-width: 360px; padding: 30px 36px; }
+  .hp-invitation__footer { margin-top: 52px; }
+}
+
+@media (max-width: 767px) {
+  .hp-hero { height: calc(100dvh - 52px); margin-top: -10px; }
+  .hp-hero__inner {
+    grid-template-columns: 1fr;
+    gap: 28px;
+    padding: 28px 24px 0;
+    align-items: center;
+  }
+  .hp-hero__line--lead { font-size: clamp(26px, 7.5vw, 42px); }
+  .hp-hero__line--anchor { font-size: clamp(42px, 12vw, 78px); }
+  .hp-hero__side { gap: 18px; }
+  .hp-hero__sub { max-width: 100%; font-size: 13px; }
+  .hp-hero__stats { gap: 16px; }
+  .hp-scroll-hint { left: 24px; bottom: 28px; }
+
+  .hp-tech__watermark { font-size: clamp(100px, 22vw, 200px); }
+  .hp-tech__watermark--sub { font-size: clamp(40px, 9vw, 76px); }
+  .hp-tech__svg { opacity: 0.4; }
+
+  .hp-fui { font-size: 8px; }
+  .hp-fui--coord { padding: 3px 6px; }
+  .hp-fui--badge { padding: 2px 6px; font-size: 8px; }
+  .hp-fui--hex { display: none; }
+  .hp-fui--mini { font-size: 9px; }
+  .hp-fui--status { font-size: 8px; }
+
+  .hp-marquee { padding: 18px 0; }
+  .hp-marquee__track { gap: 28px; animation-duration: 30s; }
+  .hp-marquee__item { font-size: 10px; letter-spacing: 2px; }
+
+  .hp-manifesto { padding: 50px 20px; }
+  .hp-manifesto__list {
+    grid-template-columns: 1fr;
+  }
+  .hp-manifesto__item {
+    padding: 28px 20px 28px 0;
+    border-right: none !important;
+  }
+  .hp-manifesto__item:nth-child(odd) { border-right: none; }
+  .hp-manifesto__index { font-size: clamp(42px, 10vw, 64px); width: 52px; }
+  .hp-manifesto__body { padding-left: 16px; }
+  .hp-manifesto__head { flex-direction: column; align-items: flex-start; gap: 4px; margin-bottom: 6px; }
+  .hp-manifesto__item-title { font-size: 18px; }
+  .hp-manifesto__item-desc { font-size: 12px; }
+
+  .hp-bento { padding: 44px 20px 40px; }
+  .hp-bento__header { margin-bottom: 36px; }
+  .hp-bento__grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .hp-bento__card--ai,
+  .hp-bento__card--sm,
+  .hp-bento__card--wide {
+    grid-column: span 1;
+    grid-row: span 1;
+    min-height: auto;
+    border-right: none !important;
+    border-radius: 12px !important;
+    padding: 24px 20px;
+    margin-bottom: 12px;
+  }
+  .hp-bento__card { min-height: 140px; border-bottom: none; }
+  .hp-bento__card--ai {
+    background: var(--color-solid);
+    color: #F8FAFC;
+    min-height: 200px;
+    margin-bottom: 16px;
+  }
+  .hp-bento__card--ai .hp-bento__card-body { padding: 28px; }
+  .hp-bento__card--ai .hp-bento__num { font-size: clamp(80px, 18vw, 140px); right: -2%; bottom: -4%; }
+  .hp-bento__card--ai .hp-bento__card-title { font-size: 22px; }
+  .hp-bento__card-title { font-size: 17px; }
+  .hp-bento__num { font-size: clamp(52px, 10vw, 80px); }
+
+  .hp-invitation { padding: 52px 20px 64px; margin-bottom: -10px; }
+  .hp-invitation__inner {
+    grid-template-columns: 1fr;
+    gap: 36px;
+    text-align: center;
+  }
+  .hp-invitation__left { display: flex; flex-direction: column; align-items: center; }
+  .hp-invitation__title { font-size: clamp(28px, 8vw, 44px); text-align: center; }
+  .hp-invitation__title-line-1,
+  .hp-invitation__title-line-2 { justify-content: center; }
+  .hp-invitation__sub { font-size: 14px; max-width: 100%; text-align: center; }
+  .hp-invitation__watermark { font-size: clamp(90px, 24vw, 160px); right: -4%; bottom: 0; }
+  .hp-btn--hero {
+    width: 100%;
+    max-width: none;
+    padding: 28px 32px;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    text-align: center;
+  }
+  .hp-btn-hero__content { align-items: center; }
+  .hp-btn-hero__arrow { transform: rotate(-90deg); }
+  .hp-btn--hero:hover .hp-btn-hero__arrow { transform: rotate(-90deg) translateX(4px); }
+  .hp-invitation__footer { margin-top: 48px; flex-direction: column-reverse; gap: 12px; }
+
+  .hp-back-to-top { right: 18px; bottom: 18px; width: 42px; height: 42px; }
+}
+
+@media (max-width: 480px) {
+  .hp-hero__inner { padding: 0 20px; gap: 22px; }
+  .hp-hero__line--lead { font-size: clamp(24px, 8.5vw, 38px); }
+  .hp-hero__line--anchor { font-size: clamp(38px, 14vw, 72px); }
+  .hp-hero__title { gap: 14px; }
+  .hp-manifesto__item { padding: 24px 16px 24px 0; }
+  .hp-manifesto__index { font-size: clamp(38px, 12vw, 56px); width: 46px; }
+  .hp-btn--lg { padding: 16px 36px; font-size: 16px; }
+}
+
+
+/* ===== 减少动画偏好 ===== */
+@media (prefers-reduced-motion: reduce) {
+  .hp-hero,
+  .hp-manifesto,
+  .hp-bento,
+  .hp-invitation {
+    transition: opacity 0.3s ease;
+    opacity: 1;
+    transform: none;
+  }
+  .hp-w__inner { transform: none; transition: none; opacity: 1; }
+  .hp-hero__side { transform: none; transition: none; opacity: 1; }
+  .hp-bento__card {
+    transition: box-shadow 0.2s ease, border-color 0.2s ease;
+    transform: none !important;
+  }
+  .hp-bento__card:hover { transform: none; }
+  .hp-bento__card--visible { transform: none !important; opacity: 1; }
+  .hp-manifesto__item {
+    transition: background 0.2s ease;
+    opacity: 1;
+    transform: none;
+  }
+  .hp-manifesto__item--visible { transform: none; opacity: 1; }
+  .hp-manifesto__index { transition: none; opacity: 0.4 !important; transform: none !important; }
+  .hp-manifesto__line { transform: scaleY(0) !important; }
+  .hp-manifesto__cta { transition: none; opacity: 0.5 !important; transform: none !important; }
+  .hp-marquee__track { animation: none; }
+  .hp-scroll-hint { animation: none; opacity: 1; }
+  .hp-scroll-hint__line { animation: none; }
+  .hp-hero__grid-bg { transition: none; transform: none !important; }
+  .hp-hero__cursor-glow { display: none; }
+  .hp-anchor-bracket,
+  .hp-anchor-cursor { animation: none; opacity: 0.7 !important; }
+  .hp-tech__scanline { animation: none; }
+  .hp-tech__svg { opacity: 0.5 !important; transition: none; }
+  .hp-tech__watermark { opacity: 0.03 !important; transition: none; }
+  .hp-tech__tick { animation: none; opacity: 0.5 !important; transform: scaleX(1); }
+  .hp-fui { animation: none; opacity: 0.7 !important; transform: none; }
+  .hp-fui--status i { animation: none; }
+  .hp-w--inv .hp-w__inner { transform: none !important; transition: none; opacity: 1 !important; }
+  .hp-invitation__dot { animation: none; }
 }
 </style>

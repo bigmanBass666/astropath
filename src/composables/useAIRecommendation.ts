@@ -319,13 +319,18 @@ ${JSON.stringify(schoolsList, null, 2)}
         throw new Error('无法解析AI响应')
       }
 
+      const localMatches = getAllSchoolsWithMatch(assessment)
+      const localMatchMap = new Map(localMatches.map((s: SchoolWithMatch) => [s.id, s.match || 50]))
+
       const recommendations: AIRecommendation[] = parsed.recommendations.map((rec: { schoolId: number; ranking: number; category: string; aiReason: string; matchScore: number }) => {
         const school = schoolsData.find((s) => s.id === rec.schoolId)
+        const aiScore = Number(rec.matchScore)
+        const matchScore = (aiScore > 0 ? aiScore : localMatchMap.get(rec.schoolId) || 50)
         return {
           schoolId: rec.schoolId,
           schoolName: school?.name || '未知学校',
           aiReason: rec.aiReason,
-          matchScore: rec.matchScore,
+          matchScore,
           ranking: rec.ranking,
           category: (rec.category as 'core' | 'alternative') || 'core'
         }

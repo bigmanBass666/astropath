@@ -1,6 +1,6 @@
-const SEPARATOR = '\n\n---\n\n'
-const THINK_TAG_START = '<think\>'
-const THINK_TAG_END = '</think\>'
+﻿const SEPARATOR = '\n\n---\n\n'
+const THINK_TAG_START = '\u003Cthink\u003E'
+const THINK_TAG_END = '\u003C/think\u003E'
 
 export function hasReasoningContent(content: string): boolean {
   if (!content) return false

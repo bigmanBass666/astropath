@@ -1,253 +1,272 @@
 <template>
-  <el-dialog
-    v-model="visible"
-    title="AI 深度分析"
-    width="650px"
-    :close-on-click-modal="false"
-    class="analysis-dialog"
-  >
-    <div
-      v-if="school && analysis && !analysisLoading"
-      class="analysis-content"
-    >
-      <!-- 学校头部信息 -->
-      <div class="school-header">
-        <h3 class="school-name">
-          {{ school.name }}
-        </h3>
-        <div class="school-tags">
-          <el-tag>{{ school.country }}</el-tag>
-          <el-tag type="info">
-            {{ school.ranking }}
-          </el-tag>
-          <el-tag type="success">
-            录取率 {{ school.acceptanceRate }}
-          </el-tag>
-        </div>
-      </div>
-
-      <!-- 匹配度评估 -->
-      <div class="match-assessment">
-        <div class="assessment-header">
-          <span class="assessment-label">录取概率评估</span>
-          <span
-            class="assessment-value"
-            :style="{ color: getProbabilityColor(analysis.admissionProbability) }"
+  <Teleport to="body">
+    <Transition name="modal">
+      <div
+        v-if="isVisible"
+        class="sa-overlay"
+        @click.self="handleClose"
+      >
+        <Transition name="panel">
+          <div
+            v-if="isVisible"
+            class="sa-panel"
           >
-            {{ analysis.admissionProbability }}
-          </span>
-        </div>
-      </div>
+            <!-- Header -->
+            <header class="sa-header">
+              <div class="sa-header__school">
+                <h3 class="sa-header__name">
+                  {{ schoolName }}
+                </h3>
+                <div class="sa-header__meta">
+                  <span
+                    v-if="recommendation?.country"
+                    class="sa-meta-chip"
+                  >🇺🇳 {{ recommendation.country }}</span>
+                  <span
+                    v-if="recommendation?.ranking"
+                    class="sa-meta-chip sa-meta-chip--mono"
+                  >#{{ recommendation.ranking }}</span>
+                  <span
+                    v-if="recommendation?.acceptanceRate"
+                    class="sa-meta-chip"
+                  >{{ recommendation.acceptanceRate }}% 录取率</span>
+                </div>
+              </div>
 
-      <!-- 匹配点 -->
-      <div
-        v-if="analysis.matchPoints.length > 0"
-        class="analysis-section match"
-      >
-        <div class="section-header">
-          <div class="section-icon success">
-            <el-icon><CircleCheck /></el-icon>
+              <button
+                class="sa-close"
+                @click="handleClose"
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                ><path d="M18 6L6 18M6 6l12 12" /></svg>
+              </button>
+            </header>
+
+            <!-- Body -->
+            <div class="sa-body">
+              <!-- Loading State -->
+              <div
+                v-if="loading && !analysisData"
+                class="sa-loading"
+              >
+                <div class="sa-loading__spinner">
+                  <svg
+                    width="28"
+                    height="28"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#D97706"
+                    stroke-width="2.5"
+                    class="spin-svg"
+                  ><path d="M21 12a9 9 0 1 1-6.219-8.56" /></svg>
+                </div>
+                <p class="sa-loading__text">
+                  AI 正在深度分析...
+                </p>
+                <p class="sa-loading__sub">
+                  综合多维度数据生成个性化报告
+                </p>
+              </div>
+
+              <!-- Analysis Content -->
+              <template v-else-if="currentAnalysis">
+                <!-- Admission Probability -->
+                <section class="sa-section sa-section--prob">
+                  <div class="sa-section__head">
+                    <span class="sa-icon sa-icon--green">✓</span>
+                    <span>录取概率评估</span>
+                  </div>
+                  <div class="sa-prob-bar">
+                    <div
+                      class="sa-prob-fill"
+                      :style="{ width: currentAnalysis.admissionProbability + '%', '--prob-color': probColor(currentAnalysis.admissionProbability) }"
+                    />
+                    <span class="sa-prob-label">{{ getProbLabel(currentAnalysis.admissionProbability) }} ({{ currentAnalysis.admissionProbability }}%)</span>
+                  </div>
+                </section>
+
+                <!-- Match Points -->
+                <section
+                  v-if="currentAnalysis.matchPoints?.length"
+                  class="sa-section sa-section--match"
+                >
+                  <div class="sa-section__head">
+                    <span class="sa-icon sa-icon--amber">✦</span>
+                    <span>匹配点</span>
+                  </div>
+                  <ul class="sa-list">
+                    <li
+                      v-for="(point, idx) in currentAnalysis.matchPoints"
+                      :key="'mp'+idx"
+                      class="sa-li"
+                    >
+                      <span class="sa-li__dot" />{{ point }}
+                    </li>
+                  </ul>
+                </section>
+
+                <!-- Risk Points -->
+                <section
+                  v-if="currentAnalysis.riskPoints?.length"
+                  class="sa-section sa-section--risk"
+                >
+                  <div class="sa-section__head">
+                    <span class="sa-icon sa-icon--red">⚠</span>
+                    <span>风险提示</span>
+                  </div>
+                  <ul class="sa-list">
+                    <li
+                      v-for="(risk, idx) in currentAnalysis.riskPoints"
+                      :key="'rp'+idx"
+                      class="sa-li sa-li--risk"
+                    >
+                      <span class="sa-li__dot" />{{ risk }}
+                    </li>
+                  </ul>
+                </section>
+
+                <!-- Suggestions -->
+                <section
+                  v-if="currentAnalysis.suggestions?.length"
+                  class="sa-section sa-section--suggest"
+                >
+                  <div class="sa-section__head">
+                    <span class="sa-icon sa-icon--blue">💡</span>
+                    <span>申请建议</span>
+                  </div>
+                  <ul class="sa-list">
+                    <li
+                      v-for="(sug, idx) in currentAnalysis.suggestions"
+                      :key="'sg'+idx"
+                      class="sa-li"
+                    >
+                      <span class="sa-li__num">{{ Number(idx) + 1 }}</span>{{ sug }}
+                    </li>
+                  </ul>
+                </section>
+
+                <!-- Streaming Output -->
+                <Transition name="stream-fade">
+                  <section
+                    v-if="isStreaming && streamingContent"
+                    class="sa-stream"
+                  >
+                    <div class="sa-stream__head">
+                      <svg
+                        width="12"
+                        height="12"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="#D97706"
+                        stroke-width="2.5"
+                        class="spin-mini"
+                      ><path d="M21 12a9 9 0 1 1-6.219-8.56" /></svg>
+                      <span>AI 实时分析输出</span>
+                    </div>
+                    <pre class="sa-stream__body">{{ streamingContent }}</pre>
+                  </section>
+                </Transition>
+              </template>
+            </div>
+
+            <!-- Footer: Follow-up Input -->
+            <footer class="sa-footer">
+              <div class="sa-input-wrap">
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#94A3B8"
+                  stroke-width="1.8"
+                  class="sa-input-icon"
+                ><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
+                <input
+                  v-model="followUpQuestion"
+                  type="text"
+                  placeholder="还有疑问？继续追问 AI..."
+                  class="sa-input"
+                  :disabled="isStreaming"
+                  @keyup.enter="submitFollowUp"
+                >
+              </div>
+
+              <div class="sa-actions">
+                <button
+                  class="sa-btn sa-btn--ghost"
+                  @click="handleClose"
+                >
+                  关闭
+                </button>
+                <button
+                  class="sa-btn sa-btn--primary"
+                  @click="$emit('view-detail', schoolId)"
+                >
+                  查看详情 →
+                </button>
+                <button
+                  class="sa-btn sa-btn--accent"
+                  :disabled="!followUpQuestion.trim() || isStreaming"
+                  @click="submitFollowUp"
+                >
+                  <template v-if="isStreaming">
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2.5"
+                      class="spin-mini"
+                    ><path d="M21 12a9 9 0 1 1-6.219-8.56" /></svg>
+                    分析中...
+                  </template>
+                  <template v-else>
+                    发送追问
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2.5"
+                    ><path d="M5 12h14M12 5l7 7-7 7" /></svg>
+                  </template>
+                </button>
+              </div>
+            </footer>
           </div>
-          <span>匹配点</span>
-        </div>
-        <ul class="analysis-list">
-          <li
-            v-for="(point, index) in analysis.matchPoints"
-            :key="index"
-          >
-            {{ point }}
-          </li>
-        </ul>
+        </Transition>
       </div>
-
-      <!-- 风险提示 -->
-      <div
-        v-if="analysis.risks.length > 0"
-        class="analysis-section risk"
-      >
-        <div class="section-header">
-          <div class="section-icon warning">
-            <el-icon><Warning /></el-icon>
-          </div>
-          <span>风险提示</span>
-        </div>
-        <ul class="analysis-list warning">
-          <li
-            v-for="(risk, index) in analysis.risks"
-            :key="index"
-          >
-            {{ risk }}
-          </li>
-        </ul>
-      </div>
-
-      <!-- 申请建议 -->
-      <div
-        v-if="analysis.suggestions.length > 0"
-        class="analysis-section suggestion"
-      >
-        <div class="section-header">
-          <div class="section-icon info">
-            <el-icon><InfoFilled /></el-icon>
-          </div>
-          <span>申请建议</span>
-        </div>
-        <ul class="analysis-list">
-          <li
-            v-for="(suggestion, index) in analysis.suggestions"
-            :key="index"
-          >
-            {{ suggestion }}
-          </li>
-        </ul>
-      </div>
-
-      <!-- 追问输入 -->
-      <div class="follow-up-section">
-        <div
-          class="input-box"
-          :class="{ 'is-focused': isInputFocused }"
-        >
-          <el-input
-            v-model="followUpQuestion"
-            placeholder="还有疑问？继续追问AI..."
-            class="follow-up-input"
-            @keyup.enter="submitFollowUp"
-            @focus="isInputFocused = true"
-            @blur="isInputFocused = false"
-          >
-            <template #append>
-              <el-button
-                :icon="Position"
-                class="send-btn"
-                @click="submitFollowUp"
-              />
-            </template>
-          </el-input>
-        </div>
-      </div>
-
-      <!-- 追问回复 -->
-      <div
-        v-if="followUpResponse"
-        class="follow-up-response"
-      >
-        <div class="response-header">
-          <el-icon><ChatDotRound /></el-icon>
-          <span>AI回复</span>
-        </div>
-        <p class="response-text">
-          {{ followUpResponse }}
-        </p>
-      </div>
-    </div>
-
-    <!-- 加载状态 - 包含流式输出 -->
-    <div
-      v-else-if="analysisLoading || isStreaming"
-      class="analysis-loading"
-    >
-      <!-- 学校头部骨架 -->
-      <div class="school-header">
-        <h3 class="school-name">
-          {{ school?.name || '正在分析...' }}
-        </h3>
-        <div
-          v-if="school"
-          class="school-tags"
-        >
-          <el-tag>{{ school.country }}</el-tag>
-          <el-tag type="info">
-            {{ school.ranking }}
-          </el-tag>
-          <el-tag type="success">
-            录取率 {{ school.acceptanceRate }}
-          </el-tag>
-        </div>
-      </div>
-
-      <!-- 流式输出显示区域 -->
-      <div
-        v-if="streamingContent"
-        class="streaming-content"
-      >
-        <!-- 思考过程 -->
-        <div
-          v-if="hasReasoningContent(streamingContent)"
-          class="reasoning-section"
-        >
-          <div class="streaming-label reasoning-label">
-            <el-icon class="streaming-icon">
-              <Loading />
-            </el-icon>
-            AI思考过程
-          </div>
-          <div class="streaming-text reasoning-text">
-            <pre>{{ getReasoningContent(streamingContent) }}</pre>
-          </div>
-        </div>
-
-        <!-- 正式输出 -->
-        <div
-          v-if="hasMainContent(streamingContent)"
-          class="main-content-section"
-          :class="{ 'has-reasoning': hasReasoningContent(streamingContent) }"
-        >
-          <div class="streaming-label main-label">
-            <el-icon><Document /></el-icon>
-            生成结果
-          </div>
-          <div class="streaming-text main-text">
-            <pre>{{ getMainContent(streamingContent) }}</pre>
-          </div>
-        </div>
-      </div>
-
-      <!-- 骨架屏 - 当还没有流式内容时显示 -->
-      <div
-        v-else
-        class="skeleton-loading"
-      >
-        <div class="skeleton-section">
-          <div class="skeleton-section-title" />
-          <div class="skeleton-line" />
-          <div class="skeleton-line" />
-          <div class="skeleton-line short" />
-        </div>
-        <div class="skeleton-section">
-          <div class="skeleton-section-title" />
-          <div class="skeleton-line" />
-          <div class="skeleton-line" />
-        </div>
-      </div>
-    </div>
-
-    <template #footer>
-      <el-button @click="visible = false">
-        关闭
-      </el-button>
-      <el-button
-        v-if="!analysisLoading && !isStreaming"
-        type="primary"
-        @click="viewSchoolDetail"
-      >
-        <el-icon><View /></el-icon>
-        查看学校详情
-      </el-button>
-    </template>
-  </el-dialog>
+    </Transition>
+  </Teleport>
 </template>
 
-<script setup>
-import { ref, computed, watch } from 'vue'
-import { CircleCheck, Warning, InfoFilled, Position, ChatDotRound, View, Loading, Document } from '@element-plus/icons-vue'
-import { schoolsData } from '@/utils/recommendationEngine'
-import { hasReasoningContent, hasMainContent, getReasoningContent, getMainContent } from '@/utils/streamParser'
+<script setup lang="ts">
+import { ref, computed } from 'vue'
 
 const props = defineProps({
   modelValue: {
     type: Boolean,
     default: false
+  },
+  visible: {
+    type: Boolean,
+    default: false
+  },
+  schoolId: {
+    type: [String, Number],
+    default: null
+  },
+  schoolName: {
+    type: String,
+    default: ''
   },
   recommendation: {
     type: Object,
@@ -257,270 +276,187 @@ const props = defineProps({
     type: Object,
     default: null
   },
+  analysisData: {
+    type: Object,
+    default: null
+  },
   loading: {
+    type: Boolean,
+    default: false
+  },
+  isStreaming: {
     type: Boolean,
     default: false
   },
   streamingContent: {
     type: String,
     default: ''
-  },
-  isStreaming: {
-    type: Boolean,
-    default: false
   }
 })
 
-const emit = defineEmits(['update:modelValue', 'view-detail', 'follow-up'])
+const emit = defineEmits(['update:modelValue', 'update:visible', 'follow-up', 'view-detail'])
 
-const visible = computed({
-  get: () => props.modelValue,
-  set: (val) => emit('update:modelValue', val)
-})
+const isVisible = computed(() => props.visible || props.modelValue)
+
+const currentAnalysis = computed(() => props.analysisData || props.analysis)
 
 const followUpQuestion = ref('')
-const followUpResponse = ref('')
-const isInputFocused = ref(false)
 
-const school = computed(() => {
-  if (!props.recommendation) return null
-  return schoolsData.find(s => s.id === props.recommendation.schoolId)
-})
-
-const getProbabilityColor = (probability) => {
-  if (probability.includes('高') || probability.includes('90') || probability.includes('80')) {
-    return 'var(--color-success)'
-  }
-  if (probability.includes('中') || probability.includes('70') || probability.includes('60')) {
-    return 'var(--color-warning)'
-  }
-  return 'var(--color-danger)'
+const handleClose = () => {
+  emit('update:visible', false)
+  emit('update:modelValue', false)
 }
 
 const submitFollowUp = () => {
-  if (!followUpQuestion.value.trim()) return
-  // 模拟AI回复
-  followUpResponse.value = `关于"${followUpQuestion.value}"，这是一个很好的问题。基于你的背景和这所学校的要求，我建议你重点关注申请文书的准备，突出你的科研经历和学术潜力。`
+  if (!followUpQuestion.value.trim() || props.isStreaming) return
+  emit('follow-up', followUpQuestion.value)
   followUpQuestion.value = ''
 }
 
-const viewSchoolDetail = () => {
-  if (school.value) {
-    emit('view-detail', school.value.id)
-    visible.value = false
-  }
+const getProbLabel = (score: number): string => {
+  if (score >= 80) return '高'
+  if (score >= 50) return '中等'
+  if (score >= 30) return '偏低'
+  return '挑战'
 }
 
-watch(() => props.modelValue, (val) => {
-  if (val) {
-    followUpQuestion.value = ''
-    followUpResponse.value = ''
-  }
-})
+const probColor = (score: number): string => {
+  if (score >= 80) return '#059669'
+  if (score >= 50) return '#D97706'
+  return '#DC2626'
+}
 </script>
 
 <style scoped>
-.analysis-dialog :deep(.el-dialog__header) {
-  border-bottom: 1px solid var(--color-border);
-  padding-bottom: var(--space-3);
+/* ====== Overlay ====== */
+.sa-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(15,23,42,0.4);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  padding: 20px;
 }
 
-.analysis-content {
-  max-height: 60vh;
+/* ====== Panel ====== */
+.sa-panel {
+  width: 100%;
+  max-width: 720px;
+  max-height: 85vh;
+  background: #FFFFFF;
+  border-radius: 28px;
+  box-shadow:
+    0 32px 80px rgba(15,23,42,0.15),
+    0 4px 20px rgba(15,23,42,0.05);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ====== Header ====== */
+.sa-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 32px 36px 24px;
+  border-bottom: 1px solid #F1F5F9;
+}
+
+.sa-header__name {
+  margin: 0 0 10px 0;
+  font-size: 26px;
+  font-weight: 900;
+  color: #0F172A;
+  letter-spacing: -1px;
+}
+
+.sa-header__meta {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.sa-meta-chip {
+  padding: 4px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #64748B;
+  background: #F8FAFC;
+  border-radius: 8px;
+}
+
+.sa-meta-chip--mono {
+  font-family: var(--font-family-mono);
+  color: #334155;
+  background: #F1F5F9;
+}
+
+.sa-close {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  cursor: pointer;
+  color: #94A3B8;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.sa-close:hover {
+  background: #FEF2F2;
+  border-color: #FECACA;
+  color: #DC2626;
+  transform: rotate(90deg);
+}
+
+/* ====== Body ====== */
+.sa-body {
+  flex: 1;
   overflow-y: auto;
+  padding: 28px 36px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
 }
 
-.school-header {
+.sa-body::-webkit-scrollbar { width: 4px; }
+.sa-body::-webkit-scrollbar-thumb { background: #E2E8F0; border-radius: 2px; }
+
+/* ====== Loading State ====== */
+.sa-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 60px 20px;
   text-align: center;
-  padding-bottom: var(--space-5);
-  border-bottom: 1px solid var(--color-border);
-  margin-bottom: var(--space-5);
 }
 
-.school-name {
-  margin: 0 0 var(--space-3) 0;
-  font-size: var(--text-2xl);
-  font-weight: var(--font-bold);
-  color: var(--color-text-primary);
+.sa-loading__spinner {
+  animation: spin 1.2s linear infinite;
 }
 
-.school-tags {
-  display: flex;
-  justify-content: center;
-  gap: var(--space-2);
-}
-
-.match-assessment {
-  background: var(--color-slate-50);
-  border-radius: var(--radius-xl);
-  padding: var(--space-4);
-  margin-bottom: var(--space-5);
-  text-align: center;
-  border: 1px solid var(--color-border-light);
-}
-
-.assessment-header {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: var(--space-3);
-}
-
-.assessment-label {
-  font-size: var(--text-sm);
-  color: var(--color-text-secondary);
-}
-
-.assessment-value {
-  font-size: var(--text-xl);
-  font-weight: var(--font-bold);
-}
-
-.analysis-section {
-  margin-bottom: var(--space-4);
-  padding: var(--space-4);
-  border-radius: var(--radius-xl);
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-}
-
-.analysis-section.match {
-  background: var(--color-success-bg);
-  border-color: var(--color-success-light);
-}
-
-.analysis-section.risk {
-  background: var(--color-warning-bg);
-  border-color: var(--color-warning-light);
-}
-
-.analysis-section.suggestion {
-  background: var(--color-info-bg);
-  border-color: var(--color-info-light);
-}
-
-.section-header {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  font-size: var(--text-base);
-  font-weight: var(--font-semibold);
-  color: var(--color-text-primary);
-  margin-bottom: var(--space-3);
-}
-
-.section-icon {
-  width: 28px;
-  height: 28px;
-  border-radius: var(--radius-md);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.section-icon.success { background: var(--color-success); color: white; }
-.section-icon.warning { background: var(--color-warning); color: white; }
-.section-icon.info { background: var(--color-info); color: white; }
-
-.analysis-list {
+.sa-loading__text {
   margin: 0;
-  padding-left: var(--space-6);
-  color: var(--color-text-secondary);
-  line-height: var(--leading-relaxed);
+  font-size: 16px;
+  font-weight: 700;
+  color: #334155;
 }
 
-.analysis-list li { margin-bottom: var(--space-2); }
-
-.follow-up-section {
-  margin-top: var(--space-6);
-  padding-top: var(--space-5);
-  border-top: 1px solid var(--color-border);
-}
-
-.input-box {
-  background: var(--color-surface);
-  border-radius: var(--radius-full);
-  border: 1px solid var(--color-border);
-  box-shadow: var(--shadow-sm);
-  transition: all var(--transition-normal);
-  padding: 4px;
-}
-
-.input-box.is-focused {
-  border-color: var(--color-solid);
-  box-shadow: var(--shadow-md), 0 0 0 3px rgba(15, 23, 42, 0.08);
-}
-
-.follow-up-input :deep(.el-input__wrapper) {
-  border-radius: var(--radius-full);
-  box-shadow: none;
-  background: transparent;
-}
-
-.follow-up-input :deep(.el-input-group__append) {
-  border-radius: var(--radius-full);
-  background: var(--color-solid);
-  border-color: transparent;
-  margin-left: var(--space-1);
-}
-
-.follow-up-input :deep(.el-input-group__append .el-button) {
-  color: white;
-  border: none;
-  background: transparent;
-  transition: transform var(--transition-fast);
-}
-
-.follow-up-input :deep(.el-input-group__append .el-button:hover) {
-  transform: translateY(-1px);
-}
-
-.follow-up-response {
-  margin-top: var(--space-4);
-  padding: var(--space-4);
-  background: var(--color-slate-50);
-  border-radius: var(--radius-lg);
-  border-left: 3px solid var(--color-solid);
-}
-
-.response-header {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  margin-bottom: var(--space-2);
-  color: var(--color-slate-600);
-  font-size: var(--text-xs);
-  font-weight: var(--font-semibold);
-}
-
-.response-text {
+.sa-loading__sub {
   margin: 0;
-  font-size: var(--text-sm);
-  color: var(--color-text-secondary);
-  line-height: var(--leading-normal);
-}
-
-/* ====== 加载状态 ====== */
-.analysis-loading {
-  min-height: 300px;
-}
-
-/* ====== 流式输出样式 ====== */
-.streaming-content {
-  margin-top: var(--space-4);
-}
-
-.streaming-label {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  font-size: var(--text-xs);
-  font-weight: var(--font-semibold);
-  margin-bottom: var(--space-3);
-}
-
-.stream-icon {
-  animation: spin 1s linear infinite;
+  font-size: 13px;
+  color: #94A3B8;
 }
 
 @keyframes spin {
@@ -528,79 +464,308 @@ watch(() => props.modelValue, (val) => {
   to { transform: rotate(360deg); }
 }
 
-.streaming-text {
-  max-height: 200px;
-  overflow-y: auto;
-  background: var(--color-background-alt);
-  border-radius: var(--radius-md);
-  padding: var(--space-3);
-  border: 1px solid var(--color-border-light);
+.spin-svg,
+.spin-mini {
+  animation: spin 1s linear infinite;
 }
 
-.streaming-text pre {
+/* ====== Sections ====== */
+.sa-section {
+  position: relative;
+  padding-left: 18px;
+}
+
+.sa-section::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 6px;
+  bottom: 6px;
+  width: 3px;
+  border-radius: 2px;
+}
+
+.sa-section--prob::before { background: #059669; }
+.sa-section--match::before { background: #D97706; }
+.sa-section--risk::before { background: #DC2626; }
+.sa-section--suggest::before { background: #0284C7; }
+
+.sa-section__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: #334155;
+}
+
+.sa-icon {
+  font-size: 14px;
+  line-height: 1;
+}
+
+/* ====== Probability Bar ====== */
+.sa-prob-bar {
+  position: relative;
+  height: 8px;
+  background: #F1F5F9;
+  border-radius: 100px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.sa-prob-fill {
+  height: 100%;
+  background: var(--prob-color);
+  border-radius: 100px;
+  transition: width 1s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sa-prob-label {
+  font-size: 12px;
+  font-weight: 700;
+  font-family: var(--font-family-mono);
+  color: var(--prob-color);
+}
+
+/* ====== Lists ====== */
+.sa-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sa-li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 13px;
+  line-height: 1.65;
+  color: #475569;
+}
+
+.sa-li--risk {
+  color: #991B1B;
+}
+
+.sa-li__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+  margin-top: 7px;
+}
+
+.sa-li__num {
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #F1F5F9;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 800;
+  color: #64748B;
+  font-family: var(--font-family-mono);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* ====== Stream Section ====== */
+.sa-stream {
+  padding: 18px 20px;
+  background: #FFFBEB;
+  border: 1px solid rgba(217,119,6,0.1);
+  border-radius: 14px;
+}
+
+.sa-stream__head {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 12px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #B45309;
+}
+
+.sa-stream__body {
   margin: 0;
   font-family: var(--font-family-mono);
-  font-size: var(--text-xs);
-  line-height: var(--leading-relaxed);
+  font-size: 11px;
+  line-height: 1.75;
+  color: #78350F;
   white-space: pre-wrap;
   word-break: break-all;
-  color: var(--color-slate-700);
+  max-height: 160px;
+  overflow-y: auto;
+  background: rgba(255,255,255,0.5);
+  padding: 12px;
+  border-radius: 8px;
 }
 
-.streaming-text::-webkit-scrollbar { width: 4px; }
-.streaming-text::-webkit-scrollbar-thumb { background: var(--color-slate-300); border-radius: 2px; }
+.sa-stream__body::-webkit-scrollbar { width: 3px; }
 
-/* 思考过程 — 用 info 色系区分 */
-.reasoning-section { margin-bottom: var(--space-4); }
-
-.reasoning-label { color: var(--color-info); }
-
-.reasoning-text {
-  background: var(--color-info-bg);
-  border-color: var(--color-info-light);
+/* ====== Footer ====== */
+.sa-footer {
+  padding: 22px 36px 28px;
+  border-top: 1px solid #F1F5F9;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
 
-/* 正式输出 — 用 success 色系区分 */
-.main-content-section { margin-top: 0; }
-
-.main-content-section.has-reasoning {
-  border-top: 1px dashed var(--color-border-light);
-  padding-top: var(--space-4);
-  margin-top: var(--space-4);
+.sa-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
 }
 
-.main-label { color: var(--color-success); }
-
-.main-text {
-  background: var(--color-success-bg);
-  border-color: var(--color-success-light);
+.sa-input-icon {
+  position: absolute;
+  left: 16px;
+  pointer-events: none;
 }
 
-/* ====== 骨架屏 (无动画，静态占位) ====== */
-.skeleton-loading { padding: var(--space-4); }
-
-.skeleton-section {
-  margin-bottom: var(--space-4);
-  padding: var(--space-4);
-  border-radius: var(--radius-xl);
-  background: var(--color-background-alt);
-  border: 1px solid var(--color-border-light);
+.sa-input {
+  width: 100%;
+  padding: 14px 16px 14px 44px;
+  background: #F8FAFC;
+  border: 1.5px solid #E2E8F0;
+  border-radius: 14px;
+  font-family: var(--font-family-base);
+  font-size: 14px;
+  color: #334155;
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.skeleton-section-title {
-  height: 20px;
-  width: 80px;
-  margin-bottom: var(--space-3);
-  background: var(--color-slate-200);
-  border-radius: var(--radius-sm);
+.sa-input::placeholder { color: #CBD5E1; }
+.sa-input:focus {
+  outline: none;
+  border-color: #D97706;
+  background: #FFFFFF;
+  box-shadow: 0 0 0 4px rgba(217,119,6,0.08);
+}
+.sa-input:disabled { opacity: 0.55; cursor: not-allowed; }
+
+.sa-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
 }
 
-.skeleton-line {
-  height: 14px;
-  background: var(--color-slate-200);
-  border-radius: var(--radius-md);
-  margin-bottom: var(--space-2);
+.sa-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 11px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  white-space: nowrap;
 }
 
-.skeleton-line.short { width: 60%; }
+.sa-btn--ghost {
+  background: transparent;
+  color: #94A3B8;
+}
+.sa-btn--ghost:hover { color: #0F172A; background: #F8FAFC; }
+
+.sa-btn--primary {
+  background: #0F172A;
+  color: #fff;
+}
+.sa-btn--primary:hover {
+  background: #1E293B;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(15,23,42,0.18);
+}
+
+.sa-btn--accent {
+  background: linear-gradient(135deg, #D97706, #B45309);
+  color: #fff;
+}
+.sa-btn--accent:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 22px rgba(217,119,6,0.25);
+}
+.sa-btn--accent:disabled { opacity: 0.45; cursor: not-allowed; }
+
+/* ====== Transitions ====== */
+.modal-enter-active { transition: opacity 0.35s ease; }
+.modal-leave-active { transition: opacity 0.25s ease; }
+.modal-enter-from,
+.modal-leave-to { opacity: 0; }
+
+.panel-enter-active { transition: all 0.45s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.panel-leave-active { transition: all 0.25s ease; }
+.panel-enter-from {
+  opacity: 0;
+  transform: scale(0.95) translateY(20px);
+}
+.panel-leave-to {
+  opacity: 0;
+  transform: scale(0.98) translateY(10px);
+}
+
+.stream-fade-enter-active { transition: all 0.45s ease; }
+.stream-fade-enter-from { opacity: 0; transform: translateY(12px); }
+
+/* ====== Responsive ====== */
+@media (max-width: 768px) {
+  .sa-overlay {
+    padding: 12px;
+    align-items: flex-end;
+  }
+
+  .sa-panel {
+    max-height: 90vh;
+    border-radius: 24px 24px 0 0;
+  }
+
+  .sa-header {
+    padding: 24px 24px 18px;
+  }
+
+  .sa-header__name {
+    font-size: 22px;
+  }
+
+  .sa-body {
+    padding: 20px 24px;
+    gap: 20px;
+  }
+
+  .sa-footer {
+    padding: 18px 24px 24px;
+  }
+
+  .sa-actions {
+    flex-wrap: wrap;
+  }
+
+  .sa-btn {
+    flex: 1;
+    justify-content: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition-duration: 0.01ms !important;
+  }
+}
 </style>

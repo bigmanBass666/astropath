@@ -106,7 +106,7 @@ export function useDatabaseState() {
   }
 
   function formatMajorSalary(range: string) {
-    const domestic = range.match(/(¥[\dK\-]+\/[^\s$]+)/)
+    const domestic = range.match(/(¥[\dK-]+\/[^\s$]+)/)
     return domestic ? domestic[1].trim() : range.split(/\s/)[0]
   }
 

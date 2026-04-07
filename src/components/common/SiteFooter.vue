@@ -294,16 +294,6 @@ defineEmits(['show-guide', 'show-contact'])
   overflow: hidden;
 }
 
-.site-footer ::selection {
-  background-color: var(--color-accent-light);
-  color: var(--color-solid);
-}
-
-.site-footer ::-moz-selection {
-  background-color: var(--color-accent-light);
-  color: var(--color-solid);
-}
-
 .footer-glow-line {
   position: absolute;
   top: 0;

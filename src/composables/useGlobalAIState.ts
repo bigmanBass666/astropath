@@ -279,7 +279,6 @@ export function useGlobalAIState() {
       queuePosition: 0
     }
     globalState.tasks[taskId] = task
-    console.log('[GlobalAIState] initTask:', { taskId, taskKeys: Object.keys(globalState.tasks) })
     scheduleSave()
     return task
   }
@@ -406,7 +405,6 @@ export function useGlobalAIState() {
     if (task) {
       task.content += content
       task.timestamp = Date.now()
-      console.log('[GlobalAIState] appendContent:', { taskId, contentLength: task.content.length, addedLength: content.length })
       if (collapseReasoning && task.reasoning) {
         task.showReasoning = false
       }

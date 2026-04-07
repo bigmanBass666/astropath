@@ -534,32 +534,27 @@ function processContentWithThinkTags(content, isInsideThinkTag, thinkBuffer) {
       const thinkEndIdx = remainingBuffer.indexOf('</think>')
 
       if (thinkEndIdx === -1) {
-        // 没有找到结束标签，检查是否是部分结束标签
-        const partialEndMatch = remainingBuffer.match(/<\/?t?h?i?n?k?$/)
-        if (partialEndMatch && remainingBuffer.length < 10) {
-          // 可能是部分结束标签，保留最后几个字符到下一个 chunk
-          // 前面的内容可以立即输出
-          const outputContent = remainingBuffer.slice(0, -partialEndMatch[0].length)
+        // 检查尾部是否像 </think> 标签的前缀
+        const TAG_PREFIXES = ['<', '</', '</t', '</th', '</thi', '</thin', '</think', '</think>']
+        const tailLooksLikeTag = TAG_PREFIXES.some(prefix => remainingBuffer.endsWith(prefix))
+
+        if (tailLooksLikeTag && remainingBuffer.length <= 8) {
+          // 尾部像标签前缀且长度较短，保留到下一个 chunk 等待完整标签
+          const matchedPrefix = TAG_PREFIXES.find(p => remainingBuffer.endsWith(p))
+          const matchLen = matchedPrefix ? matchedPrefix.length : 0
+          const outputContent = remainingBuffer.slice(0, -matchLen)
           if (outputContent.trim()) {
             chunks.push({ type: 'reasoning', content: outputContent })
           }
-          thinkBuffer = partialEndMatch[0]
+          thinkBuffer = remainingBuffer.slice(-matchLen)
           remainingBuffer = ''
           break
         }
-        // 没有找到结束标签，立即输出当前 think 内容，保留少量内容到缓冲区
-        // 这样可以实现流式输出思考过程
-        if (remainingBuffer.length > 5) {
-          // 保留最后5个字符，防止跨 chunk 的标签被截断
-          const outputContent = remainingBuffer.slice(0, -5)
-          const keepBuffer = remainingBuffer.slice(-5)
-          if (outputContent.trim()) {
-            chunks.push({ type: 'reasoning', content: outputContent })
-          }
-          thinkBuffer = keepBuffer
-        } else {
-          thinkBuffer = remainingBuffer
+        // 尾部不像标签 → 全部立即输出，不保留缓冲区
+        if (remainingBuffer.trim()) {
+          chunks.push({ type: 'reasoning', content: remainingBuffer })
         }
+        thinkBuffer = ''
         remainingBuffer = ''
         break
       } else {

@@ -52,7 +52,7 @@
         <!-- Metrics -->
         <div class="hero-metrics stagger-item">
           <div class="metric-item">
-            <span class="metric-num">55+</span>
+            <span class="metric-num">{{ SCHOOL_COUNT_DISPLAY }}</span>
             <span class="metric-label">精选院校</span>
           </div>
           <div class="metric-divider" />
@@ -66,12 +66,6 @@
             <span class="metric-label">智能协同</span>
           </div>
         </div>
-      </div>
-
-      <!-- Scroll Hint -->
-      <div class="scroll-hint">
-        <span class="scroll-text">向下滚动探索</span>
-        <div class="scroll-line" />
       </div>
     </section>
 
@@ -139,28 +133,29 @@
 
             <div class="form-group">
               <label class="form-label">在读院校</label>
-              <div class="select-wrapper">
-                <select
-                  v-model="form.basic.university"
-                  class="form-select"
-                >
-                  <option value="">
-                    选择类型
-                  </option>
-                  <option value="985">
-                    985 院校
-                  </option>
-                  <option value="211">
-                    211 院校
-                  </option>
-                  <option value="regular">
-                    普通本科
-                  </option>
-                  <option value="overseas">
-                    海外院校
-                  </option>
-                </select>
-              </div>
+              <el-select
+                v-model="form.basic.university"
+                placeholder="选择院校类型"
+                class="university-select"
+                size="large"
+              >
+                <el-option
+                  label="985 院校"
+                  value="985"
+                />
+                <el-option
+                  label="211 院校"
+                  value="211"
+                />
+                <el-option
+                  label="普通本科"
+                  value="regular"
+                />
+                <el-option
+                  label="海外院校"
+                  value="overseas"
+                />
+              </el-select>
             </div>
           </div>
 
@@ -312,7 +307,7 @@
           </div>
         </div>
 
-        <!-- Score Input -->
+        <!-- Score Input & Research -->
         <div class="form-row form-row--split">
           <div class="form-group">
             <label class="form-label">均分</label>
@@ -330,9 +325,31 @@
 
           <div class="form-group">
             <label class="form-label">科研经历</label>
+            <!-- Research List -->
+            <div
+              v-if="form.academic.research.length > 0"
+              class="exp-list-compact"
+            >
+              <div
+                v-for="(item, idx) in form.academic.research"
+                :key="idx"
+                class="exp-item-compact"
+              >
+                <div class="exp-info-compact">
+                  <span class="exp-title">{{ item.name || '未命名项目' }}</span>
+                  <span class="exp-meta">{{ item.role || '未指定角色' }} · {{ item.duration || '未指定时长' }}</span>
+                </div>
+                <button
+                  class="exp-delete"
+                  @click="removeResearch(idx)"
+                >
+                  ×
+                </button>
+              </div>
+            </div>
             <button
               class="btn-add"
-              @click="addResearch"
+              @click="showResearchDialog = true"
             >
               <svg
                 viewBox="0 0 24 24"
@@ -429,7 +446,7 @@
             >
               <div class="exp-info">
                 <span class="exp-company">{{ item.company }}</span>
-                <span class="exp-role">{{ item.role }}</span>
+                <span class="exp-role">{{ item.position }}</span>
                 <span class="exp-duration">{{ item.duration }}</span>
               </div>
               <button
@@ -441,7 +458,7 @@
             </div>
             <button
               class="btn-add-exp"
-              @click="addInternship"
+              @click="showInternshipDialog = true"
             >
               <svg
                 viewBox="0 0 24 24"
@@ -459,9 +476,26 @@
             v-else-if="activeTab === '竞赛'"
             class="exp-list"
           >
+            <div
+              v-for="(item, idx) in form.practice.competitions"
+              :key="idx"
+              class="exp-item"
+            >
+              <div class="exp-info">
+                <span class="exp-company">{{ item.name }}</span>
+                <span class="exp-role">{{ item.level }}-{{ item.award }}</span>
+                <span class="exp-duration">{{ item.year }}</span>
+              </div>
+              <button
+                class="exp-delete"
+                @click="removeCompetition(idx)"
+              >
+                ×
+              </button>
+            </div>
             <button
               class="btn-add-exp"
-              @click="addCompetition"
+              @click="showCompetitionDialog = true"
             >
               <svg
                 viewBox="0 0 24 24"
@@ -479,9 +513,26 @@
             v-else
             class="exp-list"
           >
+            <div
+              v-for="(item, idx) in form.practice.volunteers"
+              :key="idx"
+              class="exp-item"
+            >
+              <div class="exp-info">
+                <span class="exp-company">{{ item.organization }}</span>
+                <span class="exp-role">{{ item.role }}</span>
+                <span class="exp-duration">{{ item.hours }}</span>
+              </div>
+              <button
+                class="exp-delete"
+                @click="removeVolunteer(idx)"
+              >
+                ×
+              </button>
+            </div>
             <button
               class="btn-add-exp"
-              @click="addVolunteer"
+              @click="showVolunteerDialog = true"
             >
               <svg
                 viewBox="0 0 24 24"
@@ -670,12 +721,50 @@
             v-show="showAiSection"
             class="ai-body"
           >
+            <!-- Error State -->
+            <div
+              v-if="aiStream.error"
+              class="ai-error"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <circle
+                  cx="12"
+                  cy="12"
+                  r="10"
+                />
+                <line
+                  x1="12"
+                  y1="8"
+                  x2="12"
+                  y2="12"
+                />
+                <line
+                  x1="12"
+                  y1="16"
+                  x2="12.01"
+                  y2="16"
+                />
+              </svg>
+              <p>{{ aiStream.error }}</p>
+              <button
+                class="btn-retry"
+                @click="generateReport"
+              >
+                重试
+              </button>
+            </div>
             <!-- Content -->
             <div
-              v-if="aiStream.content"
+              v-else-if="aiStream.content"
               class="ai-content"
               v-html="renderAiContent(aiStream.content)"
             />
+            <!-- Loading State -->
             <div
               v-else-if="aiStream.isLoading"
               class="ai-loading"
@@ -684,6 +773,13 @@
                 <span /><span /><span />
               </div>
               <p>AI 正在分析你的背景...</p>
+            </div>
+            <!-- Empty State -->
+            <div
+              v-else
+              class="ai-empty"
+            >
+              <p>点击"生成 AI 分析报告"获取个性化评估</p>
             </div>
           </div>
         </div>
@@ -734,12 +830,323 @@
         @click="goToScene(i - 1)"
       />
     </nav>
+
+    <!-- ═══════════════ DIALOGS ═══════════════ -->
+    <!-- Research Dialog -->
+    <el-dialog
+      v-model="showResearchDialog"
+      title="添加科研经历"
+      width="500px"
+      class="experience-dialog"
+      :close-on-click-modal="false"
+    >
+      <div class="dialog-form">
+        <div class="dialog-form-item">
+          <label>项目名称</label>
+          <input
+            v-model="researchForm.name"
+            type="text"
+            placeholder="例如：基于深度学习的图像识别研究"
+            class="dialog-input"
+          >
+        </div>
+        <div class="dialog-form-row">
+          <div class="dialog-form-item">
+            <label>担任角色</label>
+            <input
+              v-model="researchForm.role"
+              type="text"
+              placeholder="例如：项目负责人"
+              class="dialog-input"
+            >
+          </div>
+          <div class="dialog-form-item">
+            <label>项目时长</label>
+            <input
+              v-model="researchForm.duration"
+              type="text"
+              placeholder="例如：6个月"
+              class="dialog-input"
+            >
+          </div>
+        </div>
+        <div class="dialog-form-item">
+          <label>项目描述</label>
+          <textarea
+            v-model="researchForm.description"
+            rows="3"
+            placeholder="简要描述项目内容、你的贡献和成果..."
+            class="dialog-textarea"
+          />
+        </div>
+      </div>
+      <template #footer>
+        <div class="dialog-footer">
+          <button
+            class="btn-dialog-cancel"
+            @click="showResearchDialog = false"
+          >
+            取消
+          </button>
+          <button
+            class="btn-dialog-confirm"
+            :disabled="!researchForm.name.trim()"
+            @click="addResearch"
+          >
+            添加
+          </button>
+        </div>
+      </template>
+    </el-dialog>
+
+    <!-- Internship Dialog -->
+    <el-dialog
+      v-model="showInternshipDialog"
+      title="添加实习经历"
+      width="500px"
+      class="experience-dialog"
+      :close-on-click-modal="false"
+    >
+      <div class="dialog-form">
+        <div class="dialog-form-item">
+          <label>公司名称</label>
+          <input
+            v-model="internshipForm.company"
+            type="text"
+            placeholder="例如：腾讯科技"
+            class="dialog-input"
+          >
+        </div>
+        <div class="dialog-form-row">
+          <div class="dialog-form-item">
+            <label>职位</label>
+            <input
+              v-model="internshipForm.position"
+              type="text"
+              placeholder="例如：产品经理实习生"
+              class="dialog-input"
+            >
+          </div>
+          <div class="dialog-form-item">
+            <label>实习时长</label>
+            <input
+              v-model="internshipForm.duration"
+              type="text"
+              placeholder="例如：3个月"
+              class="dialog-input"
+            >
+          </div>
+        </div>
+        <div class="dialog-form-item">
+          <label>工作内容</label>
+          <textarea
+            v-model="internshipForm.description"
+            rows="3"
+            placeholder="简要描述工作职责和成果..."
+            class="dialog-textarea"
+          />
+        </div>
+      </div>
+      <template #footer>
+        <div class="dialog-footer">
+          <button
+            class="btn-dialog-cancel"
+            @click="showInternshipDialog = false"
+          >
+            取消
+          </button>
+          <button
+            class="btn-dialog-confirm"
+            :disabled="!internshipForm.company.trim()"
+            @click="addInternship"
+          >
+            添加
+          </button>
+        </div>
+      </template>
+    </el-dialog>
+
+    <!-- Competition Dialog -->
+    <el-dialog
+      v-model="showCompetitionDialog"
+      title="添加竞赛经历"
+      width="500px"
+      class="experience-dialog"
+      :close-on-click-modal="false"
+    >
+      <div class="dialog-form">
+        <div class="dialog-form-item">
+          <label>竞赛名称</label>
+          <input
+            v-model="competitionForm.name"
+            type="text"
+            placeholder="例如：全国大学生数学建模竞赛"
+            class="dialog-input"
+          >
+        </div>
+        <div class="dialog-form-row">
+          <div class="dialog-form-item">
+            <label>竞赛级别</label>
+            <el-select
+              v-model="competitionForm.level"
+              placeholder="选择级别"
+              class="dialog-select"
+            >
+              <el-option
+                label="国家级"
+                value="国家级"
+              />
+              <el-option
+                label="省级"
+                value="省级"
+              />
+              <el-option
+                label="校级"
+                value="校级"
+              />
+              <el-option
+                label="国际级"
+                value="国际级"
+              />
+            </el-select>
+          </div>
+          <div class="dialog-form-item">
+            <label>获奖等级</label>
+            <el-select
+              v-model="competitionForm.award"
+              placeholder="选择奖项"
+              class="dialog-select"
+            >
+              <el-option
+                label="一等奖"
+                value="一等奖"
+              />
+              <el-option
+                label="二等奖"
+                value="二等奖"
+              />
+              <el-option
+                label="三等奖"
+                value="三等奖"
+              />
+              <el-option
+                label="优秀奖"
+                value="优秀奖"
+              />
+              <el-option
+                label="特等奖"
+                value="特等奖"
+              />
+            </el-select>
+          </div>
+        </div>
+        <div class="dialog-form-item">
+          <label>获奖年份</label>
+          <input
+            v-model="competitionForm.year"
+            type="text"
+            placeholder="例如：2024"
+            class="dialog-input"
+          >
+        </div>
+      </div>
+      <template #footer>
+        <div class="dialog-footer">
+          <button
+            class="btn-dialog-cancel"
+            @click="showCompetitionDialog = false"
+          >
+            取消
+          </button>
+          <button
+            class="btn-dialog-confirm"
+            :disabled="!competitionForm.name.trim()"
+            @click="addCompetition"
+          >
+            添加
+          </button>
+        </div>
+      </template>
+    </el-dialog>
+
+    <!-- Volunteer Dialog -->
+    <el-dialog
+      v-model="showVolunteerDialog"
+      title="添加志愿服务"
+      width="500px"
+      class="experience-dialog"
+      :close-on-click-modal="false"
+    >
+      <div class="dialog-form">
+        <div class="dialog-form-item">
+          <label>组织名称</label>
+          <input
+            v-model="volunteerForm.organization"
+            type="text"
+            placeholder="例如：红十字会"
+            class="dialog-input"
+          >
+        </div>
+        <div class="dialog-form-row">
+          <div class="dialog-form-item">
+            <label>担任角色</label>
+            <input
+              v-model="volunteerForm.role"
+              type="text"
+              placeholder="例如：志愿者"
+              class="dialog-input"
+            >
+          </div>
+          <div class="dialog-form-item">
+            <label>服务时长</label>
+            <input
+              v-model="volunteerForm.hours"
+              type="text"
+              placeholder="例如：50小时"
+              class="dialog-input"
+            >
+          </div>
+        </div>
+        <div class="dialog-form-item">
+          <label>服务内容</label>
+          <textarea
+            v-model="volunteerForm.description"
+            rows="3"
+            placeholder="简要描述志愿服务内容..."
+            class="dialog-textarea"
+          />
+        </div>
+      </div>
+      <template #footer>
+        <div class="dialog-footer">
+          <button
+            class="btn-dialog-cancel"
+            @click="showVolunteerDialog = false"
+          >
+            取消
+          </button>
+          <button
+            class="btn-dialog-confirm"
+            :disabled="!volunteerForm.organization.trim()"
+            @click="addVolunteer"
+          >
+            添加
+          </button>
+        </div>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
 import { ref, reactive, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import * as echarts from 'echarts'
+import { useAIStream } from '@/composables/useAIStream'
+import { buildAssessmentPrompt } from '@/utils/ai-api'
+import { marked } from 'marked'
+import DOMPurify from 'dompurify'
+import { useAssessmentState } from '@/composables/useAssessmentState'
+import { SCHOOL_COUNT_DISPLAY } from '@/data/schoolsData'
 
 // ═══════════════ STATE ═══════════════
 const currentScene = ref(0)
@@ -747,25 +1154,17 @@ const particleCanvas = ref(null)
 const radarRef = ref(null)
 let radarChart = null
 
-// Form State
+// Use global assessment state
+const assessmentState = useAssessmentState()
+
+// Form State - sync with global state
 const form = reactive({
-  basic: {
-    name: '',
-    age: 22,
-    university: '',
-    gpa: 3.0,
-    language: ''
-  },
-  academic: {
-    degree: '本科',
-    majors: [],
-    averageScore: 85,
-    research: []
-  },
+  basic: { ...assessmentState.form.value.basic },
+  academic: { ...assessmentState.form.value.academic, majors: [...assessmentState.form.value.academic.majors], research: [...assessmentState.form.value.academic.research] },
   practice: {
-    internships: [],
-    competitions: [],
-    volunteers: []
+    internships: [...assessmentState.form.value.practice.internships],
+    competitions: [...assessmentState.form.value.practice.competitions],
+    volunteers: [...assessmentState.form.value.practice.volunteers]
   }
 })
 
@@ -775,12 +1174,49 @@ const showAiSection = ref(true)
 const animatedScore = ref('0.0')
 let _scoreGen = 0
 
+// Dialog States
+const showResearchDialog = ref(false)
+const showInternshipDialog = ref(false)
+const showCompetitionDialog = ref(false)
+const showVolunteerDialog = ref(false)
+
+// Form Models for Dialogs
+const researchForm = reactive({ name: '', role: '', duration: '', description: '' })
+const internshipForm = reactive({ company: '', position: '', duration: '', description: '' })
+const competitionForm = reactive({ name: '', level: '', award: '', year: '' })
+const volunteerForm = reactive({ organization: '', role: '', hours: '', description: '' })
+
 // AI Stream State
 const aiStream = reactive({
   isLoading: false,
   isStreaming: false,
   content: '',
   error: null
+})
+
+// Initialize AI Stream for assessment
+const assessmentAI = useAIStream({
+  taskId: 'assessment-report',
+  enableThinking: true,
+  onStateChange: (state) => {
+    aiStream.isStreaming = state === 'streaming' || state === 'thinking'
+    aiStream.isLoading = state === 'connecting' || state === 'thinking'
+  },
+  onStream: (content) => {
+    aiStream.content = content
+  },
+  onComplete: (content) => {
+    aiStream.content = content
+    aiStream.isStreaming = false
+    aiStream.isLoading = false
+    // Save report to global state
+    assessmentState.saveReport(content)
+  },
+  onError: (error) => {
+    aiStream.error = error
+    aiStream.isStreaming = false
+    aiStream.isLoading = false
+  }
 })
 
 // Providers
@@ -819,6 +1255,8 @@ const isFormComplete = computed(() => {
 // ═══════════════ METHODS ═══════════════
 function goToScene(index) {
   currentScene.value = index
+  // Save current scene to global state
+  assessmentState.saveScene(index)
   if (index === 4) {
     nextTick(() => {
       initRadarChart()
@@ -834,11 +1272,41 @@ function toggleMajor(major) {
 }
 
 function addResearch() {
-  form.academic.research.push({ title: '', description: '' })
+  if (researchForm.name.trim()) {
+    form.academic.research.push({
+      name: researchForm.name,
+      role: researchForm.role,
+      duration: researchForm.duration,
+      description: researchForm.description
+    })
+    // Reset form
+    researchForm.name = ''
+    researchForm.role = ''
+    researchForm.duration = ''
+    researchForm.description = ''
+    showResearchDialog.value = false
+  }
+}
+
+function removeResearch(idx) {
+  form.academic.research.splice(idx, 1)
 }
 
 function addInternship() {
-  form.practice.internships.push({ company: '示例公司', role: '实习生', duration: '3个月' })
+  if (internshipForm.company.trim()) {
+    form.practice.internships.push({
+      company: internshipForm.company,
+      position: internshipForm.position,
+      duration: internshipForm.duration,
+      description: internshipForm.description
+    })
+    // Reset form
+    internshipForm.company = ''
+    internshipForm.position = ''
+    internshipForm.duration = ''
+    internshipForm.description = ''
+    showInternshipDialog.value = false
+  }
 }
 
 function removeInternship(idx) {
@@ -846,11 +1314,45 @@ function removeInternship(idx) {
 }
 
 function addCompetition() {
-  form.practice.competitions.push({ name: '', award: '' })
+  if (competitionForm.name.trim()) {
+    form.practice.competitions.push({
+      name: competitionForm.name,
+      level: competitionForm.level,
+      award: competitionForm.award,
+      year: competitionForm.year
+    })
+    // Reset form
+    competitionForm.name = ''
+    competitionForm.level = ''
+    competitionForm.award = ''
+    competitionForm.year = ''
+    showCompetitionDialog.value = false
+  }
+}
+
+function removeCompetition(idx) {
+  form.practice.competitions.splice(idx, 1)
 }
 
 function addVolunteer() {
-  form.practice.volunteers.push({ organization: '', hours: 0 })
+  if (volunteerForm.organization.trim()) {
+    form.practice.volunteers.push({
+      organization: volunteerForm.organization,
+      role: volunteerForm.role,
+      hours: volunteerForm.hours,
+      description: volunteerForm.description
+    })
+    // Reset form
+    volunteerForm.organization = ''
+    volunteerForm.role = ''
+    volunteerForm.hours = ''
+    volunteerForm.description = ''
+    showVolunteerDialog.value = false
+  }
+}
+
+function removeVolunteer(idx) {
+  form.practice.volunteers.splice(idx, 1)
 }
 
 function animateScore(target) {
@@ -924,21 +1426,57 @@ function initRadarChart() {
   })
 }
 
-function generateReport() {
+async function generateReport() {
   goToScene(4)
   aiStream.isLoading = true
   aiStream.isStreaming = true
+  aiStream.content = ''
+  aiStream.error = null
 
-  // Simulate AI response
-  setTimeout(() => {
+  // Calculate scores for the prompt
+  const scores = {
+    academic: Math.min(form.basic.gpa / 4 * 5, 5),
+    language: 2.5,
+    research: Math.min(form.academic.research.length * 1.5, 5),
+    practice: Math.min(form.practice.internships.length * 1.2, 5),
+    overall: overallScore.value
+  }
+
+  // Build the assessment prompt
+  const prompt = buildAssessmentPrompt(form, scores)
+
+  // Prepare messages for AI
+  const messages = [
+    { role: 'system', content: '你是一位资深的留学申请顾问，拥有15年申请评估经验。请提供客观、严谨的评估报告。' },
+    { role: 'user', content: prompt }
+  ]
+
+  try {
+    // Use the AI stream to generate the report
+    await assessmentAI.generate(messages, {
+      stream: true,
+      enableThinking: true,
+      temperature: 0.7
+    })
+  } catch (error) {
+    console.error('AI generation failed:', error)
+    aiStream.error = error.message || 'AI 分析生成失败，请稍后重试'
     aiStream.isLoading = false
-    aiStream.content = '## 选校策略建议\n\n基于你的背景分析...'
     aiStream.isStreaming = false
-  }, 2000)
+  }
 }
 
 function renderAiContent(content) {
-  return content
+  if (!content) return ''
+  try {
+    const html = marked(content, {
+      breaks: true,
+      gfm: true
+    })
+    return DOMPurify.sanitize(html)
+  } catch {
+    return content
+  }
 }
 
 function saveReport() {
@@ -952,6 +1490,12 @@ function resetForm() {
   form.academic.majors = []
   form.academic.research = []
   form.practice.internships = []
+  form.practice.competitions = []
+  form.practice.volunteers = []
+  aiStream.content = ''
+  aiStream.error = null
+  // Clear global state
+  assessmentState.resetForm()
   goToScene(0)
 }
 
@@ -1036,9 +1580,49 @@ function initParticles() {
   })
 }
 
+// ═══════════════ WATCHERS ═══════════════
+// Sync local form to global state whenever it changes
+watch(() => form, () => {
+  assessmentState.updateForm({
+    basic: { ...form.basic },
+    academic: {
+      degree: form.academic.degree,
+      majors: [...form.academic.majors],
+      averageScore: form.academic.averageScore,
+      research: [...form.academic.research]
+    },
+    practice: {
+      internships: [...form.practice.internships],
+      competitions: [...form.practice.competitions],
+      volunteers: [...form.practice.volunteers]
+    }
+  })
+}, { deep: true })
+
 // ═══════════════ LIFECYCLE ═══════════════
 onMounted(() => {
   initParticles()
+  // Sync from global state on mount
+  if (assessmentState.hasData.value) {
+    form.basic = { ...assessmentState.form.value.basic }
+    form.academic = { ...assessmentState.form.value.academic, majors: [...assessmentState.form.value.academic.majors], research: [...assessmentState.form.value.academic.research] }
+    form.practice.internships = [...assessmentState.form.value.practice.internships]
+    form.practice.competitions = [...assessmentState.form.value.practice.competitions]
+    form.practice.volunteers = [...assessmentState.form.value.practice.volunteers]
+    console.log('已恢复上次填写的评估数据')
+  }
+  // Restore last scene if user has data and was not on hero page
+  const savedScene = assessmentState.currentScene.value
+  if (savedScene > 0) {
+    currentScene.value = savedScene
+    console.log(`已恢复到上次浏览的页面: Scene ${savedScene}`)
+  }
+  // Restore AI report if exists and we're on results page
+  const savedReport = assessmentState.report.value
+  if (savedReport && savedScene === 4) {
+    aiStream.content = savedReport
+    console.log('已恢复上次的 AI 评估报告')
+  }
 })
 
 onUnmounted(() => {
@@ -1261,38 +1845,6 @@ onUnmounted(() => {
   background: #E2E8F0;
 }
 
-/* Scroll Hint */
-.scroll-hint {
-  position: absolute;
-  bottom: 40px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  opacity: 0.6;
-}
-
-.scroll-text {
-  font-size: 11px;
-  color: #64748B;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-}
-
-.scroll-line {
-  width: 1px;
-  height: 40px;
-  background: linear-gradient(to bottom, #D97706, transparent);
-  animation: scrollLine 1.5s ease-in-out infinite;
-}
-
-@keyframes scrollLine {
-  0%, 100% { transform: scaleY(1); opacity: 1; }
-  50% { transform: scaleY(0.5); opacity: 0.5; }
-}
-
 /* ═══════════════ FORM SCENES ═══════════════ */
 .scene--form {
   background: #fff;
@@ -1375,6 +1927,11 @@ onUnmounted(() => {
   gap: 24px;
 }
 
+.form-row--split {
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
 .form-label {
   font-size: 14px;
   font-weight: 600;
@@ -1451,29 +2008,55 @@ onUnmounted(() => {
   font-family: 'JetBrains Mono', monospace;
 }
 
-/* Select */
-.select-wrapper {
-  position: relative;
+/* University Select - Element Plus Customization */
+.university-select {
+  width: 100%;
 }
 
-.form-select {
-  width: 100%;
-  padding: 14px 40px 14px 18px;
-  border: 1px solid #E2E8F0;
+.university-select :deep(.el-input__wrapper) {
+  padding: 14px 18px;
   border-radius: 12px;
+  box-shadow: 0 0 0 1px #E2E8F0 inset;
+  transition: box-shadow 0.2s, border-color 0.2s;
+}
+
+.university-select :deep(.el-input__wrapper.is-focus) {
+  box-shadow: 0 0 0 1px #D97706 inset, 0 0 0 3px rgba(217, 119, 6, 0.1);
+}
+
+.university-select :deep(.el-input__inner) {
   font-size: 15px;
   color: #0F172A;
-  background: #fff;
-  cursor: pointer;
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748B' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 16px center;
+  height: auto;
 }
 
-.form-select:focus {
-  outline: none;
-  border-color: #D97706;
+.university-select :deep(.el-input__inner::placeholder) {
+  color: #94A3B8;
+}
+
+/* Dropdown menu customization */
+.university-select :deep(.el-select-dropdown) {
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(15, 23, 42, 0.15);
+  border: 1px solid #E2E8F0;
+}
+
+.university-select :deep(.el-select-dropdown__item) {
+  padding: 12px 18px;
+  font-size: 14px;
+  color: #0F172A;
+  transition: all 0.2s;
+}
+
+.university-select :deep(.el-select-dropdown__item:hover) {
+  background: #F8FAFC;
+  color: #D97706;
+}
+
+.university-select :deep(.el-select-dropdown__item.selected) {
+  background: #0F172A;
+  color: #fff;
+  font-weight: 500;
 }
 
 /* GPA Ring */
@@ -1541,6 +2124,10 @@ onUnmounted(() => {
   color: #0F172A;
   margin-bottom: 16px;
   display: block;
+}
+
+.form-section {
+  margin-bottom: 32px;
 }
 
 /* Pill Group */
@@ -1656,6 +2243,41 @@ onUnmounted(() => {
 .btn-add svg {
   width: 16px;
   height: 16px;
+}
+
+/* Compact Experience List (for Scene 2) */
+.exp-list-compact {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.exp-item-compact {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: #F8FAFC;
+  border-radius: 10px;
+  border: 1px solid #E2E8F0;
+}
+
+.exp-info-compact {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.exp-title {
+  font-weight: 600;
+  color: #0F172A;
+  font-size: 14px;
+}
+
+.exp-meta {
+  font-size: 12px;
+  color: #64748B;
 }
 
 /* ═══════════════ EXPERIENCE SCENE ═══════════════ */
@@ -2116,9 +2738,123 @@ onUnmounted(() => {
   color: #334155;
 }
 
+.ai-content :deep(h1) {
+  font-size: 20px;
+  font-weight: 700;
+  color: #0F172A;
+  margin: 24px 0 16px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #E2E8F0;
+}
+
+.ai-content :deep(h2) {
+  font-size: 16px;
+  font-weight: 600;
+  color: #0F172A;
+  margin: 20px 0 12px;
+}
+
+.ai-content :deep(h3) {
+  font-size: 15px;
+  font-weight: 600;
+  color: #334155;
+  margin: 16px 0 8px;
+}
+
+.ai-content :deep(p) {
+  margin: 12px 0;
+}
+
+.ai-content :deep(ul),
+.ai-content :deep(ol) {
+  margin: 12px 0;
+  padding-left: 24px;
+}
+
+.ai-content :deep(li) {
+  margin: 6px 0;
+}
+
+.ai-content :deep(strong) {
+  color: #0F172A;
+  font-weight: 600;
+}
+
+.ai-content :deep(blockquote) {
+  margin: 16px 0;
+  padding: 12px 16px;
+  background: #F8FAFC;
+  border-left: 4px solid #D97706;
+  border-radius: 0 8px 8px 0;
+}
+
+.ai-content :deep(code) {
+  padding: 2px 6px;
+  background: #F1F5F9;
+  border-radius: 4px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  color: #D97706;
+}
+
+.ai-content :deep(pre) {
+  padding: 16px;
+  background: #0F172A;
+  border-radius: 12px;
+  overflow-x: auto;
+  margin: 16px 0;
+}
+
+.ai-content :deep(pre code) {
+  background: transparent;
+  color: #E2E8F0;
+  padding: 0;
+}
+
 .ai-loading {
   text-align: center;
   padding: 40px;
+}
+
+.ai-error {
+  text-align: center;
+  padding: 40px;
+  color: #DC2626;
+}
+
+.ai-error svg {
+  width: 48px;
+  height: 48px;
+  margin-bottom: 16px;
+  stroke: #DC2626;
+}
+
+.ai-error p {
+  margin-bottom: 20px;
+  color: #DC2626;
+}
+
+.btn-retry {
+  padding: 10px 24px;
+  background: #DC2626;
+  border: none;
+  border-radius: 10px;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-retry:hover {
+  background: #B91C1C;
+  transform: translateY(-1px);
+}
+
+.ai-empty {
+  text-align: center;
+  padding: 40px;
+  color: #64748B;
 }
 
 .loading-dots {
@@ -2280,6 +3016,156 @@ onUnmounted(() => {
   }
 }
 
+/* ═══════════════ DIALOG STYLES ═══════════════ */
+.experience-dialog :deep(.el-dialog__header) {
+  padding: 24px 24px 16px;
+  margin: 0;
+  border-bottom: 1px solid #E2E8F0;
+}
+
+.experience-dialog :deep(.el-dialog__title) {
+  font-size: 18px;
+  font-weight: 600;
+  color: #0F172A;
+}
+
+.experience-dialog :deep(.el-dialog__body) {
+  padding: 24px;
+}
+
+.experience-dialog :deep(.el-dialog__footer) {
+  padding: 16px 24px 24px;
+  border-top: 1px solid #E2E8F0;
+}
+
+.dialog-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.dialog-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.dialog-form-item {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dialog-form-item label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #0F172A;
+}
+
+.dialog-input {
+  padding: 12px 16px;
+  border: 1px solid #E2E8F0;
+  border-radius: 10px;
+  font-size: 14px;
+  color: #0F172A;
+  background: #fff;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  width: 100%;
+}
+
+.dialog-input:focus {
+  outline: none;
+  border-color: #D97706;
+  box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.1);
+}
+
+.dialog-input::placeholder {
+  color: #94A3B8;
+}
+
+.dialog-textarea {
+  padding: 12px 16px;
+  border: 1px solid #E2E8F0;
+  border-radius: 10px;
+  font-size: 14px;
+  color: #0F172A;
+  background: #fff;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  width: 100%;
+  resize: vertical;
+  min-height: 80px;
+  font-family: inherit;
+}
+
+.dialog-textarea:focus {
+  outline: none;
+  border-color: #D97706;
+  box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.1);
+}
+
+.dialog-textarea::placeholder {
+  color: #94A3B8;
+}
+
+.dialog-select {
+  width: 100%;
+}
+
+.dialog-select :deep(.el-input__wrapper) {
+  padding: 12px 16px;
+  border-radius: 10px;
+  box-shadow: 0 0 0 1px #E2E8F0 inset;
+}
+
+.dialog-select :deep(.el-input__wrapper.is-focus) {
+  box-shadow: 0 0 0 1px #D97706 inset, 0 0 0 3px rgba(217, 119, 6, 0.1);
+}
+
+.dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.btn-dialog-cancel {
+  padding: 10px 20px;
+  border: 1px solid #E2E8F0;
+  border-radius: 10px;
+  background: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  color: #64748B;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-dialog-cancel:hover {
+  border-color: #CBD5E1;
+  color: #0F172A;
+}
+
+.btn-dialog-confirm {
+  padding: 10px 24px;
+  border: none;
+  border-radius: 10px;
+  background: #0F172A;
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-dialog-confirm:hover:not(:disabled) {
+  background: #1E293B;
+  transform: translateY(-1px);
+}
+
+.btn-dialog-confirm:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .scene-content {
@@ -2323,6 +3209,15 @@ onUnmounted(() => {
 
   .cta-actions {
     flex-direction: column;
+  }
+
+  .dialog-form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .experience-dialog :deep(.el-dialog) {
+    width: 90% !important;
+    margin: 0 auto;
   }
 }
 </style>

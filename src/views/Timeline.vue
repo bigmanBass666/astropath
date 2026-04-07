@@ -61,15 +61,6 @@
             <span class="stat-label-text">{{ stat.label }}</span>
           </div>
         </div>
-
-        <div
-          class="hero-scroll-hint"
-          @mouseenter="cursorExpanded = true"
-          @mouseleave="cursorExpanded = false"
-        >
-          <span class="scroll-line" />
-          <span class="scroll-text">SCROLL TO EXPLORE</span>
-        </div>
       </div>
     </section>
 
@@ -1343,39 +1334,6 @@ const refreshObservations = () => {
 .hero-stat:nth-child(2) .stat-number { color: #D97706; }
 .hero-stat:nth-child(3) .stat-number { color: #334155; }
 .hero-stat:nth-child(4) .stat-number { color: #B45309; }
-
-/* ---- Scroll Hint ---- */
-.hero-scroll-hint {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  margin-top: 64px;
-  cursor: pointer;
-  animation: fadeUp 0.7s ease both;
-  animation-delay: 1s;
-  opacity: 0;
-}
-
-.scroll-line {
-  width: 1px;
-  height: 40px;
-  background: linear-gradient(to bottom, #D97706, transparent);
-  animation: scrollPulse 2s ease-in-out infinite;
-}
-
-@keyframes scrollPulse {
-  0%, 100% { opacity: 0.25; transform: scaleY(0.6); transform-origin: top; }
-  50% { opacity: 0.8; transform: scaleY(1); }
-}
-
-.scroll-text {
-  font-size: 10px;
-  letter-spacing: 3px;
-  color: #CBD5E1;
-  text-transform: uppercase;
-  font-weight: 500;
-}
 
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(24px); }
