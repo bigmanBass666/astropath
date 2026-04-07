@@ -87,7 +87,7 @@
               <span class="notice-label">SECURITY NOTICE</span>
               <span class="notice-divider" />
               <span class="notice-text">
-                当前使用开发者测试 API Key（<span class="notice-model">{{ zhipuModelName }}</span>），<span class="notice-emphasis">请勿用于其他用途</span>。
+                本系统预置开发者 API Key（<span class="notice-model">{{ zhipuModelName }}</span>）仅供演示使用。<span class="notice-emphasis">严禁提取、传播或用于任何其他目的</span>，违者将承担相应法律责任。
               </span>
             </div>
           </div>
