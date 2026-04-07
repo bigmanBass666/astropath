@@ -13,7 +13,7 @@
 | **比赛** | 人工智能学院第四届科创节网页设计大赛（2026/4/7） |
 | **评分** | 设计40 + 功能30 + **创新30（AI交互）** + 展示10 |
 | **开发优先级** | AI 交互相关优化 > 其他所有功能（创新性30分是关键得分点） |
-| **设计美学** | **Awwwards 级别** — 追求极致视觉与交互体验 |
+| **设计美学** | 使用 `awwwards-design` skill 作为设计美学指导 |
 
 ---
 
@@ -33,46 +33,29 @@
 
 ---
 
-## Awwwards 设计规范（项目级设计美学）
+## 设计规范
 
-本项目采用 **Awwwards 级别**设计语言，整个网站需遵循以下规范：
+> **AI 开发必读**: 本项目设计美学使用 `awwwards-design` skill 指导。当涉及页面设计、组件样式、动画交互时，**必须**先调用此 skill。
 
-### 视觉语言
+### 项目特有约束
 
-**排版系统**:
+在遵循 `awwwards-design` skill 的基础上，本项目还有以下硬性约束：
+
+**配色系统**:
+- 主色 `#0F172A`（Slate-900）— 唯一交互色
+- 强调色 `#D97706`（Amber-600）— 唯一彩色点缀
+- 背景 `#FFFFFF` 白色为主
+- **严禁引入任何新配色**
+
+**字体限制**:
 - 数据/数字/标签 → `var(--font-family-mono)` (JetBrains Mono)
 - **禁止使用** Inter / Roboto / Arial / Helvetica
-- Hero 字体应超大醒目，层级分明
 
-**纹理质感**: 全页 SVG fractalNoise 叠加层，`opacity: 0.03`
+**命名规范**:
+- BEM 格式，统一 `ud-` 前缀（如 `.ud-card__accent--danger`）
 
-**动画曲线**:
-- 入场动画: `cubic-bezier(0.16, 1, 0.3, 1)` — Expo Out
-- 悬停微交互: `cubic-bezier(0.34, 1.56, 0.64, 1)` — Back Out
-
-### 交互模式
-
-- 筛选芯片激活态 → 边框强调 + `rgba(15,23,42,0.06)` 底色
-- 卡片悬停 → CSS 3D perspective 倾斜（`--mx/--my` 变量驱动）
-
-### 禁止事项（AI 网站特征）
-
-- ❌ 蓝白通用配色
-- ❌ 三栏 features section 布局
-- ❌ 渐变 hero banner
-- ❌ Inter/Roboto 字体
-- ❌ 卡片 + 圆角 + 阴影的过度使用
-- ❌ 底部版权信息作为唯一 footer
-
-### 无障碍
-
-所有包含动画的页面/组件**必须**添加：
-
-```css
-@media (prefers-reduced-motion: reduce) {
-  * { animation: none !important; transition-duration: 0.01ms !important; }
-}
-```
+**无障碍**:
+- 所有包含动画的页面/组件**必须**添加 `prefers-reduced-motion` 媒体查询
 
 ---
 

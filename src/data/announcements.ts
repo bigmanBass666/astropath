@@ -16,7 +16,7 @@ export const announcements: Announcement[] = [
     content:
       '感谢各位评审与观众的关注！智途 AstroPath 已顺利完成科创节网页设计大赛全部展示与评审环节，即日起正式停止维护。本项目所有代码与设计已归档，不再进行新功能开发。如有需要，欢迎参考项目架构与设计思路。',
     type: 'important',
-    date: '2026-04-07 23:59',
+    date: '2026-04-07 21:07',
     pinned: true,
   },
   {
