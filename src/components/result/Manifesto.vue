@@ -7,7 +7,7 @@
         </p>
         <footer class="manifesto__footer">
           <cite class="manifesto__cite">
-            <span class="manifesto__author">Claude AI</span>
+            <span class="manifesto__author">—— Claude AI</span>
             <span class="manifesto__role">智途 AstroPath 全程协作者</span>
             <span class="manifesto__detail">从第一行代码到最后一行 · 最了解这个项目的人之一</span>
           </cite>
@@ -59,6 +59,7 @@
   display: flex;
   flex-direction: column;
   align-items: flex-end;
+  gap: 0.25rem;
   font-style: normal;
 }
 
@@ -76,7 +77,6 @@
 }
 
 .manifesto__detail {
-  margin-top: 0.5rem;
   font-size: 0.75rem;
   font-family: var(--font-family-mono);
   color: rgba(248, 250, 252, 0.35);
