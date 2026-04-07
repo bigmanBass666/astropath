@@ -21,6 +21,12 @@
       class="ud-hero"
       :class="{ 'ud-hero--visible': heroVisible }"
     >
+      <!-- 浮动几何网格背景 -->
+      <canvas
+        ref="gridCanvasRef"
+        class="ud-hero__grid-canvas"
+      />
+
       <div class="ud-hero__grid-bg" />
       <div class="ud-hero__glow" />
 
@@ -846,8 +852,10 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted } from 'vue'
+import { onMounted, onUnmounted, ref as vueRef } from 'vue'
 import { useDatabaseState } from '@/composables/useDatabaseState'
+
+const gridCanvasRef = vueRef<any>(null)
 
 const {
   refs,
@@ -884,6 +892,114 @@ const {
 let heroObserver: IntersectionObserver | null = null
 let contentObserver: IntersectionObserver | null = null
 
+function initFloatingGrid() {
+  const canvas = gridCanvasRef.value
+  if (!canvas) return
+
+  const ctx = canvas.getContext('2d')
+  if (!ctx) return
+
+  let width = canvas.width = window.innerWidth
+  let height = canvas.height = window.innerHeight
+
+  const c = ctx
+  const cellSize = 60
+  const cols = Math.ceil(width / cellSize) + 2
+  const rows = Math.ceil(height / cellSize) + 2
+
+  let mouseX = width / 2
+  let mouseY = height / 2
+
+  document.addEventListener('mousemove', (e) => {
+    mouseX = e.clientX
+    mouseY = e.clientY
+  })
+
+  let time = 0
+
+  function animate() {
+    time += 0.015
+
+    c.clearRect(0, 0, width, height)
+
+    c.strokeStyle = 'rgba(15, 23, 42, 0.06)'
+    c.lineWidth = 1
+
+    for (let i = 0; i < cols; i++) {
+      c.beginPath()
+      for (let j = 0; j < rows; j++) {
+        const x = i * cellSize
+        const y = j * cellSize
+
+        const dx = x - mouseX
+        const dy = y - mouseY
+        const dist = Math.sqrt(dx * dx + dy * dy)
+        const wave = Math.sin(dist * 0.015 - time) * 15 * Math.max(0, 1 - dist / 400)
+
+        const px = x + Math.sin(time + i * 0.3) * 3 + wave * (dx / dist || 0)
+        const py = y + Math.cos(time + j * 0.3) * 3 + wave * (dy / dist || 0)
+
+        if (j === 0) {
+          c.moveTo(px, py)
+        } else {
+          c.lineTo(px, py)
+        }
+      }
+      c.stroke()
+    }
+
+    for (let j = 0; j < rows; j++) {
+      c.beginPath()
+      for (let i = 0; i < cols; i++) {
+        const x = i * cellSize
+        const y = j * cellSize
+
+        const dx = x - mouseX
+        const dy = y - mouseY
+        const dist = Math.sqrt(dx * dx + dy * dy)
+        const wave = Math.sin(dist * 0.015 - time) * 15 * Math.max(0, 1 - dist / 400)
+
+        const px = x + Math.sin(time + i * 0.3) * 3 + wave * (dx / dist || 0)
+        const py = y + Math.cos(time + j * 0.3) * 3 + wave * (dy / dist || 0)
+
+        if (i === 0) {
+          c.moveTo(px, py)
+        } else {
+          c.lineTo(px, py)
+        }
+      }
+      c.stroke()
+    }
+
+    c.fillStyle = 'rgba(15, 23, 42, 0.03)'
+    for (let i = 0; i < cols; i++) {
+      for (let j = 0; j < rows; j++) {
+        const x = i * cellSize
+        const y = j * cellSize
+        const dx = x - mouseX
+        const dy = y - mouseY
+        const dist = Math.sqrt(dx * dx + dy * dy)
+
+        if (dist < 100) {
+          const pulse = (1 - dist / 100) * 2
+          c.beginPath()
+          c.arc(x, y, pulse, 0, Math.PI * 2)
+          c.fill()
+        }
+      }
+    }
+
+    requestAnimationFrame(animate)
+  }
+
+  animate()
+
+  window.addEventListener('resize', () => {
+    width = canvas.width = window.innerWidth
+    height = canvas.height = window.innerHeight
+  })
+}
+
 const setupObservers = () => {
   heroObserver = new IntersectionObserver(
     (entries) => { entries.forEach((entry) => { if (entry.isIntersecting) { heroVisible.value = true; heroObserver?.unobserve(entry.target) } }) },
@@ -896,6 +1012,7 @@ const setupObservers = () => {
 }
 
 onMounted(() => {
+  initFloatingGrid()
   initFromStorage()
   setTimeout(() => { heroVisible.value = true }, 100)
   setupObservers()
@@ -981,7 +1098,6 @@ onUnmounted(() => {
   position: relative;
   overflow: hidden;
   height: calc(100dvh - 64px);
-  margin-top: -20px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -992,6 +1108,14 @@ onUnmounted(() => {
 .ud-hero--visible {
   opacity: 1;
   transform: translateY(0);
+}
+
+/* 浮动网格 Canvas */
+.ud-hero__grid-canvas {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
 }
 
 /* 网格背景 */
