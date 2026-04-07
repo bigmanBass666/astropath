@@ -20,14 +20,11 @@
           <h1 class="empty-title">
             选择你要撰写的文书类型
           </h1>
-          <p class="empty-subtitle">
-            点击下方卡片开始，AI 将辅助你完成从初稿到定稿
-          </p>
         </div>
 
         <div class="type-grid">
           <button
-            v-for="(type, idx) in essayTypes"
+            v-for="(type, idx) in displayedTypes"
             :key="type.value"
             class="type-card"
             :class="{ selected: selectedType === type.value, featured: idx === 0 }"
@@ -70,11 +67,15 @@
               </template>
             </div>
           </button>
-        </div>
 
-        <div class="empty-footer-hint">
-          <div class="hint-pulse" />
-          <span>👆 点击任意卡片即可开始，也可稍后通过顶栏切换文书类型</span>
+          <button
+            v-if="essayTypes.length > 2 && !showAllTypes"
+            class="type-more-btn"
+            @click="showAllTypes = true"
+          >
+            <span class="more-icon">+</span>
+            <span class="more-text">查看更多 ({{ essayTypes.length - 2 }})</span>
+          </button>
         </div>
       </div>
     </Transition>
@@ -297,6 +298,14 @@ const props = withDefaults(defineProps<{
   zenMode: false
 })
 
+const showAllTypes = ref(false)
+
+const displayedTypes = computed(() => {
+  if (props.essayTypes.length <= 2) return props.essayTypes
+  if (showAllTypes.value) return props.essayTypes
+  return props.essayTypes.slice(0, 2)
+})
+
 const emit = defineEmits<{
   update: [content: string]
   insertSlashCommand: [command: string]
@@ -484,11 +493,13 @@ watch(editorRef, () => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: space-between;
   width: 100%;
   max-width: 800px;
   margin: 0 auto;
-  padding: 100px 40px 80px;
+  padding: 32px 24px 64px;
+  min-height: calc(100vh - 64px - 48px - 32px);
+  box-sizing: border-box;
   animation: emptyIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 @keyframes emptyIn {
@@ -674,6 +685,33 @@ watch(editorRef, () => {
   font-weight: 600;
 }
 
+.type-more-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 14px 20px;
+  background: transparent;
+  border: 1.5px dashed var(--color-border);
+  border-radius: 16px;
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.type-more-btn:hover {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+  background: rgba(217, 119, 6, 0.04);
+}
+
+.more-icon {
+  font-size: 16px;
+  font-weight: 600;
+}
+
 /* Footer Hint */
 .empty-footer-hint {
   display: flex;
@@ -745,7 +783,7 @@ watch(editorRef, () => {
 /* ========== EDITOR CONTENT ========== */
 .editor-content {
   width: 100%; max-width: 820px; min-height: calc(100vh - 48px - 32px - 80px);
-  padding: 60px 60px 120px; outline: none;
+  padding: 60px 60px 152px; outline: none;
   font-family: var(--font-family-base); font-size: 15px; line-height: 1.9;
   color: var(--color-text-primary); transition: box-shadow 0.3s ease;
 }
@@ -769,7 +807,7 @@ watch(editorRef, () => {
 .editor-content :deep(hr) { margin: 16px 0; }
 
 /* Preview Content */
-.preview-content { width: 100%; max-width: 820px; min-height: calc(100vh - 48px - 32px - 80px); padding: 60px 60px 120px; font-size: 15px; line-height: 1.9; color: var(--color-text-primary); }
+.preview-content { width: 100%; max-width: 820px; min-height: calc(100vh - 48px - 32px - 80px); padding: 60px 60px 152px; font-size: 15px; line-height: 1.9; color: var(--color-text-primary); }
 .preview-content :deep(h1) { font-size: 26px; font-weight: 700; margin-bottom: 16px; color: var(--color-solid); border-bottom: 2px solid var(--color-solid); padding-bottom: 10px; }
 .preview-content :deep(h2) { font-size: 21px; font-weight: 700; margin-top: 28px; margin-bottom: 12px; color: var(--color-solid); }
 .preview-content :deep(h3) { font-size: 17px; font-weight: 600; margin-top: 20px; margin-bottom: 8px; color: var(--color-text-secondary); }
@@ -826,13 +864,29 @@ watch(editorRef, () => {
 .zen-hint-enter-from, .zen-hint-leave-to { opacity: 0; transform: translateX(-50%) translateY(8px); }
 
 @media (max-width: 768px) {
-  .editor-content, .preview-content { padding: 40px 24px 100px; min-height: calc(100vh - 48px - 32px - 40px); }
-  .zen-mode .editor-content { padding: 40px 24px 100px; }
+  .editor-content, .preview-content { padding: 112px 16px 92px; min-height: calc(100vh - 64px - 40px - 32px); overflow: hidden; }
+  .zen-mode .editor-content { padding: 112px 16px 92px; }
   .floating-toolbar { left: 16px; right: 16px; transform: none; justify-content: flex-start; flex-wrap: wrap; gap: 4px; }
   .floating-toolbar.visible { transform: none; }
   .toolbar-sep { display: none; }
-  .type-grid { grid-template-columns: 1fr; }
-  .empty-state { padding: 40px 20px 60px; }
+  .type-grid { grid-template-columns: 1fr; gap: 6px; }
+  .empty-state { 
+    padding: 12px 12px 44px; 
+    min-height: calc(100vh - 64px - 40px - 32px);
+    justify-content: space-between;
+  }
+  .empty-hero { margin-bottom: 8px; }
+  .empty-badge { font-size: 7px; padding: 3px 8px; margin-bottom: 4px; letter-spacing: 1px; }
+  .empty-title { font-size: 1rem; line-height: 1.25; margin-bottom: 2px; }
+  .empty-subtitle { font-size: 10px; line-height: 1.3; }
+  .type-card { padding: 10px 10px 8px; border-radius: 10px; }
+  .type-index { font-size: 8px; }
+  .type-name { font-size: 12px; margin-bottom: 1px; }
+  .type-desc { font-size: 9px; line-height: 1.3; }
+  .type-recommend { font-size: 7px; padding: 1px 5px; }
+  .type-cta { margin-top: 4px; font-size: 9px; }
+  .cta-arrow { width: 9px; height: 9px; }
+  .type-more-btn { padding: 10px 14px; font-size: 11px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

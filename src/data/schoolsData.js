@@ -1,5 +1,5 @@
 export const SCHOOL_COUNT = 101
-export const SCHOOL_COUNT_DISPLAY = '55+'
+export const SCHOOL_COUNT_DISPLAY = '100+'
 
 export const schoolsData = [
   {

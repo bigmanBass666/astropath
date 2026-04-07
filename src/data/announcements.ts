@@ -7,7 +7,7 @@ export interface Announcement {
   pinned: boolean
 }
 
-const SCHOOL_COUNT_DISPLAY = '55+'
+const SCHOOL_COUNT_DISPLAY = '100+'
 
 export const announcements: Announcement[] = [
   {

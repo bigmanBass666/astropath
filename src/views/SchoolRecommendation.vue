@@ -90,11 +90,6 @@
                     <span class="chip-value">{{ assessment.academic?.degree || '本科' }}</span>
                   </div>
                 </div>
-
-                <div class="hero-scroll-hint">
-                  <div class="scroll-line" />
-                  <span class="scroll-text">向下滚动开始</span>
-                </div>
               </div>
 
               <div class="hero-right">
@@ -916,9 +911,10 @@ onMounted(() => {
 /* ====== HERO SECTION — Awwwards Level ====== */
 .hero-section {
   position: relative;
-  min-height: 100vh;
+  height: calc(100dvh - 64px);
+  min-height: 600px;
   display: flex;
-  align-items: center;
+  flex-direction: column;
   overflow: hidden;
   background: #FFFFFF;
 }
@@ -961,12 +957,15 @@ onMounted(() => {
   position: relative;
   z-index: 2;
   max-width: 1280px;
+  width: 100%;
   margin: 0 auto;
-  padding: var(--space-20) var(--space-10);
+  padding: var(--space-8) var(--space-10);
   display: grid;
   grid-template-columns: 1.1fr 0.9fr;
   gap: var(--space-16);
   align-items: center;
+  flex: 1;
+  box-sizing: border-box;
 }
 
 /* ====== Hero Left ====== */

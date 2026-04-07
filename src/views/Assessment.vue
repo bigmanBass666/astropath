@@ -1616,6 +1616,13 @@ onMounted(() => {
   if (savedScene > 0) {
     currentScene.value = savedScene
     console.log(`已恢复到上次浏览的页面: Scene ${savedScene}`)
+    // Initialize radar chart and score animation if restored to results page
+    if (savedScene === 4) {
+      nextTick(() => {
+        initRadarChart()
+        animateScore(overallScore.value)
+      })
+    }
   }
   // Restore AI report if exists and we're on results page
   const savedReport = assessmentState.report.value

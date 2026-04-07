@@ -722,7 +722,6 @@ onUnmounted(() => {
   position: relative;
   overflow: hidden;
   height: calc(100dvh - 64px);
-  margin-top: -20px;
   display: flex;
   align-items: center;
   opacity: 0;

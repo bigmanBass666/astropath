@@ -673,7 +673,10 @@
       </div>
     </section>
 
-    <SiteFooter @show-guide="guideVisible = true" />
+    <SiteFooter
+      v-if="false"
+      @show-guide="guideVisible = true"
+    />
 
     <button
       class="hp-back-to-top"
@@ -919,6 +922,11 @@ onUnmounted(() => {
   cursor: default;
 }
 
+.hp-page > * {
+  box-sizing: border-box;
+  max-width: 100%;
+}
+
 .hp-noise {
   position: fixed;
   inset: 0;
@@ -938,7 +946,7 @@ onUnmounted(() => {
   position: relative;
   overflow: hidden;
   height: calc(100dvh - 64px);
-  margin-top: -20px;
+  margin-top: 0;
   display: flex;
   align-items: center;
   opacity: 0;
@@ -1171,7 +1179,7 @@ onUnmounted(() => {
 
 .hp-fui--badge {
   --fi: 2;
-  top: 38%;
+  top: 40%;
   left: 8%;
   color: #065F46;
   background: #ECFDF5;
@@ -1267,11 +1275,11 @@ onUnmounted(() => {
   position: relative;
   z-index: 2;
   display: grid;
-  grid-template-columns: 1.35fr 0.65fr;
-  gap: 56px;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 72px;
   align-items: center;
   width: 100%;
-  max-width: 1160px;
+  max-width: 1280px;
   padding: 64px 52px 0;
   box-sizing: border-box;
 }
@@ -1414,11 +1422,12 @@ onUnmounted(() => {
 }
 
 .hp-btn--primary {
-  padding: 15px 30px;
+  padding: 20px 40px;
   background: var(--color-solid);
   color: white;
-  border-radius: 12px;
+  border-radius: 14px;
   box-shadow: 0 4px 16px rgba(15, 23, 42, 0.12);
+  font-size: 16px;
 }
 .hp-btn--primary:hover {
   background: var(--color-solid-hover);
@@ -1533,6 +1542,7 @@ onUnmounted(() => {
    ============================================ */
 .hp-manifesto {
   padding: 90px 52px;
+  overflow: hidden;
   opacity: 0;
   transform: translateY(40px);
   transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
@@ -1543,6 +1553,7 @@ onUnmounted(() => {
 }
 
 .hp-manifesto__header {
+  text-align: center;
   margin-bottom: 56px;
 }
 .hp-manifesto__eyebrow {
@@ -1570,6 +1581,7 @@ onUnmounted(() => {
   grid-template-columns: repeat(2, 1fr);
   gap: 0;
   max-width: 1160px;
+  margin: 0 auto;
   position: relative;
 }
 
@@ -1717,6 +1729,7 @@ onUnmounted(() => {
 .hp-bento {
   padding: 60px 40px 80px;
   background: var(--color-background-alt);
+  overflow: hidden;
   opacity: 0;
   transform: translateY(40px);
   transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
@@ -1759,6 +1772,7 @@ onUnmounted(() => {
   gap: 2px;
   grid-template-columns: repeat(4, 1fr);
   grid-template-rows: auto auto auto;
+  overflow: hidden;
 }
 
 .hp-bento__card {
@@ -1975,17 +1989,14 @@ onUnmounted(() => {
 .hp-invitation {
   position: relative;
   padding: 68px 40px 100px;
-  margin-bottom: -20px;
   background: var(--color-solid);
   color: #F8FAFC;
   overflow: hidden;
   opacity: 0;
-  transform: translateY(40px);
-  transition: opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1), transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .hp-invitation--visible {
   opacity: 1;
-  transform: translateY(0);
 }
 
 
@@ -2272,8 +2283,8 @@ onUnmounted(() => {
    ============================================ */
 
 @media (max-width: 1199px) {
-  .hp-hero { height: calc(100dvh - 56px); margin-top: -14px; }
-  .hp-hero__inner { padding: 52px 36px 0; gap: 40px; }
+  .hp-hero { height: calc(100dvh - 56px); margin-top: 0; }
+  .hp-hero__inner { padding: 52px 36px 0; gap: 56px; max-width: 1160px; }
   .hp-hero__line--lead { font-size: clamp(28px, 4.2vw, 54px); }
   .hp-hero__line--anchor { font-size: clamp(50px, 10vw, 108px); }
   .hp-hero__sub { max-width: 210px; }
@@ -2291,7 +2302,7 @@ onUnmounted(() => {
   .hp-bento__card--sm { padding: 26px 22px; min-height: 180px; }
   .hp-bento__card--wide { padding: 26px 28px; min-height: 160px; }
 
-  .hp-invitation { padding: 48px 28px 72px; margin-bottom: -14px; }
+  .hp-invitation { padding: 48px 28px 72px; }
   .hp-invitation__inner { grid-template-columns: 1fr; gap: 44px; }
   .hp-invitation__watermark { font-size: clamp(120px, 20vw, 220px); }
   .hp-btn--hero { min-width: auto; width: 100%; max-width: 360px; padding: 30px 36px; }
@@ -2299,7 +2310,7 @@ onUnmounted(() => {
 }
 
 @media (max-width: 767px) {
-  .hp-hero { height: calc(100dvh - 52px); margin-top: -10px; }
+  .hp-hero { height: calc(100dvh - 52px); margin-top: 0; }
   .hp-hero__inner {
     grid-template-columns: 1fr;
     gap: 28px;
@@ -2373,7 +2384,7 @@ onUnmounted(() => {
   .hp-bento__card-title { font-size: 17px; }
   .hp-bento__num { font-size: clamp(52px, 10vw, 80px); }
 
-  .hp-invitation { padding: 52px 20px 64px; margin-bottom: -10px; }
+  .hp-invitation { padding: 52px 20px 64px; }
   .hp-invitation__inner {
     grid-template-columns: 1fr;
     gap: 36px;

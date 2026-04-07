@@ -218,7 +218,6 @@ function handleToggleItem(index: number, e: Event) {
   position: relative;
   width: 100%;
   height: calc(100vh - 64px);
-  margin-top: -20px;
   display: flex;
   flex-direction: column;
   overflow: hidden;

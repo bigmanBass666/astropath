@@ -199,7 +199,7 @@
         @scroll="handleUserScroll"
       >
         <div
-          v-if="messages.length === 0 && currentAgent"
+          v-if="currentMessages.length === 0 && currentAgent"
           class="welcome-screen"
         >
           <div class="welcome-content">
@@ -234,7 +234,7 @@
 
         <template v-else>
           <div
-            v-for="msg in messages"
+            v-for="msg in currentMessages"
             :key="msg.id"
             class="message-wrapper"
             :class="{ 'is-user': msg.role === 'user' }"
@@ -546,14 +546,18 @@ const currentAgent = computed(() => agents.value.find(a => a.id === currentAgent
 const selectedProvider = ref(null)
 const inputMessage = ref('')
 const messagesContainer = ref(null)
-const messages = ref([])
+const agentMessages = ref({})
+const currentMessages = computed(() => agentMessages.value[currentAgentId.value] || [])
+const getCurrentMessages = () => { if (!agentMessages.value[currentAgentId.value]) agentMessages.value[currentAgentId.value] = []; return agentMessages.value[currentAgentId.value] }
 const currentConversationId = ref(null)
 const lastError = ref(null)
 const userData = ref(null)
-const enableThinking = ref(false)
+const enableThinking = ref(true)
 const searchQuery = ref('')
 const CHAT_STATE_KEY_PREFIX = 'ai_chat_state_'
-const currentStream = ref(null)
+const agentStreams = ref({})
+const getCurrentStream = () => agentStreams.value[currentAgentId.value]
+const setCurrentStream = (stream) => { agentStreams.value[currentAgentId.value] = stream }
 let isRestoringState = false
 let isFreshEntry = true
 const agentSessionMessages = ref({})
@@ -580,8 +584,9 @@ const goBack = () => router.back()
 
 const saveCurrentState = () => {
   if (isRestoringState) return
+  const msgs = agentMessages.value[currentAgentId.value] || []
   agentSessionMessages.value[currentAgentId.value] = {
-    messages: JSON.parse(JSON.stringify(messages.value)),
+    messages: JSON.parse(JSON.stringify(msgs)),
     currentConversationId: currentConversationId.value,
     savedAt: Date.now()
   }
@@ -591,7 +596,8 @@ const loadAgentSession = (agentId) => {
   const session = agentSessionMessages.value[agentId]
   if (session && session.messages && session.messages.length > 0) {
     isRestoringState = true
-    messages.value = JSON.parse(JSON.stringify(session.messages))
+    if (!agentMessages.value[agentId]) agentMessages.value[agentId] = []
+    agentMessages.value[agentId] = JSON.parse(JSON.stringify(session.messages))
     currentConversationId.value = session.currentConversationId || null
     isRestoringState = false
     nextTick(() => scrollToBottom(true))
@@ -646,13 +652,13 @@ const loadProviders = () => { const s = localStorage.getItem('ai_providers'); if
 
 const selectAgent = (id) => {
   if (currentAgentId.value === id) return
-  if (messages.value.length > 0) {
+  if ((agentMessages.value[currentAgentId.value] || []).length > 0) {
     saveConversation()
     saveCurrentState()
   }
   currentAgentId.value = id
   if (isFreshEntry) {
-    messages.value = []
+    if (!agentMessages.value[id]) agentMessages.value[id] = []
     currentConversationId.value = null
     clearCurrentState()
     return
@@ -660,7 +666,7 @@ const selectAgent = (id) => {
   if (loadAgentSession(id)) {
     return
   }
-  messages.value = []
+  if (!agentMessages.value[id]) agentMessages.value[id] = []
   currentConversationId.value = null
 }
 
@@ -672,43 +678,44 @@ const sendMessage = async () => {
   isFreshEntry = false
   if (!inputMessage.value.trim()) { ElMessage.warning('请输入消息'); return }
 
+  const msgs = getCurrentMessages()
   const userMsg = { id: Date.now(), role: 'user', content: inputMessage.value, timestamp: Date.now() }
-  messages.value.push(userMsg); inputMessage.value = ''; clearError(); scrollToBottom(true)
+  msgs.push(userMsg); inputMessage.value = ''; clearError(); scrollToBottom(true)
 
-  const aiMsg = { id: Date.now() + 1, role: 'assistant', content: '', reasoning: '', showReasoning: true, isThinking: enableThinking.value, timestamp: Date.now() }
-  messages.value.push(aiMsg); const aiIdx = messages.value.length - 1
+  const aiMsg = { id: Date.now() + 1, role: 'assistant', content: '', reasoning: '', showReasoning: false, isThinking: enableThinking.value, timestamp: Date.now() }
+  msgs.push(aiMsg); const aiIdx = msgs.length - 1
 
   try {
     const systemPrompt = buildSystemPrompt(currentAgentId.value, userData.value, enableThinking.value)
-    const apiMessages = [{ role: 'system', content: systemPrompt }, ...messages.value.filter(m => m.role === 'user' || m.role === 'assistant').map(m => ({ role: m.role, content: m.content }))]
+    const apiMessages = [{ role: 'system', content: systemPrompt }, ...msgs.filter(m => m.role === 'user' || m.role === 'assistant').map(m => ({ role: m.role, content: m.content }))]
 
-    const stream = useAIStream({ taskId: `chat-${currentAgentId.value}-${Date.now()}`, enableThinking: enableThinking.value, autoRestore: false, autoScroll: true, scrollContainer: () => messagesContainer.value })
-    currentStream.value = stream
+    const stream = useAIStream({ taskId: `chat-${currentAgentId.value}-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`, enableThinking: enableThinking.value, autoRestore: false, autoScroll: true, scrollContainer: () => messagesContainer.value })
+    setCurrentStream(stream)
     let hasReasoningContent = false
 
     const pollInterval = setInterval(() => {
-      if (stream.content.value) { messages.value[aiIdx].content = stream.content.value; messages.value[aiIdx].isThinking = false }
+      if (stream.content.value) { msgs[aiIdx].content = stream.content.value; msgs[aiIdx].isThinking = false }
       if (enableThinking.value && stream.reasoning.value) {
-        if (!hasReasoningContent && stream.reasoning.value.length > 50) { hasReasoningContent = true; messages.value[aiIdx].showReasoning = true }
-        messages.value[aiIdx].reasoning = stream.reasoning.value
+        if (!hasReasoningContent && stream.reasoning.value.length > 50) { hasReasoningContent = true; msgs[aiIdx].showReasoning = true }
+        msgs[aiIdx].reasoning = stream.reasoning.value
       }
-      if (stream.content.value && stream.content.value.length > 100 && hasReasoningContent) messages.value[aiIdx].showReasoning = false
+      if (stream.content.value && stream.content.value.length > 100 && hasReasoningContent) msgs[aiIdx].showReasoning = false
       if (!stream.isStreaming.value && !stream.isThinking.value) clearInterval(pollInterval)
     }, 100)
 
     try { await stream.generateWithProvider(selectedProvider.value, apiMessages) } finally { clearInterval(pollInterval) }
 
-    if (stream.content.value) messages.value[aiIdx].content = stream.content.value
-    if (enableThinking.value && stream.reasoning.value) messages.value[aiIdx].reasoning = stream.reasoning.value
-    messages.value[aiIdx].showReasoning = false; messages.value[aiIdx].isThinking = false
+    if (stream.content.value) msgs[aiIdx].content = stream.content.value
+    if (enableThinking.value && stream.reasoning.value) msgs[aiIdx].reasoning = stream.reasoning.value
+    msgs[aiIdx].showReasoning = false; msgs[aiIdx].isThinking = false
     saveCurrentState()
   } catch (error) {
     lastError.value = { title: '请求失败', message: error.message || '请检查网络连接或重试' }
-    messages.value[aiIdx].content = `抱歉，请求失败：${error.message}。`
-  } finally { currentStream.value = null; saveCurrentState(); nextTick(() => scrollToBottom()) }
+    msgs[aiIdx].content = `抱歉，请求失败：${error.message}。`
+  } finally { setCurrentStream(null); saveCurrentState(); nextTick(() => scrollToBottom()) }
 }
 
-const isLastMessage = (msg) => { const l = messages.value[messages.value.length - 1]; return l && l.id === msg.id }
+const isLastMessage = (msg) => { const l = getCurrentMessages(); return l.length > 0 && l[l.length - 1].id === msg.id }
 
 const formatMessageTime = (timestamp) => {
   if (!timestamp) return ''
@@ -738,32 +745,34 @@ const setFeedback = (msg, type) => {
 }
 let lastUserMessageForRegen = null
 const regenerateLastResponse = async () => {
-  const am = messages.value.filter(m => m.role === 'assistant'); if (am.length === 0) return
-  const ui = messages.value.findLastIndex(m => m.role === 'user'); if (ui < 0) return
-  lastUserMessageForRegen = messages.value[ui].content; messages.value.pop(); saveCurrentState(); inputMessage.value = lastUserMessageForRegen; await sendMessage()
+  const msgs = getCurrentMessages()
+  const am = msgs.filter(m => m.role === 'assistant'); if (am.length === 0) return
+  const ui = msgs.findLastIndex(m => m.role === 'user'); if (ui < 0) return
+  lastUserMessageForRegen = msgs[ui].content; msgs.pop(); saveCurrentState(); inputMessage.value = lastUserMessageForRegen; await sendMessage()
 }
-const handleUserScroll = () => { if (!messagesContainer.value) return; if (currentStream.value) currentStream.value.handleUserScroll(); else handleStreamScroll() }
+const handleUserScroll = () => { if (!messagesContainer.value) return; const stream = getCurrentStream(); if (stream) stream.handleUserScroll(); else handleStreamScroll() }
 const clearError = () => { lastError.value = null }
-const startNewChat = () => { if (messages.value.length > 0) saveConversation(); messages.value = []; currentConversationId.value = null; clearCurrentState(); ElMessage.success('已开始新对话') }
-const stopGeneration = () => { if (currentStream.value) { currentStream.value.stop(); currentStream.value = null } stopActiveGeneration(); saveCurrentState() }
+const startNewChat = () => { const msgs = getCurrentMessages(); if (msgs.length > 0) saveConversation(); msgs.length = 0; currentConversationId.value = null; clearCurrentState(); ElMessage.success('已开始新对话') }
+const stopGeneration = () => { const stream = getCurrentStream(); if (stream) { stream.stop(); setCurrentStream(null) } stopActiveGeneration(); saveCurrentState() }
 const handleRetry = async () => { clearError(); await retryActiveStream() }
 
 const saveConversation = () => {
-  if (messages.value.length > 0) {
+  const msgs = getCurrentMessages()
+  if (msgs.length > 0) {
     const ei = conversations.value.findIndex(c => c.id === currentConversationId.value)
-    const conv = { id: currentConversationId.value || Date.now(), title: messages.value[0].content.substring(0, 30) + '...', createdAt: currentConversationId.value ? getConversationById(currentConversationId.value)?.createdAt || Date.now() : Date.now(), agentId: currentAgentId.value, messages: JSON.parse(JSON.stringify(messages.value)) }
+    const conv = { id: currentConversationId.value || Date.now(), title: msgs[0].content.substring(0, 30) + '...', createdAt: currentConversationId.value ? getConversationById(currentConversationId.value)?.createdAt || Date.now() : Date.now(), agentId: currentAgentId.value, messages: JSON.parse(JSON.stringify(msgs)) }
     if (ei >= 0) conversations.value[ei] = conv; else conversations.value.unshift(conv)
     localStorage.setItem('conversations', JSON.stringify(conversations.value))
   }
 }
 const getConversationById = (id) => conversations.value.find(c => c.id === id)
-const loadConversation = (conv) => { messages.value = conv.messages || []; currentAgentId.value = conv.agentId || 'consultant'; currentConversationId.value = conv.id || null; saveCurrentState() }
-const deleteConversation = (cid) => { if (confirm('删除此对话记录？')) { conversations.value = conversations.value.filter(c => c.id !== cid); localStorage.setItem('conversations', JSON.stringify(conversations.value)); if (currentConversationId.value === cid) { messages.value = []; currentConversationId.value = null } } }
+const loadConversation = (conv) => { const agentId = conv.agentId || 'consultant'; if (!agentMessages.value[agentId]) agentMessages.value[agentId] = []; agentMessages.value[agentId] = conv.messages || []; currentAgentId.value = agentId; currentConversationId.value = conv.id || null; saveCurrentState() }
+const deleteConversation = (cid) => { if (confirm('删除此对话记录？')) { conversations.value = conversations.value.filter(c => c.id !== cid); localStorage.setItem('conversations', JSON.stringify(conversations.value)); if (currentConversationId.value === cid) { const msgs = getCurrentMessages(); msgs.length = 0; currentConversationId.value = null } } }
 
 let saveTimeout = null
-const autoSaveConversation = () => { if (saveTimeout) clearTimeout(saveTimeout); saveTimeout = setTimeout(() => { if (messages.value.length > 0) saveConversation() }, 2000) }
+const autoSaveConversation = () => { if (saveTimeout) clearTimeout(saveTimeout); saveTimeout = setTimeout(() => { const msgs = getCurrentMessages(); if (msgs.length > 0) saveConversation() }, 2000) }
 
-watch(messages, (nv) => { if (isRestoringState) return; if (nv.length > 0) autoSaveConversation(); if (!isGenerating.value) saveCurrentState() }, { deep: true })
+watch(currentMessages, (nv) => { if (isRestoringState) return; if (nv.length > 0) autoSaveConversation(); if (!isGenerating.value) saveCurrentState() }, { deep: true })
 watch(currentAgentId, () => saveCurrentState())
 
 onMounted(() => {
@@ -778,7 +787,8 @@ onMounted(() => {
   }
   if (isFreshEntry) {
     clearAllAgentSessions()
-    messages.value = []
+    const msgs = getCurrentMessages()
+    msgs.length = 0
     currentConversationId.value = null
   } else {
     loadAgentSession(currentAgentId.value)
@@ -786,7 +796,8 @@ onMounted(() => {
 })
 onUnmounted(() => {
   saveCurrentState()
-  if (currentStream.value) currentStream.value.stop()
+  const stream = getCurrentStream()
+  if (stream) stream.stop()
   isFreshEntry = true
 })
 </script>

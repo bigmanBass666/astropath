@@ -65,7 +65,7 @@
       </router-view>
     </el-main>
     <SiteFooter
-      v-if="!isImmersivePage && !isHomePage"
+      v-if="false"
       @show-guide="showGuide"
       @show-contact="showContact"
     />
@@ -441,8 +441,12 @@ const showContact = () => {
 
 .app-main {
   flex: 1;
-  padding: 20px;
+  padding: 0;
   background: var(--color-background);
+}
+
+.el-main {
+  padding: 0 !important;
 }
 
 .app-container.is-immersive .app-main,
