@@ -19,12 +19,17 @@
 
       <!-- 比赛信息 -->
       <div class="contest-info">
-        <div class="contest-badge">
+        <a
+          href="https://mp.weixin.qq.com/s/2o_FPY6WCZJ5McmF6XKP7A"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="contest-badge"
+        >
           <el-icon :size="16">
             <Trophy />
           </el-icon>
           <span>人工智能学院第四届科创节网页设计大赛</span>
-        </div>
+        </a>
         <div class="contest-date">
           2026年4月7日
         </div>
@@ -123,6 +128,15 @@ import { Trophy } from '@element-plus/icons-vue'
   border-radius: 12px;
   color: #E2E8F0;
   font-size: 0.875rem;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.contest-badge:hover {
+  background: rgba(217, 119, 6, 0.1);
+  border-color: rgba(217, 119, 6, 0.3);
+  color: #D97706;
 }
 
 .contest-date {
@@ -146,15 +160,6 @@ import { Trophy } from '@element-plus/icons-vue'
 }
 
 /* Animations */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
 @keyframes fadeInUp {
   from {
     opacity: 0;
