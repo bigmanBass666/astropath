@@ -16,13 +16,35 @@
         <!-- 中间：桌面端导航菜单 -->
         <nav class="nav-menu-container desktop-nav">
           <router-link
-            v-for="item in menuItems"
+            v-for="item in coreMenuItems"
             :key="item.path"
             :to="item.path"
             class="nav-item"
           >
             {{ item.name }}
           </router-link>
+          <el-dropdown
+            v-if="moreMenuItems.length > 0"
+            trigger="hover"
+            placement="bottom-end"
+            class="more-dropdown"
+          >
+            <span class="nav-item more-trigger">
+              更多
+            </span>
+            <template #dropdown>
+              <el-dropdown-menu class="more-menu">
+                <el-dropdown-item
+                  v-for="item in moreMenuItems"
+                  :key="item.path"
+                  :class="{ 'is-active': activeMenu === item.path }"
+                  @click="navigateTo(item.path)"
+                >
+                  {{ item.name }}
+                </el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
         </nav>
 
         <!-- 右侧：公告 + 设置按钮 + 移动端汉堡菜单按钮 -->
@@ -181,13 +203,13 @@ const router = useRouter()
 
 const activeMenu = computed(() => route.path)
 
-const isImmersivePage = computed(() => route.path === '/ai-chat')
+const isImmersivePage = computed(() => route.path === '/ai-chat' || route.path === '/story' || route.path === '/result')
 const isHomePage = computed(() => route.path === '/')
 const isAIConfigPage = computed(() => route.path === '/ai-config')
 
 const mobileMenuVisible = ref(false)
 
-const menuItems = [
+const coreMenuItems = [
   { path: '/', name: '首页' },
   { path: '/assessment', name: '背景评估' },
   { path: '/school-recommendation', name: '选校推荐' },
@@ -196,6 +218,13 @@ const menuItems = [
   { path: '/university-database', name: '院校数据库' },
   { path: '/ai-chat', name: 'AI对话' },
 ]
+
+const moreMenuItems = [
+  { path: '/story', name: '项目故事' },
+  { path: '/result', name: '比赛结果' },
+]
+
+const menuItems = [...coreMenuItems, ...moreMenuItems]
 
 const navigateTo = (path) => {
   router.push(path)
@@ -315,6 +344,51 @@ const showContact = () => {
 .nav-item.is-active::after,
 .nav-item.router-link-active::after {
   transform: translateX(-50%) scaleX(1);
+}
+
+.more-dropdown {
+  margin-left: 4px;
+}
+
+.more-trigger {
+  cursor: pointer;
+  outline: none;
+}
+
+.more-trigger:hover {
+  color: var(--color-text-primary);
+}
+
+.more-trigger:hover::after {
+  transform: translateX(-50%) scaleX(1);
+}
+
+.more-menu {
+  min-width: 140px;
+  padding: 6px 0;
+  border-radius: 12px;
+  box-shadow:
+    0 4px 20px rgba(30, 58, 95, 0.12),
+    0 1px 3px rgba(30, 58, 95, 0.08);
+  border: 1px solid rgba(30, 58, 95, 0.08);
+}
+
+.more-menu :deep(.el-dropdown-menu__item) {
+  padding: 10px 20px;
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  transition: all 0.2s ease;
+}
+
+.more-menu :deep(.el-dropdown-menu__item:hover) {
+  background: var(--color-slate-50);
+  color: var(--color-text-primary);
+}
+
+.more-menu :deep(.el-dropdown-menu__item.is-active) {
+  color: var(--color-text-primary);
+  font-weight: 600;
+  background: var(--color-slate-50);
 }
 
 .nav-menu {

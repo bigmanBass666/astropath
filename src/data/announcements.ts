@@ -5,11 +5,22 @@ export interface Announcement {
   type: 'update' | 'feature' | 'important'
   date: string
   pinned: boolean
+  link?: string
 }
 
 const SCHOOL_COUNT_DISPLAY = '100+'
 
 export const announcements: Announcement[] = [
+  {
+    id: 'ann-result',
+    title: '📊 比赛结果公布',
+    content:
+      '科创节网页设计大赛评分结果已公布。点击查看完整评分数据与技术对比分析。',
+    type: 'important',
+    date: '2026-04-08 00:00',
+    pinned: true,
+    link: '/result',
+  },
   {
     id: 'ann-final',
     title: '🏁 比赛圆满落幕，项目正式归档',
@@ -26,7 +37,7 @@ export const announcements: Announcement[] = [
       '院校数据库页面全新升级 Canvas 动画效果：60px 网格系统 + 正弦波纹起伏，鼠标交互产生涟漪波纹效果，鼠标附近网格点有脉冲光点。与 Assessment 页面粒子效果形成差异化设计，为用户提供沉浸式浏览体验。',
     type: 'feature',
     date: '2026-04-07 18:26',
-    pinned: true,
+    pinned: false,
   },
   {
     id: 'ann-006',
@@ -35,7 +46,7 @@ export const announcements: Announcement[] = [
       '背景评估页面完成里程碑式重构：5 场景沉浸式架构（Hero/Identity/Academics/Experience/Report）、Canvas 粒子背景与鼠标交互、磁吸按钮与 Stagger 动画、非对称布局设计、可折叠 AI 面板与 FAB 悬浮按钮。严格遵循 Slate-900 + Amber-600 配色规范。',
     type: 'feature',
     date: '2026-04-07 11:26',
-    pinned: true,
+    pinned: false,
   },
   {
     id: 'ann-005',

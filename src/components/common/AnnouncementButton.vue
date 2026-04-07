@@ -237,8 +237,10 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { useAnnouncements } from '@/composables/useAnnouncements'
 
+const router = useRouter()
 const { allAnnouncements, unreadCount, isUnread, markAsRead, markAllAsRead } = useAnnouncements()
 
 const dialogVisible = ref(false)
@@ -259,7 +261,13 @@ const closeDialog = () => {
   setTimeout(() => { expandedId.value = null }, 300)
 }
 
-const toggleExpand = (item: { id: string }) => {
+const toggleExpand = (item: { id: string; link?: string }) => {
+  if (item.link) {
+    markAsRead(item.id)
+    closeDialog()
+    router.push(item.link)
+    return
+  }
   if (expandedId.value === item.id) {
     expandedId.value = null
   } else {

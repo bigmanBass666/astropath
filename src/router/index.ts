@@ -62,6 +62,18 @@ const routes = [
     meta: { title: '院校详情' }
   },
   {
+    path: '/story',
+    name: 'Story',
+    component: () => import('@/views/Story.vue'),
+    meta: { title: '项目故事' }
+  },
+  {
+    path: '/result',
+    name: 'Result',
+    component: () => import('@/views/Result.vue'),
+    meta: { title: '比赛结果' }
+  },
+  {
     path: '/:pathMatch(.*)*',
     name: 'NotFound',
     component: () => import('@/views/NotFound.vue'),

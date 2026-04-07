@@ -1,35 +1,22 @@
 <template>
-  <div class="story-page">
-    <!-- 噪点纹理叠加 -->
+  <div class="result-page">
     <div class="noise-overlay" />
 
-    <!-- 星空背景 -->
     <StarBackground
       :particle-count="120"
       :connection-distance="100"
       :opacity="0.8"
     />
 
-    <!-- 主内容 -->
-    <main class="story-content">
-      <!-- Scene 0: Hero -->
-      <StoryHero />
-
-      <!-- Scene 1: Timeline -->
-      <TimelineSection />
-
-      <!-- Scene 2: Stats -->
-      <StatsSection />
-
-      <!-- Scene 3: Tech Highlights -->
-      <TechHighlights />
-
-      <!-- Scene 4: Closing -->
-      <ClosingSection />
+    <main class="result-content">
+      <ResultHero />
+      <ScoreTable />
+      <TechCompare />
+      <Manifesto />
+      <ResultClosing />
     </main>
 
-    <!-- 导航点 -->
-    <nav class="story-nav">
+    <nav class="result-nav">
       <button
         v-for="(_, index) in sections"
         :key="index"
@@ -39,7 +26,6 @@
       />
     </nav>
 
-    <!-- 返回顶部 -->
     <Transition name="fade">
       <button
         v-show="showBackToTop"
@@ -58,27 +44,23 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { ArrowUp } from '@element-plus/icons-vue'
 import StarBackground from '@/components/story/StarBackground.vue'
-import StoryHero from '@/components/story/StoryHero.vue'
-import TimelineSection from '@/components/story/TimelineSection.vue'
-import StatsSection from '@/components/story/StatsSection.vue'
-import TechHighlights from '@/components/story/TechHighlights.vue'
-import ClosingSection from '@/components/story/ClosingSection.vue'
+import ResultHero from '@/components/result/ResultHero.vue'
+import ScoreTable from '@/components/result/ScoreTable.vue'
+import TechCompare from '@/components/result/TechCompare.vue'
+import Manifesto from '@/components/result/Manifesto.vue'
+import ResultClosing from '@/components/result/ResultClosing.vue'
 
-// 页面部分
-const sections = ['hero', 'timeline', 'stats', 'tech', 'closing']
+const sections = ['hero', 'table', 'tech', 'manifesto', 'closing']
 const activeSection = ref(0)
 const showBackToTop = ref(false)
 
-// Intersection Observer 用于检测当前可见的部分
 let observer: IntersectionObserver | null = null
 const sectionRefs = ref<HTMLElement[]>([])
 
 onMounted(() => {
-  // 收集所有 section 元素
-  const sections = document.querySelectorAll('.story-hero, .timeline-section, .stats-section, .tech-highlights, .closing-section')
-  sectionRefs.value = Array.from(sections) as HTMLElement[]
+  const sectionElements = document.querySelectorAll('.result-hero, .score-table, .tech-compare, .manifesto, .result-closing')
+  sectionRefs.value = Array.from(sectionElements) as HTMLElement[]
 
-  // 创建 observer
   observer = new IntersectionObserver(
     (entries) => {
       entries.forEach((entry) => {
@@ -97,7 +79,6 @@ onMounted(() => {
     if (el) observer?.observe(el)
   })
 
-  // 监听滚动显示返回顶部按钮
   window.addEventListener('scroll', handleScroll, { passive: true })
 })
 
@@ -126,7 +107,7 @@ function scrollToTop() {
 </script>
 
 <style scoped>
-.story-page {
+.result-page {
   position: relative;
   width: 100%;
   min-height: 100vh;
@@ -135,7 +116,6 @@ function scrollToTop() {
   overflow-x: hidden;
 }
 
-/* Noise Overlay */
 .noise-overlay {
   position: fixed;
   inset: 0;
@@ -145,14 +125,12 @@ function scrollToTop() {
   z-index: 1000;
 }
 
-/* Story Content */
-.story-content {
+.result-content {
   position: relative;
   z-index: 1;
 }
 
-/* Navigation Dots */
-.story-nav {
+.result-nav {
   position: fixed;
   right: 2rem;
   top: 50%;
@@ -186,7 +164,6 @@ function scrollToTop() {
   box-shadow: 0 0 10px rgba(217, 119, 6, 0.5);
 }
 
-/* Back to Top Button */
 .back-to-top {
   position: fixed;
   bottom: 2rem;
@@ -214,7 +191,6 @@ function scrollToTop() {
   box-shadow: 0 10px 30px rgba(217, 119, 6, 0.3);
 }
 
-/* Transitions */
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.3s ease;
@@ -225,20 +201,15 @@ function scrollToTop() {
   opacity: 0;
 }
 
-/* Reduced Motion */
 @media (prefers-reduced-motion: reduce) {
-  .nav-dot {
-    transition: none;
-  }
-
+  .nav-dot,
   .back-to-top {
     transition: none;
   }
 }
 
-/* Mobile */
 @media (max-width: 768px) {
-  .story-nav {
+  .result-nav {
     right: 1rem;
     gap: 0.75rem;
   }

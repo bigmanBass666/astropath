@@ -176,7 +176,7 @@
             <p><el-icon><Phone /></el-icon> 400-123-4567</p>
             <div class="social-links">
               <a
-                href="https://github.com/bigmanBass666"
+                :href="GITHUB_REPO_URL"
                 target="_blank"
                 rel="noopener noreferrer"
                 class="social-link"
@@ -214,6 +214,7 @@
 
 <script setup>
 import { Message, Phone, ChatDotRound, Platform } from '@element-plus/icons-vue'
+import { GITHUB_REPO_URL } from '@/constants'
 
 defineEmits(['show-guide', 'show-contact'])
 </script>
