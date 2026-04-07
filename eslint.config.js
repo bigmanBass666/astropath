@@ -74,7 +74,18 @@ export default [
         requestAnimationFrame: 'readonly',
         cancelAnimationFrame: 'readonly',
         btoa: 'readonly',
-        atob: 'readonly'
+        atob: 'readonly',
+        IntersectionObserver: 'readonly',
+        HTMLElement: 'readonly',
+        HTMLDivElement: 'readonly',
+        HTMLInputElement: 'readonly',
+        HTMLTextAreaElement: 'readonly',
+        KeyboardEvent: 'readonly',
+        Node: 'readonly',
+        Text: 'readonly',
+        Event: 'readonly',
+        performance: 'readonly',
+        Element: 'readonly'
       }
     },
     rules: {

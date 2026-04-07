@@ -381,13 +381,13 @@ const careerList = computed(() => {
 
 const cnSalary = computed(() => {
   if (!major.value?.salaryRange) return ''
-  const m = major.value.salaryRange.match(/¥([\dK\-]+)/)
+  const m = major.value.salaryRange.match(/¥([\dK-]+)/)
   return m ? m[1] : ''
 })
 
 const usSalary = computed(() => {
   if (!major.value?.salaryRange) return ''
-  const m = major.value.salaryRange.match(/\$([\dK\-]+)/)
+  const m = major.value.salaryRange.match(/\$([\dK-]+)/)
   return m ? m[1] : ''
 })
 

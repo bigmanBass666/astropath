@@ -17,14 +17,14 @@ html, body {
   color: var(--color-text-primary);
 }
 
-/* 文字选中样式 - 使用 accent color 增添设计感 */
+/* 文字选中样式 - 使用琥珀色 accent color 增添设计感 */
 ::selection {
-  background-color: var(--color-solid);
+  background-color: var(--color-accent);
   color: white;
 }
 
 ::-moz-selection {
-  background-color: var(--color-solid);
+  background-color: var(--color-accent);
   color: white;
 }
 

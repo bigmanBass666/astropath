@@ -46,6 +46,7 @@ export interface AIStreamResult {
   hasContent: ComputedRef<boolean>
   hasReasoning: ComputedRef<boolean>
   isLoading: ComputedRef<boolean>
+  isPaused: ComputedRef<boolean>
   waitingPhase: ComputedRef<'connecting' | 'processing' | 'ready'>
   queuePosition: ComputedRef<number>
   canRetry: ComputedRef<boolean>
@@ -54,6 +55,8 @@ export interface AIStreamResult {
   generate: (messages: StreamMessage[], options?: GenerateOptions) => Promise<string>
   generateWithProvider: (providerId: string, messages: StreamMessage[], options?: GenerateOptions) => Promise<string>
   stop: () => void
+  pause: () => void
+  resume: () => void
   reset: () => void
   retry: () => Promise<string>
   toggleReasoning: () => void
@@ -96,6 +99,10 @@ export function useAIStream(options: UseAIStreamOptions): AIStreamResult {
   const SCROLL_COOLDOWN = 150
   const IDLE_TIMEOUT = 120000
 
+  const pausedRef = ref<boolean>(false)
+  let pauseResolve: (() => void) | null = null
+  let pauseReject: ((reason?: Error) => void) | null = null
+
   const task = computed(() => globalState._getRawTask(taskId))
 
   const state = computed<AIStreamState>(() => task.value?.state || 'idle')
@@ -110,10 +117,8 @@ export function useAIStream(options: UseAIStreamOptions): AIStreamResult {
   watch(
     () => globalState._getRawTask(taskId)?.content,
     (newContent) => {
-      console.log('[useAIStream] content watch triggered:', { taskId, newContent: newContent?.substring(0, 50), length: newContent?.length, contentRefBefore: contentRef.value?.length })
       if (newContent !== undefined) {
         contentRef.value = newContent
-        console.log('[useAIStream] contentRef updated:', { taskId, contentRefAfter: contentRef.value?.length })
       }
     },
     { immediate: true }
@@ -176,9 +181,7 @@ export function useAIStream(options: UseAIStreamOptions): AIStreamResult {
   )
 
   const content = computed<string>(() => {
-    const val = contentRef.value
-    console.log('[useAIStream] content computed:', { taskId, length: val?.length, preview: val?.substring(0, 50) })
-    return val ?? ''
+    return contentRef.value ?? ''
   })
   const reasoning = computed<string>(() => reasoningRef.value ?? '')
   const error = computed<string | null>(() => errorRef.value)
@@ -323,6 +326,9 @@ export function useAIStream(options: UseAIStreamOptions): AIStreamResult {
       for await (const chunk of stream as AsyncIterable<{ type: string; content: string }>) {
         if (!globalState.isTaskActive(taskId)) break
 
+        await waitForResume()
+        if (!globalState.isTaskActive(taskId)) break
+
         if (chunk.type === 'reasoning' && chunk.content) {
           fullReasoning += chunk.content
           globalState.appendReasoning(taskId, chunk.content)
@@ -335,7 +341,7 @@ export function useAIStream(options: UseAIStreamOptions): AIStreamResult {
             onStateChange?.('streaming')
           }
           fullContent += chunk.content
-          globalState.appendContent(taskId, chunk.content, false)
+          globalState.appendContent(taskId, chunk.content, true)
           onStream?.(fullContent, fullReasoning)
           scrollToBottom()
           resetIdleTimer()
@@ -443,9 +449,30 @@ export function useAIStream(options: UseAIStreamOptions): AIStreamResult {
       abortController.abort()
       abortController = null
     }
+    if (pauseReject) { pauseReject(new Error('stopped')); pauseResolve = null; pauseReject = null }
+    pausedRef.value = false
     cleanupWatchers()
     globalState.clearActiveStream()
     globalState._unregisterStreamActions(taskId)
+  }
+
+  const pause = () => {
+    if (pausedRef.value) return
+    pausedRef.value = true
+  }
+
+  const resume = () => {
+    if (!pausedRef.value) return
+    pausedRef.value = false
+    if (pauseResolve) { pauseResolve(); pauseResolve = null; pauseReject = null }
+  }
+
+  const waitForResume = (): Promise<void> => {
+    if (!pausedRef.value) return Promise.resolve()
+    return new Promise((resolve, reject) => {
+      pauseResolve = resolve
+      pauseReject = reject
+    })
   }
 
   const reset = () => {
@@ -568,6 +595,7 @@ export function useAIStream(options: UseAIStreamOptions): AIStreamResult {
     hasContent,
     hasReasoning,
     isLoading,
+    isPaused: computed(() => pausedRef.value),
     waitingPhase,
     queuePosition,
     canRetry,
@@ -576,6 +604,8 @@ export function useAIStream(options: UseAIStreamOptions): AIStreamResult {
     generate,
     generateWithProvider,
     stop,
+    pause,
+    resume,
     reset,
     retry,
     toggleReasoning,

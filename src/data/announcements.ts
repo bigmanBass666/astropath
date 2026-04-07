@@ -7,12 +7,14 @@ export interface Announcement {
   pinned: boolean
 }
 
+const SCHOOL_COUNT_DISPLAY = '55+'
+
 export const announcements: Announcement[] = [
   {
     id: 'ann-001',
     title: 'v1.0 正式发布',
     content:
-      '智途 AstroPath v1.0 正式提交科创节网页设计大赛！全部核心功能就绪：AI 智能选校、Multi-AI 对话系统、院校数据库、背景评估、时间规划、材料管理六大模块。55+ 精选院校数据，覆盖 22 个国家、39 个热门专业。',
+      `智途 AstroPath v1.0 正式提交科创节网页设计大赛！全部核心功能就绪：AI 智能选校、Multi-AI 对话系统、院校数据库、背景评估、时间规划、材料管理六大模块。${SCHOOL_COUNT_DISPLAY} 精选院校数据，覆盖 22 个国家、39 个热门专业。`,
     type: 'important',
     date: '2026-04-05 21:52',
     pinned: true,
