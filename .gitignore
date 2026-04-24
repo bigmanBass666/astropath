@@ -1,3 +1,4 @@
+*.xlsx
 .session_count
 
 # Dependencies

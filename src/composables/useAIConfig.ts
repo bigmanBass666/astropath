@@ -25,7 +25,7 @@ const DEFAULT_PROVIDER: AIProvider = {
   id: 'provider-default-zhipu',
   name: '智谱 GLM-Z1-Flash（推理模型）',
   type: 'domestic',
-  apiKey: 'REDACTED_API_KEY',
+  apiKey: import.meta.env.VITE_ZHIPU_API_KEY || '',
   baseUrl: 'https://open.bigmodel.cn/api/paas/v4',
   model: ZHIPU_MODEL_ID,
   isDefault: true,

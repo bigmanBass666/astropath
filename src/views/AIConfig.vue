@@ -565,7 +565,7 @@ const addZhipuPreset = () => {
     name: zhipuModelName.value + '（推荐）',
     type: 'domestic',
     baseUrl: 'https://open.bigmodel.cn/api/paas/v4',
-    apiKey: 'REDACTED_API_KEY',
+    apiKey: import.meta.env.VITE_ZHIPU_API_KEY || '',
     model: ZHIPU_MODEL_ID,
     status: 'untested',
     id: Date.now(),
